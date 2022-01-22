@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Acela - 3Speak App',
       theme: ThemeData.dark(),
       home: const HomeScreen(),
     );

@@ -52,7 +52,7 @@ class HomeFeed {
     if (title == null) {
       throw UnsupportedError('Invalid data: $json -> "title" is missing');
     }
-    final double? duration = json['duration'] as double?;
+    final double? duration = double.parse(json['duration'].toString());
     if (duration == null) {
       throw UnsupportedError('Invalid data: $json -> "duration" is missing');
     }

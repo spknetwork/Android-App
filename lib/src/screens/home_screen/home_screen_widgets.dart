@@ -37,19 +37,23 @@ class HomeScreenWidgets {
     );
   }
 
-  Widget list(List<HomeFeed> list) {
+  Widget list(List<HomeFeed> list, Future<void> Function() onRefresh) {
     return Container(
       padding: const EdgeInsets.only(top: 10, bottom: 10),
-      child: ListView.separated(
-          itemBuilder: (context, index) {
-            return _listTile(list[index], context);
-          },
-          separatorBuilder: (context, index) => const Divider(
-            thickness: 0,
-            height: 0,
-            color: Colors.transparent,
-          ),
-          itemCount: list.length),
+      child: RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              return _listTile(list[index], context);
+            },
+            separatorBuilder: (context, index) => const Divider(
+              thickness: 0,
+              height: 10,
+              color: Colors.transparent,
+            ),
+            itemCount: list.length),
+      )
     );
   }
 }

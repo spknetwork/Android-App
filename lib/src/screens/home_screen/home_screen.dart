@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _screen() {
-    return isDataFetched ? widgets.list(list) : widgets.loadingData();
+    return isDataFetched ? widgets.list(list, _loadHomeFeed) : widgets.loadingData();
   }
 
   @override

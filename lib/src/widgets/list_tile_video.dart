@@ -24,8 +24,8 @@ class ListTileVideo extends StatelessWidget {
       decoration: const BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.grey,
-            blurRadius: 10,
+            // color: Colors.grey,
+            // blurRadius: 10,
             blurStyle: BlurStyle.outer,
           )
         ],
