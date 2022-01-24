@@ -1,4 +1,5 @@
 import 'package:acela/src/screens/home_screen/home_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -14,7 +15,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Acela - 3Speak App',
       theme: ThemeData.dark(),
-      home: const HomeScreen(),
+      routes: {
+        VideoDetailsScreen.routeName: (context) => const VideoDetailsScreen(),
+        '/': (context) => const HomeScreen(),
+      },
+      // home: const HomeScreen(),
     );
   }
 }

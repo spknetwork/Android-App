@@ -28,32 +28,33 @@ class HomeScreenWidgets {
     );
   }
 
-  Widget _listTile(HomeFeed item, BuildContext context) {
+  Widget _listTile(
+      HomeFeed item, BuildContext context, Function(HomeFeed) onTap) {
     return ListTile(
       title: _tileTitle(item, context),
       onTap: () {
-        debugPrint("Hello world");
+        onTap(item);
       },
     );
   }
 
-  Widget list(List<HomeFeed> list, Future<void> Function() onRefresh) {
+  Widget list(List<HomeFeed> list, Future<void> Function() onRefresh,
+      Function(HomeFeed) onTap) {
     return Container(
-      padding: const EdgeInsets.only(top: 10, bottom: 10),
-      child: RefreshIndicator(
-        onRefresh: onRefresh,
-        child: ListView.separated(
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return _listTile(list[index], context);
-            },
-            separatorBuilder: (context, index) => const Divider(
-              thickness: 0,
-              height: 10,
-              color: Colors.transparent,
-            ),
-            itemCount: list.length),
-      )
-    );
+        padding: const EdgeInsets.only(top: 10, bottom: 10),
+        child: RefreshIndicator(
+          onRefresh: onRefresh,
+          child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                return _listTile(list[index], context, onTap);
+              },
+              separatorBuilder: (context, index) => const Divider(
+                    thickness: 0,
+                    height: 10,
+                    color: Colors.transparent,
+                  ),
+              itemCount: list.length),
+        ));
   }
 }
