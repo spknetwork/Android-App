@@ -31,6 +31,12 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _controller?.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final args = ModalRoute
         .of(context)!
@@ -48,10 +54,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       body:
       Center(
         child: _controller?.value.isInitialized ?? false
-            ? AspectRatio(
-          aspectRatio: _controller!.value.aspectRatio,
-          child: VideoPlayer(_controller!),
-        )
+            ? VideoPlayer(_controller!)
             : Container(),
       ),
       floatingActionButton: FloatingActionButton(

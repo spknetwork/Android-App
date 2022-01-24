@@ -1,7 +1,7 @@
-import 'package:acela/src/widgets/form_factor.dart';
+import 'package:acela/src/utils/form_factor.dart';
 import 'package:flutter/material.dart';
 import 'custom_circle_avatar.dart';
-import 'form_factor.dart';
+import '../utils/form_factor.dart';
 
 class ListTileVideo extends StatelessWidget {
   const ListTileVideo(
