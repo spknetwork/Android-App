@@ -2,17 +2,13 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
+import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class HomeScreenWidgets {
   Widget loadingData() {
-    return Container(
-      margin: const EdgeInsets.all(10),
-      child: const Center(
-        child: Text('Loading Data'),
-      ),
-    );
+    return const LoadingScreen();
   }
 
   Widget _tileTitle(HomeFeed item, BuildContext context) {
