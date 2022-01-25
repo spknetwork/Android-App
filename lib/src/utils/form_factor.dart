@@ -14,11 +14,10 @@ class FormFactor {
 
   static ScreenType getFormFactor(BuildContext context) {
     // Use .shortestSide to detect device type regardless of orientation
-    double deviceWidth = MediaQuery.of(context).size.shortestSide;
+    double deviceWidth = MediaQuery.of(context).size.width;
     if (deviceWidth > FormFactor.desktop) return ScreenType.desktop;
     if (deviceWidth > FormFactor.tablet) return ScreenType.tablet;
     if (deviceWidth > FormFactor.handset) return ScreenType.handset;
     return ScreenType.watch;
   }
 }
-

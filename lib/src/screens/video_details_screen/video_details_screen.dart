@@ -1,5 +1,5 @@
 import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_model.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_widgets.dart';
 import 'package:flutter/material.dart';
 // import 'package:better_player/better_player.dart';
@@ -49,6 +49,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         },
         item: args.item);
     vm?.loadVideoInfo();
+    vm?.loadComments(args.item.owner, args.item.permlink);
   }
 
   @override
@@ -66,9 +67,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         context,
         btn,
         videoView,
-        const Center(
-          child: Text('Comments will go here.'),
-        ),
         vm);
   }
 }
