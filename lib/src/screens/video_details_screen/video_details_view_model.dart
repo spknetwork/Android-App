@@ -77,7 +77,7 @@ class VideoDetailsViewModel {
         .then((response) => response.stream.bytesToString())
         .then((value) {
       HiveComments hiveComments = hiveCommentsFromJson(value);
-      comments.insertAll(index, hiveComments.result);
+      comments.insertAll(index + 1, hiveComments.result);
       stateUpdated();
       scanComments();
     }).catchError((error) {

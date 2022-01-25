@@ -6,7 +6,7 @@ import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
-
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:video_player/video_player.dart';
 
@@ -72,54 +72,55 @@ class VideoDetailsScreenWidgets {
   }
 
   Widget commentsListView(VideoDetailsViewModel? vm) {
-    return Container(
-        margin: const EdgeInsets.all(10),
-        child: ListView.separated(
-            itemBuilder: (context, index) {
-              var item = vm!.comments[index];
-              var userThumb = server.userOwnerThumb(item.author);
-              var author = item.author;
-              var body = item.body;
-              var upVotes = item.activeVotes.where((e) => e.percent > 0).length;
-              var downVotes =
-                  item.activeVotes.where((e) => e.percent < 0).length;
-              var payout = item.pendingPayoutValue.replaceAll(" HBD", "");
-              var text =
-                  "👤  $author  👍  $upVotes  👎  $downVotes  💰  $payout";
-              var depth = (item.depth * 20.0) - 20;
-              double width = MediaQuery.of(context).size.width - 150;
-              return ListTile(
-                title: Row(
-                  children: [
-                    Container(margin: EdgeInsets.only(left: depth)),
-                    CustomCircleAvatar(height: 50, width: 50, url: userThumb),
-                    Container(margin: const EdgeInsets.only(right: 10)),
-                    SizedBox(
-                      width: width,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          MarkdownBody(data: body, shrinkWrap: true,),
-                          Container(margin: const EdgeInsets.only(bottom: 10)),
-                          Text(
-                            text,
-                            style: Theme.of(context).textTheme.bodyText1,
-                          ),
-                        ],
+    return ListView.separated(
+        itemBuilder: (context, index) {
+          var item = vm!.comments[index];
+          var userThumb = server.userOwnerThumb(item.author);
+          var author = item.author;
+          var body = item.body;
+          var upVotes = item.activeVotes.where((e) => e.percent > 0).length;
+          var downVotes =
+              item.activeVotes.where((e) => e.percent < 0).length;
+          var payout = item.pendingPayoutValue.replaceAll(" HBD", "");
+          var timeInString = "📆  ${timeago.format(item.created)}";
+          var text =
+              "👤  $author  👍  $upVotes  👎  $downVotes  💰  $payout  $timeInString";
+          var depth = (item.depth * 25.0) - 25;
+          double width = MediaQuery.of(context).size.width - 70 - depth;
+
+          return ListTile(
+            title: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(margin: EdgeInsets.only(left: depth)),
+                CustomCircleAvatar(height: 25, width: 25, url: userThumb),
+                Container(margin: const EdgeInsets.only(right: 10)),
+                SizedBox(
+                  width: width,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MarkdownBody(data: body, shrinkWrap: true,),
+                      Container(margin: const EdgeInsets.only(bottom: 10)),
+                      Text(
+                        text,
+                        style: Theme.of(context).textTheme.bodyText1,
                       ),
-                    )
-                  ],
-                ),
-                onTap: () {
-                  print("Tapped");
-                },
-              );
+                    ],
+                  ),
+                )
+              ],
+            ),
+            onTap: () {
+              print("Tapped");
             },
-            separatorBuilder: (context, index) => const Divider(
-                  height: 10,
-                  color: Colors.blueGrey,
-                ),
-            itemCount: vm!.comments.length));
+          );
+        },
+        separatorBuilder: (context, index) => const Divider(
+              height: 10,
+              color: Colors.blueGrey,
+            ),
+        itemCount: vm!.comments.length);
   }
 
   Widget getComments(BuildContext context, VideoDetailsViewModel? vm) {
