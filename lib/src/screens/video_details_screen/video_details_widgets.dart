@@ -81,25 +81,33 @@ class VideoDetailsScreenWidgets {
               var author = item.author;
               var body = item.body;
               var upVotes = item.activeVotes.where((e) => e.percent > 0).length;
-              var downVotes = item.activeVotes.where((e) => e.percent < 0).length;
+              var downVotes =
+                  item.activeVotes.where((e) => e.percent < 0).length;
               var payout = item.pendingPayoutValue.replaceAll(" HBD", "");
-              var text = "👤  $author  👍  $upVotes  👎  $downVotes  💰  $payout";
+              var text =
+                  "👤  $author  👍  $upVotes  👎  $downVotes  💰  $payout";
+              var depth = (item.depth * 20.0) - 20;
+              double width = MediaQuery.of(context).size.width - 150;
               return ListTile(
-                leading: CustomCircleAvatar(
-                  height: 50,
-                  width: 50,
-                  url: userThumb,
-                ),
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                title: Row(
                   children: [
-                    MarkdownBody(
-                      data: body,
-                    ),
-                    Text(
-                      text,
-                      style: Theme.of(context).textTheme.bodyText1,
-                    ),
+                    Container(margin: EdgeInsets.only(left: depth)),
+                    CustomCircleAvatar(height: 50, width: 50, url: userThumb),
+                    Container(margin: const EdgeInsets.only(right: 10)),
+                    SizedBox(
+                      width: width,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          MarkdownBody(data: body, shrinkWrap: true,),
+                          Container(margin: const EdgeInsets.only(bottom: 10)),
+                          Text(
+                            text,
+                            style: Theme.of(context).textTheme.bodyText1,
+                          ),
+                        ],
+                      ),
+                    )
                   ],
                 ),
                 onTap: () {

@@ -59,10 +59,42 @@ class VideoDetailsViewModel {
       commentsState = LoadState.succeeded;
       comments = hiveComments.result;
       stateUpdated();
+      scanComments();
     }).catchError((error) {
       commentsError = 'Something went wrong.\nError is $error';
       commentsState = LoadState.failed;
       stateUpdated();
     });
+  }
+
+  void childrenComments(String author, String permlink, int index) {
+    var client = http.Client();
+    var request = http.Request('POST', Uri.parse(server.hiveDomain));
+    request.body =
+        hiveCommentsRequestToJson(HiveCommentsRequest.from(author, permlink));
+    client
+        .send(request)
+        .then((response) => response.stream.bytesToString())
+        .then((value) {
+      HiveComments hiveComments = hiveCommentsFromJson(value);
+      comments.insertAll(index, hiveComments.result);
+      stateUpdated();
+      scanComments();
+    }).catchError((error) {
+      // commentsError = 'Something went wrong.\nError is $error';
+      // commentsState = LoadState.failed;
+      // stateUpdated();
+    });
+  }
+
+  void scanComments() {
+    for(var i=0; i < comments.length; i++) {
+      if (comments[i].children > 0) {
+        if (comments.where((e) => e.parentPermlink == comments[i].permlink).isEmpty) {
+          childrenComments(comments[i].author, comments[i].permlink, i);
+          break;
+        }
+      }
+    }
   }
 }
