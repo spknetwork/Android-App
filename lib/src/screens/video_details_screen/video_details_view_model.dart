@@ -14,7 +14,6 @@ class VideoDetailsViewModel {
   VideoDetailsDescription? description;
 
   // view
-  Function() stateUpdated;
   HomeFeed item;
 
   // loading comments
@@ -22,9 +21,9 @@ class VideoDetailsViewModel {
   String commentsError = 'Something went wrong';
   List<HiveComment> comments = [];
 
-  VideoDetailsViewModel({required this.stateUpdated, required this.item});
+  VideoDetailsViewModel({required this.item});
 
-  void loadVideoInfo() {
+  void loadVideoInfo(Function stateUpdated) {
     if (descState != LoadState.notStarted) return;
     descState = LoadState.loading;
     stateUpdated();
@@ -44,7 +43,7 @@ class VideoDetailsViewModel {
     });
   }
 
-  void loadComments(String author, String permlink) {
+  void loadComments(String author, String permlink, Function stateUpdated) {
     if (commentsState != LoadState.notStarted) return;
     commentsState = LoadState.loading;
     var client = http.Client();
@@ -59,7 +58,7 @@ class VideoDetailsViewModel {
       commentsState = LoadState.succeeded;
       comments = hiveComments.result;
       stateUpdated();
-      scanComments();
+      scanComments(stateUpdated);
     }).catchError((error) {
       commentsError = 'Something went wrong.\nError is $error';
       commentsState = LoadState.failed;
@@ -67,7 +66,7 @@ class VideoDetailsViewModel {
     });
   }
 
-  void childrenComments(String author, String permlink, int index) {
+  void childrenComments(String author, String permlink, int index, Function stateUpdated) {
     var client = http.Client();
     var request = http.Request('POST', Uri.parse(server.hiveDomain));
     request.body =
@@ -79,7 +78,7 @@ class VideoDetailsViewModel {
       HiveComments hiveComments = hiveCommentsFromJson(value);
       comments.insertAll(index + 1, hiveComments.result);
       stateUpdated();
-      scanComments();
+      scanComments(stateUpdated);
     }).catchError((error) {
       // commentsError = 'Something went wrong.\nError is $error';
       // commentsState = LoadState.failed;
@@ -87,11 +86,11 @@ class VideoDetailsViewModel {
     });
   }
 
-  void scanComments() {
+  void scanComments(Function stateUpdated) {
     for(var i=0; i < comments.length; i++) {
       if (comments[i].children > 0) {
         if (comments.where((e) => e.parentPermlink == comments[i].permlink).isEmpty) {
-          childrenComments(comments[i].author, comments[i].permlink, i);
+          childrenComments(comments[i].author, comments[i].permlink, i, stateUpdated);
           break;
         }
       }

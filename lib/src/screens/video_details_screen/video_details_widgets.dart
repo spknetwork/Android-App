@@ -21,10 +21,9 @@ class VideoDetailsScreenWidgets {
     BuildContext context,
     FloatingActionButton fab,
     Widget videoView,
-    VideoDetailsViewModel? vm,
+    VideoDetailsViewModel vm,
+      Function stateUpdated,
   ) {
-    final args = ModalRoute.of(context)!.settings.arguments
-        as VideoDetailsScreenArguments;
     return DefaultTabController(
       length: tabs.length,
       child: Builder(
@@ -32,14 +31,14 @@ class VideoDetailsScreenWidgets {
           // final TabController tabController = DefaultTabController.of(context)!;
           return Scaffold(
             appBar: AppBar(
-              title: Text(args.item.title),
+              title: Text(vm.item.title),
               bottom: const TabBar(tabs: tabs),
             ),
             body: TabBarView(
               children: [
                 videoView,
-                getDescription(context, vm),
-                getComments(context, vm)
+                getDescription(context, vm, stateUpdated),
+                getComments(context, vm, stateUpdated)
               ],
             ),
             floatingActionButton: fab,
@@ -58,23 +57,23 @@ class VideoDetailsScreenWidgets {
     );
   }
 
-  Widget getDescription(BuildContext context, VideoDetailsViewModel? vm) {
-    return vm?.descState == LoadState.loading
+  Widget getDescription(BuildContext context, VideoDetailsViewModel vm, Function stateUpdated) {
+    return vm.descState == LoadState.loading
         ? const LoadingScreen()
-        : vm?.descState == LoadState.failed
+        : vm.descState == LoadState.failed
             ? RetryScreen(
-                error: vm?.descError ?? "Something went wrong",
+                error: vm.descError,
                 onRetry: () {
-                  vm?.descState = LoadState.notStarted;
-                  vm?.loadVideoInfo();
+                  vm.descState = LoadState.notStarted;
+                  vm.loadVideoInfo(stateUpdated);
                 })
-            : descriptionMarkDown(vm!.description!.description);
+            : descriptionMarkDown(vm.description!.description);
   }
 
-  Widget commentsListView(VideoDetailsViewModel? vm) {
+  Widget commentsListView(VideoDetailsViewModel vm) {
     return ListView.separated(
         itemBuilder: (context, index) {
-          var item = vm!.comments[index];
+          var item = vm.comments[index];
           var userThumb = server.userOwnerThumb(item.author);
           var author = item.author;
           var body = item.body;
@@ -120,18 +119,18 @@ class VideoDetailsScreenWidgets {
               height: 10,
               color: Colors.blueGrey,
             ),
-        itemCount: vm!.comments.length);
+        itemCount: vm.comments.length);
   }
 
-  Widget getComments(BuildContext context, VideoDetailsViewModel? vm) {
-    return vm?.commentsState == LoadState.loading
+  Widget getComments(BuildContext context, VideoDetailsViewModel vm, Function stateUpdated) {
+    return vm.commentsState == LoadState.loading
         ? const LoadingScreen()
-        : vm?.commentsState == LoadState.failed
+        : vm.commentsState == LoadState.failed
             ? RetryScreen(
-                error: vm?.commentsError ?? "Something went wrong",
+                error: vm.commentsError,
                 onRetry: () {
-                  vm?.commentsState = LoadState.notStarted;
-                  vm?.loadComments(vm.item.owner, vm.item.permlink);
+                  vm.commentsState = LoadState.notStarted;
+                  vm.loadComments(vm.item.owner, vm.item.permlink, stateUpdated);
                 })
             : commentsListView(vm);
   }
