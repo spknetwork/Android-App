@@ -34,4 +34,17 @@ class HomeScreenViewModel {
       stateUpdated();
     }
   }
+
+  Future<List<HomeFeed>> getHomeFeed() async {
+    final endPoint = "${server.domain}/api/feed/more";
+    var response = await get(Uri.parse(endPoint));
+    if (response.statusCode == 200) {
+      List<HomeFeed> list = homeFeedFromJson(response.body);
+      return list;
+    } else {
+      error =
+      'Something went wrong.\nStatus code is ${response.statusCode} for $endPoint';
+      throw error;
+    }
+  }
 }

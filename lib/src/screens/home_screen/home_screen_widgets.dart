@@ -20,7 +20,7 @@ class HomeScreenWidgets {
       url: item.thumbUrl,
       userThumbUrl: server.userOwnerThumb(item.owner),
       title: item.title,
-      subtitle: "$timeInString $owner $duration",
+      subtitle: "$timeInString $owner $duration ▶ ${item.views}",
     );
   }
 
