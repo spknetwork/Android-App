@@ -1,5 +1,6 @@
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -31,9 +32,18 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Acela - 3Speak App',
       theme: ThemeData.dark(),
+      onGenerateRoute: (settings) {
+        if (settings.name == VideoDetailsScreen.routeName) {
+          final args = settings.arguments as VideoDetailsScreenArguments;
+          return MaterialPageRoute(builder: (context) {
+            return VideoDetailsScreen(
+                vm: VideoDetailsViewModel(item: args.item));
+          });
+        }
+        assert(false, 'Need to implement ${settings.name}');
+        return null;
+      },
       routes: {
-        VideoDetailsScreen.routeName: (context) =>
-            futureBuilder(const VideoDetailsScreen()),
         '/': (context) => futureBuilder(const HomeScreen()),
       },
       // home: const HomeScreen(),

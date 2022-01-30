@@ -15,16 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final widgets = HomeScreenWidgets();
-  late HomeScreenViewModel vm;
-
-  @override
-  void initState() {
-    super.initState();
-    vm = HomeScreenViewModel(stateUpdated: () {
-      setState(() {});
-    });
-    vm.loadHomeFeed();
-  }
+  final HomeScreenViewModel vm = HomeScreenViewModel();
 
   void onTap(HomeFeed item) {
     Navigator.of(context).pushNamed(VideoDetailsScreen.routeName,
@@ -38,10 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
             return RetryScreen(
-                error: snapshot.error as String, onRetry: vm.loadHomeFeed);
+                error: snapshot.error as String, onRetry: vm.getHomeFeed);
           } else if (snapshot.hasData) {
             return widgets.list(
-                snapshot.data as List<HomeFeed>, vm.loadHomeFeed, onTap);
+                snapshot.data as List<HomeFeed>, vm.getHomeFeed, onTap);
           } else {
             return widgets.loadingData();
           }

@@ -13,7 +13,8 @@ class VideoDetailsScreenArguments {
 }
 
 class VideoDetailsScreen extends StatefulWidget {
-  const VideoDetailsScreen({Key? key}) : super(key: key);
+  const VideoDetailsScreen({Key? key, required this.vm}) : super(key: key);
+  final VideoDetailsViewModel vm;
   static const routeName = '/video_details';
 
   @override
@@ -22,51 +23,49 @@ class VideoDetailsScreen extends StatefulWidget {
 
 class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   final widgets = VideoDetailsScreenWidgets();
-  VideoPlayerController? _controller;
-  VideoDetailsViewModel? vm;
+  late VideoPlayerController controller;
 
   @override
   void dispose() {
     super.dispose();
-    _controller?.dispose();
+    controller.dispose();
   }
 
-  void initPlayer(String url) {
-    _controller ??= VideoPlayerController.network(url)
+  @override
+  void initState() {
+    String url = widget.vm.item.ipfs == null
+        ? "https://threespeakvideo.b-cdn.net/${widget.vm.item.permlink}/default.m3u8"
+        : "https://ipfs-3speak.b-cdn.net/ipfs/${widget.vm.item.ipfs}/default.m3u8";
+    controller = VideoPlayerController.network(url)
       ..initialize().then((_) {
         setState(() {
-          _controller?.play();
+          controller.play();
         });
       });
+    super.initState();
   }
 
-  void initViewModel(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments
-        as VideoDetailsScreenArguments;
-    vm ??= VideoDetailsViewModel(
-        stateUpdated: () {
-          setState(() {});
-        },
-        item: args.item);
-    vm?.loadVideoInfo();
-    vm?.loadComments(args.item.owner, args.item.permlink);
+  Widget videoPlayer() {
+    return Center(
+      child: controller.value.isInitialized
+          ? VideoPlayer(controller)
+          : Container(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    initViewModel(context);
-    Widget videoView = widgets.getPlayer(context, _controller, initPlayer);
-    FloatingActionButton btn = widgets.getFab(_controller, () {
+    FloatingActionButton btn = widgets.getFab(controller, () {
       setState(() {
-        _controller?.value.isPlaying ?? false
-            ? _controller?.pause()
-            : _controller?.play();
+        controller.value.isPlaying
+            ? controller.pause()
+            : controller.play();
       });
     });
     return widgets.tabBar(
         context,
         btn,
-        videoView,
-        vm);
+        videoPlayer(),
+        widget.vm);
   }
 }

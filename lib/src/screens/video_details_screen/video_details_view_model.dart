@@ -1,52 +1,32 @@
+import 'dart:convert';
+
 import 'package:acela/src/models/hive_comments/request/hive_comments_request.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
 import 'package:acela/src/models/video_details_model/video_details_description.dart';
-import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:http/http.dart' show get;
 import 'package:http/http.dart' as http;
 import 'package:acela/src/bloc/server.dart';
 
 class VideoDetailsViewModel {
-  // loading info
-  LoadState descState = LoadState.notStarted;
-  String descError = 'Something went wrong';
-  VideoDetailsDescription? description;
-
-  // view
-  Function() stateUpdated;
   HomeFeed item;
+  List<HiveComment> list = [];
 
-  // loading comments
-  LoadState commentsState = LoadState.notStarted;
-  String commentsError = 'Something went wrong';
-  List<HiveComment> comments = [];
+  VideoDetailsViewModel({required this.item});
 
-  VideoDetailsViewModel({required this.stateUpdated, required this.item});
-
-  void loadVideoInfo() {
-    if (descState != LoadState.notStarted) return;
-    descState = LoadState.loading;
-    stateUpdated();
+  Future<String> loadVideoInfo() async {
     final endPoint = "${server.domain}/apiv2/@${item.owner}/${item.permlink}";
-    get(Uri.parse(endPoint))
-        .then((response) {
+    final response = await get(Uri.parse(endPoint));
+    if (response.statusCode == 200) {
       VideoDetailsDescription desc =
       videoDetailsDescriptionFromJson(response.body);
-      descState = LoadState.succeeded;
-      description = desc;
-      stateUpdated();
-    }).catchError((error) {
-      descError =
-      'Something went wrong.\nError is $error';
-      descState = LoadState.failed;
-      stateUpdated();
-    });
+      return desc.description;
+    } else {
+      throw 'Something went wrong.\nStatus code is ${response.statusCode} for $endPoint';
+    }
   }
 
-  void loadComments(String author, String permlink) {
-    if (commentsState != LoadState.notStarted) return;
-    commentsState = LoadState.loading;
+  Future<void> loadComments(String author, String permlink) async {
     var client = http.Client();
     var request = http.Request('POST', Uri.parse(server.hiveDomain));
     request.body =
@@ -56,18 +36,15 @@ class VideoDetailsViewModel {
         .then((response) => response.stream.bytesToString())
         .then((value) {
       HiveComments hiveComments = hiveCommentsFromJson(value);
-      commentsState = LoadState.succeeded;
-      comments = hiveComments.result;
-      stateUpdated();
+      list = hiveComments.result;
       scanComments();
+      return;
     }).catchError((error) {
-      commentsError = 'Something went wrong.\nError is $error';
-      commentsState = LoadState.failed;
-      stateUpdated();
+      throw error.toString();
     });
   }
 
-  void childrenComments(String author, String permlink, int index) {
+  Future<void> childrenComments(String author, String permlink, int index) async {
     var client = http.Client();
     var request = http.Request('POST', Uri.parse(server.hiveDomain));
     request.body =
@@ -77,21 +54,19 @@ class VideoDetailsViewModel {
         .then((response) => response.stream.bytesToString())
         .then((value) {
       HiveComments hiveComments = hiveCommentsFromJson(value);
-      comments.insertAll(index + 1, hiveComments.result);
-      stateUpdated();
+      list.insertAll(index + 1, hiveComments.result);
       scanComments();
+      return;
     }).catchError((error) {
-      // commentsError = 'Something went wrong.\nError is $error';
-      // commentsState = LoadState.failed;
-      // stateUpdated();
+      throw error.toString();
     });
   }
 
-  void scanComments() {
-    for(var i=0; i < comments.length; i++) {
-      if (comments[i].children > 0) {
-        if (comments.where((e) => e.parentPermlink == comments[i].permlink).isEmpty) {
-          childrenComments(comments[i].author, comments[i].permlink, i);
+  Future<void> scanComments() async {
+    for(var i=0; i < list.length; i++) {
+      if (list[i].children > 0) {
+        if (list.where((e) => e.parentPermlink == list[i].permlink).isEmpty) {
+          await childrenComments(list[i].author, list[i].permlink, i);
           break;
         }
       }
