@@ -11,16 +11,17 @@ import 'package:acela/src/bloc/server.dart';
 class VideoDetailsViewModel {
   HomeFeed item;
   List<HiveComment> list = [];
+  String description = "";
 
   VideoDetailsViewModel({required this.item});
 
-  Future<String> loadVideoInfo() async {
+  Future<void> loadVideoInfo() async {
     final endPoint = "${server.domain}/apiv2/@${item.owner}/${item.permlink}";
     final response = await get(Uri.parse(endPoint));
     if (response.statusCode == 200) {
       VideoDetailsDescription desc =
       videoDetailsDescriptionFromJson(response.body);
-      return desc.description;
+      description = desc.description;
     } else {
       throw 'Something went wrong.\nStatus code is ${response.statusCode} for $endPoint';
     }

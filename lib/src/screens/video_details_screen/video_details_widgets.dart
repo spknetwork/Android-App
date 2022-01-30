@@ -8,7 +8,7 @@ import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:video_player/video_player.dart';
+// import 'package:video_player/video_player.dart';
 
 class VideoDetailsScreenWidgets {
   static const List<Tab> tabs = [
@@ -19,7 +19,6 @@ class VideoDetailsScreenWidgets {
 
   Widget tabBar(
     BuildContext context,
-    FloatingActionButton fab,
     Widget videoView,
     VideoDetailsViewModel vm,
   ) {
@@ -27,12 +26,11 @@ class VideoDetailsScreenWidgets {
       length: tabs.length,
       child: Builder(
         builder: (context) {
-          // final TabController tabController = DefaultTabController.of(context)!;
           return Scaffold(
             appBar: AppBar(
-              title: Text(vm.item.title),
-              bottom: const TabBar(tabs: tabs),
-            ),
+                    title: Text(vm.item.title),
+                    bottom: const TabBar(tabs: tabs),
+                  ),
             body: TabBarView(
               children: [
                 videoView,
@@ -40,7 +38,6 @@ class VideoDetailsScreenWidgets {
                 getComments(context, vm)
               ],
             ),
-            floatingActionButton: fab,
           );
         },
       ),
@@ -57,23 +54,23 @@ class VideoDetailsScreenWidgets {
   }
 
   Widget getDescription(BuildContext context, VideoDetailsViewModel vm) {
+    if (vm.description.isNotEmpty) {
+      return descriptionMarkDown(vm.description);
+    }
     return FutureBuilder(
-      future: vm.loadVideoInfo(),
+        future: vm.loadVideoInfo(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
               return RetryScreen(
                   error: snapshot.error as String, onRetry: vm.loadVideoInfo);
-            } else if (snapshot.hasData) {
-              return descriptionMarkDown(snapshot.data as String);
             } else {
-              return const LoadingScreen();
+              return descriptionMarkDown(vm.description);
             }
           } else {
             return const LoadingScreen();
           }
-        }
-    );
+        });
   }
 
   Widget commentsListView(VideoDetailsViewModel vm) {
@@ -84,8 +81,7 @@ class VideoDetailsScreenWidgets {
           var author = item.author;
           var body = item.body;
           var upVotes = item.activeVotes.where((e) => e.percent > 0).length;
-          var downVotes =
-              item.activeVotes.where((e) => e.percent < 0).length;
+          var downVotes = item.activeVotes.where((e) => e.percent < 0).length;
           var payout = item.pendingPayoutValue.replaceAll(" HBD", "");
           var timeInString = "📆  ${timeago.format(item.created)}";
           var text =
@@ -105,7 +101,10 @@ class VideoDetailsScreenWidgets {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MarkdownBody(data: body, shrinkWrap: true,),
+                      MarkdownBody(
+                        data: body,
+                        shrinkWrap: true,
+                      ),
                       Container(margin: const EdgeInsets.only(bottom: 10)),
                       Text(
                         text,
@@ -129,49 +128,52 @@ class VideoDetailsScreenWidgets {
   }
 
   Widget getComments(BuildContext context, VideoDetailsViewModel vm) {
+    if (vm.list.isNotEmpty) {
+      return commentsListView(vm);
+    }
     return FutureBuilder(
         future: vm.loadComments(vm.item.owner, vm.item.permlink),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
               return RetryScreen(
-                  error: snapshot.error as String, onRetry: () {
-                vm.loadComments(vm.item.owner, vm.item.permlink);
-              });
+                  error: snapshot.error as String,
+                  onRetry: () {
+                    vm.loadComments(vm.item.owner, vm.item.permlink);
+                  });
             } else {
               return commentsListView(vm);
             }
           } else {
             return const LoadingScreen();
           }
-        }
-    );
+        });
   }
 
-  Widget getPlayer(BuildContext context, VideoPlayerController? _controller,
-      Function(String) initPlayer) {
-    final args = ModalRoute.of(context)!.settings.arguments
-        as VideoDetailsScreenArguments;
-    String url = args.item.ipfs == null
-        ? "https://threespeakvideo.b-cdn.net/${args.item.permlink}/default.m3u8"
-        : "https://ipfs-3speak.b-cdn.net/ipfs/${args.item.ipfs}/default.m3u8";
-    initPlayer(url);
-    return Center(
-      child: _controller?.value.isInitialized ?? false
-          ? VideoPlayer(_controller!)
-          : Container(),
-    );
-  }
+  // Widget getPlayer(BuildContext context, VideoPlayerController? _controller,
+  //     Function(String) initPlayer) {
+  //   final args = ModalRoute.of(context)!.settings.arguments
+  //       as VideoDetailsScreenArguments;
+  //   String url = args.item.ipfs == null
+  //       ? "https://threespeakvideo.b-cdn.net/${args.item.permlink}/default.m3u8"
+  //       : "https://ipfs-3speak.b-cdn.net/ipfs/${args.item.ipfs}/default.m3u8";
+  //   initPlayer(url);
+  //   return Center(
+  //     child: _controller?.value.isInitialized ?? false
+  //         ? VideoPlayer(_controller!)
+  //         : Container(),
+  //   );
+  // }
 
-  FloatingActionButton getFab(
-      VideoPlayerController? _controller, Function() onPressed) {
-    return FloatingActionButton(
-      onPressed: () {
-        onPressed();
-      },
-      child: Icon(
-        _controller?.value.isPlaying ?? false ? Icons.pause : Icons.play_arrow,
-      ),
-    );
-  }
+  // FloatingActionButton getFab(
+  //     VideoPlayerController? _controller, Function() onPressed) {
+  //   return FloatingActionButton(
+  //     onPressed: () {
+  //       onPressed();
+  //     },
+  //     child: Icon(
+  //       _controller?.value.isPlaying ?? false ? Icons.pause : Icons.play_arrow,
+  //     ),
+  //   );
+  // }
 }
