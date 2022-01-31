@@ -11,6 +11,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoDetailsScreenWidgets {
+  var showAppBar = true;
   static const List<Tab> tabs = [
     Tab(text: 'Video'),
     Tab(text: 'Description'),
@@ -28,16 +29,27 @@ class VideoDetailsScreenWidgets {
       child: Builder(
         builder: (context) {
           return Scaffold(
-            appBar: AppBar(
-              title: Text(vm.item.title),
-              bottom: const TabBar(tabs: tabs),
-            ),
+            appBar: showAppBar
+                ? AppBar(
+                    title: Text(vm.item.title),
+                    bottom: const TabBar(tabs: tabs),
+                  )
+                : null,
             body: TabBarView(
               children: [
                 videoView,
                 getDescription(context, vm, stateUpdated),
                 getComments(context, vm, stateUpdated)
               ],
+            ),
+            floatingActionButton: FloatingActionButton(
+              child: showAppBar
+                  ? const Icon(Icons.fullscreen)
+                  : const Icon(Icons.fullscreen_exit),
+              onPressed: () {
+                showAppBar = !showAppBar;
+                stateUpdated();
+              },
             ),
           );
         },
@@ -137,8 +149,7 @@ class VideoDetailsScreenWidgets {
             : commentsListView(vm);
   }
 
-  Widget getPlayer(BuildContext context, VideoPlayerController controller,
-      Function(String) initPlayer) {
+  Widget getPlayer(BuildContext context, VideoPlayerController controller) {
     return Center(
       child: controller.value.isInitialized ?? false
           ? AspectRatio(

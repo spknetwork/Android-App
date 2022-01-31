@@ -46,19 +46,11 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     super.initState();
   }
 
-  Widget videoPlayer() {
-    return Center(
-      child: controller.value.isInitialized
-          ? VideoPlayer(controller)
-          : Container(),
-    );
-  }
-
   void initViewModel(BuildContext context) {
     widget.vm.loadVideoInfo(() {
       setState(() {});
     });
-    widget.vm.loadComments(widget.vm.item.owner, widget.vm.item.permlink,() {
+    widget.vm.loadComments(widget.vm.item.owner, widget.vm.item.permlink, () {
       setState(() {});
     });
   }
@@ -66,9 +58,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     initViewModel(context);
-    Widget videoView = widgets.getPlayer(context, controller, (p0) => {
-
-    });
+    Widget videoView = widgets.getPlayer(context, controller);
     return widgets.tabBar(context, videoView, widget.vm, () {
       setState(() {});
     });
