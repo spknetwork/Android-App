@@ -66,15 +66,10 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     initViewModel(context);
-    Widget videoView = videoPlayer();
-    FloatingActionButton btn = widgets.getFab(controller, () {
-      setState(() {
-        controller.value.isPlaying
-            ? controller.pause()
-            : controller.play();
-      });
+    Widget videoView = widgets.getPlayer(context, controller, (p0) => {
+
     });
-    return widgets.tabBar(context, btn, videoView, widget.vm, () {
+    return widgets.tabBar(context, videoView, widget.vm, () {
       setState(() {});
     });
   }

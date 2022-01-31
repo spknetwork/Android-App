@@ -32,24 +32,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _screen() {
-    return FutureBuilder(
-      future: vm.getHomeFeed(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasError) {
-            return RetryScreen(
-                error: snapshot.error as String, onRetry: vm.loadHomeFeed);
-          } else if (snapshot.hasData) {
-            return widgets.list(
-                snapshot.data as List<HomeFeed>, vm.loadHomeFeed, onTap);
-          } else {
-            return widgets.loadingData();
-          }
-        } else {
-          return widgets.loadingData();
-        }
-      },
-    );
+    return vm.state == LoadState.loading
+        ? widgets.loadingData()
+        : vm.state == LoadState.failed
+        ? RetryScreen(error: vm.error, onRetry: vm.loadHomeFeed)
+        : widgets.list(vm.list, vm.loadHomeFeed, onTap);
   }
 
   @override
@@ -63,3 +50,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+// https://3speak.tv/apiv2/feeds/trending

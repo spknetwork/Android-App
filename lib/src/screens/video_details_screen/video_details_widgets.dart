@@ -1,7 +1,7 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
+import 'package:acela/src/widgets/controls_overlay.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
@@ -19,16 +19,14 @@ class VideoDetailsScreenWidgets {
 
   Widget tabBar(
     BuildContext context,
-    FloatingActionButton fab,
     Widget videoView,
     VideoDetailsViewModel vm,
-      Function stateUpdated,
+    Function stateUpdated,
   ) {
     return DefaultTabController(
       length: tabs.length,
       child: Builder(
         builder: (context) {
-          // final TabController tabController = DefaultTabController.of(context)!;
           return Scaffold(
             appBar: AppBar(
               title: Text(vm.item.title),
@@ -41,7 +39,6 @@ class VideoDetailsScreenWidgets {
                 getComments(context, vm, stateUpdated)
               ],
             ),
-            floatingActionButton: fab,
           );
         },
       ),
@@ -57,7 +54,8 @@ class VideoDetailsScreenWidgets {
     );
   }
 
-  Widget getDescription(BuildContext context, VideoDetailsViewModel vm, Function stateUpdated) {
+  Widget getDescription(
+      BuildContext context, VideoDetailsViewModel vm, Function stateUpdated) {
     return vm.descState == LoadState.loading
         ? const LoadingScreen()
         : vm.descState == LoadState.failed
@@ -78,8 +76,7 @@ class VideoDetailsScreenWidgets {
           var author = item.author;
           var body = item.body;
           var upVotes = item.activeVotes.where((e) => e.percent > 0).length;
-          var downVotes =
-              item.activeVotes.where((e) => e.percent < 0).length;
+          var downVotes = item.activeVotes.where((e) => e.percent < 0).length;
           var payout = item.pendingPayoutValue.replaceAll(" HBD", "");
           var timeInString = "📆  ${timeago.format(item.created)}";
           var text =
@@ -99,7 +96,10 @@ class VideoDetailsScreenWidgets {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MarkdownBody(data: body, shrinkWrap: true,),
+                      MarkdownBody(
+                        data: body,
+                        shrinkWrap: true,
+                      ),
                       Container(margin: const EdgeInsets.only(bottom: 10)),
                       Text(
                         text,
@@ -122,7 +122,8 @@ class VideoDetailsScreenWidgets {
         itemCount: vm.comments.length);
   }
 
-  Widget getComments(BuildContext context, VideoDetailsViewModel vm, Function stateUpdated) {
+  Widget getComments(
+      BuildContext context, VideoDetailsViewModel vm, Function stateUpdated) {
     return vm.commentsState == LoadState.loading
         ? const LoadingScreen()
         : vm.commentsState == LoadState.failed
@@ -130,22 +131,28 @@ class VideoDetailsScreenWidgets {
                 error: vm.commentsError,
                 onRetry: () {
                   vm.commentsState = LoadState.notStarted;
-                  vm.loadComments(vm.item.owner, vm.item.permlink, stateUpdated);
+                  vm.loadComments(
+                      vm.item.owner, vm.item.permlink, stateUpdated);
                 })
             : commentsListView(vm);
   }
 
-  Widget getPlayer(BuildContext context, VideoPlayerController? _controller,
+  Widget getPlayer(BuildContext context, VideoPlayerController controller,
       Function(String) initPlayer) {
-    final args = ModalRoute.of(context)!.settings.arguments
-        as VideoDetailsScreenArguments;
-    String url = args.item.ipfs == null
-        ? "https://threespeakvideo.b-cdn.net/${args.item.permlink}/default.m3u8"
-        : "https://ipfs-3speak.b-cdn.net/ipfs/${args.item.ipfs}/default.m3u8";
-    initPlayer(url);
     return Center(
-      child: _controller?.value.isInitialized ?? false
-          ? VideoPlayer(_controller!)
+      child: controller.value.isInitialized ?? false
+          ? AspectRatio(
+              aspectRatio: controller.value.aspectRatio,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: <Widget>[
+                  VideoPlayer(controller),
+                  ClosedCaption(text: controller.value.caption.text),
+                  ControlsOverlay(controller: controller),
+                  VideoProgressIndicator(controller, allowScrubbing: true),
+                ],
+              ),
+            )
           : Container(),
     );
   }
