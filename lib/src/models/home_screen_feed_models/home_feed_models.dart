@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:acela/src/models/home_screen_feed_models/home_feed_image.dart';
+
 List<HomeFeed> homeFeedFromJson(String str) => List<HomeFeed>.from(json.decode(str).map((x) => HomeFeed.fromJson(x)));
 
 String homeFeedToJson(List<HomeFeed> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
@@ -8,28 +10,24 @@ class HomeFeed {
   HomeFeed({
     required this.created,
     required this.views,
-    required this.owner,
+    required this.author,
     required this.permlink,
     required this.title,
     required this.duration,
-    required this.isNsfwContent,
-    required this.tags_v2,
-    required this.thumbUrl,
-    required this.baseThumbUrl,
+    required this.playUrl,
+    required this.images,
     this.ipfs,
   });
 
   DateTime created;
   int views;
-  String owner;
+  String author;
   String permlink;
   String title;
   double duration;
-  bool isNsfwContent;
-  List<String> tags_v2;
   String? ipfs;
-  String thumbUrl;
-  String baseThumbUrl;
+  String playUrl;
+  HomeFeedImage images;
 
   factory HomeFeed.fromJson(Map<String, dynamic> json) {
     final created = json['created'] as String?;
@@ -40,9 +38,9 @@ class HomeFeed {
     if (views == null) {
       throw UnsupportedError('Invalid data: $json -> "views" is missing');
     }
-    final owner = json['owner'] as String?;
-    if (owner == null) {
-      throw UnsupportedError('Invalid data: $json -> "owner" is missing');
+    final author = json['author'] as String?;
+    if (author == null) {
+      throw UnsupportedError('Invalid data: $json -> "author" is missing');
     }
     final permlink = json['permlink'] as String?;
     if (permlink == null) {
@@ -56,45 +54,37 @@ class HomeFeed {
     if (duration == null) {
       throw UnsupportedError('Invalid data: $json -> "duration" is missing');
     }
-    final bool? isNsfwContent = json['isNsfwContent'] as bool?;
-    if (isNsfwContent == null) {
-      throw UnsupportedError('Invalid data: $json -> "isNsfwContent" is missing');
+    final playUrl = json['playUrl'] as String?;
+    if (playUrl == null) {
+      throw UnsupportedError('Invalid data: $json -> "playUrl" is missing');
     }
-    final thumbUrl = json['thumbUrl'] as String?;
-    if (thumbUrl == null) {
-      throw UnsupportedError('Invalid data: $json -> "thumbUrl" is missing');
-    }
-    final baseThumbUrl = json['baseThumbUrl'] as String?;
-    if (baseThumbUrl == null) {
-      throw UnsupportedError('Invalid data: $json -> "baseThumbUrl" is missing');
+    final images = json['images'] as Map<String, dynamic>?;
+    if (images == null) {
+      throw UnsupportedError('Invalid data: $json -> "images" is missing');
     }
     final ipfs = json['ipfs'] as String?;
     return HomeFeed(
       created: DateTime.parse(created),
       views: views,
-      owner: owner,
+      author: author,
       permlink: permlink,
       title: title,
       duration: duration,
-      isNsfwContent: isNsfwContent,
-      tags_v2: json["tags_v2"] == null ? [] : List<String>.from(json["tags_v2"].map((x) => x)),
       ipfs: ipfs,
-      thumbUrl: thumbUrl,
-      baseThumbUrl: baseThumbUrl,
+      playUrl: playUrl,
+      images: HomeFeedImage.fromJson(images),
     );
   }
 
   Map<String, dynamic> toJson() => {
     "created": created.toIso8601String(),
     "views": views,
-    "owner": owner,
+    "author": author,
     "permlink": permlink,
     "title": title,
     "duration": duration,
-    "isNsfwContent": isNsfwContent,
-    "tags_v2": List<dynamic>.from(tags_v2.map((x) => x)),
-    "thumbUrl": thumbUrl,
-    "baseThumbUrl": baseThumbUrl,
+    "playUrl": playUrl,
+    "images": homeFeedImageToJson(images),
     "ipfs": ipfs,
   };
 }

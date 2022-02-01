@@ -20,7 +20,7 @@ class HomeScreenViewModel {
   Future loadHomeFeed() async {
     state = LoadState.loading;
     stateUpdated();
-    final endPoint = "${server.domain}/api/feed/more";
+    final endPoint = "${server.domain}/apiv2/feeds/home";
     var response = await get(Uri.parse(endPoint));
     if (response.statusCode == 200) {
       List<HomeFeed> list = homeFeedFromJson(response.body);

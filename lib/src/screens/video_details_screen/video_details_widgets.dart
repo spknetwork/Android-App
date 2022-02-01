@@ -144,14 +144,14 @@ class VideoDetailsScreenWidgets {
                 onRetry: () {
                   vm.commentsState = LoadState.notStarted;
                   vm.loadComments(
-                      vm.item.owner, vm.item.permlink, stateUpdated);
+                      vm.item.author, vm.item.permlink, stateUpdated);
                 })
             : commentsListView(vm);
   }
 
   Widget getPlayer(BuildContext context, VideoPlayerController controller) {
     return Center(
-      child: controller.value.isInitialized ?? false
+      child: controller.value.isInitialized
           ? AspectRatio(
               aspectRatio: controller.value.aspectRatio,
               child: Stack(

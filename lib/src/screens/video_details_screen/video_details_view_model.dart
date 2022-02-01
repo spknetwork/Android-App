@@ -27,7 +27,7 @@ class VideoDetailsViewModel {
     if (descState != LoadState.notStarted) return;
     descState = LoadState.loading;
     stateUpdated();
-    final endPoint = "${server.domain}/apiv2/@${item.owner}/${item.permlink}";
+    final endPoint = "${server.domain}/apiv2/@${item.author}/${item.permlink}";
     get(Uri.parse(endPoint))
         .then((response) {
       VideoDetailsDescription desc =
