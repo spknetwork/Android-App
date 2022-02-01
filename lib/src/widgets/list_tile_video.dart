@@ -35,11 +35,12 @@ class ListTileVideo extends StatelessWidget {
   }
 
   Widget _listType(BuildContext context) {
-    double width = MediaQuery.of(context).size.width - 60 - 340;
+    double deviceWidth = MediaQuery.of(context).size.width;
+    double width = deviceWidth - 60 - 340;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Image.network(url),
+        Image.network(url, width: deviceWidth - width - 60, ),
         Container(width: 10),
         SizedBox(
           width: width,

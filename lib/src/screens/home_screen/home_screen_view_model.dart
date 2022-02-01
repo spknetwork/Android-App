@@ -15,13 +15,13 @@ class HomeScreenViewModel {
   String error = 'Something went wrong';
   Function() stateUpdated;
 
-  HomeScreenViewModel({required this.stateUpdated});
+  HomeScreenViewModel({required this.path, required this.stateUpdated});
+  final String path;
 
   Future loadHomeFeed() async {
     state = LoadState.loading;
     stateUpdated();
-    final endPoint = "${server.domain}/apiv2/feeds/home";
-    var response = await get(Uri.parse(endPoint));
+    var response = await get(Uri.parse(path));
     if (response.statusCode == 200) {
       List<HomeFeed> list = homeFeedFromJson(response.body);
       state = LoadState.succeeded;
@@ -29,7 +29,7 @@ class HomeScreenViewModel {
       stateUpdated();
     } else {
       error =
-      'Something went wrong.\nStatus code is ${response.statusCode} for $endPoint';
+      'Something went wrong.\nStatus code is ${response.statusCode} for $path';
       state = LoadState.failed;
       stateUpdated();
     }

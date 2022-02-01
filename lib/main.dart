@@ -4,6 +4,8 @@ import 'package:acela/src/screens/video_details_screen/video_details_view_model.
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'src/bloc/server.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
@@ -39,14 +41,34 @@ class MyApp extends StatelessWidget {
             return VideoDetailsScreen(
                 vm: VideoDetailsViewModel(item: args.item));
           });
+        } else if (settings.name == "/") {
+          return MaterialPageRoute(builder: (context) {
+            return HomeScreen(
+              path: "${server.domain}/apiv2/feeds/home",
+              showDrawer: true,
+              title: 'Home',
+            );
+          });
+        } else if (settings.name == "/trending") {
+          return MaterialPageRoute(builder: (context) {
+            return HomeScreen(
+              path: "${server.domain}/apiv2/feeds/trending",
+              showDrawer: false,
+              title: 'Trending Content',
+            );
+          });
+        } else if (settings.name == "/new") {
+          return MaterialPageRoute(builder: (context) {
+            return HomeScreen(
+              path: "${server.domain}/apiv2/feeds/new",
+              showDrawer: false,
+              title: 'New Content',
+            );
+          });
         }
         assert(false, 'Need to implement ${settings.name}');
         return null;
       },
-      routes: {
-        '/': (context) => futureBuilder(const HomeScreen()),
-      },
-      // home: const HomeScreen(),
     );
   }
 }

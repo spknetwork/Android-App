@@ -7,7 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen(
+      {Key? key,
+      required this.path,
+      required this.showDrawer,
+      required this.title})
+      : super(key: key);
+  final String path;
+  final bool showDrawer;
+  final String title;
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -20,9 +28,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    vm = HomeScreenViewModel(stateUpdated: () {
-      setState(() {});
-    });
+    vm = HomeScreenViewModel(
+        path: widget.path,
+        stateUpdated: () {
+          setState(() {});
+        });
     vm.loadHomeFeed();
   }
 
@@ -35,19 +45,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return vm.state == LoadState.loading
         ? widgets.loadingData()
         : vm.state == LoadState.failed
-        ? RetryScreen(error: vm.error, onRetry: vm.loadHomeFeed)
-        : widgets.list(vm.list, vm.loadHomeFeed, onTap);
+            ? RetryScreen(error: vm.error, onRetry: vm.loadHomeFeed)
+            : widgets.list(vm.list, vm.loadHomeFeed, onTap);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: Text(widget.title),
       ),
       body: _screen(),
-      drawer: const DrawerScreen(),
+      drawer: widget.showDrawer ? const DrawerScreen() : null,
     );
   }
 }
-// https://3speak.tv/apiv2/feeds/trending

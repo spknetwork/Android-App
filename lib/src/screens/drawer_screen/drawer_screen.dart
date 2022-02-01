@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 class DrawerScreen extends StatelessWidget {
   const DrawerScreen({Key? key}) : super(key: key);
 
-  Widget _homeMenu() {
+  Widget _homeMenu(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.home),
       title: const Text("Home"),
       onTap: () {
-
+        Navigator.pop(context);
       },
     );
   }
@@ -23,22 +23,24 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-  Widget _trendingContent() {
+  Widget _trendingContent(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.local_fire_department),
       title: const Text("Trending Content"),
       onTap: () {
-
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed("/trending");
       },
     );
   }
 
-  Widget _newContent() {
+  Widget _newContent(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.play_arrow),
       title: const Text("New Content"),
       onTap: () {
-
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed("/new");
       },
     );
   }
@@ -91,13 +93,13 @@ class DrawerScreen extends StatelessWidget {
     return ListView(
       children: [
         _drawerHeader(context),
-        _homeMenu(),
+        _homeMenu(context),
         const Divider(height: 1, color: Colors.blueGrey,),
         _firstUploads(),
         const Divider(height: 1, color: Colors.blueGrey,),
-        _trendingContent(),
+        _trendingContent(context),
         const Divider(height: 1, color: Colors.blueGrey,),
-        _newContent(),
+        _newContent(context),
         const Divider(height: 1, color: Colors.blueGrey,),
         _communities(),
         const Divider(height: 1, color: Colors.blueGrey,),
