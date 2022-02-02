@@ -11,11 +11,15 @@ class HomeScreen extends StatefulWidget {
       {Key? key,
       required this.path,
       required this.showDrawer,
-      required this.title})
+      required this.title,
+      required this.isDarkMode,
+      required this.switchDarkMode})
       : super(key: key);
   final String path;
   final bool showDrawer;
   final String title;
+  final bool isDarkMode;
+  final Function switchDarkMode;
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -56,7 +60,12 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(widget.title),
       ),
       body: _screen(),
-      drawer: widget.showDrawer ? const DrawerScreen() : null,
+      drawer: widget.showDrawer
+          ? DrawerScreen(
+              isDarkMode: widget.isDarkMode,
+              switchDarkMode: widget.switchDarkMode,
+            )
+          : null,
     );
   }
 }

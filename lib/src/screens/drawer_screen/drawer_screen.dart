@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 class DrawerScreen extends StatelessWidget {
-  const DrawerScreen({Key? key}) : super(key: key);
+  const DrawerScreen(
+      {Key? key, required this.isDarkMode, required this.switchDarkMode})
+      : super(key: key);
+
+  final bool isDarkMode;
+  final Function switchDarkMode;
 
   Widget _homeMenu(BuildContext context) {
     return ListTile(
@@ -17,9 +22,7 @@ class DrawerScreen extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.emoji_emotions_outlined),
       title: const Text("First Uploads"),
-      onTap: () {
-
-      },
+      onTap: () {},
     );
   }
 
@@ -49,9 +52,7 @@ class DrawerScreen extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.people_sharp),
       title: const Text("Communities"),
-      onTap: () {
-
-      },
+      onTap: () {},
     );
   }
 
@@ -59,8 +60,18 @@ class DrawerScreen extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.leaderboard),
       title: const Text("Leaderboard"),
-      onTap: () {
+      onTap: () {},
+    );
+  }
 
+  Widget _changeTheme() {
+    return ListTile(
+      leading: isDarkMode
+          ? const Icon(Icons.wb_sunny)
+          : const Icon(Icons.mode_night),
+      title: const Text("Change Theme"),
+      onTap: () {
+        switchDarkMode();
       },
     );
   }
@@ -94,25 +105,46 @@ class DrawerScreen extends StatelessWidget {
       children: [
         _drawerHeader(context),
         _homeMenu(context),
-        const Divider(height: 1, color: Colors.blueGrey,),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
         _firstUploads(),
-        const Divider(height: 1, color: Colors.blueGrey,),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
         _trendingContent(context),
-        const Divider(height: 1, color: Colors.blueGrey,),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
         _newContent(context),
-        const Divider(height: 1, color: Colors.blueGrey,),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
         _communities(),
-        const Divider(height: 1, color: Colors.blueGrey,),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
         _leaderBoard(),
-        const Divider(height: 1, color: Colors.blueGrey,),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
+        _changeTheme(),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-        child: _drawerMenu(context)
-    );
+    return Drawer(child: _drawerMenu(context));
   }
 }

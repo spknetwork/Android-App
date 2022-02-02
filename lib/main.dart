@@ -11,8 +11,16 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final Future<FirebaseApp> _fbApp = Firebase.initializeApp();
+  bool isDarkMode = true;
 
   Widget futureBuilder(Widget withWidget) {
     return FutureBuilder(
@@ -33,7 +41,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Acela - 3Speak App',
-      theme: ThemeData.dark(),
+      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      debugShowCheckedModeBanner: false,
       onGenerateRoute: (settings) {
         if (settings.name == VideoDetailsScreen.routeName) {
           final args = settings.arguments as VideoDetailsScreenArguments;
@@ -47,23 +56,39 @@ class MyApp extends StatelessWidget {
               path: "${server.domain}/apiv2/feeds/home",
               showDrawer: true,
               title: 'Home',
+              isDarkMode: isDarkMode,
+              switchDarkMode: () {
+                setState(() {
+                  isDarkMode = !isDarkMode;
+                });
+              },
             );
           });
         } else if (settings.name == "/trending") {
           return MaterialPageRoute(builder: (context) {
             return HomeScreen(
-              path: "${server.domain}/apiv2/feeds/trending",
-              showDrawer: false,
-              title: 'Trending Content',
-            );
+                path: "${server.domain}/apiv2/feeds/trending",
+                showDrawer: false,
+                title: 'Trending Content',
+                isDarkMode: isDarkMode,
+                switchDarkMode: () {
+                  setState(() {
+                    isDarkMode = !isDarkMode;
+                  });
+                });
           });
         } else if (settings.name == "/new") {
           return MaterialPageRoute(builder: (context) {
             return HomeScreen(
-              path: "${server.domain}/apiv2/feeds/new",
-              showDrawer: false,
-              title: 'New Content',
-            );
+                path: "${server.domain}/apiv2/feeds/new",
+                showDrawer: false,
+                title: 'New Content',
+                isDarkMode: isDarkMode,
+                switchDarkMode: () {
+                  setState(() {
+                    isDarkMode = !isDarkMode;
+                  });
+                });
           });
         }
         assert(false, 'Need to implement ${settings.name}');
