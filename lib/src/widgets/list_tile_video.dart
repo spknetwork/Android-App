@@ -32,7 +32,10 @@ class ListTileVideo extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Image.network(url, width: deviceWidth - width - 60, ),
+        Image.network(
+          url,
+          width: deviceWidth - width - 60,
+        ),
         Container(width: 10),
         SizedBox(
           width: width,
@@ -71,9 +74,10 @@ class ListTileVideo extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 15),),
+                    Text(title, style: Theme.of(context).textTheme.bodyText2),
                     Container(height: 5),
-                    Text(subtitle, style: const TextStyle(fontSize: 13),)
+                    Text(subtitle,
+                        style: Theme.of(context).textTheme.bodyText1),
                   ],
                 ),
               )
