@@ -1,9 +1,15 @@
 import 'dart:convert';
+import 'package:json_annotation/json_annotation.dart';
 
-VideoDetailsDescription videoDetailsDescriptionFromJson(String str) => VideoDetailsDescription.fromJson(json.decode(str));
+part 'video_details_description.g.dart';
 
-String videoDetailsDescriptionToJson(VideoDetailsDescription data) => json.encode(data.toJson());
+VideoDetailsDescription videoDetailsDescriptionFromJson(String str) =>
+    VideoDetailsDescription.fromJson(json.decode(str));
 
+String videoDetailsDescriptionToJson(VideoDetailsDescription data) =>
+    json.encode(data.toJson());
+
+@JsonSerializable()
 class VideoDetailsDescription {
   VideoDetailsDescription({
     required this.description,
@@ -11,11 +17,8 @@ class VideoDetailsDescription {
 
   String description;
 
-  factory VideoDetailsDescription.fromJson(Map<String, dynamic> json) => VideoDetailsDescription(
-    description: json["description"] ?? "",
-  );
+  factory VideoDetailsDescription.fromJson(Map<String, dynamic> json) =>
+      _$VideoDetailsDescriptionFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-    "description": description,
-  };
+  Map<String, dynamic> toJson() => _$VideoDetailsDescriptionToJson(this);
 }

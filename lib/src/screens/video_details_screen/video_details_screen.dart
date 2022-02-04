@@ -34,9 +34,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
 
   @override
   void initState() {
-    // String url = widget.vm.item.ipfs == null
-    //     ? "https://threespeakvideo.b-cdn.net/${widget.vm.item.permlink}/default.m3u8"
-    //     : "https://ipfs-3speak.b-cdn.net/ipfs/${widget.vm.item.ipfs}/default.m3u8";
     controller = VideoPlayerController.network(widget.vm.item.playUrl)
       ..initialize().then((_) {
         setState(() {

@@ -5,26 +5,11 @@ class ControlsOverlay extends StatelessWidget {
   const ControlsOverlay({Key? key, required this.controller})
       : super(key: key);
 
-  static const _exampleCaptionOffsets = [
-    Duration(seconds: -10),
-    Duration(seconds: -3),
-    Duration(seconds: -1, milliseconds: -500),
-    Duration(milliseconds: -250),
-    Duration(milliseconds: 0),
-    Duration(milliseconds: 250),
-    Duration(seconds: 1, milliseconds: 500),
-    Duration(seconds: 3),
-    Duration(seconds: 10),
-  ];
   static const _examplePlaybackRates = [
-    0.25,
     0.5,
     1.0,
     1.5,
     2.0,
-    3.0,
-    5.0,
-    10.0,
   ];
 
   final VideoPlayerController controller;

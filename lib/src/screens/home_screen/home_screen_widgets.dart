@@ -12,15 +12,16 @@ class HomeScreenWidgets {
   }
 
   Widget _tileTitle(HomeFeed item, BuildContext context) {
-    String timeInString = "📆 ${timeago.format(item.created)}";
+    String timeInString = item.created != null ? "📆 ${timeago.format(item.created!)}" : "";
     String owner = "👤 ${item.author}";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
+    String views = item.views != null ? "▶ ${item.views!}" : "";
     return ListTileVideo(
       placeholder: 'assets/branding/three_speak_logo.png',
       url: item.images.thumbnail,
       userThumbUrl: server.userOwnerThumb(item.author),
       title: item.title,
-      subtitle: "$timeInString $owner $duration ▶ ${item.views}",
+      subtitle: "$timeInString $owner $duration $views",
     );
   }
 

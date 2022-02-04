@@ -1,4 +1,5 @@
 import 'package:acela/src/models/hive_comments/request/hive_comments_request.dart';
+import 'package:acela/src/models/hive_comments/response/hive_comment.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
 import 'package:acela/src/models/video_details_model/video_details_description.dart';
