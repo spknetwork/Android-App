@@ -56,11 +56,14 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-  Widget _leaderBoard() {
+  Widget _leaderBoard(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.leaderboard),
       title: const Text("Leaderboard"),
-      onTap: () {},
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed("/leaderboard");
+      },
     );
   }
 
@@ -129,7 +132,7 @@ class DrawerScreen extends StatelessWidget {
           height: 1,
           color: Colors.blueGrey,
         ),
-        _leaderBoard(),
+        _leaderBoard(context),
         const Divider(
           height: 1,
           color: Colors.blueGrey,

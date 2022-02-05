@@ -1,4 +1,5 @@
 import 'package:acela/src/screens/home_screen/home_screen.dart';
+import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -89,6 +90,10 @@ class _MyAppState extends State<MyApp> {
                     isDarkMode = !isDarkMode;
                   });
                 });
+          });
+        } else if (settings.name == "/leaderboard") {
+          return MaterialPageRoute(builder: (context) {
+            return const LeaderboardScreen();
           });
         }
         assert(false, 'Need to implement ${settings.name}');
