@@ -1,4 +1,4 @@
-import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
+import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_widgets.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoDetailsScreenArguments {
-  final HomeFeed item;
+  final HomeFeedItem item;
 
   VideoDetailsScreenArguments(this.item);
 }

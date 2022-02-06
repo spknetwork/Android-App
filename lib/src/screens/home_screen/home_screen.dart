@@ -1,4 +1,4 @@
-import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
+import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     vm.loadHomeFeed();
   }
 
-  void onTap(HomeFeed item) {
+  void onTap(HomeFeedItem item) {
     Navigator.of(context).pushNamed(VideoDetailsScreen.routeName,
         arguments: VideoDetailsScreenArguments(item));
   }

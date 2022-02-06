@@ -1,7 +1,6 @@
-import 'package:acela/src/models/hive_comments/request/hive_comments_request.dart';
-import 'package:acela/src/models/hive_comments/response/hive_comment.dart';
+import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
+import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/video_details_model/video_details_description.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:http/http.dart' show get;
@@ -15,7 +14,7 @@ class VideoDetailsViewModel {
   VideoDetailsDescription? description;
 
   // view
-  HomeFeed item;
+  HomeFeedItem item;
 
   // loading comments
   LoadState commentsState = LoadState.notStarted;
@@ -50,12 +49,12 @@ class VideoDetailsViewModel {
     var client = http.Client();
     var request = http.Request('POST', Uri.parse(server.hiveDomain));
     request.body =
-        hiveCommentsRequestToJson(HiveCommentsRequest.from(author, permlink));
+        hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
     client
         .send(request)
         .then((response) => response.stream.bytesToString())
         .then((value) {
-      HiveComments hiveComments = hiveCommentsFromJson(value);
+      HiveComments hiveComments = hiveCommentsFromString(value);
       commentsState = LoadState.succeeded;
       comments = hiveComments.result;
       stateUpdated();
@@ -71,12 +70,12 @@ class VideoDetailsViewModel {
     var client = http.Client();
     var request = http.Request('POST', Uri.parse(server.hiveDomain));
     request.body =
-        hiveCommentsRequestToJson(HiveCommentsRequest.from(author, permlink));
+        hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
     client
         .send(request)
         .then((response) => response.stream.bytesToString())
         .then((value) {
-      HiveComments hiveComments = hiveCommentsFromJson(value);
+      HiveComments hiveComments = hiveCommentsFromString(value);
       comments.insertAll(index + 1, hiveComments.result);
       stateUpdated();
       scanComments(stateUpdated);

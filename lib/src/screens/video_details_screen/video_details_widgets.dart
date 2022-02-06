@@ -90,7 +90,9 @@ class VideoDetailsScreenWidgets {
           var upVotes = item.activeVotes.where((e) => e.percent > 0).length;
           var downVotes = item.activeVotes.where((e) => e.percent < 0).length;
           var payout = item.pendingPayoutValue.replaceAll(" HBD", "");
-          var timeInString = "📆  ${timeago.format(item.created)}";
+          var timeInString = item.createdAt != null
+              ? "📆 ${timeago.format(item.createdAt!)}"
+              : "";
           var text =
               "👤  $author  👍  $upVotes  👎  $downVotes  💰  $payout  $timeInString";
           var depth = (item.depth * 25.0) - 25;

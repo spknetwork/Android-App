@@ -1,19 +1,44 @@
-import 'dart:convert';
-import 'package:json_annotation/json_annotation.dart';
+import 'package:acela/src/utils/safe_convert.dart';
 
-part 'active_vote.g.dart';
-
-ActiveVote activeVoteFromJson(String str) =>
-    ActiveVote.fromJson(json.decode(str));
-
-@JsonSerializable()
 class ActiveVote {
+  // 1000
+  final int percent;
+  // 784865040553638
+  final int reputation;
+  // 179995483613
+  final int rshares;
+  // 2022-02-06T04:25:57
+  final String time;
+  // jongolson
+  final String voter;
+  // 179995483613
+  final int weight;
+
   ActiveVote({
-    required this.percent,
+    this.percent = 0,
+    this.reputation = 0,
+    this.rshares = 0,
+    this.time = "",
+    this.voter = "",
+    this.weight = 0,
   });
 
-  int percent;
+  factory ActiveVote.fromJson(Map<String, dynamic>? json) => ActiveVote(
+    percent: asInt(json, 'percent'),
+    reputation: asInt(json, 'reputation'),
+    rshares: asInt(json, 'rshares'),
+    time: asString(json, 'time'),
+    voter: asString(json, 'voter'),
+    weight: asInt(json, 'weight'),
+  );
 
-  factory ActiveVote.fromJson(Map<String, dynamic> json) =>
-      _$ActiveVoteFromJson(json);
+  Map<String, dynamic> toJson() => {
+    'percent': percent,
+    'reputation': reputation,
+    'rshares': rshares,
+    'time': time,
+    'voter': voter,
+    'weight': weight,
+  };
 }
+

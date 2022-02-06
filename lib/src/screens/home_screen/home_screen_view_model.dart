@@ -1,6 +1,5 @@
+import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:http/http.dart' show get;
-import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
 
 enum LoadState {
   notStarted,
@@ -11,7 +10,7 @@ enum LoadState {
 
 class HomeScreenViewModel {
   LoadState state = LoadState.notStarted;
-  List<HomeFeed> list = [];
+  List<HomeFeedItem> list = [];
   String error = 'Something went wrong';
   Function() stateUpdated;
 
@@ -23,7 +22,7 @@ class HomeScreenViewModel {
     stateUpdated();
     var response = await get(Uri.parse(path));
     if (response.statusCode == 200) {
-      List<HomeFeed> list = homeFeedFromJson(response.body);
+      List<HomeFeedItem> list = homeFeedItemFromString(response.body);
       state = LoadState.succeeded;
       this.list = list;
       stateUpdated();
