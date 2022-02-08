@@ -4,6 +4,7 @@ import 'package:acela/src/screens/video_details_screen/video_details_screen.dart
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'firebase_options.dart';
 
 import 'src/bloc/server.dart';
 
@@ -20,7 +21,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final Future<FirebaseApp> _fbApp = Firebase.initializeApp();
+  final Future<FirebaseApp> _fbApp = Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform
+  );
   bool isDarkMode = true;
 
   Widget futureBuilder(Widget withWidget) {
