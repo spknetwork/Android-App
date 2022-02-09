@@ -20,8 +20,11 @@ class VideoDetailsCommentsWidget extends StatefulWidget {
       _VideoDetailsCommentsWidgetState();
 }
 
-class _VideoDetailsCommentsWidgetState
-    extends State<VideoDetailsCommentsWidget> {
+class _VideoDetailsCommentsWidgetState extends State<VideoDetailsCommentsWidget>
+    with AutomaticKeepAliveClientMixin<VideoDetailsCommentsWidget> {
+  @override
+  bool get wantKeepAlive => true;
+
   Future<List<HiveComment>> loadComments(String author, String permlink) async {
     var client = http.Client();
     var body =

@@ -11,8 +11,10 @@ class SPKVideoPlayer extends StatefulWidget {
   _SPKVideoPlayerState createState() => _SPKVideoPlayerState();
 }
 
-class _SPKVideoPlayerState extends State<SPKVideoPlayer> {
+class _SPKVideoPlayerState extends State<SPKVideoPlayer> with AutomaticKeepAliveClientMixin<SPKVideoPlayer> {
   late VideoPlayerController controller;
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
