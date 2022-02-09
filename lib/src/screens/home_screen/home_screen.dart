@@ -41,8 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onTap(HomeFeedItem item) {
-    Navigator.of(context).pushNamed(VideoDetailsScreen.routeName,
-        arguments: VideoDetailsScreenArguments(item));
+    Navigator.of(context).pushNamed(
+        VideoDetailsScreen.routeName(item.author, item.permlink));
   }
 
   Widget _screen() {

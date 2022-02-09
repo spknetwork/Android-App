@@ -1,6 +1,5 @@
 import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/video_details_model/video_details_description.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:http/http.dart' show get;
@@ -14,86 +13,49 @@ class VideoDetailsViewModel {
   VideoDetailsDescription? description;
 
   // view
-  HomeFeedItem item;
+  String path;
+  String author;
+  String permlink;
 
   // loading comments
   LoadState commentsState = LoadState.notStarted;
   String commentsError = 'Something went wrong';
   List<HiveComment> comments = [];
 
-  VideoDetailsViewModel({required this.item});
+  VideoDetailsViewModel(
+      {required this.path, required this.author, required this.permlink});
 
-  void loadVideoInfo(Function stateUpdated) {
-    if (descState != LoadState.notStarted) return;
-    descState = LoadState.loading;
-    stateUpdated();
-    final endPoint = "${server.domain}/apiv2/@${item.author}/${item.permlink}";
-    get(Uri.parse(endPoint))
-        .then((response) {
-      VideoDetailsDescription desc =
-      videoDetailsDescriptionFromJson(response.body);
-      descState = LoadState.succeeded;
-      description = desc;
-      stateUpdated();
-    }).catchError((error) {
-      descError =
-      'Something went wrong.\nError is $error';
-      descState = LoadState.failed;
-      stateUpdated();
-    });
-  }
-
-  void loadComments(String author, String permlink, Function stateUpdated) {
-    if (commentsState != LoadState.notStarted) return;
-    commentsState = LoadState.loading;
-    var client = http.Client();
-    var request = http.Request('POST', Uri.parse(server.hiveDomain));
-    request.body =
-        hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
-    client
-        .send(request)
-        .then((response) => response.stream.bytesToString())
-        .then((value) {
-      HiveComments hiveComments = hiveCommentsFromString(value);
-      commentsState = LoadState.succeeded;
-      comments = hiveComments.result;
-      stateUpdated();
-      scanComments(stateUpdated);
-    }).catchError((error) {
-      commentsError = 'Something went wrong.\nError is $error';
-      commentsState = LoadState.failed;
-      stateUpdated();
-    });
-  }
-
-  void childrenComments(String author, String permlink, int index, Function stateUpdated) {
-    var client = http.Client();
-    var request = http.Request('POST', Uri.parse(server.hiveDomain));
-    request.body =
-        hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
-    client
-        .send(request)
-        .then((response) => response.stream.bytesToString())
-        .then((value) {
-      HiveComments hiveComments = hiveCommentsFromString(value);
-      comments.insertAll(index + 1, hiveComments.result);
-      stateUpdated();
-      scanComments(stateUpdated);
-    }).catchError((error) {
-      // commentsError = 'Something went wrong.\nError is $error';
-      // commentsState = LoadState.failed;
-      // stateUpdated();
-    });
-  }
-
-  void scanComments(Function stateUpdated) {
-    for(var i=0; i < comments.length; i++) {
-      if (comments[i].children > 0) {
-        if (comments.where((e) => e.parentPermlink == comments[i].permlink).isEmpty) {
-          childrenComments(comments[i].author, comments[i].permlink, i, stateUpdated);
-          break;
-        }
-      }
+  factory VideoDetailsViewModel.from(String path) {
+    if (!path.contains("owner=") || !path.contains("permlink=")) {
+      path = "/watch?owner=sagarkothari88&permlink=gqbffyah";
     }
+    var comps = path
+        .replaceAll("?", "&")
+        .split("&")
+        .where((element) =>
+    element.contains('owner=') || element.contains('permlink='))
+        .toList();
+    if (comps.length < 2) {
+      comps = "/watch?owner=sagarkothari88&permlink=gqbffyah"
+          .replaceAll("?", "&")
+          .split("&")
+          .where((element) =>
+      element.contains('owner=') || element.contains('permlink='))
+          .toList();
+    }
+    comps.sort();
+    var firstComp = comps[0].split("=");
+    if (firstComp.length < 2) {
+      firstComp[1] = "sagarkothari88";
+    }
+    var secondComp = comps[1].split("=");
+    if (secondComp.length < 2) {
+      secondComp[1] = "gqbffyah";
+    }
+    var author = firstComp[1];
+    var permlink = secondComp[1];
+    return VideoDetailsViewModel(
+        path: path, author: author, permlink: permlink);
   }
+
 }

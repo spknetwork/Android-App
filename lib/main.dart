@@ -10,7 +10,7 @@ import 'src/bloc/server.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -21,9 +21,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final Future<FirebaseApp> _fbApp = Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform
-  );
+  final Future<FirebaseApp> _fbApp =
+      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   bool isDarkMode = true;
 
   Widget futureBuilder(Widget withWidget) {
@@ -48,11 +47,10 @@ class _MyAppState extends State<MyApp> {
       theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
       debugShowCheckedModeBanner: false,
       onGenerateRoute: (settings) {
-        if (settings.name == VideoDetailsScreen.routeName) {
-          final args = settings.arguments as VideoDetailsScreenArguments;
+        if (settings.name?.contains("/watch?") == true) {
           return MaterialPageRoute(builder: (context) {
             return VideoDetailsScreen(
-                vm: VideoDetailsViewModel(item: args.item));
+                vm: VideoDetailsViewModel.from(settings.name!));
           });
         } else if (settings.name == "/") {
           return MaterialPageRoute(builder: (context) {
