@@ -28,29 +28,35 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final widgets = HomeScreenWidgets();
   late HomeScreenViewModel vm;
+  late Future<List<HomeFeedItem>> _loadingFeed;
 
   @override
   void initState() {
     super.initState();
-    vm = HomeScreenViewModel(
-        path: widget.path,
-        stateUpdated: () {
-          setState(() {});
-        });
-    vm.loadHomeFeed();
+    vm = HomeScreenViewModel(path: widget.path);
+    _loadingFeed = vm.loadHomeFeed();
   }
 
   void onTap(HomeFeedItem item) {
-    Navigator.of(context).pushNamed(
-        VideoDetailsScreen.routeName(item.author, item.permlink));
+    Navigator.of(context)
+        .pushNamed(VideoDetailsScreen.routeName(item.author, item.permlink));
   }
 
   Widget _screen() {
-    return vm.state == LoadState.loading
-        ? widgets.loadingData()
-        : vm.state == LoadState.failed
-            ? RetryScreen(error: vm.error, onRetry: vm.loadHomeFeed)
-            : widgets.list(vm.list, vm.loadHomeFeed, onTap);
+    return FutureBuilder(
+      future: _loadingFeed,
+        builder: (builder, snapshot) {
+      if (snapshot.hasError) {
+        return RetryScreen(
+            error: snapshot.error?.toString() ?? 'Something went wrong',
+            onRetry: vm.loadHomeFeed);
+      } else if (snapshot.hasData) {
+        List<HomeFeedItem> items = snapshot.data! as List<HomeFeedItem>;
+        return widgets.list(items, vm.loadHomeFeed, onTap);
+      } else {
+        return widgets.loadingData();
+      }
+    });
   }
 
   @override

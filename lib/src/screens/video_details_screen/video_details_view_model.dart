@@ -1,26 +1,17 @@
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
+import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_details_model/video_details_description.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:http/http.dart' show get;
 import 'package:http/http.dart' as http;
-import 'package:acela/src/bloc/server.dart';
 
 class VideoDetailsViewModel {
-  // loading info
-  LoadState descState = LoadState.notStarted;
-  String descError = 'Something went wrong';
-  VideoDetailsDescription? description;
-
   // view
   String path;
   String author;
   String permlink;
-
-  // loading comments
-  LoadState commentsState = LoadState.notStarted;
-  String commentsError = 'Something went wrong';
-  List<HiveComment> comments = [];
 
   VideoDetailsViewModel(
       {required this.path, required this.author, required this.permlink});
@@ -58,4 +49,40 @@ class VideoDetailsViewModel {
         path: path, author: author, permlink: permlink);
   }
 
+  Future<VideoDetails> getVideoDetails() async {
+    final endPoint =
+        "${server.domain}/apiv2/@$author/$permlink";
+    var response = await get(Uri.parse(endPoint));
+    if (response.statusCode == 200) {
+      VideoDetails data = videoDetailsFromJson(response.body);
+      return data;
+    } else {
+      throw "Status code = ${response.statusCode}";
+    }
+  }
+
+  Future<List<HiveComment>> loadComments(String author, String permlink) async {
+    var client = http.Client();
+    var body =
+    hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
+    var response = await client.post(Uri.parse(server.hiveDomain), body: body);
+    if (response.statusCode == 200) {
+      var hiveCommentsResponse = hiveCommentsFromString(response.body);
+      var comments = hiveCommentsResponse.result;
+      for (var i = 0; i < comments.length; i++) {
+        if (comments[i].children > 0) {
+          if (comments
+              .where((e) => e.parentPermlink == comments[i].permlink)
+              .isEmpty) {
+            var newComments =
+            await loadComments(comments[i].author, comments[i].permlink);
+            comments.insertAll(i + 1, newComments);
+          }
+        }
+      }
+      return comments;
+    } else {
+      throw "Status code is ${response.statusCode}";
+    }
+  }
 }

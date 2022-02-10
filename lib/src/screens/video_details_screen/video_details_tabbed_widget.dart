@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 class VideoDetailsTabbedWidget extends StatefulWidget {
-  const VideoDetailsTabbedWidget({Key? key, required this.children})
+  const VideoDetailsTabbedWidget(
+      {Key? key, required this.children, required this.title})
       : super(key: key);
   final List<Widget> children;
+  final String title;
 
   @override
   _VideoDetailsTabbedWidgetState createState() =>
@@ -36,6 +38,7 @@ class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text(widget.title),
         bottom: TabBar(
           controller: _tabController,
           tabs: tabs,
