@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 
 class DrawerScreen extends StatelessWidget {
-  const DrawerScreen({Key? key}) : super(key: key);
+  const DrawerScreen(
+      {Key? key, required this.isDarkMode, required this.switchDarkMode})
+      : super(key: key);
 
-  Widget _homeMenu() {
+  final bool isDarkMode;
+  final Function switchDarkMode;
+
+  Widget _homeMenu(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.home),
       title: const Text("Home"),
       onTap: () {
-
+        Navigator.pop(context);
       },
     );
   }
@@ -17,28 +22,28 @@ class DrawerScreen extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.emoji_emotions_outlined),
       title: const Text("First Uploads"),
-      onTap: () {
-
-      },
+      onTap: () {},
     );
   }
 
-  Widget _trendingContent() {
+  Widget _trendingContent(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.local_fire_department),
       title: const Text("Trending Content"),
       onTap: () {
-
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed("/trending");
       },
     );
   }
 
-  Widget _newContent() {
+  Widget _newContent(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.play_arrow),
       title: const Text("New Content"),
       onTap: () {
-
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed("/new");
       },
     );
   }
@@ -47,18 +52,29 @@ class DrawerScreen extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.people_sharp),
       title: const Text("Communities"),
-      onTap: () {
-
-      },
+      onTap: () {},
     );
   }
 
-  Widget _leaderBoard() {
+  Widget _leaderBoard(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.leaderboard),
       title: const Text("Leaderboard"),
       onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed("/leaderboard");
+      },
+    );
+  }
 
+  Widget _changeTheme() {
+    return ListTile(
+      leading: isDarkMode
+          ? const Icon(Icons.wb_sunny)
+          : const Icon(Icons.mode_night),
+      title: const Text("Change Theme"),
+      onTap: () {
+        switchDarkMode();
       },
     );
   }
@@ -91,26 +107,47 @@ class DrawerScreen extends StatelessWidget {
     return ListView(
       children: [
         _drawerHeader(context),
-        _homeMenu(),
-        const Divider(height: 1, color: Colors.blueGrey,),
+        _homeMenu(context),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
         _firstUploads(),
-        const Divider(height: 1, color: Colors.blueGrey,),
-        _trendingContent(),
-        const Divider(height: 1, color: Colors.blueGrey,),
-        _newContent(),
-        const Divider(height: 1, color: Colors.blueGrey,),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
+        _trendingContent(context),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
+        _newContent(context),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
         _communities(),
-        const Divider(height: 1, color: Colors.blueGrey,),
-        _leaderBoard(),
-        const Divider(height: 1, color: Colors.blueGrey,),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
+        _leaderBoard(context),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
+        _changeTheme(),
+        const Divider(
+          height: 1,
+          color: Colors.blueGrey,
+        ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-        child: _drawerMenu(context)
-    );
+    return Drawer(child: _drawerMenu(context));
   }
 }

@@ -1,5 +1,5 @@
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
+import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -11,21 +11,22 @@ class HomeScreenWidgets {
     return const LoadingScreen();
   }
 
-  Widget _tileTitle(HomeFeed item, BuildContext context) {
-    String timeInString = "📆 ${timeago.format(item.created)}";
-    String owner = "👤 ${item.owner}";
+  Widget _tileTitle(HomeFeedItem item, BuildContext context) {
+    String timeInString = item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
+    String owner = "👤 ${item.author}";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
+    String views = "▶ ${item.views}";
     return ListTileVideo(
       placeholder: 'assets/branding/three_speak_logo.png',
-      url: item.thumbUrl,
-      userThumbUrl: server.userOwnerThumb(item.owner),
+      url: item.images.thumbnail,
+      userThumbUrl: server.userOwnerThumb(item.author),
       title: item.title,
-      subtitle: "$timeInString $owner $duration ▶ ${item.views}",
+      subtitle: "$timeInString $owner $duration $views",
     );
   }
 
   Widget _listTile(
-      HomeFeed item, BuildContext context, Function(HomeFeed) onTap) {
+      HomeFeedItem item, BuildContext context, Function(HomeFeedItem) onTap) {
     return ListTile(
       title: _tileTitle(item, context),
       onTap: () {
@@ -34,8 +35,8 @@ class HomeScreenWidgets {
     );
   }
 
-  Widget list(List<HomeFeed> list, Future<void> Function() onRefresh,
-      Function(HomeFeed) onTap) {
+  Widget list(List<HomeFeedItem> list, Future<void> Function() onRefresh,
+      Function(HomeFeedItem) onTap) {
     return Container(
         padding: const EdgeInsets.only(top: 10, bottom: 10),
         child: RefreshIndicator(

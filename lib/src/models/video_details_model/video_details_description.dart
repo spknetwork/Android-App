@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'package:acela/src/utils/safe_convert.dart';
 
-VideoDetailsDescription videoDetailsDescriptionFromJson(String str) => VideoDetailsDescription.fromJson(json.decode(str));
+VideoDetailsDescription videoDetailsDescriptionFromJson(String str) =>
+    VideoDetailsDescription.fromJson(json.decode(str));
 
-String videoDetailsDescriptionToJson(VideoDetailsDescription data) => json.encode(data.toJson());
+String videoDetailsDescriptionToJson(VideoDetailsDescription data) =>
+    json.encode(data.toJson());
 
 class VideoDetailsDescription {
   VideoDetailsDescription({
@@ -11,11 +14,12 @@ class VideoDetailsDescription {
 
   String description;
 
-  factory VideoDetailsDescription.fromJson(Map<String, dynamic> json) => VideoDetailsDescription(
-    description: json["description"] ?? "",
-  );
+  factory VideoDetailsDescription.fromJson(Map<String, dynamic>? json) =>
+      VideoDetailsDescription(
+        description: asString(json, 'description'),
+      );
 
   Map<String, dynamic> toJson() => {
-    "description": description,
+    'description': description
   };
 }

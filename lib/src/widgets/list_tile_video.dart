@@ -1,3 +1,4 @@
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/utils/form_factor.dart';
 import 'package:flutter/material.dart';
 import 'custom_circle_avatar.dart';
@@ -21,25 +22,20 @@ class ListTileVideo extends StatelessWidget {
 
   Widget _commonContainer(BuildContext context, Widget child) {
     return Container(
-      decoration: const BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            // color: Colors.grey,
-            // blurRadius: 10,
-            blurStyle: BlurStyle.outer,
-          )
-        ],
-      ),
       child: child,
     );
   }
 
   Widget _listType(BuildContext context) {
-    double width = MediaQuery.of(context).size.width - 60 - 340;
+    double deviceWidth = MediaQuery.of(context).size.width;
+    double width = deviceWidth - 60 - 340;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Image.network(url),
+        Image.network(
+          url,
+          width: deviceWidth - width - 60,
+        ),
         Container(width: 10),
         SizedBox(
           width: width,
@@ -65,7 +61,7 @@ class ListTileVideo extends StatelessWidget {
       children: [
         FadeInImage.assetNetwork(
           placeholder: placeholder,
-          image: url,
+          image: server.resizedImage(url),
           fit: BoxFit.cover,
         ),
         Container(
@@ -80,7 +76,8 @@ class ListTileVideo extends StatelessWidget {
                   children: [
                     Text(title, style: Theme.of(context).textTheme.bodyText2),
                     Container(height: 5),
-                    Text(subtitle, style: Theme.of(context).textTheme.bodyText1)
+                    Text(subtitle,
+                        style: Theme.of(context).textTheme.bodyText1),
                   ],
                 ),
               )

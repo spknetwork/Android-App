@@ -1,15 +1,29 @@
 import 'package:acela/src/screens/home_screen/home_screen.dart';
+import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'firebase_options.dart';
+
+import 'src/bloc/server.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  final Future<FirebaseApp> _fbApp = Firebase.initializeApp();
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final Future<FirebaseApp> _fbApp =
+      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  bool isDarkMode = true;
 
   Widget futureBuilder(Widget withWidget) {
     return FutureBuilder(
@@ -30,13 +44,62 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Acela - 3Speak App',
-      theme: ThemeData.dark(),
-      routes: {
-        VideoDetailsScreen.routeName: (context) =>
-            futureBuilder(const VideoDetailsScreen()),
-        '/': (context) => futureBuilder(const HomeScreen()),
+      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      debugShowCheckedModeBanner: false,
+      onGenerateRoute: (settings) {
+        if (settings.name?.contains("/watch?") == true) {
+          return MaterialPageRoute(builder: (context) {
+            return VideoDetailsScreen(
+                vm: VideoDetailsViewModel.from(settings.name!));
+          });
+        } else if (settings.name == "/") {
+          return MaterialPageRoute(builder: (context) {
+            return HomeScreen(
+              path: "${server.domain}/apiv2/feeds/home",
+              showDrawer: true,
+              title: 'Home',
+              isDarkMode: isDarkMode,
+              switchDarkMode: () {
+                setState(() {
+                  isDarkMode = !isDarkMode;
+                });
+              },
+            );
+          });
+        } else if (settings.name == "/trending") {
+          return MaterialPageRoute(builder: (context) {
+            return HomeScreen(
+                path: "${server.domain}/apiv2/feeds/trending",
+                showDrawer: false,
+                title: 'Trending Content',
+                isDarkMode: isDarkMode,
+                switchDarkMode: () {
+                  setState(() {
+                    isDarkMode = !isDarkMode;
+                  });
+                });
+          });
+        } else if (settings.name == "/new") {
+          return MaterialPageRoute(builder: (context) {
+            return HomeScreen(
+                path: "${server.domain}/apiv2/feeds/new",
+                showDrawer: false,
+                title: 'New Content',
+                isDarkMode: isDarkMode,
+                switchDarkMode: () {
+                  setState(() {
+                    isDarkMode = !isDarkMode;
+                  });
+                });
+          });
+        } else if (settings.name == "/leaderboard") {
+          return MaterialPageRoute(builder: (context) {
+            return const LeaderboardScreen();
+          });
+        }
+        assert(false, 'Need to implement ${settings.name}');
+        return null;
       },
-      // home: const HomeScreen(),
     );
   }
 }

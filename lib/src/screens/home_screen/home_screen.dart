@@ -1,4 +1,4 @@
-import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
+import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
@@ -7,7 +7,19 @@ import 'package:flutter/material.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen(
+      {Key? key,
+      required this.path,
+      required this.showDrawer,
+      required this.title,
+      required this.isDarkMode,
+      required this.switchDarkMode})
+      : super(key: key);
+  final String path;
+  final bool showDrawer;
+  final String title;
+  final bool isDarkMode;
+  final Function switchDarkMode;
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -16,50 +28,50 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final widgets = HomeScreenWidgets();
   late HomeScreenViewModel vm;
+  late Future<List<HomeFeedItem>> _loadingFeed;
 
   @override
   void initState() {
     super.initState();
-    vm = HomeScreenViewModel(stateUpdated: () {
-      setState(() {});
-    });
-    vm.loadHomeFeed();
+    vm = HomeScreenViewModel(path: widget.path);
+    _loadingFeed = vm.loadHomeFeed();
   }
 
-  void onTap(HomeFeed item) {
-    Navigator.of(context).pushNamed(VideoDetailsScreen.routeName,
-        arguments: VideoDetailsScreenArguments(item));
+  void onTap(HomeFeedItem item) {
+    Navigator.of(context)
+        .pushNamed(VideoDetailsScreen.routeName(item.author, item.permlink));
   }
 
   Widget _screen() {
     return FutureBuilder(
-      future: vm.getHomeFeed(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasError) {
-            return RetryScreen(
-                error: snapshot.error as String, onRetry: vm.loadHomeFeed);
-          } else if (snapshot.hasData) {
-            return widgets.list(
-                snapshot.data as List<HomeFeed>, vm.loadHomeFeed, onTap);
-          } else {
-            return widgets.loadingData();
-          }
-        } else {
-          return widgets.loadingData();
-        }
-      },
-    );
+      future: _loadingFeed,
+        builder: (builder, snapshot) {
+      if (snapshot.hasError) {
+        return RetryScreen(
+            error: snapshot.error?.toString() ?? 'Something went wrong',
+            onRetry: vm.loadHomeFeed);
+      } else if (snapshot.hasData) {
+        List<HomeFeedItem> items = snapshot.data! as List<HomeFeedItem>;
+        return widgets.list(items, vm.loadHomeFeed, onTap);
+      } else {
+        return widgets.loadingData();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: Text(widget.title),
       ),
       body: _screen(),
-      drawer: const DrawerScreen(),
+      drawer: widget.showDrawer
+          ? DrawerScreen(
+              isDarkMode: widget.isDarkMode,
+              switchDarkMode: widget.switchDarkMode,
+            )
+          : null,
     );
   }
 }

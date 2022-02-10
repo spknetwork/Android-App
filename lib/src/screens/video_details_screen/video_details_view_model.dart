@@ -1,100 +1,88 @@
-import 'package:acela/src/models/hive_comments/request/hive_comments_request.dart';
+import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed_models.dart';
+import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_details_model/video_details_description.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:http/http.dart' show get;
 import 'package:http/http.dart' as http;
-import 'package:acela/src/bloc/server.dart';
 
 class VideoDetailsViewModel {
-  // loading info
-  LoadState descState = LoadState.notStarted;
-  String descError = 'Something went wrong';
-  VideoDetailsDescription? description;
-
   // view
-  Function() stateUpdated;
-  HomeFeed item;
+  String path;
+  String author;
+  String permlink;
 
-  // loading comments
-  LoadState commentsState = LoadState.notStarted;
-  String commentsError = 'Something went wrong';
-  List<HiveComment> comments = [];
+  VideoDetailsViewModel(
+      {required this.path, required this.author, required this.permlink});
 
-  VideoDetailsViewModel({required this.stateUpdated, required this.item});
-
-  void loadVideoInfo() {
-    if (descState != LoadState.notStarted) return;
-    descState = LoadState.loading;
-    stateUpdated();
-    final endPoint = "${server.domain}/apiv2/@${item.owner}/${item.permlink}";
-    get(Uri.parse(endPoint))
-        .then((response) {
-      VideoDetailsDescription desc =
-      videoDetailsDescriptionFromJson(response.body);
-      descState = LoadState.succeeded;
-      description = desc;
-      stateUpdated();
-    }).catchError((error) {
-      descError =
-      'Something went wrong.\nError is $error';
-      descState = LoadState.failed;
-      stateUpdated();
-    });
+  factory VideoDetailsViewModel.from(String path) {
+    if (!path.contains("owner=") || !path.contains("permlink=")) {
+      path = "/watch?owner=sagarkothari88&permlink=gqbffyah";
+    }
+    var comps = path
+        .replaceAll("?", "&")
+        .split("&")
+        .where((element) =>
+    element.contains('owner=') || element.contains('permlink='))
+        .toList();
+    if (comps.length < 2) {
+      comps = "/watch?owner=sagarkothari88&permlink=gqbffyah"
+          .replaceAll("?", "&")
+          .split("&")
+          .where((element) =>
+      element.contains('owner=') || element.contains('permlink='))
+          .toList();
+    }
+    comps.sort();
+    var firstComp = comps[0].split("=");
+    if (firstComp.length < 2) {
+      firstComp[1] = "sagarkothari88";
+    }
+    var secondComp = comps[1].split("=");
+    if (secondComp.length < 2) {
+      secondComp[1] = "gqbffyah";
+    }
+    var author = firstComp[1];
+    var permlink = secondComp[1];
+    return VideoDetailsViewModel(
+        path: path, author: author, permlink: permlink);
   }
 
-  void loadComments(String author, String permlink) {
-    if (commentsState != LoadState.notStarted) return;
-    commentsState = LoadState.loading;
+  Future<VideoDetails> getVideoDetails() async {
+    final endPoint =
+        "${server.domain}/apiv2/@$author/$permlink";
+    var response = await get(Uri.parse(endPoint));
+    if (response.statusCode == 200) {
+      VideoDetails data = videoDetailsFromJson(response.body);
+      return data;
+    } else {
+      throw "Status code = ${response.statusCode}";
+    }
+  }
+
+  Future<List<HiveComment>> loadComments(String author, String permlink) async {
     var client = http.Client();
-    var request = http.Request('POST', Uri.parse(server.hiveDomain));
-    request.body =
-        hiveCommentsRequestToJson(HiveCommentsRequest.from(author, permlink));
-    client
-        .send(request)
-        .then((response) => response.stream.bytesToString())
-        .then((value) {
-      HiveComments hiveComments = hiveCommentsFromJson(value);
-      commentsState = LoadState.succeeded;
-      comments = hiveComments.result;
-      stateUpdated();
-      scanComments();
-    }).catchError((error) {
-      commentsError = 'Something went wrong.\nError is $error';
-      commentsState = LoadState.failed;
-      stateUpdated();
-    });
-  }
-
-  void childrenComments(String author, String permlink, int index) {
-    var client = http.Client();
-    var request = http.Request('POST', Uri.parse(server.hiveDomain));
-    request.body =
-        hiveCommentsRequestToJson(HiveCommentsRequest.from(author, permlink));
-    client
-        .send(request)
-        .then((response) => response.stream.bytesToString())
-        .then((value) {
-      HiveComments hiveComments = hiveCommentsFromJson(value);
-      comments.insertAll(index + 1, hiveComments.result);
-      stateUpdated();
-      scanComments();
-    }).catchError((error) {
-      // commentsError = 'Something went wrong.\nError is $error';
-      // commentsState = LoadState.failed;
-      // stateUpdated();
-    });
-  }
-
-  void scanComments() {
-    for(var i=0; i < comments.length; i++) {
-      if (comments[i].children > 0) {
-        if (comments.where((e) => e.parentPermlink == comments[i].permlink).isEmpty) {
-          childrenComments(comments[i].author, comments[i].permlink, i);
-          break;
+    var body =
+    hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
+    var response = await client.post(Uri.parse(server.hiveDomain), body: body);
+    if (response.statusCode == 200) {
+      var hiveCommentsResponse = hiveCommentsFromString(response.body);
+      var comments = hiveCommentsResponse.result;
+      for (var i = 0; i < comments.length; i++) {
+        if (comments[i].children > 0) {
+          if (comments
+              .where((e) => e.parentPermlink == comments[i].permlink)
+              .isEmpty) {
+            var newComments =
+            await loadComments(comments[i].author, comments[i].permlink);
+            comments.insertAll(i + 1, newComments);
+          }
         }
       }
+      return comments;
+    } else {
+      throw "Status code is ${response.statusCode}";
     }
   }
 }

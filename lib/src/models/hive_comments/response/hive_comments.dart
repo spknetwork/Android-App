@@ -1,92 +1,109 @@
-// To parse this JSON data, do
-//
-//     final hiveComments = hiveCommentsFromJson(jsonString);
-
+import 'package:acela/src/utils/safe_convert.dart';
+import 'active_vote.dart';
 import 'dart:convert';
 
-HiveComments hiveCommentsFromJson(String str) =>
-    HiveComments.fromJson(json.decode(str));
-
-String hiveCommentsToJson(HiveComments data) => json.encode(data.toJson());
+HiveComments hiveCommentsFromString(String string) {
+  return HiveComments.fromJson(json.decode(string));
+}
 
 class HiveComments {
+  final String jsonrpc;
+  final List<HiveComment> result;
+  final int id;
+
   HiveComments({
+    this.jsonrpc = "",
     required this.result,
+    this.id = 0,
   });
 
-  List<HiveComment> result;
-
-  factory HiveComments.fromJson(Map<String, dynamic> json) => HiveComments(
+  factory HiveComments.fromJson(Map<String, dynamic>? json) => HiveComments(
+        jsonrpc: asString(json, 'jsonrpc'),
         result:
-            List<HiveComment>.from(json["result"].map((x) => HiveComment.fromJson(x))),
+            asList(json, 'result').map((e) => HiveComment.fromJson(e)).toList(),
+        id: asInt(json, 'id'),
       );
 
   Map<String, dynamic> toJson() => {
-        "result": List<dynamic>.from(result.map((x) => x.toJson())),
+        'jsonrpc': jsonrpc,
+        'result': result.map((e) => e.toJson()),
+        'id': id,
       };
 }
 
 class HiveComment {
+  final String author;
+  final String permlink;
+  final String category;
+  final String body;
+  final String created;
+  final int depth;
+  final int children;
+  final String lastPayout;
+  final String cashoutTime;
+  final String totalPayoutValue;
+  final String curatorPayoutValue;
+  final String pendingPayoutValue;
+  final String parentAuthor;
+  final String parentPermlink;
+  final String url;
+  final List<ActiveVote> activeVotes;
+
   HiveComment({
-    required this.author,
-    required this.permlink,
-    required this.body,
-    required this.created,
-    required this.depth,
-    required this.children,
-    required this.pendingPayoutValue,
-    required this.parentPermlink,
+    this.author = "",
+    this.permlink = "",
+    this.category = "",
+    this.body = "",
+    this.created = "",
+    this.depth = 0,
+    this.children = 0,
+    this.lastPayout = "",
+    this.cashoutTime = "",
+    this.totalPayoutValue = "",
+    this.curatorPayoutValue = "",
+    this.pendingPayoutValue = "",
+    this.parentAuthor = "",
+    this.parentPermlink = "",
+    this.url = "",
     required this.activeVotes,
   });
 
-  String author;
-  String permlink;
-  String body;
-  DateTime created;
-  int depth;
-  int children;
-  String pendingPayoutValue;
-  String parentPermlink;
-  List<ActiveVote> activeVotes;
+  DateTime? get createdAt {
+    return DateTime.tryParse(created);
+  }
 
-  factory HiveComment.fromJson(Map<String, dynamic> json) => HiveComment(
-        author: json["author"],
-        permlink: json["permlink"],
-        body: json["body"],
-        created: DateTime.parse(json["created"]),
-        depth: json["depth"],
-        children: json["children"],
-        pendingPayoutValue: json["pending_payout_value"],
-        parentPermlink: json["parent_permlink"],
-        activeVotes: List<ActiveVote>.from(
-            json["active_votes"].map((x) => ActiveVote.fromJson(x))),
+  factory HiveComment.fromJson(Map<String, dynamic>? json) => HiveComment(
+        author: asString(json, 'author'),
+        permlink: asString(json, 'permlink'),
+        category: asString(json, 'category'),
+        body: asString(json, 'body'),
+        created: asString(json, 'created'),
+        depth: asInt(json, 'depth'),
+        children: asInt(json, 'children'),
+        lastPayout: asString(json, 'last_payout'),
+        totalPayoutValue: asString(json, 'total_payout_value'),
+        pendingPayoutValue: asString(json, 'pending_payout_value'),
+        parentAuthor: asString(json, 'parent_author'),
+        parentPermlink: asString(json, 'parent_permlink'),
+        url: asString(json, 'url'),
+        activeVotes: asList(json, 'active_votes')
+            .map((e) => ActiveVote.fromJson(json))
+            .toList(),
       );
 
   Map<String, dynamic> toJson() => {
-        "author": author,
-        "permlink": permlink,
-        "body": body,
-        "created": created.toIso8601String(),
-        "depth": depth,
-        "children": children,
-        "pending_payout_value": pendingPayoutValue,
-        "parent_permlink": parentPermlink,
-        "active_votes": List<dynamic>.from(activeVotes.map((x) => x.toJson())),
-      };
-}
-
-class ActiveVote {
-  ActiveVote({
-    required this.percent,
-  });
-
-  int percent;
-
-  factory ActiveVote.fromJson(Map<String, dynamic> json) => ActiveVote(
-        percent: json["percent"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "percent": percent,
+        'author': author,
+        'permlink': permlink,
+        'category': category,
+        'body': body,
+        'created': created,
+        'depth': depth,
+        'children': children,
+        'last_payout': lastPayout,
+        'total_payout_value': totalPayoutValue,
+        'pending_payout_value': pendingPayoutValue,
+        'parent_author': parentAuthor,
+        'url': url,
+        'active_votes': activeVotes.map((e) => e),
       };
 }
