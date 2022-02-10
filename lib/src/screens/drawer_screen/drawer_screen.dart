@@ -100,10 +100,6 @@ class DrawerScreen extends StatelessWidget {
     return ListView(
       children: [
         _drawerHeader(context),
-        const Divider(
-          height: 1,
-          color: Colors.blueGrey,
-        ),
         _firstUploads(context),
         const Divider(
           height: 1,
