@@ -18,11 +18,14 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-  Widget _firstUploads() {
+  Widget _firstUploads(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.emoji_emotions_outlined),
       title: const Text("First Uploads"),
-      onTap: () {},
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed("/firstUploads");
+      },
     );
   }
 
@@ -112,7 +115,7 @@ class DrawerScreen extends StatelessWidget {
           height: 1,
           color: Colors.blueGrey,
         ),
-        _firstUploads(),
+        _firstUploads(context),
         const Divider(
           height: 1,
           color: Colors.blueGrey,

@@ -39,6 +39,22 @@ class _MyAppState extends State<MyApp> {
         });
   }
 
+  MaterialPageRoute configuredHomeWidget(String title, String path, bool showDrawer) {
+    return MaterialPageRoute(builder: (context) {
+      return HomeScreen(
+        path: path, //"${server.domain}/apiv2/feeds/home",
+        showDrawer: showDrawer,
+        title: title,
+        isDarkMode: isDarkMode,
+        switchDarkMode: () {
+          setState(() {
+            isDarkMode = !isDarkMode;
+          });
+        },
+      );
+    });
+  }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -53,45 +69,17 @@ class _MyAppState extends State<MyApp> {
                 vm: VideoDetailsViewModel.from(settings.name!));
           });
         } else if (settings.name == "/") {
-          return MaterialPageRoute(builder: (context) {
-            return HomeScreen(
-              path: "${server.domain}/apiv2/feeds/home",
-              showDrawer: true,
-              title: 'Home',
-              isDarkMode: isDarkMode,
-              switchDarkMode: () {
-                setState(() {
-                  isDarkMode = !isDarkMode;
-                });
-              },
-            );
-          });
+          return configuredHomeWidget(
+              'Home', "${server.domain}/apiv2/feeds/home", true);
         } else if (settings.name == "/trending") {
-          return MaterialPageRoute(builder: (context) {
-            return HomeScreen(
-                path: "${server.domain}/apiv2/feeds/trending",
-                showDrawer: false,
-                title: 'Trending Content',
-                isDarkMode: isDarkMode,
-                switchDarkMode: () {
-                  setState(() {
-                    isDarkMode = !isDarkMode;
-                  });
-                });
-          });
+          return configuredHomeWidget(
+              'Trending Content', "${server.domain}/apiv2/feeds/trending", false);
         } else if (settings.name == "/new") {
-          return MaterialPageRoute(builder: (context) {
-            return HomeScreen(
-                path: "${server.domain}/apiv2/feeds/new",
-                showDrawer: false,
-                title: 'New Content',
-                isDarkMode: isDarkMode,
-                switchDarkMode: () {
-                  setState(() {
-                    isDarkMode = !isDarkMode;
-                  });
-                });
-          });
+          return configuredHomeWidget(
+              'New Content', "${server.domain}/apiv2/feeds/new", false);
+        } else if (settings.name == "/firstUploads") {
+          return configuredHomeWidget(
+              'First Uploads', "${server.domain}/apiv2/feeds/firstUploads", false);
         } else if (settings.name == "/leaderboard") {
           return MaterialPageRoute(builder: (context) {
             return const LeaderboardScreen();
