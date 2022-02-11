@@ -22,10 +22,17 @@ class VideoDetailsScreen extends StatefulWidget {
 }
 
 class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
+  void onUserTap() {
+    Navigator.of(context).pushNamed("/userChannel/${widget.vm.author}");
+  }
+
   Widget container(String title, Widget body) {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
+        actions: [
+          IconButton(onPressed: onUserTap, icon: const Icon(Icons.person)),
+        ],
       ),
       body: body,
     );
@@ -65,6 +72,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
               return VideoDetailsTabbedWidget(
                 children: tabBarChildren(data),
                 title: data.title,
+                  onUserTap: onUserTap,
               );
             } else {
               return container(

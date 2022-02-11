@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 class VideoDetailsTabbedWidget extends StatefulWidget {
   const VideoDetailsTabbedWidget(
-      {Key? key, required this.children, required this.title})
+      {Key? key,
+      required this.children,
+      required this.title,
+      required this.onUserTap})
       : super(key: key);
   final List<Widget> children;
   final String title;
+  final Function onUserTap;
 
   @override
   _VideoDetailsTabbedWidgetState createState() =>
@@ -39,6 +43,13 @@ class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          IconButton(
+              onPressed: () {
+                widget.onUserTap();
+              },
+              icon: const Icon(Icons.person)),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: tabs,
