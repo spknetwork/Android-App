@@ -80,6 +80,10 @@ class _MyAppState extends State<MyApp> {
         } else if (settings.name == "/firstUploads") {
           return configuredHomeWidget(
               'First Uploads', "${server.domain}/apiv2/feeds/firstUploads", false);
+        } else if (settings.name?.contains("/userChannel/") == true) {
+          var last = settings.name?.split("/userChannel/").last ?? "sagarkothari88";
+          return configuredHomeWidget(
+              last, "${server.domain}/apiv2/feeds/@$last", false);
         } else if (settings.name == "/leaderboard") {
           return MaterialPageRoute(builder: (context) {
             return const LeaderboardScreen();

@@ -11,8 +11,10 @@ class HomeScreenWidgets {
     return const LoadingScreen();
   }
 
-  Widget _tileTitle(HomeFeedItem item, BuildContext context) {
-    String timeInString = item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
+  Widget _tileTitle(HomeFeedItem item, BuildContext context,
+      Function(HomeFeedItem) onUserTap) {
+    String timeInString =
+        item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
     String owner = "👤 ${item.author}";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
     String views = "▶ ${item.views}";
@@ -22,13 +24,16 @@ class HomeScreenWidgets {
       userThumbUrl: server.userOwnerThumb(item.author),
       title: item.title,
       subtitle: "$timeInString $owner $duration $views",
+      onUserTap: () {
+        onUserTap(item);
+      },
     );
   }
 
-  Widget _listTile(
-      HomeFeedItem item, BuildContext context, Function(HomeFeedItem) onTap) {
+  Widget _listTile(HomeFeedItem item, BuildContext context,
+      Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
     return ListTile(
-      title: _tileTitle(item, context),
+      title: _tileTitle(item, context, onUserTap),
       onTap: () {
         onTap(item);
       },
@@ -36,7 +41,7 @@ class HomeScreenWidgets {
   }
 
   Widget list(List<HomeFeedItem> list, Future<void> Function() onRefresh,
-      Function(HomeFeedItem) onTap) {
+      Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
     return Container(
         padding: const EdgeInsets.only(top: 10, bottom: 10),
         child: RefreshIndicator(
@@ -44,7 +49,7 @@ class HomeScreenWidgets {
           child: ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
               itemBuilder: (context, index) {
-                return _listTile(list[index], context, onTap);
+                return _listTile(list[index], context, onTap, onUserTap);
               },
               separatorBuilder: (context, index) => const Divider(
                     thickness: 0,

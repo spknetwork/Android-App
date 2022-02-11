@@ -96,40 +96,29 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
+  Widget _divider() {
+    return const Divider(
+      height: 1,
+      color: Colors.blueGrey,
+    );
+  }
+
   Widget _drawerMenu(BuildContext context) {
     return ListView(
       children: [
         _drawerHeader(context),
         _firstUploads(context),
-        const Divider(
-          height: 1,
-          color: Colors.blueGrey,
-        ),
+        _divider(),
         _trendingContent(context),
-        const Divider(
-          height: 1,
-          color: Colors.blueGrey,
-        ),
+        _divider(),
         _newContent(context),
-        const Divider(
-          height: 1,
-          color: Colors.blueGrey,
-        ),
+        _divider(),
         _communities(),
-        const Divider(
-          height: 1,
-          color: Colors.blueGrey,
-        ),
+        _divider(),
         _leaderBoard(context),
-        const Divider(
-          height: 1,
-          color: Colors.blueGrey,
-        ),
+        _divider(),
         _changeTheme(),
-        const Divider(
-          height: 1,
-          color: Colors.blueGrey,
-        ),
+        _divider(),
       ],
     );
   }

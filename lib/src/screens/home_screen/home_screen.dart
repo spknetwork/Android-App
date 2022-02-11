@@ -42,6 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
         .pushNamed(VideoDetailsScreen.routeName(item.author, item.permlink));
   }
 
+  void onUserTap(HomeFeedItem item) {
+    Navigator.of(context).pushNamed("/userChannel/${item.author}");
+  }
+
   Widget _screen() {
     return FutureBuilder(
       future: _loadingFeed,
@@ -52,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onRetry: vm.loadHomeFeed);
       } else if (snapshot.hasData) {
         List<HomeFeedItem> items = snapshot.data! as List<HomeFeedItem>;
-        return widgets.list(items, vm.loadHomeFeed, onTap);
+        return widgets.list(items, vm.loadHomeFeed, onTap, onUserTap);
       } else {
         return widgets.loadingData();
       }

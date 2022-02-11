@@ -11,7 +11,8 @@ class ListTileVideo extends StatelessWidget {
       required this.url,
       required this.userThumbUrl,
       required this.title,
-      required this.subtitle})
+      required this.subtitle,
+      required this.onUserTap})
       : super(key: key);
 
   final String placeholder;
@@ -19,6 +20,7 @@ class ListTileVideo extends StatelessWidget {
   final String userThumbUrl;
   final String title;
   final String subtitle;
+  final Function onUserTap;
 
   Widget _commonContainer(BuildContext context, Widget child) {
     return Container(
@@ -68,7 +70,13 @@ class ListTileVideo extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           child: Row(
             children: [
-              CustomCircleAvatar(height: 40, width: 40, url: userThumbUrl),
+              GestureDetector(
+                child: CustomCircleAvatar(
+                    height: 40, width: 40, url: userThumbUrl),
+                onTap: () {
+                  onUserTap();
+                },
+              ),
               Container(width: 5),
               Flexible(
                 child: Column(
