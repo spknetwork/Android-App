@@ -11,6 +11,10 @@ class Server {
     return "https://img.3speakcontent.co/user/$value/cover.png";
   }
 
+  String communityIcon(String value) {
+    return "https://images.hive.blog/u/$value/avatar?size=icon";
+  }
+
   String resizedImage(String value) {
     return "https://images.hive.blog/320x160/$value";
   }

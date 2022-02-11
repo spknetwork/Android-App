@@ -41,11 +41,14 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-  Widget _communities() {
+  Widget _communities(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.people_sharp),
       title: const Text("Communities"),
-      onTap: () {},
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context).pushNamed("/communities");
+      },
     );
   }
 
@@ -113,7 +116,7 @@ class DrawerScreen extends StatelessWidget {
         _divider(),
         _newContent(context),
         _divider(),
-        _communities(),
+        _communities(context),
         _divider(),
         _leaderBoard(context),
         _divider(),

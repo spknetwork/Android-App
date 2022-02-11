@@ -2,8 +2,6 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
-import 'package:acela/src/models/video_details_model/video_details_description.dart';
-import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:http/http.dart' show get;
 import 'package:http/http.dart' as http;
 
