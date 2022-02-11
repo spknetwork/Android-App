@@ -53,9 +53,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             child: Text(medal),
             backgroundColor: Colors.transparent,
           ),
-          const SizedBox(
-            width: 5,
-          ),
           Text(item.username),
         ],
       ),

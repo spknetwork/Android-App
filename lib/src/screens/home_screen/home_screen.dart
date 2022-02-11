@@ -46,21 +46,34 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.of(context).pushNamed("/userChannel/${item.author}");
   }
 
+  Widget header() {
+    if (vm.path.contains("userChannel")) {
+      return const SizedBox(
+        height: 10,
+      );
+    } else {
+      return const SizedBox(
+        height: 0,
+      );
+    }
+  }
+
   Widget _screen() {
     return FutureBuilder(
       future: _loadingFeed,
-        builder: (builder, snapshot) {
-      if (snapshot.hasError) {
-        return RetryScreen(
-            error: snapshot.error?.toString() ?? 'Something went wrong',
-            onRetry: vm.loadHomeFeed);
-      } else if (snapshot.hasData) {
-        List<HomeFeedItem> items = snapshot.data! as List<HomeFeedItem>;
-        return widgets.list(items, vm.loadHomeFeed, onTap, onUserTap);
-      } else {
-        return widgets.loadingData();
-      }
-    });
+      builder: (builder, snapshot) {
+        if (snapshot.hasError) {
+          return RetryScreen(
+              error: snapshot.error?.toString() ?? 'Something went wrong',
+              onRetry: vm.loadHomeFeed);
+        } else if (snapshot.hasData) {
+          List<HomeFeedItem> items = snapshot.data! as List<HomeFeedItem>;
+          return widgets.list(items, vm.loadHomeFeed, onTap, onUserTap);
+        } else {
+          return widgets.loadingData();
+        }
+      },
+    );
   }
 
   @override
