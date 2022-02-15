@@ -42,28 +42,17 @@ class HomeScreenWidgets {
 
   Widget list(List<HomeFeedItem> list, Future<void> Function() onRefresh,
       Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
-    return SizedBox.expand(
-      // padding: const EdgeInsets.only(top: 10, bottom: 10),
-      child: RefreshIndicator(
-        onRefresh: onRefresh,
-        child: DraggableScrollableSheet(
-          initialChildSize: 0.8,
-          minChildSize: 0.8,
-          maxChildSize: 1,
-          builder: (context, scrollController) {
-            return ListView.separated(
-              controller: scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                return _listTile(list[index], context, onTap, onUserTap);
-              },
-              separatorBuilder: (context, index) => const Divider(
-                  thickness: 0, height: 1, color: Colors.transparent),
-              itemCount: list.length,
-            );
-          },
-        ),
-      ),
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child:ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemBuilder: (context, index) {
+          return _listTile(list[index], context, onTap, onUserTap);
+        },
+        separatorBuilder: (context, index) => const Divider(
+            thickness: 0, height: 1, color: Colors.transparent),
+        itemCount: list.length,
+      )
     );
   }
 }

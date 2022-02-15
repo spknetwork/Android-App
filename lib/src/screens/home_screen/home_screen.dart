@@ -43,18 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onUserTap(HomeFeedItem item) {
-    Navigator.of(context).pushNamed("/userChannel/${item.author}");
-  }
-
-  Widget header() {
-    if (vm.path.contains("userChannel")) {
-      return const SizedBox(
-        height: 10,
-      );
-    } else {
-      return const SizedBox(
-        height: 0,
-      );
+    if (!widget.path.contains(item.author)) {
+      Navigator.of(context).pushNamed("/userChannel/${item.author}");
     }
   }
 

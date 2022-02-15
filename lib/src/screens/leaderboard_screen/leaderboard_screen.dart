@@ -40,6 +40,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
+  void onUserTap(String author) {
+    Navigator.of(context).pushNamed("/userChannel/$author");
+  }
+
   Widget _medalTile(LeaderboardResponseItem item, String medal) {
     return ListTile(
       leading: CustomCircleAvatar(
@@ -58,7 +62,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       ),
       subtitle: _listTileSubtitle(item),
       onTap: () {
-        log("user tapped on ${item.username}");
+        onUserTap(item.username);
       },
     );
   }
@@ -73,7 +77,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       title: Text(item.username),
       subtitle: _listTileSubtitle(item),
       onTap: () {
-        log("user tapped on ${item.username}");
+        onUserTap(item.username);
       },
     );
   }
