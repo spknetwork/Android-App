@@ -4,8 +4,11 @@ import 'package:video_player/video_player.dart';
 import 'package:acela/src/widgets/controls_overlay.dart';
 
 class SPKVideoPlayer extends StatefulWidget {
-  const SPKVideoPlayer({Key? key, required this.playUrl}) : super(key: key);
+  const SPKVideoPlayer(
+      {Key? key, required this.playUrl, required this.handleFullScreen})
+      : super(key: key);
   final String playUrl;
+  final Function(bool) handleFullScreen;
 
   @override
   _SPKVideoPlayerState createState() => _SPKVideoPlayerState();
@@ -48,8 +51,17 @@ class _SPKVideoPlayerState extends State<SPKVideoPlayer>
                 children: <Widget>[
                   VideoPlayer(controller),
                   ClosedCaption(text: controller.value.caption.text),
-                  ControlsOverlay(controller: controller),
-                  VideoProgressIndicator(controller, allowScrubbing: true),
+                  ControlsOverlay(
+                    controller: controller,
+                    handleFullScreen: (value) {
+                      widget.handleFullScreen(value);
+                    },
+                  ),
+                  VideoProgressIndicator(
+                    controller,
+                    allowScrubbing: true,
+                    padding: const EdgeInsets.all(20),
+                  ),
                 ],
               ),
             )

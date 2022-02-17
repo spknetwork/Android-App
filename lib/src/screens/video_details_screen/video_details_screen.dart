@@ -22,18 +22,25 @@ class VideoDetailsScreen extends StatefulWidget {
 }
 
 class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
+  var fullscreen = false;
+
   void onUserTap() {
     Navigator.of(context).pushNamed("/userChannel/${widget.vm.author}");
   }
 
   Widget container(String title, Widget body) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: [
-          IconButton(onPressed: onUserTap, icon: const Icon(Icons.person)),
-        ],
-      ),
+      appBar: fullscreen
+          ? null
+          : AppBar(
+              title: Text(title),
+              actions: [
+                IconButton(
+                  onPressed: onUserTap,
+                  icon: const Icon(Icons.person),
+                ),
+              ],
+            ),
       body: body,
     );
   }
@@ -51,6 +58,11 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     return [
       SPKVideoPlayer(
         playUrl: details.playUrl,
+        handleFullScreen: (value) {
+          setState(() {
+            fullscreen = value;
+          });
+        },
       ),
       descriptionMarkDown(details.description),
       VideoDetailsCommentsWidget(vm: widget.vm),
@@ -61,27 +73,31 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: widget.vm.getVideoDetails(),
-        builder: (builder, snapshot) {
-          if (snapshot.hasError) {
-            String text =
-                'Something went wrong - ${snapshot.error?.toString() ?? ""}';
-            return container(widget.vm.author, Text(text));
-          } else if (snapshot.hasData) {
-            var data = snapshot.data as VideoDetails?;
-            if (data != null) {
-              return VideoDetailsTabbedWidget(
-                children: tabBarChildren(data),
-                title: data.title,
-                  onUserTap: onUserTap,
-              );
-            } else {
-              return container(
-                  widget.vm.author, const Text("Something went wrong"));
-            }
+      future: widget.vm.getVideoDetails(),
+      builder: (builder, snapshot) {
+        if (snapshot.hasError) {
+          String text =
+              'Something went wrong - ${snapshot.error?.toString() ?? ""}';
+          return container(widget.vm.author, Text(text));
+        } else if (snapshot.hasData) {
+          var data = snapshot.data as VideoDetails?;
+          if (data != null) {
+            return VideoDetailsTabbedWidget(
+              children: tabBarChildren(data),
+              title: data.title,
+              onUserTap: onUserTap,
+                fullscreen: fullscreen,
+            );
           } else {
-            return container(widget.vm.author, const LoadingScreen());
+            return container(
+              widget.vm.author,
+              const Text("Something went wrong"),
+            );
           }
-        });
+        } else {
+          return container(widget.vm.author, const LoadingScreen());
+        }
+      },
+    );
   }
 }
