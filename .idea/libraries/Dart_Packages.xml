@@ -520,6 +520,62 @@
             </list>
           </value>
         </entry>
+        <entry key="url_launcher">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher-6.0.20/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="url_launcher_android">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_android-6.0.15/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="url_launcher_ios">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_ios-6.0.15/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="url_launcher_linux">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_linux-3.0.0/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="url_launcher_macos">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_macos-3.0.0/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="url_launcher_platform_interface">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_platform_interface-2.0.5/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="url_launcher_web">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_web-2.0.8/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="url_launcher_windows">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_windows-3.0.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="vector_math">
           <value>
             <list>
@@ -663,6 +719,14 @@
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/timeago-3.2.2/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/timing-1.0.0/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/typed_data-1.3.0/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher-6.0.20/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_android-6.0.15/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_ios-6.0.15/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_linux-3.0.0/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_macos-3.0.0/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_platform_interface-2.0.5/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_web-2.0.8/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_windows-3.0.0/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/vector_math-2.1.1/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player-2.2.18/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player_android-2.3.0/lib" />

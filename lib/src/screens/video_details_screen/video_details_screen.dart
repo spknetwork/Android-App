@@ -1,4 +1,3 @@
-import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_recommendation.dart';
@@ -8,6 +7,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class VideoDetailsScreen extends StatefulWidget {
   const VideoDetailsScreen({Key? key, required this.vm}) : super(key: key);
@@ -50,7 +50,11 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       margin: const EdgeInsets.all(10),
       child: Markdown(
         data: markDown,
+        onTapLink: (text, url, title) {
+          launch(url!);
+        },
       ),
+      // Html(data: markdownToHtml(markDown)),
     );
   }
 
