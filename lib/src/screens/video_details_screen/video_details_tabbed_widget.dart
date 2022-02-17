@@ -20,8 +20,9 @@ class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
     with SingleTickerProviderStateMixin {
   static const List<Tab> tabs = [
     Tab(text: 'Video'),
-    Tab(text: 'Description'),
-    Tab(text: 'Comments')
+    Tab(text: 'Info'),
+    Tab(text: 'Comments'),
+    Tab(text: 'More'),
   ];
 
   late TabController _tabController;

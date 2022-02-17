@@ -86,6 +86,7 @@ class _VideoDetailsCommentsWidgetState extends State<VideoDetailsCommentsWidget>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return FutureBuilder(
         future: widget.vm.loadComments(widget.vm.author, widget.vm.permlink),
         builder: (builder, snapshot) {

@@ -38,6 +38,7 @@ class _SPKVideoPlayerState extends State<SPKVideoPlayer>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Center(
       child: controller.value.isInitialized
           ? AspectRatio(

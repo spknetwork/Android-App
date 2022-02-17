@@ -65,6 +65,12 @@ class ListTileVideo extends StatelessWidget {
           placeholder: placeholder,
           image: server.resizedImage(url),
           fit: BoxFit.cover,
+          placeholderErrorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+            return Image.asset(placeholder);
+          },
+          imageErrorBuilder: (BuildContext context, Object error, StackTrace? stackTrace){
+            return Image.asset(placeholder);
+          },
         ),
         Container(
           padding: const EdgeInsets.all(10),

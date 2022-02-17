@@ -1,13 +1,13 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_recommendation.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_tabbed_widget.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:http/http.dart';
 
 class VideoDetailsScreen extends StatefulWidget {
   const VideoDetailsScreen({Key? key, required this.vm}) : super(key: key);
@@ -54,6 +54,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       ),
       descriptionMarkDown(details.description),
       VideoDetailsCommentsWidget(vm: widget.vm),
+      VideoDetailsRecommendationWidget(vm: widget.vm),
     ];
   }
 

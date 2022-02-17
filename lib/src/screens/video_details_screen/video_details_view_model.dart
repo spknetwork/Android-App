@@ -2,6 +2,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
+import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
 import 'package:http/http.dart' show get;
 import 'package:http/http.dart' as http;
 
@@ -53,6 +54,18 @@ class VideoDetailsViewModel {
     var response = await get(Uri.parse(endPoint));
     if (response.statusCode == 200) {
       VideoDetails data = videoDetailsFromJson(response.body);
+      return data;
+    } else {
+      throw "Status code = ${response.statusCode}";
+    }
+  }
+
+  Future<List<VideoRecommendationItem>> getRecommendedVideos() async {
+    final endPoint =
+        "${server.domain}/apiv2/recommended?v=$author/$permlink";
+    var response = await get(Uri.parse(endPoint));
+    if (response.statusCode == 200) {
+      var data = videoRecommendationItemsFromJson(response.body);
       return data;
     } else {
       throw "Status code = ${response.statusCode}";
