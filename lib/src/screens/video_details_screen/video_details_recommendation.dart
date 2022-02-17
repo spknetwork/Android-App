@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -23,14 +24,20 @@ class _VideoDetailsRecommendationWidgetState
   bool get wantKeepAlive => true;
 
   Widget listTile(VideoRecommendationItem item) {
-    return ListTileVideo(
-      placeholder: 'assets/branding/three_speak_logo.png',
-      url: item.image,
-      userThumbUrl: server.userOwnerThumb(item.owner),
-      title: item.title,
-      subtitle: "",
-      onUserTap: () {
-        log("Video recommendation item taped");
+    return ListTile(
+      title: ListTileVideo(
+        placeholder: 'assets/branding/three_speak_logo.png',
+        url: item.image,
+        userThumbUrl: server.userOwnerThumb(item.owner),
+        title: item.title,
+        subtitle: "",
+        onUserTap: () {
+          Navigator.of(context).pushNamed("/userChannel/${item.owner}");
+        },
+      ),
+      onTap: () {
+        Navigator.of(context)
+            .pushNamed(VideoDetailsScreen.routeName(item.owner, item.mediaid));
       },
     );
   }
