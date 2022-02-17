@@ -6,6 +6,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 class VideoDetailsCommentsWidget extends StatefulWidget {
   const VideoDetailsCommentsWidget(
@@ -52,6 +53,9 @@ class _VideoDetailsCommentsWidgetState extends State<VideoDetailsCommentsWidget>
                 MarkdownBody(
                   data: body,
                   shrinkWrap: true,
+                  onTapLink: (text, url, title) {
+                    launch(url!);
+                  },
                 ),
                 Container(margin: const EdgeInsets.only(bottom: 10)),
                 Text(
