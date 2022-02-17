@@ -11,8 +11,10 @@ class SPKVideoPlayer extends StatefulWidget {
   _SPKVideoPlayerState createState() => _SPKVideoPlayerState();
 }
 
-class _SPKVideoPlayerState extends State<SPKVideoPlayer> with AutomaticKeepAliveClientMixin<SPKVideoPlayer> {
+class _SPKVideoPlayerState extends State<SPKVideoPlayer>
+    with AutomaticKeepAliveClientMixin<SPKVideoPlayer> {
   late VideoPlayerController controller;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -24,7 +26,8 @@ class _SPKVideoPlayerState extends State<SPKVideoPlayer> with AutomaticKeepAlive
 
   @override
   void initState() {
-    controller = VideoPlayerController.network(widget.playUrl)
+    controller = VideoPlayerController.network(widget.playUrl,
+        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true))
       ..initialize().then((_) {
         setState(() {
           controller.play();
@@ -38,17 +41,17 @@ class _SPKVideoPlayerState extends State<SPKVideoPlayer> with AutomaticKeepAlive
     return Center(
       child: controller.value.isInitialized
           ? AspectRatio(
-        aspectRatio: controller.value.aspectRatio,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: <Widget>[
-            VideoPlayer(controller),
-            ClosedCaption(text: controller.value.caption.text),
-            ControlsOverlay(controller: controller),
-            VideoProgressIndicator(controller, allowScrubbing: true),
-          ],
-        ),
-      )
+              aspectRatio: controller.value.aspectRatio,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: <Widget>[
+                  VideoPlayer(controller),
+                  ClosedCaption(text: controller.value.caption.text),
+                  ControlsOverlay(controller: controller),
+                  VideoProgressIndicator(controller, allowScrubbing: true),
+                ],
+              ),
+            )
           : const LoadingScreen(),
     );
   }

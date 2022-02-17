@@ -8,6 +8,16 @@ class DrawerScreen extends StatelessWidget {
   final bool isDarkMode;
   final Function switchDarkMode;
 
+  Widget _homeMenu(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.home),
+      title: const Text("Home"),
+      onTap: () {
+        Navigator.pop(context);
+      },
+    );
+  }
+
   Widget _firstUploads(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.emoji_emotions_outlined),
@@ -110,6 +120,8 @@ class DrawerScreen extends StatelessWidget {
     return ListView(
       children: [
         _drawerHeader(context),
+        _homeMenu(context),
+        _divider(),
         _firstUploads(context),
         _divider(),
         _trendingContent(context),
