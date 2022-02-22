@@ -56,7 +56,7 @@ class _ControlsOverlayState extends State<ControlsOverlay> {
             });
           },
         ),
-        Align(
+        playing ? Container() : Align(
           alignment: Alignment.bottomLeft,
           child: Column(
             children: [
@@ -65,7 +65,7 @@ class _ControlsOverlayState extends State<ControlsOverlay> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   SizedBox(
-                    height: 30,
+                    height: 20,
                     child: Slider(
                       value: volume,
                       onChanged: (value) {

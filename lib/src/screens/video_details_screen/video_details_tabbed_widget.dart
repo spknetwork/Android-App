@@ -22,9 +22,9 @@ class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
     with SingleTickerProviderStateMixin {
   static const List<Tab> tabs = [
     Tab(text: 'Video'),
-    Tab(text: 'Info'),
+    Tab(text: 'Description'),
     Tab(text: 'Comments'),
-    Tab(text: 'More'),
+    Tab(text: 'Recommendation'),
   ];
 
   late TabController _tabController;
@@ -57,6 +57,7 @@ class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
               ],
               bottom: TabBar(
                 controller: _tabController,
+                isScrollable: true,
                 tabs: tabs,
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +52,7 @@ class _VideoDetailsCommentsWidgetState extends State<VideoDetailsCommentsWidget>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 MarkdownBody(
-                  data: body,
+                  data: Utilities.removeAllHtmlTags(body),
                   shrinkWrap: true,
                   onTapLink: (text, url, title) {
                     launch(url!);

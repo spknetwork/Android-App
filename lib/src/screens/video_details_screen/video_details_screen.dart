@@ -3,6 +3,7 @@ import 'package:acela/src/screens/video_details_screen/video_details_comments.da
 import 'package:acela/src/screens/video_details_screen/video_details_recommendation.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_tabbed_widget.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     return Container(
       margin: const EdgeInsets.all(10),
       child: Markdown(
-        data: markDown,
+        data: Utilities.removeAllHtmlTags(markDown),
         onTapLink: (text, url, title) {
           launch(url!);
         },

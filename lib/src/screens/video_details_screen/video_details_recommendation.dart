@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
