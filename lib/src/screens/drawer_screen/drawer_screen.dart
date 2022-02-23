@@ -14,6 +14,7 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("Home"),
       onTap: () {
         Navigator.pop(context);
+        Navigator.of(context).pushReplacementNamed("/");
       },
     );
   }
@@ -24,7 +25,7 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("First Uploads"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context).pushNamed("/firstUploads");
+        Navigator.of(context).pushReplacementNamed("/firstUploads");
       },
     );
   }
@@ -35,7 +36,7 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("Trending Content"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context).pushNamed("/trending");
+        Navigator.of(context).pushReplacementNamed("/trending");
       },
     );
   }
@@ -46,7 +47,7 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("New Content"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context).pushNamed("/new");
+        Navigator.of(context).pushReplacementNamed("/new");
       },
     );
   }

@@ -74,13 +74,13 @@ class _MyAppState extends State<MyApp> {
               'Home', "${server.domain}/apiv2/feeds/home", true);
         } else if (settings.name == "/trending") {
           return configuredHomeWidget(
-              'Trending Content', "${server.domain}/apiv2/feeds/trending", false);
+              'Trending Content', "${server.domain}/apiv2/feeds/trending", true);
         } else if (settings.name == "/new") {
           return configuredHomeWidget(
-              'New Content', "${server.domain}/apiv2/feeds/new", false);
+              'New Content', "${server.domain}/apiv2/feeds/new", true);
         } else if (settings.name == "/firstUploads") {
           return configuredHomeWidget(
-              'First Uploads', "${server.domain}/apiv2/feeds/firstUploads", false);
+              'First Uploads', "${server.domain}/apiv2/feeds/firstUploads", true);
         } else if (settings.name?.contains("/userChannel/") == true) {
           var last = settings.name?.split("/userChannel/").last ?? "sagarkothari88";
           return configuredHomeWidget(
