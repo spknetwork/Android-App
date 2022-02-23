@@ -1,6 +1,9 @@
 # This is a generated file; do not edit or check into version control.
 firebase_core=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.12.0/
 firebase_core_web=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-1.5.4/
+share_plus=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus-3.1.0/
+share_plus_macos=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus_macos-2.0.2/
+share_plus_web=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus_web-2.0.4/
 url_launcher=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher-6.0.20/
 url_launcher_android=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_android-6.0.15/
 url_launcher_ios=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_ios-6.0.15/

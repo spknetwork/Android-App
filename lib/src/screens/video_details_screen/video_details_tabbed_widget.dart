@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
+import 'package:share_plus/share_plus.dart';
 
 class VideoDetailsTabbedWidget extends StatefulWidget {
-  const VideoDetailsTabbedWidget({
-    Key? key,
-    required this.children,
-    required this.title,
-    required this.onUserTap,
-    required this.fullscreen,
-  }) : super(key: key);
+  const VideoDetailsTabbedWidget(
+      {Key? key,
+      required this.children,
+      required this.title,
+      required this.onUserTap,
+      required this.fullscreen,
+      required this.routeName})
+      : super(key: key);
   final List<Widget> children;
   final String title;
   final Function onUserTap;
   final bool fullscreen;
+  final String routeName;
 
   @override
   _VideoDetailsTabbedWidgetState createState() =>
@@ -41,6 +45,29 @@ class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
     super.dispose();
   }
 
+  List<Widget> _buttons() {
+    var channelButton = IconButton(
+      onPressed: () {
+        widget.onUserTap();
+      },
+      icon: const Icon(Icons.person),
+    );
+    var shareButton = IconButton(
+      onPressed: () {
+        Share.share(
+          widget.routeName,
+          subject: 'I found this video interesting ${widget.routeName}',
+        );
+      },
+      icon: const Icon(Icons.share),
+    );
+    if (Platform.isAndroid || Platform.isIOS) {
+      return [channelButton, shareButton];
+    } else {
+      return [channelButton];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,13 +75,7 @@ class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
           ? null
           : AppBar(
               title: Text(widget.title),
-              actions: [
-                IconButton(
-                    onPressed: () {
-                      widget.onUserTap();
-                    },
-                    icon: const Icon(Icons.person)),
-              ],
+              actions: _buttons(),
               bottom: TabBar(
                 controller: _tabController,
                 isScrollable: true,

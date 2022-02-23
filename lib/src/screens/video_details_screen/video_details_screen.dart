@@ -1,3 +1,4 @@
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_recommendation.dart';
@@ -91,7 +92,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
               children: tabBarChildren(data),
               title: data.title,
               onUserTap: onUserTap,
-                fullscreen: fullscreen,
+              fullscreen: fullscreen,
+              routeName:
+                  "${server.domain}${VideoDetailsScreen.routeName(data.owner, data.permlink)}",
             );
           } else {
             return container(
