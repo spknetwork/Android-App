@@ -3,6 +3,9 @@
   <component name="FrameworkDetectionExcludesConfiguration">
     <type id="android" />
   </component>
+  <component name="ProjectPlainTextFileTypeManager">
+    <file url="file://$PROJECT_DIR$/lib/src/models/user_profile/request/user_profile_request.dart" />
+  </component>
   <component name="ProjectRootManager">
     <output url="file://$PROJECT_DIR$/out" />
   </component>

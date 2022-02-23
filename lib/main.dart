@@ -1,6 +1,7 @@
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -83,8 +84,9 @@ class _MyAppState extends State<MyApp> {
               'First Uploads', "${server.domain}/apiv2/feeds/firstUploads", true);
         } else if (settings.name?.contains("/userChannel/") == true) {
           var last = settings.name?.split("/userChannel/").last ?? "sagarkothari88";
-          return configuredHomeWidget(
-              last, "${server.domain}/apiv2/feeds/@$last", false);
+          return MaterialPageRoute(builder: (context) {
+            return UserChannelScreen(owner: last);
+          });
         } else if (settings.name == "/leaderboard") {
           return MaterialPageRoute(builder: (context) {
             return const LeaderboardScreen();
