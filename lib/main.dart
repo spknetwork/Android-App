@@ -1,4 +1,5 @@
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
+import 'package:acela/src/screens/communities_screen/community_details/community_details_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -83,9 +84,15 @@ class _MyAppState extends State<MyApp> {
           return configuredHomeWidget(
               'First Uploads', "${server.domain}/apiv2/feeds/firstUploads", true);
         } else if (settings.name?.contains("/userChannel/") == true) {
-          var last = settings.name?.split("/userChannel/").last ?? "sagarkothari88";
+          var last = settings.name?.split("/userChannel/").last ?? "threespeak";
           return MaterialPageRoute(builder: (context) {
             return UserChannelScreen(owner: last);
+          });
+        } else if (settings.name?.contains('/community/') == true) {
+          var last = settings.name?.split("/community/").last ?? "hive-167922?name=LeoFinance";
+          var comps = last.split("?name=");
+          return MaterialPageRoute(builder: (context) {
+            return CommunityDetailScreen(name: comps[0], title: comps[1]);
           });
         } else if (settings.name == "/leaderboard") {
           return MaterialPageRoute(builder: (context) {

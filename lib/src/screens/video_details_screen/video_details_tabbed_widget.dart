@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:io' show Platform;
+// import 'dart:io' show Platform;
 import 'package:share_plus/share_plus.dart';
 
 class VideoDetailsTabbedWidget extends StatefulWidget {
@@ -61,11 +61,11 @@ class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
       },
       icon: const Icon(Icons.share),
     );
-    if (Platform.isAndroid || Platform.isIOS) {
-      return [channelButton, shareButton];
-    } else {
+    // if (Platform.isAndroid || Platform.isIOS) {
+    //   return [channelButton, shareButton];
+    // } else {
       return [channelButton];
-    }
+    // }
   }
 
   @override

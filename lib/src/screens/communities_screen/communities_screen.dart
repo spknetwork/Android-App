@@ -41,7 +41,8 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
       title: Text(item.title),
       subtitle: Text(item.about),
       onTap: () {
-        log("user tapped on ${item.name}");
+        Navigator.of(context)
+            .pushNamed('/community/${item.name}?name=${item.title}');
       },
     );
   }
