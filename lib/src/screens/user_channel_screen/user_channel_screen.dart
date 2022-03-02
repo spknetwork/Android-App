@@ -22,31 +22,48 @@ class UserChannelScreen extends StatefulWidget {
   _UserChannelScreenState createState() => _UserChannelScreenState();
 }
 
-class _UserChannelScreenState extends State<UserChannelScreen> {
-  List<HomeFeedItem> items = [];
+class _UserChannelScreenState extends State<UserChannelScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  static const List<Tab> tabs = [
+    Tab(text: 'About'),
+    Tab(text: 'Videos'),
+    Tab(text: 'Followers'),
+    Tab(text: 'Following'),
+  ];
+
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: tabs.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _tabController.dispose();
+  }
 
   Future<UserProfileResponse> loadUserProfile(String author) async {
     var client = http.Client();
     var body = UserProfileRequest.forOwner(widget.owner).toJsonString();
     var response = await client.post(Uri.parse(server.hiveDomain), body: body);
     if (response.statusCode == 200) {
-      _loadFeed();
       return UserProfileResponse.fromString(response.body);
     } else {
       throw "Status code is ${response.statusCode}";
     }
   }
-
-  void _loadFeed() {
-    get(Uri.parse("${server.domain}/apiv2/feeds/@${widget.owner}"))
-        .then((value) {
-      if (value.statusCode == 200) {
-        List<HomeFeedItem> list = homeFeedItemFromString(value.body);
-        setState(() {
-          items = list;
-        });
-      }
-    });
+  
+  Future<List<HomeFeedItem>> loadFeed(String author) async {
+    var response = await get(Uri.parse("${server.domain}/apiv2/feeds/@${widget.owner}"));
+    if (response.statusCode == 200) {
+      List<HomeFeedItem> list = homeFeedItemFromString(response.body);
+      return list;
+    } else {
+      throw "Status code is ${response.statusCode}";
+    }
   }
 
   Widget _tileTitle(HomeFeedItem item, BuildContext context,
@@ -83,7 +100,6 @@ class _UserChannelScreenState extends State<UserChannelScreen> {
       height: 150,
       placeholder: 'assets/branding/three_speak_logo.png',
       image: url,
-      //data.result.metadata.profile.coverImage,
       fit: BoxFit.cover,
       imageErrorBuilder:
           (BuildContext context, Object error, StackTrace? stackTrace) {
@@ -92,69 +108,65 @@ class _UserChannelScreenState extends State<UserChannelScreen> {
     );
   }
 
-  Widget _thumbnail(String url, String name) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        children: [
-          CustomCircleAvatar(
-              height: 100,
-              width: 100,
-              url: url), //data.result.metadata.profile.profileImage),
-          const SizedBox(
-            width: 10,
-          ),
-          Text(
-            name,
-            style: Theme.of(context).textTheme.displaySmall,
-          ),
-        ],
-      ),
-    );
+  Widget _futureVideos() {
+    return FutureBuilder(
+      future: loadFeed(widget.owner),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Text('Error loading user profile');
+          } else if (snapshot.hasData) {
+            var data = snapshot.data! as List<HomeFeedItem>;
+            return ListView.separated(
+              itemBuilder: (context, index) {
+                return _listTile(data[index], context, (item) {
+                  log("tapped on item ${item.permlink}");
+                  Navigator.of(context).pushNamed(
+                      VideoDetailsScreen.routeName(item.author, item.permlink));
+                }, (owner) {
+                  log("tapped on user ${owner.author}");
+                });
+              },
+              separatorBuilder: (context, index) =>
+              const Divider(thickness: 0, height: 1, color: Colors.transparent),
+              itemCount: data.length,
+            );
+          } else {
+            return const LoadingScreen();
+          }
+    });
   }
 
-  Widget _bio(String bio) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Expanded(child: Text(bio)),
-    );
-  }
-
-  Widget _userProfile(UserProfileResponse data) {
-    return ListView.separated(
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return _cover(data.result.metadata.profile.coverImage);
-        } else if (index == 1) {
-          return _thumbnail(
-              data.result.metadata.profile.profileImage, data.result.name);
-        } else if (index == 2) {
-          return _bio(data.result.metadata.profile.about);
-        } else {
-          return _listTile(items[index - 3], context, (item) {
-            log("tapped on item ${item.permlink}");
-            Navigator.of(context).pushNamed(
-                VideoDetailsScreen.routeName(item.author, item.permlink));
-          }, (owner) {
-            log("tapped on user ${owner.author}");
-          });
-        }
-      },
-      separatorBuilder: (context, index) =>
-          const Divider(thickness: 0, height: 1, color: Colors.transparent),
-      itemCount: items.length + 3,
-    );
-  }
-
-  Widget _futureBuilder() {
+  Widget _futureUserProfile() {
     return FutureBuilder(
       future: loadUserProfile(widget.owner),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Text('Firebase not initialized');
+          return const Text('Error loading user profile');
         } else if (snapshot.hasData) {
           var data = snapshot.data! as UserProfileResponse;
-          return _userProfile(data);
+          return Column(
+            children: [
+              _cover(data.result.metadata.profile.coverImage),
+              const SizedBox(height: 10),
+              CustomCircleAvatar(height: 100, width: 100, url: data.result.metadata.profile.profileImage),
+              Text(widget.owner, style: Theme.of(context).textTheme.headline5),
+              const SizedBox(height: 10),
+              data.result.metadata.profile.about.isEmpty ? const Text('No Bio') : Text(data.result.metadata.profile.about),
+              const SizedBox(height: 10),
+              Text('Created at: ${Utilities.parseAndFormatDateTime(data.result.created)}'),
+              const SizedBox(height: 10),
+              Text('Last seen at: ${Utilities.parseAndFormatDateTime(data.result.active)}'),
+              const SizedBox(height: 10),
+              Text('Total Hive Posts: ${data.result.postCount}'),
+              const SizedBox(height: 10),
+              Text('Reputation: ${data.result.reputation}'),
+              const SizedBox(height: 10),
+              Text('Website: ${data.result.metadata.profile.website.isEmpty ? 'None' : data.result.metadata.profile.website}'),
+              const SizedBox(height: 10),
+              Text('Location: ${data.result.metadata.profile.location.isEmpty ? 'None' : data.result.metadata.profile.location}'),
+              const Spacer(),
+            ],
+          );
         } else {
           return const LoadingScreen();
         }
@@ -162,13 +174,34 @@ class _UserChannelScreenState extends State<UserChannelScreen> {
     );
   }
 
+  Widget _followers() {
+
+  }
+
+  Widget _following() {
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.owner),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: tabs,
+          isScrollable: true,
+        ),
       ),
-      body: _futureBuilder(),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _futureUserProfile(),
+          _futureVideos(),
+          const Text('Followers'),
+          const Text('Following'),
+        ],
+      ),
     );
   }
 }
