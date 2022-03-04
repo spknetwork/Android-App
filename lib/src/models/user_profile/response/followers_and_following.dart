@@ -20,6 +20,10 @@ class Followers {
     id: asInt(json, 'id'),
   );
 
+  factory Followers.fromJsonString(String jsonString) => Followers.fromJson(
+    json.decode(jsonString),
+  );
+
   Map<String, dynamic> toJson() => {
     'jsonrpc': jsonrpc,
     'result': result.map((e) => e.toJson()),
@@ -44,6 +48,10 @@ class FollowerItem {
     follower: asString(json, 'follower'),
     following: asString(json, 'following'),
     what: asList(json, 'what').map((e) => e.toString()).toList(),
+  );
+
+  factory FollowerItem.fromJsonString(String jsonString) => FollowerItem.fromJson(
+    json.decode(jsonString),
   );
 
   Map<String, dynamic> toJson() => {

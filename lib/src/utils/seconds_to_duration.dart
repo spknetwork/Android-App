@@ -6,7 +6,7 @@ class Utilities {
 
   static String parseAndFormatDateTime(String dateTime) {
     var dt = DateTime.parse(dateTime);
-    return "${dt.year}-${dt.month}-${dt.year}";
+    return "${dt.year}-${dt.month}-${dt.day}";
   }
 
   static String removeAllHtmlTags(String htmlText) {
