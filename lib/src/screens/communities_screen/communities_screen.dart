@@ -19,8 +19,7 @@ class CommunitiesScreen extends StatefulWidget {
 class _CommunitiesScreenState extends State<CommunitiesScreen> {
   Future<List<CommunityItem>> getData() async {
     var client = http.Client();
-    var body = communitiesRequestModelToJson(
-        CommunitiesRequestModel(params: CommunitiesRequestParams()));
+    var body = CommunitiesRequestModel(params: CommunitiesRequestParams()).toJsonString();
     var response = await client.post(Uri.parse(server.hiveDomain), body: body);
     if (response.statusCode == 200) {
       var communitiesResponse =

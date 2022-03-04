@@ -1,9 +1,6 @@
 import 'package:acela/src/utils/safe_convert.dart';
 import 'dart:convert';
 
-String communitiesRequestModelToJson(CommunitiesRequestModel data) =>
-    json.encode(data.toJson());
-
 class CommunitiesRequestModel {
   final CommunitiesRequestParams params;
 
@@ -37,6 +34,8 @@ class CommunitiesRequestModel {
         'method': method,
         'id': id,
       };
+
+  String toJsonString() => json.encode(toJson());
 }
 
 class CommunitiesRequestParams {

@@ -46,6 +46,12 @@ String asString(Map<String, dynamic>? json, String key, {String defaultValue = "
   return defaultValue;
 }
 
+String asDynamicString(dynamic value) {
+  if (value == null) return "";
+  if (value is String) return value;
+  return "";
+}
+
 Map<String, dynamic> asMap(Map<String, dynamic>? json, String key, {Map<String, dynamic>? defaultValue}) {
   if (json == null || !json.containsKey(key)) return defaultValue ?? <String, dynamic>{};
   var value = json[key];

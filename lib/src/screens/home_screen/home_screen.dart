@@ -7,13 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen(
-      {Key? key,
-      required this.path,
-      required this.showDrawer,
-      required this.title,
-      required this.isDarkMode,
-      required this.switchDarkMode})
+  const HomeScreen({Key? key,
+    required this.path,
+    required this.showDrawer,
+    required this.title,
+    required this.isDarkMode,
+    required this.switchDarkMode})
       : super(key: key);
   final String path;
   final bool showDrawer;
@@ -66,18 +65,42 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _threeSpeakIcon() {
+    return SizedBox(
+      height: 40,
+      width: 40,
+      child: CircleAvatar(
+        backgroundImage: Image
+            .asset("assets/branding/three_speak_icon.png")
+            .image,
+        backgroundColor: Colors.transparent,
+        radius: 100,
+      ),
+    );
+  }
+
+  Widget _header() {
+    return Row(
+      children: [
+        _threeSpeakIcon(),
+        const SizedBox(width: 10),
+        Text(widget.title),
+      ]
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.title), //_header(),
       ),
       body: _screen(),
       drawer: widget.showDrawer
           ? DrawerScreen(
-              isDarkMode: widget.isDarkMode,
-              switchDarkMode: widget.switchDarkMode,
-            )
+        isDarkMode: widget.isDarkMode,
+        switchDarkMode: widget.switchDarkMode,
+      )
           : null,
     );
   }
