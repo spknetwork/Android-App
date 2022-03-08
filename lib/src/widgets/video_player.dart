@@ -5,10 +5,9 @@ import 'package:chewie/chewie.dart';
 
 class SPKVideoPlayer extends StatefulWidget {
   const SPKVideoPlayer(
-      {Key? key, required this.playUrl, required this.handleFullScreen})
+      {Key? key, required this.playUrl})
       : super(key: key);
   final String playUrl;
-  final Function(bool) handleFullScreen;
 
   @override
   _SPKVideoPlayerState createState() => _SPKVideoPlayerState();

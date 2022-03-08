@@ -25,7 +25,6 @@ class VideoDetailsTabbedWidget extends StatefulWidget {
 class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
     with SingleTickerProviderStateMixin {
   static const List<Tab> tabs = [
-    Tab(text: 'Video'),
     Tab(text: 'Description'),
     Tab(text: 'Comments'),
     Tab(text: 'Recommendation'),
@@ -70,22 +69,18 @@ class _VideoDetailsTabbedWidgetState extends State<VideoDetailsTabbedWidget>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: widget.fullscreen
-          ? null
-          : AppBar(
-              title: Text(widget.title),
-              actions: _buttons(),
-              bottom: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabs: tabs,
-              ),
-            ),
-      body: TabBarView(
-        controller: _tabController,
-        children: widget.children,
-      ),
+    return Column(
+      children: [
+        TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabs: tabs,
+        ),
+        TabBarView(
+          controller: _tabController,
+          children: widget.children,
+        ),
+      ],
     );
   }
 }
