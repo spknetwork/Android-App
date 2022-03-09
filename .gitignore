@@ -90,3 +90,5 @@ fastlane/test_output
 iOSInjectionProject/
 
 .dart_tool
+.env
+*.env

@@ -11,6 +11,10 @@ class SPKVideoPlayer extends StatefulWidget {
 
   @override
   _SPKVideoPlayerState createState() => _SPKVideoPlayerState();
+
+  void pauseVideo() {
+
+  }
 }
 
 class _SPKVideoPlayerState extends State<SPKVideoPlayer>

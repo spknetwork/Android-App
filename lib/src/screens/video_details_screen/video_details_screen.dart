@@ -2,9 +2,11 @@ import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
+import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
+import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +27,8 @@ class VideoDetailsScreen extends StatefulWidget {
 }
 
 class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
+  GlobalKey<State<SPKVideoPlayer>> key = GlobalKey<State<SPKVideoPlayer>>();
+
   void onUserTap() {
     Navigator.of(context).pushNamed("/userChannel/${widget.vm.author}");
   }
@@ -36,40 +40,72 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   Widget descriptionMarkDown(String markDown) {
-    return Markdown(
-      data: Utilities.removeAllHtmlTags(markDown),
-      onTapLink: (text, url, title) {
-        launch(url!);
-      },
+    var color = Theme.of(context).brightness == Brightness.dark
+        ? Colors.black87
+        : Colors.white;
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+      ),
+      margin: const EdgeInsets.only(top: 60),
+      child: Markdown(
+        data: Utilities.removeAllHtmlTags(markDown),
+        onTapLink: (text, url, title) {
+          launch(url!);
+        },
+      ),
     );
   }
 
-  Widget titleAndSubtitle(VideoDetails details) {
+  Widget titleAndSubtitleCommon(VideoDetails details) {
     String string =
         "📆 ${timeago.format(DateTime.parse(details.created))} · ▶ ${details.views} views · 👥 ${details.community}";
-    return InkWell(
-      child: Container(
-        margin: const EdgeInsets.all(10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(details.title,
-                      style: Theme.of(context).textTheme.bodyLarge),
-                  const SizedBox(height: 3),
-                  Text(string, style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
+    return Container(
+      margin: const EdgeInsets.all(10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(details.title,
+                    style: Theme.of(context).textTheme.bodyLarge),
+                const SizedBox(height: 3),
+                Text(string, style: Theme.of(context).textTheme.bodySmall),
+              ],
             ),
-            const Icon(Icons.keyboard_arrow_down_outlined),
-          ],
-        ),
+          ),
+          const Icon(Icons.arrow_drop_down_outlined),
+        ],
       ),
+    );
+  }
+
+  void showModal(VideoDetails details) {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return InkWell(
+            child: Stack(
+              children: [
+                titleAndSubtitleCommon(details),
+                descriptionMarkDown(
+                    "# ${details.owner}\n${details.description}"),
+              ],
+            ),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          );
+        });
+  }
+
+  Widget titleAndSubtitle(VideoDetails details) {
+    return InkWell(
+      child: titleAndSubtitleCommon(details),
       onTap: () {
-        log('Hello');
+        showModal(details);
       },
     );
   }
@@ -77,17 +113,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   Widget listTile(HiveComment comment) {
     var item = comment;
     var userThumb = server.userOwnerThumb(item.author);
-    var author = item.author;
     var body = item.body;
-    var upVotes = item.activeVotes.where((e) => e.percent > 0).length;
-    var downVotes = item.activeVotes.where((e) => e.percent < 0).length;
-    var payout = item.pendingPayoutValue.replaceAll(" HBD", "");
-    var timeInString =
-    item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
-    var text =
-        "👤  $author  👍  $upVotes  👎  $downVotes  💰  $payout  $timeInString";
-    // var depth = (item.depth * 25.0) - 25;
-    double width = MediaQuery.of(context).size.width - 90;
+    double width = MediaQuery.of(context).size.width - 90 - 20;
     return Container(
       margin: const EdgeInsets.all(10),
       child: Row(
@@ -97,25 +124,15 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           Container(margin: const EdgeInsets.only(right: 10)),
           SizedBox(
             width: width,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                MarkdownBody(
-                  data: Utilities.removeAllHtmlTags(body),
-                  shrinkWrap: true,
-                  onTapLink: (text, url, title) {
-                    launch(url!);
-                  },
-                ),
-                Container(margin: const EdgeInsets.only(bottom: 10)),
-                Text(
-                  text,
-                  style: Theme.of(context).textTheme.bodyText1,
-                ),
-              ],
+            child: MarkdownBody(
+              data: Utilities.removeAllHtmlTags(body),
+              shrinkWrap: true,
+              onTapLink: (text, url, title) {
+                launch(url!);
+              },
             ),
           ),
-          const Icon(Icons.expand)
+          const Icon(Icons.arrow_drop_down_outlined)
         ],
       ),
     );
@@ -129,25 +146,44 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       );
     }
     return InkWell(
-      child: listTile(comments.last),
-      onTap: () {
-
-      },
+      child: Container(
+        margin: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Comments ${comments.length}',
+                style: Theme.of(context).textTheme.bodyLarge),
+            listTile(comments.last)
+          ],
+        ),
+      ),
+      onTap: () {},
     );
   }
 
   Widget videoWithDetails(VideoDetails details) {
-    return ListView(
-      children: [
-        SizedBox(
-          height: 230,
-          child: SPKVideoPlayer(
-            playUrl: details.playUrl,
-          ),
-        ),
-        titleAndSubtitle(details),
-        videoComments(),
-      ],
+    return ListView.separated(
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return SizedBox(
+            height: 230,
+            child: SPKVideoPlayer(
+              key: key,
+              playUrl: details.playUrl,
+            ),
+          );
+        } else if (index == 1) {
+          return titleAndSubtitle(details);
+        } else if (index == 2) {
+          return videoComments();
+        } else {
+          return ListTile(
+            title: videoRecommendationListItem(recommendations[index - 3]),
+          );
+        }
+      },
+      separatorBuilder: (context, index) => Container(),
+      itemCount: recommendations.length + 3,
     );
   }
 
@@ -158,12 +194,24 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           if (snapshot.hasError) {
             String text =
                 'Something went wrong - ${snapshot.error?.toString() ?? ""}';
-            return Container(margin: const EdgeInsets.all(10), child: Text(text));
+            return Container(
+                margin: const EdgeInsets.all(10), child: Text(text));
           } else if (snapshot.hasData) {
             var data = snapshot.data! as List<HiveComment>;
             return commentsSection(data);
           } else {
-            return Container(margin: const EdgeInsets.all(10), child: const Text('Loading comments'));
+            return Container(
+                margin: const EdgeInsets.all(10),
+                child: Row(
+                  children: const [
+                    SizedBox(
+                        height: 15,
+                        width: 15,
+                        child: CircularProgressIndicator(value: null)),
+                    SizedBox(width: 10),
+                    Text('Loading comments')
+                  ],
+                ));
           }
         });
   }
@@ -194,6 +242,41 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         } else {
           return container(widget.vm.author, const LoadingScreen());
         }
+      },
+    );
+  }
+
+  late Future<List<VideoRecommendationItem>> recommendedVideos;
+  List<VideoRecommendationItem> recommendations = [];
+
+  @override
+  void initState() {
+    super.initState();
+    widget.vm.getRecommendedVideos().then((value) {
+      setState(() {
+        recommendations = value;
+      });
+    });
+  }
+
+  Widget videoRecommendationListItem(VideoRecommendationItem item) {
+    return ListTile(
+      title: ListTileVideo(
+        placeholder: 'assets/branding/three_speak_logo.png',
+        url: item.image,
+        userThumbUrl: server.userOwnerThumb(item.owner),
+        title: item.title,
+        subtitle: "",
+        onUserTap: () {
+          key.currentState?.widget.pauseVideo();
+          // TO-DO - pause video before going to next screen
+          // Navigator.of(context).pushNamed("/userChannel/${item.owner}");
+        },
+      ),
+      onTap: () {
+        // TO-DO - pause video before going to next screen
+        // Navigator.of(context)
+        //     .pushNamed(VideoDetailsScreen.routeName(item.owner, item.mediaid));
       },
     );
   }

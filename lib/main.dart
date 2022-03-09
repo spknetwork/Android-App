@@ -8,10 +8,12 @@ import 'package:acela/src/screens/video_details_screen/video_details_view_model.
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'src/bloc/server.dart';
 
 Future<void> main() async {
+  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
@@ -30,22 +32,24 @@ class _MyAppState extends State<MyApp> {
 
   Widget futureBuilder(Widget withWidget) {
     return FutureBuilder(
-        future: _fbApp,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Text('Firebase not initialized');
-          } else if (snapshot.hasData) {
-            return withWidget;
-          } else {
-            return const CircularProgressIndicator();
-          }
-        });
+      future: _fbApp,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text('Firebase not initialized');
+        } else if (snapshot.hasData) {
+          return withWidget;
+        } else {
+          return const CircularProgressIndicator();
+        }
+      },
+    );
   }
 
-  MaterialPageRoute configuredHomeWidget(String title, String path, bool showDrawer) {
+  MaterialPageRoute configuredHomeWidget(
+      String title, String path, bool showDrawer) {
     return MaterialPageRoute(builder: (context) {
       return HomeScreen(
-        path: path, //"${server.domain}/apiv2/feeds/home",
+        path: path,
         showDrawer: showDrawer,
         title: title,
         isDarkMode: isDarkMode,
@@ -75,21 +79,22 @@ class _MyAppState extends State<MyApp> {
           return configuredHomeWidget(
               'Home', "${server.domain}/apiv2/feeds/home", true);
         } else if (settings.name == "/trending") {
-          return configuredHomeWidget(
-              'Trending Content', "${server.domain}/apiv2/feeds/trending", true);
+          return configuredHomeWidget('Trending Content',
+              "${server.domain}/apiv2/feeds/trending", true);
         } else if (settings.name == "/new") {
           return configuredHomeWidget(
               'New Content', "${server.domain}/apiv2/feeds/new", true);
         } else if (settings.name == "/firstUploads") {
-          return configuredHomeWidget(
-              'First Uploads', "${server.domain}/apiv2/feeds/firstUploads", true);
+          return configuredHomeWidget('First Uploads',
+              "${server.domain}/apiv2/feeds/firstUploads", true);
         } else if (settings.name?.contains("/userChannel/") == true) {
           var last = settings.name?.split("/userChannel/").last ?? "threespeak";
           return MaterialPageRoute(builder: (context) {
             return UserChannelScreen(owner: last);
           });
         } else if (settings.name?.contains('/community/') == true) {
-          var last = settings.name?.split("/community/").last ?? "hive-167922?name=LeoFinance";
+          var last = settings.name?.split("/community/").last ??
+              "hive-167922?name=LeoFinance";
           var comps = last.split("?name=");
           return MaterialPageRoute(builder: (context) {
             return CommunityDetailScreen(name: comps[0], title: comps[1]);
