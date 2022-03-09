@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:bottom_sheet/bottom_sheet.dart';
 
 class VideoDetailsScreen extends StatefulWidget {
   const VideoDetailsScreen({Key? key, required this.vm}) : super(key: key);
@@ -44,11 +45,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         ? Colors.black87
         : Colors.white;
     return Container(
-      decoration: BoxDecoration(
-        color: color,
-      ),
-      margin: const EdgeInsets.only(top: 60),
-      child: Markdown(
+      margin: const EdgeInsets.all(10),
+      child: MarkdownBody(
         data: Utilities.removeAllHtmlTags(markDown),
         onTapLink: (text, url, title) {
           launch(url!);
@@ -84,21 +82,21 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
 
   void showModal(VideoDetails details) {
     showModalBottomSheet(
-        context: context,
-        builder: (context) {
-          return InkWell(
-            child: Stack(
-              children: [
-                titleAndSubtitleCommon(details),
-                descriptionMarkDown(
-                    "# ${details.owner}\n${details.description}"),
-              ],
-            ),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          );
-        });
+      context: context,
+      isScrollControlled: true,
+      clipBehavior: Clip.hardEdge,
+      builder: (context) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height-200.0,
+          child: ListView(
+            children: [
+              titleAndSubtitleCommon(details),
+              descriptionMarkDown(details.description),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget titleAndSubtitle(VideoDetails details) {
