@@ -4,6 +4,7 @@ import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
@@ -58,41 +59,60 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
+  //region Video Info
   // video description
   Widget descriptionMarkDown(String markDown) {
-    return Container(
-      margin: const EdgeInsets.all(10),
-      child: MarkdownBody(
-        data: Utilities.removeAllHtmlTags(markDown),
-        onTapLink: (text, url, title) {
-          launch(url!);
-        },
-      ),
+    return Markdown(
+      data: Utilities.removeAllHtmlTags(markDown),
+      onTapLink: (text, url, title) {
+        launch(url!);
+      },
     );
   }
 
   // video description
-  Widget titleAndSubtitleCommon(VideoDetails details) {
+  Widget titleAndSubtitleCommon(VideoDetails details, bool fullScreen) {
     String string =
         "📆 ${timeago.format(DateTime.parse(details.created))} · ▶ ${details.views} views · 👥 ${details.community}";
+    var fullScreenButton = IconButton(
+      onPressed: () {
+        var route = MaterialPageRoute(builder: (context) {
+          return VideoDetailsInfoWidget(details: details);
+        });
+        Navigator.of(context).push(route);
+      },
+      icon: const Icon(Icons.fullscreen),
+    );
+    var closeButton = IconButton(
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+      icon: const Icon(Icons.close),
+    );
+    var downIcon = const Icon(Icons.arrow_drop_down_outlined);
+    List<Widget> children = [
+      Expanded(
+        child: Column(
+          // crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(details.title, style: Theme.of(context).textTheme.bodyLarge),
+            const SizedBox(height: 3),
+            Text(string, style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+      ),
+    ];
+    if (fullScreen) {
+      children.add(fullScreenButton);
+      children.add(closeButton);
+    } else {
+      children.add(downIcon);
+    }
     return Container(
       margin: const EdgeInsets.all(10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(details.title,
-                    style: Theme.of(context).textTheme.bodyLarge),
-                const SizedBox(height: 3),
-                Text(string, style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
-          ),
-          const Icon(Icons.arrow_drop_down_outlined),
-        ],
+        children: children,
       ),
     );
   }
@@ -105,11 +125,14 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       clipBehavior: Clip.hardEdge,
       builder: (context) {
         return SizedBox(
-          height: MediaQuery.of(context).size.height - 200.0,
-          child: ListView(
+          height: MediaQuery.of(context).size.height - 230.0,
+          child: Stack(
             children: [
-              titleAndSubtitleCommon(details),
-              descriptionMarkDown(details.description),
+              Container(
+                margin: const EdgeInsets.only(top: 70),
+                child: descriptionMarkDown(details.description),
+              ),
+              titleAndSubtitleCommon(details, true),
             ],
           ),
         );
@@ -120,13 +143,16 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   // video description
   Widget titleAndSubtitle(VideoDetails details) {
     return InkWell(
-      child: titleAndSubtitleCommon(details),
+      child: titleAndSubtitleCommon(details, false),
       onTap: () {
         showModalForDescription(details);
       },
     );
   }
 
+  //endregion
+
+  //region Video Comments
   // video comments
   Widget listTile(HiveComment comment) {
     var item = comment;
@@ -183,7 +209,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           clipBehavior: Clip.hardEdge,
           builder: (context) {
             return SizedBox(
-              height: MediaQuery.of(context).size.height - 200.0,
+              height: MediaQuery.of(context).size.height - 230.0,
               child: VideoDetailsComments(data: comments),
             );
           },
@@ -222,6 +248,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         });
   }
 
+  //endregion
   // container list view
   Widget videoWithDetails(VideoDetails details) {
     return Container(
@@ -251,9 +278,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       url: item.image,
       userThumbUrl: server.userOwnerThumb(item.owner),
       title: item.title,
-      subtitle: "",
+      subtitle: "👤 ${item.owner}",
       onUserTap: () {
-        // TO-DO - pause video before going to next screen
         Navigator.of(context).pushNamed("/userChannel/${item.owner}");
       },
     );
@@ -274,23 +300,23 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           if (data != null) {
             return Scaffold(
               body: SafeArea(
-                child: Stack(
-                  children: [
-                    videoWithDetails(data),
-                    SizedBox(
-                      height: 230,
-                      child: SPKVideoPlayer(
-                        playUrl: data.playUrl,
-                      ),
+                  child: Stack(
+                children: [
+                  videoWithDetails(data),
+                  SizedBox(
+                    height: 230,
+                    child: SPKVideoPlayer(
+                      playUrl: data.playUrl,
                     ),
-                  ],
-                )
-              ),
+                  ),
+                ],
+              )),
             );
           } else {
             return container(
               widget.vm.author,
-              const Text("Something went wrong while loading video information"),
+              const Text(
+                  "Something went wrong while loading video information"),
             );
           }
         } else {

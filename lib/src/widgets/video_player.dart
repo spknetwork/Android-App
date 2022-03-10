@@ -26,7 +26,7 @@ class _SPKVideoPlayerState extends State<SPKVideoPlayer> {
   @override
   void initState() {
     videoPlayerController = VideoPlayerController.network(widget.playUrl,
-        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true))
+        videoPlayerOptions: VideoPlayerOptions(allowBackgroundPlayback: true))
       ..initialize().then((_) {
         setState(() {
           chewieController = ChewieController(
