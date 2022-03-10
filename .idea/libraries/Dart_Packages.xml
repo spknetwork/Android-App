@@ -37,13 +37,6 @@
             </list>
           </value>
         </entry>
-        <entry key="bottom_sheet">
-          <value>
-            <list>
-              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/bottom_sheet-2.0.0/lib" />
-            </list>
-          </value>
-        </entry>
         <entry key="build">
           <value>
             <list>
@@ -787,7 +780,6 @@
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/args-2.3.0/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/async-2.8.2/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/boolean_selector-2.1.0/lib" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/bottom_sheet-2.0.0/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/build-2.2.1/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/build_config-1.0.0/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/build_daemon-3.0.1/lib" />

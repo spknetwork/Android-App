@@ -11,20 +11,11 @@ class SPKVideoPlayer extends StatefulWidget {
 
   @override
   _SPKVideoPlayerState createState() => _SPKVideoPlayerState();
-
-  void pauseVideo() {
-
-  }
 }
 
-class _SPKVideoPlayerState extends State<SPKVideoPlayer>
-    with AutomaticKeepAliveClientMixin<SPKVideoPlayer> {
-
+class _SPKVideoPlayerState extends State<SPKVideoPlayer> {
   late VideoPlayerController videoPlayerController;
   ChewieController? chewieController;
-
-  @override
-  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
@@ -50,7 +41,6 @@ class _SPKVideoPlayerState extends State<SPKVideoPlayer>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return chewieController == null
         ? const LoadingScreen()
         : Chewie(controller: chewieController!);
