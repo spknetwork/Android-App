@@ -42,7 +42,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       });
     });
     _loadComments =
-        widget.vm.loadComments(widget.vm.author, widget.vm.permlink);
+        widget.vm.loadFirstSetOfComments(widget.vm.author, widget.vm.permlink);
   }
 
   void onUserTap() {
@@ -169,14 +169,17 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           SizedBox(
             width: width,
             child: MarkdownBody(
-              data: Utilities.removeAllHtmlTags(body),
+              data: Utilities.removeAllHtmlTags(body)
+                  .split('')
+                  .take(100)
+                  .join(''),
               shrinkWrap: true,
               onTapLink: (text, url, title) {
                 launch(url!);
               },
             ),
           ),
-          const Icon(Icons.arrow_drop_down_outlined)
+          const Icon(Icons.arrow_right_outlined)
         ],
       ),
     );
@@ -192,28 +195,20 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     }
     return InkWell(
       child: Container(
-        margin: const EdgeInsets.all(10),
+        margin: const EdgeInsets.only(left: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Comments ${comments.length}',
-                style: Theme.of(context).textTheme.bodyLarge),
+            Text('Comments :', style: Theme.of(context).textTheme.bodyLarge),
             listTile(comments.last)
           ],
         ),
       ),
       onTap: () {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          clipBehavior: Clip.hardEdge,
-          builder: (context) {
-            return SizedBox(
-              height: MediaQuery.of(context).size.height - 230.0,
-              child: VideoDetailsComments(data: comments),
-            );
-          },
-        );
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          return VideoDetailsComments(
+              author: widget.vm.author, permlink: widget.vm.permlink);
+        }));
       },
     );
   }
@@ -221,31 +216,31 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   // video comments
   Widget videoComments() {
     return FutureBuilder(
-        future: _loadComments,
-        builder: (builder, snapshot) {
-          if (snapshot.hasError) {
-            String text =
-                'Something went wrong while loading video comments - ${snapshot.error?.toString() ?? ""}';
-            return Container(
-                margin: const EdgeInsets.all(10), child: Text(text));
-          } else if (snapshot.hasData) {
-            var data = snapshot.data! as List<HiveComment>;
-            return commentsSection(data);
-          } else {
-            return Container(
-                margin: const EdgeInsets.all(10),
-                child: Row(
-                  children: const [
-                    SizedBox(
-                        height: 15,
-                        width: 15,
-                        child: CircularProgressIndicator(value: null)),
-                    SizedBox(width: 10),
-                    Text('Loading comments')
-                  ],
-                ));
-          }
-        });
+      future: _loadComments,
+      builder: (builder, snapshot) {
+        if (snapshot.hasError) {
+          String text =
+              'Something went wrong while loading video comments - ${snapshot.error?.toString() ?? ""}';
+          return Container(margin: const EdgeInsets.all(10), child: Text(text));
+        } else if (snapshot.hasData) {
+          var data = snapshot.data! as List<HiveComment>;
+          return commentsSection(data);
+        } else {
+          return Container(
+              margin: const EdgeInsets.all(10),
+              child: Row(
+                children: const [
+                  SizedBox(
+                      height: 15,
+                      width: 15,
+                      child: CircularProgressIndicator(value: null)),
+                  SizedBox(width: 10),
+                  Text('Loading comments')
+                ],
+              ));
+        }
+      },
+    );
   }
 
   //endregion
@@ -259,9 +254,13 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             return titleAndSubtitle(details);
           } else if (index == 1) {
             return videoComments();
+          } else if (index == 2) {
+            return const ListTile(
+              title: Text('Recommended Videos'),
+            );
           } else {
             return ListTile(
-              title: videoRecommendationListItem(recommendations[index - 2]),
+              title: videoRecommendationListItem(recommendations[index - 3]),
             );
           }
         },

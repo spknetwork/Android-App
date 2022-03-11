@@ -96,4 +96,18 @@ class VideoDetailsViewModel {
       throw "Status code is ${response.statusCode}";
     }
   }
+
+  Future<List<HiveComment>> loadFirstSetOfComments(String author, String permlink) async {
+    var client = http.Client();
+    var body =
+    hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
+    var response = await client.post(Uri.parse(server.hiveDomain), body: body);
+    if (response.statusCode == 200) {
+      var hiveCommentsResponse = hiveCommentsFromString(response.body);
+      var comments = hiveCommentsResponse.result;
+      return comments;
+    } else {
+      throw "Status code is ${response.statusCode}";
+    }
+  }
 }
