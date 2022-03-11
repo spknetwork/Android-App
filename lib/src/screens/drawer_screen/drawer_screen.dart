@@ -1,12 +1,10 @@
+import 'package:acela/src/screens/communities_screen/communities_screen.dart';
+import 'package:acela/src/screens/home_screen/home_screen.dart';
+import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:flutter/material.dart';
 
 class DrawerScreen extends StatelessWidget {
-  const DrawerScreen(
-      {Key? key, required this.isDarkMode, required this.switchDarkMode})
-      : super(key: key);
-
-  final bool isDarkMode;
-  final Function switchDarkMode;
+  const DrawerScreen({Key? key}) : super(key: key);
 
   Widget _homeMenu(BuildContext context) {
     return ListTile(
@@ -14,7 +12,8 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("Home"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context).pushReplacementNamed("/");
+        var route = MaterialPageRoute(builder: (context) => HomeScreen.home());
+        Navigator.of(context).pushReplacement(route);
       },
     );
   }
@@ -25,7 +24,9 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("First Uploads"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context).pushReplacementNamed("/firstUploads");
+        var route =
+            MaterialPageRoute(builder: (context) => HomeScreen.firstUploads());
+        Navigator.of(context).pushReplacement(route);
       },
     );
   }
@@ -36,7 +37,9 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("Trending Content"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context).pushReplacementNamed("/trending");
+        var route =
+            MaterialPageRoute(builder: (context) => HomeScreen.trending());
+        Navigator.of(context).pushReplacement(route);
       },
     );
   }
@@ -47,7 +50,9 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("New Content"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context).pushReplacementNamed("/new");
+        var route =
+            MaterialPageRoute(builder: (context) => HomeScreen.newContent());
+        Navigator.of(context).pushReplacement(route);
       },
     );
   }
@@ -58,7 +63,8 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("Communities"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context).pushNamed("/communities");
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (c) => const CommunitiesScreen()));
       },
     );
   }
@@ -69,22 +75,23 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("Leaderboard"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context).pushNamed("/leaderboard");
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (c) => const LeaderboardScreen()));
       },
     );
   }
 
-  Widget _changeTheme() {
-    return ListTile(
-      leading: isDarkMode
-          ? const Icon(Icons.wb_sunny)
-          : const Icon(Icons.mode_night),
-      title: const Text("Change Theme"),
-      onTap: () {
-        switchDarkMode();
-      },
-    );
-  }
+  // Widget _changeTheme() {
+  //   return ListTile(
+  //     leading: !isDarkMode
+  //         ? const Icon(Icons.wb_sunny)
+  //         : const Icon(Icons.mode_night),
+  //     title: const Text("Change Theme"),
+  //     onTap: () {
+  //       switchDarkMode();
+  //     },
+  //   );
+  // }
 
   Widget _drawerHeader(BuildContext context) {
     return DrawerHeader(
@@ -133,8 +140,8 @@ class DrawerScreen extends StatelessWidget {
         _divider(),
         _leaderBoard(context),
         _divider(),
-        _changeTheme(),
-        _divider(),
+        // _changeTheme(),
+        // _divider(),
       ],
     );
   }

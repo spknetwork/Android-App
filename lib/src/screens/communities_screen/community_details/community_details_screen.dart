@@ -2,7 +2,9 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/communities_models/request/community_details_request.dart';
 import 'package:acela/src/models/communities_models/response/community_details_response_models.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
@@ -77,12 +79,15 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
   }
 
   void onTap(HomeFeedItem item) {
-    Navigator.of(context)
-        .pushNamed(VideoDetailsScreen.routeName(item.author, item.permlink));
+    var viewModel =
+        VideoDetailsViewModel(author: item.author, permlink: item.permlink);
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => VideoDetailsScreen(vm: viewModel)));
   }
 
   void onUserTap(HomeFeedItem item) {
-    Navigator.of(context).pushNamed("/userChannel/${item.author}");
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (c) => UserChannelScreen(owner: item.author)));
   }
 
   Widget _tileTitle(HomeFeedItem item, BuildContext context,

@@ -1,8 +1,8 @@
-import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
@@ -19,10 +19,6 @@ import 'package:timeago/timeago.dart' as timeago;
 class VideoDetailsScreen extends StatefulWidget {
   const VideoDetailsScreen({Key? key, required this.vm}) : super(key: key);
   final VideoDetailsViewModel vm;
-
-  static String routeName(String owner, String permLink) {
-    return '/watch?owner=$owner&permlink=$permLink';
-  }
 
   @override
   _VideoDetailsScreenState createState() => _VideoDetailsScreenState();
@@ -46,7 +42,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   void onUserTap() {
-    Navigator.of(context).pushNamed("/userChannel/${widget.vm.author}");
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (c) => UserChannelScreen(owner: widget.vm.author)));
   }
 
   // used when there is an error state in loading video info
@@ -279,7 +276,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       title: item.title,
       subtitle: "👤 ${item.owner}",
       onUserTap: () {
-        Navigator.of(context).pushNamed("/userChannel/${item.owner}");
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (c) => UserChannelScreen(owner: item.owner)));
       },
     );
   }

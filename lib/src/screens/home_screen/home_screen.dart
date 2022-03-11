@@ -1,24 +1,56 @@
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key,
-    required this.path,
-    required this.showDrawer,
-    required this.title,
-    required this.isDarkMode,
-    required this.switchDarkMode})
+  const HomeScreen(
+      {Key? key,
+      required this.path,
+      required this.showDrawer,
+      required this.title})
       : super(key: key);
   final String path;
   final bool showDrawer;
   final String title;
-  final bool isDarkMode;
-  final Function switchDarkMode;
+
+  factory HomeScreen.trending() {
+    return HomeScreen(
+      title: 'Trending Content',
+      showDrawer: true,
+      path: "${server.domain}/apiv2/feeds/trending",
+    );
+  }
+
+  factory HomeScreen.home() {
+    return HomeScreen(
+      title: 'Home',
+      showDrawer: true,
+      path: "${server.domain}/apiv2/feeds/Home",
+    );
+  }
+
+  factory HomeScreen.newContent() {
+    return HomeScreen(
+      title: 'Home',
+      showDrawer: true,
+      path: "${server.domain}/apiv2/feeds/new",
+    );
+  }
+
+  factory HomeScreen.firstUploads() {
+    return HomeScreen(
+      title: 'Home',
+      showDrawer: true,
+      path: "${server.domain}/apiv2/feeds/firstUploads",
+    );
+  }
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -37,13 +69,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onTap(HomeFeedItem item) {
-    Navigator.of(context)
-        .pushNamed(VideoDetailsScreen.routeName(item.author, item.permlink));
+    var viewModel =
+        VideoDetailsViewModel(author: item.author, permlink: item.permlink);
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => VideoDetailsScreen(vm: viewModel)));
   }
 
   void onUserTap(HomeFeedItem item) {
     if (!widget.path.contains(item.author)) {
-      Navigator.of(context).pushNamed("/userChannel/${item.author}");
+      Navigator.of(context).push(
+          MaterialPageRoute(builder: (c) => UserChannelScreen(owner: item.author)));
     }
   }
 
@@ -70,9 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
       height: 40,
       width: 40,
       child: CircleAvatar(
-        backgroundImage: Image
-            .asset("assets/branding/three_speak_icon.png")
-            .image,
+        backgroundImage:
+            Image.asset("assets/branding/three_speak_icon.png").image,
         backgroundColor: Colors.transparent,
         radius: 100,
       ),
@@ -80,28 +114,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _header() {
-    return Row(
-      children: [
-        _threeSpeakIcon(),
-        const SizedBox(width: 10),
-        Text(widget.title),
-      ]
-    );
+    return Row(children: [
+      _threeSpeakIcon(),
+      const SizedBox(width: 10),
+      Text(widget.title),
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title), //_header(),
+        title: Text(widget.title),
       ),
       body: _screen(),
-      drawer: widget.showDrawer
-          ? DrawerScreen(
-        isDarkMode: widget.isDarkMode,
-        switchDarkMode: widget.switchDarkMode,
-      )
-          : null,
+      drawer: widget.showDrawer ? const DrawerScreen() : null,
     );
   }
 }

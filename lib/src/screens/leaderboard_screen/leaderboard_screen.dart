@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:core';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/leaderboard_models/leaderboard_model.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
@@ -41,7 +42,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   void onUserTap(String author) {
-    Navigator.of(context).pushNamed("/userChannel/$author");
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (c) => UserChannelScreen(owner: author)));
   }
 
   Widget _medalTile(LeaderboardResponseItem item, String medal) {

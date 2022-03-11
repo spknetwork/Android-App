@@ -1,16 +1,8 @@
-import 'package:acela/src/screens/communities_screen/communities_screen.dart';
-import 'package:acela/src/screens/communities_screen/community_details/community_details_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
-import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
-import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-import 'src/bloc/server.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
@@ -28,7 +20,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final Future<FirebaseApp> _fbApp =
       Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  bool isDarkMode = true;
 
   Widget futureBuilder(Widget withWidget) {
     return FutureBuilder(
@@ -45,72 +36,56 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  MaterialPageRoute configuredHomeWidget(
-      String title, String path, bool showDrawer) {
-    return MaterialPageRoute(builder: (context) {
-      return HomeScreen(
-        path: path,
-        showDrawer: showDrawer,
-        title: title,
-        isDarkMode: isDarkMode,
-        switchDarkMode: () {
-          setState(() {
-            isDarkMode = !isDarkMode;
-          });
-        },
-      );
-    });
-  }
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Acela - 3Speak App',
-      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      home: HomeScreen.home(),
       debugShowCheckedModeBanner: false,
-      onGenerateRoute: (settings) {
-        if (settings.name?.contains("/watch?") == true) {
-          return MaterialPageRoute(builder: (context) {
-            return VideoDetailsScreen(
-                vm: VideoDetailsViewModel.from(settings.name!));
-          });
-        } else if (settings.name == "/") {
-          return configuredHomeWidget(
-              'Home', "${server.domain}/apiv2/feeds/home", true);
-        } else if (settings.name == "/trending") {
-          return configuredHomeWidget('Trending Content',
-              "${server.domain}/apiv2/feeds/trending", true);
-        } else if (settings.name == "/new") {
-          return configuredHomeWidget(
-              'New Content', "${server.domain}/apiv2/feeds/new", true);
-        } else if (settings.name == "/firstUploads") {
-          return configuredHomeWidget('First Uploads',
-              "${server.domain}/apiv2/feeds/firstUploads", true);
-        } else if (settings.name?.contains("/userChannel/") == true) {
-          var last = settings.name?.split("/userChannel/").last ?? "threespeak";
-          return MaterialPageRoute(builder: (context) {
-            return UserChannelScreen(owner: last);
-          });
-        } else if (settings.name?.contains('/community/') == true) {
-          var last = settings.name?.split("/community/").last ??
-              "hive-167922?name=LeoFinance";
-          var comps = last.split("?name=");
-          return MaterialPageRoute(builder: (context) {
-            return CommunityDetailScreen(name: comps[0], title: comps[1]);
-          });
-        } else if (settings.name == "/leaderboard") {
-          return MaterialPageRoute(builder: (context) {
-            return const LeaderboardScreen();
-          });
-        } else if (settings.name == "/communities") {
-          return MaterialPageRoute(builder: (context) {
-            return const CommunitiesScreen();
-          });
-        }
-        assert(false, 'Need to implement ${settings.name}');
-        return null;
-      },
     );
+    //   onGenerateRoute: (settings) {
+    //     if (settings.name?.contains("/watch?") == true) {
+    //       return MaterialPageRoute(builder: (context) {
+    //         return VideoDetailsScreen(
+    //             vm: VideoDetailsViewModel.from(settings.name!));
+    //       });
+    //     } else if (settings.name == "/") {
+    //       return configuredHomeWidget(
+    //           'Home', "${server.domain}/apiv2/feeds/home", true);
+    //     } else if (settings.name == "/trending") {
+    //       return configuredHomeWidget('Trending Content',
+    //           "${server.domain}/apiv2/feeds/trending", true);
+    //     } else if (settings.name == "/new") {
+    //       return configuredHomeWidget(
+    //           'New Content', "${server.domain}/apiv2/feeds/new", true);
+    //     } else if (settings.name == "/firstUploads") {
+    //       return configuredHomeWidget('First Uploads',
+    //           "${server.domain}/apiv2/feeds/firstUploads", true);
+    //     } else if (settings.name?.contains("/userChannel/") == true) {
+    //       var last = settings.name?.split("/userChannel/").last ?? "threespeak";
+    //       return MaterialPageRoute(builder: (context) {
+    //         return UserChannelScreen(owner: last);
+    //       });
+    //     } else if (settings.name?.contains('/community/') == true) {
+    //       var last = settings.name?.split("/community/").last ??
+    //           "hive-167922?name=LeoFinance";
+    //       var comps = last.split("?name=");
+    //       return MaterialPageRoute(builder: (context) {
+    //         return CommunityDetailScreen(name: comps[0], title: comps[1]);
+    //       });
+    //     } else if (settings.name == "/leaderboard") {
+    //       return MaterialPageRoute(builder: (context) {
+    //         return const LeaderboardScreen();
+    //       });
+    //     } else if (settings.name == "/communities") {
+    //       return MaterialPageRoute(builder: (context) {
+    //         return const CommunitiesScreen();
+    //       });
+    //     }
+    //     assert(false, 'Need to implement ${settings.name}');
+    //     return null;
+    //   },
+    // );
   }
 }

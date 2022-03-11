@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -74,9 +75,10 @@ class _UserChannelVideosState extends State<UserChannelVideos>
           return ListView.separated(
             itemBuilder: (context, index) {
               return _listTile(data[index], context, (item) {
-                log("tapped on item ${item.permlink}");
-                Navigator.of(context).pushNamed(
-                    VideoDetailsScreen.routeName(item.author, item.permlink));
+                var viewModel =
+                VideoDetailsViewModel(author: item.author, permlink: item.permlink);
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => VideoDetailsScreen(vm: viewModel)));
               }, (owner) {
                 log("tapped on user ${owner.author}");
               });
