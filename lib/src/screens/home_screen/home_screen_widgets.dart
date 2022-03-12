@@ -33,6 +33,8 @@ class HomeScreenWidgets {
   Widget _listTile(HomeFeedItem item, BuildContext context,
       Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
     return ListTile(
+      contentPadding: EdgeInsets.zero,
+      minVerticalPadding: 0,
       title: _tileTitle(item, context, onUserTap),
       onTap: () {
         onTap(item);
@@ -44,15 +46,15 @@ class HomeScreenWidgets {
       Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child:ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
+      child: ListView.separated(
+        padding: EdgeInsets.zero,
         itemBuilder: (context, index) {
           return _listTile(list[index], context, onTap, onUserTap);
         },
-        separatorBuilder: (context, index) => const Divider(
-            thickness: 0, height: 1, color: Colors.transparent),
+        separatorBuilder: (context, index) =>
+            const Divider(thickness: 0, height: 15, color: Colors.transparent),
         itemCount: list.length,
-      )
+      ),
     );
   }
 }

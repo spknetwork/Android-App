@@ -57,6 +57,8 @@ class _UserChannelVideosState extends State<UserChannelVideos>
   Widget _listTile(HomeFeedItem item, BuildContext context,
       Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
     return ListTile(
+      contentPadding: EdgeInsets.zero,
+      minVerticalPadding: 0,
       title: _tileTitle(item, context, onUserTap),
       onTap: () {
         onTap(item);

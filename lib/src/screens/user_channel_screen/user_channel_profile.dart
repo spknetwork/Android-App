@@ -49,6 +49,7 @@ class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
 
   Widget _descriptionMarkDown(String markDown) {
     return Markdown(
+      padding: const EdgeInsets.all(3),
       data: Utilities.removeAllHtmlTags(markDown),
       onTapLink: (text, url, title) {
         launch(url!);

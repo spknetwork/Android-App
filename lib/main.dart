@@ -1,3 +1,5 @@
+import 'dart:developer';
+import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final Future<FirebaseApp> _fbApp =
       Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  var _index = 0;
 
   Widget futureBuilder(Widget withWidget) {
     return FutureBuilder(
@@ -41,51 +44,57 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Acela - 3Speak App',
-      home: HomeScreen.home(),
+      home: SafeArea(
+        child: Scaffold(
+          body: IndexedStack(
+            children: [
+              HomeScreen.home(),
+              HomeScreen.trending(),
+              HomeScreen.newContent(),
+              HomeScreen.firstUploads(),
+              const CommunitiesScreen(),
+            ],
+            index: _index,
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            onTap: (index) {
+              log("User tapped on index $index");
+              setState(() {
+                _index = index;
+              });
+            },
+            currentIndex: _index,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+                backgroundColor: Colors.black87,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.local_fire_department),
+                label: 'Trending',
+                // backgroundColor: Theme.of(context).primaryColor,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.play_arrow),
+                label: 'New',
+                // backgroundColor: Theme.of(context).primaryColor,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.emoji_emotions_outlined),
+                label: 'First Uploads',
+                // backgroundColor: Theme.of(context).primaryColor,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.people_sharp),
+                label: 'Communities',
+                // backgroundColor: Theme.of(context).primaryColor,
+              ),
+            ],
+          ),
+        ),
+      ),
       debugShowCheckedModeBanner: false,
     );
-    //   onGenerateRoute: (settings) {
-    //     if (settings.name?.contains("/watch?") == true) {
-    //       return MaterialPageRoute(builder: (context) {
-    //         return VideoDetailsScreen(
-    //             vm: VideoDetailsViewModel.from(settings.name!));
-    //       });
-    //     } else if (settings.name == "/") {
-    //       return configuredHomeWidget(
-    //           'Home', "${server.domain}/apiv2/feeds/home", true);
-    //     } else if (settings.name == "/trending") {
-    //       return configuredHomeWidget('Trending Content',
-    //           "${server.domain}/apiv2/feeds/trending", true);
-    //     } else if (settings.name == "/new") {
-    //       return configuredHomeWidget(
-    //           'New Content', "${server.domain}/apiv2/feeds/new", true);
-    //     } else if (settings.name == "/firstUploads") {
-    //       return configuredHomeWidget('First Uploads',
-    //           "${server.domain}/apiv2/feeds/firstUploads", true);
-    //     } else if (settings.name?.contains("/userChannel/") == true) {
-    //       var last = settings.name?.split("/userChannel/").last ?? "threespeak";
-    //       return MaterialPageRoute(builder: (context) {
-    //         return UserChannelScreen(owner: last);
-    //       });
-    //     } else if (settings.name?.contains('/community/') == true) {
-    //       var last = settings.name?.split("/community/").last ??
-    //           "hive-167922?name=LeoFinance";
-    //       var comps = last.split("?name=");
-    //       return MaterialPageRoute(builder: (context) {
-    //         return CommunityDetailScreen(name: comps[0], title: comps[1]);
-    //       });
-    //     } else if (settings.name == "/leaderboard") {
-    //       return MaterialPageRoute(builder: (context) {
-    //         return const LeaderboardScreen();
-    //       });
-    //     } else if (settings.name == "/communities") {
-    //       return MaterialPageRoute(builder: (context) {
-    //         return const CommunitiesScreen();
-    //       });
-    //     }
-    //     assert(false, 'Need to implement ${settings.name}');
-    //     return null;
-    //   },
-    // );
   }
 }

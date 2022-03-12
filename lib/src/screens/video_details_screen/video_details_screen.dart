@@ -257,6 +257,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             );
           } else {
             return ListTile(
+              contentPadding: EdgeInsets.zero,
+              minVerticalPadding: 0,
               title: videoRecommendationListItem(recommendations[index - 3]),
             );
           }

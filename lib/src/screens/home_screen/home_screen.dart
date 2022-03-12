@@ -100,35 +100,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _threeSpeakIcon() {
-    return SizedBox(
-      height: 40,
-      width: 40,
-      child: CircleAvatar(
-        backgroundImage:
-            Image.asset("assets/branding/three_speak_icon.png").image,
-        backgroundColor: Colors.transparent,
-        radius: 100,
-      ),
-    );
-  }
-
-  Widget _header() {
-    return Row(children: [
-      _threeSpeakIcon(),
-      const SizedBox(width: 10),
-      Text(widget.title),
-    ]);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: _screen(),
-      drawer: widget.showDrawer ? const DrawerScreen() : null,
-    );
+    return _screen();
   }
 }

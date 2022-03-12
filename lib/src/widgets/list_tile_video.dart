@@ -22,63 +22,32 @@ class ListTileVideo extends StatelessWidget {
   final String subtitle;
   final Function onUserTap;
 
-  Widget _commonContainer(BuildContext context, Widget child) {
-    return Container(
-      child: child,
-    );
-  }
-
-  Widget _listType(BuildContext context) {
-    double deviceWidth = MediaQuery.of(context).size.width;
-    double width = deviceWidth - 60 - 340;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Image.network(
-          url,
-          width: deviceWidth - width - 60,
-        ),
-        Container(width: 10),
-        SizedBox(
-          width: width,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.headline5,
-              ),
-              Container(height: 10),
-              Text(subtitle, style: Theme.of(context).textTheme.headline6),
-            ],
-          ),
-        )
-      ],
-    );
-  }
-
   Widget _thumbnailType(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        FadeInImage.assetNetwork(
-          placeholder: placeholder,
-          image: server.resizedImage(url),
-          fit: BoxFit.cover,
-          placeholderErrorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-            return Image.asset(placeholder);
-          },
-          imageErrorBuilder: (BuildContext context, Object error, StackTrace? stackTrace){
-            return Image.asset(placeholder);
-          },
+        SizedBox(
+          height: 220,
+          width: MediaQuery.of(context).size.width,
+          child: FadeInImage.assetNetwork(
+            placeholder: placeholder,
+            image: server.resizedImage(url),
+            fit: BoxFit.fitWidth,
+            placeholderErrorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+              return Image.asset(placeholder);
+            },
+            imageErrorBuilder: (BuildContext context, Object error, StackTrace? stackTrace){
+              return Image.asset(placeholder);
+            },
+          ),
         ),
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(3),
           child: Row(
             children: [
               GestureDetector(
                 child: CustomCircleAvatar(
-                    height: 40, width: 40, url: userThumbUrl),
+                    height: 45, width: 45, url: userThumbUrl),
                 onTap: () {
                   onUserTap();
                 },
@@ -88,10 +57,9 @@ class ListTileVideo extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: Theme.of(context).textTheme.bodyText2),
-                    Container(height: 5),
+                    Text(title, style: Theme.of(context).textTheme.bodyText1),
                     Text(subtitle,
-                        style: Theme.of(context).textTheme.bodyText1),
+                        style: Theme.of(context).textTheme.bodyText2),
                   ],
                 ),
               )
@@ -104,10 +72,6 @@ class ListTileVideo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ScreenType type = FormFactor.getFormFactor(context);
-    Widget widget = type == ScreenType.desktop || type == ScreenType.tablet
-        ? _listType(context)
-        : _thumbnailType(context);
-    return _commonContainer(context, widget);
+    return _thumbnailType(context);
   }
 }
