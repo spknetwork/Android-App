@@ -263,7 +263,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             );
           }
         },
-        separatorBuilder: (context, index) => Container(),
+        separatorBuilder: (context, index) => const Divider(thickness: 0, height: 15, color: Colors.transparent),
         itemCount: recommendations.length + 2,
       ),
     );

@@ -85,8 +85,7 @@ class _UserChannelVideosState extends State<UserChannelVideos>
                 log("tapped on user ${owner.author}");
               });
             },
-            separatorBuilder: (context, index) => const Divider(
-                thickness: 0, height: 1, color: Colors.transparent),
+            separatorBuilder: (context, index) => const Divider(thickness: 0, height: 15, color: Colors.transparent),
             itemCount: data.length,
           );
         } else {

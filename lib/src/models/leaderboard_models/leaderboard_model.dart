@@ -1,9 +1,6 @@
 import 'dart:convert';
 import 'package:acela/src/utils/safe_convert.dart';
 
-// final jsonList = json.decode(jsonStr) as List;
-// final list = jsonList.map((e) => LeaderboardResponseItem.fromJson(e)).toList();
-
 List<LeaderboardResponseItem> leaderboardResponseItemFromString(String string) {
   final jsonList = json.decode(string) as List;
   final list =

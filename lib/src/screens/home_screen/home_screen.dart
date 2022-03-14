@@ -2,6 +2,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
+import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
@@ -105,6 +106,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          IconButton(onPressed: (){
+            var route = MaterialPageRoute(builder: (context) => const SearchScreen());
+            Navigator.of(context).push(route);
+          }, icon: const Icon(Icons.search))
+        ],
       ),
       body: _screen(),
       drawer: widget.showDrawer ? const DrawerScreen() : null,
