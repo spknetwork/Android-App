@@ -2,6 +2,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -96,6 +97,17 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
+  Widget _developer(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.code),
+      title: const Text("Developer"),
+      onTap: () {
+        var route = MaterialPageRoute(builder: (context) => const UserChannelScreen(owner: 'sagarkothari88'));
+        Navigator.of(context).push(route);
+      },
+    );
+  }
+
   Widget _drawerHeader(BuildContext context) {
     return DrawerHeader(
       child: Column(
@@ -144,6 +156,8 @@ class DrawerScreen extends StatelessWidget {
         _leaderBoard(context),
         _divider(),
         _changeTheme(context),
+        _divider(),
+        _developer(context),
         _divider(),
       ],
     );
