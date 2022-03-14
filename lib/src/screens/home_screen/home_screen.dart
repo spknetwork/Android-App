@@ -38,7 +38,7 @@ class HomeScreen extends StatefulWidget {
 
   factory HomeScreen.newContent() {
     return HomeScreen(
-      title: 'Home',
+      title: 'New Content',
       showDrawer: true,
       path: "${server.domain}/apiv2/feeds/new",
     );
@@ -46,7 +46,7 @@ class HomeScreen extends StatefulWidget {
 
   factory HomeScreen.firstUploads() {
     return HomeScreen(
-      title: 'Home',
+      title: 'First Uploads',
       showDrawer: true,
       path: "${server.domain}/apiv2/feeds/firstUploads",
     );
@@ -102,6 +102,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _screen();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: _screen(),
+      drawer: widget.showDrawer ? const DrawerScreen() : null,
+    );
   }
 }

@@ -86,6 +86,11 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _body();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Communities"),
+      ),
+      body: _body(),
+    );
   }
 }

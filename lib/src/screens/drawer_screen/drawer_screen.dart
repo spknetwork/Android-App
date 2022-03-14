@@ -1,7 +1,9 @@
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DrawerScreen extends StatelessWidget {
   const DrawerScreen({Key? key}) : super(key: key);
@@ -81,17 +83,18 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-  // Widget _changeTheme() {
-  //   return ListTile(
-  //     leading: !isDarkMode
-  //         ? const Icon(Icons.wb_sunny)
-  //         : const Icon(Icons.mode_night),
-  //     title: const Text("Change Theme"),
-  //     onTap: () {
-  //       switchDarkMode();
-  //     },
-  //   );
-  // }
+  Widget _changeTheme(BuildContext context) {
+    var isDarkMode = Provider.of<bool>(context);
+    return ListTile(
+      leading: !isDarkMode
+          ? const Icon(Icons.wb_sunny)
+          : const Icon(Icons.mode_night),
+      title: const Text("Change Theme"),
+      onTap: () async {
+        server.changeTheme(isDarkMode);
+      },
+    );
+  }
 
   Widget _drawerHeader(BuildContext context) {
     return DrawerHeader(
@@ -140,8 +143,8 @@ class DrawerScreen extends StatelessWidget {
         _divider(),
         _leaderBoard(context),
         _divider(),
-        // _changeTheme(),
-        // _divider(),
+        _changeTheme(context),
+        _divider(),
       ],
     );
   }

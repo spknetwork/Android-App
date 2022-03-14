@@ -21,6 +21,16 @@ class Server {
   }
 
   final String hiveDomain = "https://api.hive.blog";
+
+  final _controller = StreamController<bool>();
+
+  Stream<bool> get theme {
+    return _controller.stream;
+  }
+
+  void changeTheme(bool value) async {
+    _controller.sink.add(!value);
+  }
 }
 
 Server server = Server();
