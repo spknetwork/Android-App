@@ -18,7 +18,7 @@ class VideoDetailsViewModel {
         "${server.domain}/apiv2/@$author/$permlink";
     var response = await get(Uri.parse(endPoint));
     if (response.statusCode == 200) {
-      VideoDetails data = videoDetailsFromJson(response.body);
+      VideoDetails data = VideoDetails.fromJsonString(response.body);
       return data;
     } else {
       throw "Status code = ${response.statusCode}";

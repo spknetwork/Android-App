@@ -1,4 +1,5 @@
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
@@ -97,37 +98,33 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-  Widget _developer(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.code),
-      title: const Text("Developer"),
-      onTap: () {
-        var route = MaterialPageRoute(builder: (context) => const UserChannelScreen(owner: 'sagarkothari88'));
-        Navigator.of(context).push(route);
-      },
-    );
-  }
-
   Widget _drawerHeader(BuildContext context) {
     return DrawerHeader(
-      child: Column(
-        children: [
-          Image.asset(
-            "assets/branding/three_speak_icon.png",
-            width: 60,
-            height: 60,
-          ),
-          const SizedBox(height: 5),
-          Text(
-            "Acela",
-            style: Theme.of(context).textTheme.headline5,
-          ),
-          const SizedBox(height: 5),
-          Text(
-            "3Speak.tv",
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ],
+      child: InkWell(
+        child: Column(
+          children: [
+            Image.asset(
+              "assets/branding/three_speak_icon.png",
+              width: 60,
+              height: 60,
+            ),
+            const SizedBox(height: 5),
+            Text(
+              "Acela",
+              style: Theme.of(context).textTheme.headline5,
+            ),
+            const SizedBox(height: 5),
+            Text(
+              "3Speak.tv",
+              style: Theme.of(context).textTheme.headline6,
+            ),
+          ],
+        ),
+        onTap: () {
+          // var screen = const AboutHomeScreen();
+          // var route = MaterialPageRoute(builder: (_) => screen);
+          // Navigator.of(context).push(route);
+        },
       ),
     );
   }
@@ -156,8 +153,6 @@ class DrawerScreen extends StatelessWidget {
         _leaderBoard(context),
         _divider(),
         _changeTheme(context),
-        _divider(),
-        _developer(context),
         _divider(),
       ],
     );
