@@ -106,12 +106,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        actions: [
-          IconButton(onPressed: (){
-            var route = MaterialPageRoute(builder: (context) => const SearchScreen());
-            Navigator.of(context).push(route);
-          }, icon: const Icon(Icons.search))
-        ],
+        // actions: [
+        //   IconButton(onPressed: (){
+        //     var route = MaterialPageRoute(builder: (context) => const SearchScreen());
+        //     Navigator.of(context).push(route);
+        //   }, icon: const Icon(Icons.search))
+        // ],
       ),
       body: _screen(),
       drawer: widget.showDrawer ? const DrawerScreen() : null,

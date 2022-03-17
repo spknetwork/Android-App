@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>252548198943-m20qel1pq01m3p8ivhfg9ac54600j8cg.apps.googleusercontent.com</string>
+	<string>252548198943-ec3gnethnkvoudaat0lrobmq2t7mve8g.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.252548198943-m20qel1pq01m3p8ivhfg9ac54600j8cg</string>
+	<string>com.googleusercontent.apps.252548198943-ec3gnethnkvoudaat0lrobmq2t7mve8g</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBhRRZgrQb8WfCKVMjOwC4jnK0XiMuK4YM</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.3speak.Acela</string>
+	<string>com.example.acela</string>
 	<key>PROJECT_ID</key>
 	<string>acela-9c624</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:252548198943:ios:de180e80d89dc46e355b2a</string>
+	<string>1:252548198943:ios:2fcda030e33a7164355b2a</string>
 </dict>
 </plist>
