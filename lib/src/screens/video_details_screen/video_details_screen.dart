@@ -281,6 +281,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (c) => UserChannelScreen(owner: item.owner)));
       },
+      user: item.owner,
+      permlink: item.mediaid,
     );
   }
 

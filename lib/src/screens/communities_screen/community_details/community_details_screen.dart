@@ -106,6 +106,8 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
       onUserTap: () {
         onUserTap(item);
       },
+      user: item.author,
+      permlink: item.permlink,
     );
   }
 

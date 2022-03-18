@@ -27,6 +27,8 @@ class HomeScreenWidgets {
       onUserTap: () {
         onUserTap(item);
       },
+      user: item.author,
+      permlink: item.permlink,
     );
   }
 

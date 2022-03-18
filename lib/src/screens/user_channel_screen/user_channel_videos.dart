@@ -51,6 +51,8 @@ class _UserChannelVideosState extends State<UserChannelVideos>
       onUserTap: () {
         onUserTap(item);
       },
+      user: item.author,
+      permlink: item.permlink,
     );
   }
 

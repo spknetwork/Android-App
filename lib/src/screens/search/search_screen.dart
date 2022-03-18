@@ -107,6 +107,8 @@ class _SearchScreenState extends State<SearchScreen> {
           var route = MaterialPageRoute(builder: (_) => channel);
           Navigator.of(context).push(route);
         },
+        user: item.author,
+        permlink: item.permlink,
       ),
       onTap: () {
         var vm =
