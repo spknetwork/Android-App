@@ -9,6 +9,13 @@
             </list>
           </value>
         </entry>
+        <entry key="acela">
+          <value>
+            <list>
+              <option value="$PROJECT_DIR$/../lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="analyzer">
           <value>
             <list>
@@ -893,6 +900,7 @@
       <root url="file:///Applications/flutter/flutter/packages/flutter/lib" />
       <root url="file:///Applications/flutter/flutter/packages/flutter_test/lib" />
       <root url="file:///Applications/flutter/flutter/packages/flutter_web_plugins/lib" />
+      <root url="file://$PROJECT_DIR$/../lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

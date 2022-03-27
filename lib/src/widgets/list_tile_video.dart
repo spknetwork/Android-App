@@ -1,11 +1,11 @@
+import 'dart:convert';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/hive_payout_response.dart';
-import 'package:acela/src/utils/form_factor.dart';
 import 'package:flutter/material.dart';
-import 'custom_circle_avatar.dart';
-import '../utils/form_factor.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+
+import 'custom_circle_avatar.dart';
 
 class ListTileVideo extends StatelessWidget {
   const ListTileVideo({
@@ -53,9 +53,9 @@ class ListTileVideo extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(5),
                 decoration: const BoxDecoration(
-                  borderRadius: BorderRadiusDirectional.all(Radius.circular(10)),
-                  color: Colors.blueGrey
-                ),
+                    borderRadius:
+                        BorderRadiusDirectional.all(Radius.circular(10)),
+                    color: Colors.blueGrey),
                 child: Text('\$ $value'),
               ),
               const SizedBox(height: 5),
@@ -63,7 +63,7 @@ class ListTileVideo extends StatelessWidget {
           ),
           const Spacer(),
         ],
-      )
+      ),
     );
   }
 
@@ -86,24 +86,24 @@ class ListTileVideo extends StatelessWidget {
 
   Widget _hivePayoutLoader() {
     return FutureBuilder(
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            var data = snapshot.data as HivePayoutResponse;
-            if (data.result.pendingPayoutValue == "0.000 HBD") {
-              var total = double
-                  .parse(data.result.totalPayoutValue.replaceAll(' HBD', ''));
-              var curator = double
-                  .parse(data.result.curatorPayoutValue.replaceAll(' HBD', ''));
-              return _amount(total + curator);
-            } else {
-              var value = double
-                  .parse(data.result.pendingPayoutValue.replaceAll(' HBD', ''));
-              return _amount(value);
-            }
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          var data = snapshot.data as HivePayoutResponse;
+          if (data.result.pendingPayoutValue == "0.000 HBD") {
+            var total = double.parse(
+                data.result.totalPayoutValue.replaceAll(' HBD', ''));
+            var curator = double.parse(
+                data.result.curatorPayoutValue.replaceAll(' HBD', ''));
+            return _amount(total + curator);
           } else {
-            return Container();
+            var value = double.parse(
+                data.result.pendingPayoutValue.replaceAll(' HBD', ''));
+            return _amount(value);
           }
-        },
+        } else {
+          return Container();
+        }
+      },
       future: _futureHivePayout(),
     );
   }
@@ -131,7 +131,7 @@ class ListTileVideo extends StatelessWidget {
                 },
               ),
             ),
-            // _hivePayoutLoader(),
+            _hivePayoutLoader(),
           ],
         ),
         Container(
