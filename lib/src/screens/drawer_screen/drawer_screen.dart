@@ -3,7 +3,6 @@ import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
-import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -121,9 +120,9 @@ class DrawerScreen extends StatelessWidget {
           ],
         ),
         onTap: () {
-          // var screen = const AboutHomeScreen();
-          // var route = MaterialPageRoute(builder: (_) => screen);
-          // Navigator.of(context).push(route);
+          var screen = const AboutHomeScreen();
+          var route = MaterialPageRoute(builder: (_) => screen);
+          Navigator.of(context).push(route);
         },
       ),
     );
