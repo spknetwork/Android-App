@@ -62,35 +62,20 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     return Markdown(
       data: Utilities.removeAllHtmlTags(markDown),
       onTapLink: (text, url, title) {
-        launch(url!);
+        launchUrl(Uri.parse(url ?? 'https://google.com'));
       },
     );
   }
 
   // video description
-  Widget titleAndSubtitleCommon(VideoDetails details, bool fullScreen) {
+  Widget titleAndSubtitleCommon(VideoDetails details) {
     String string =
         "📆 ${timeago.format(DateTime.parse(details.created))} · ▶ ${details.views} views · 👥 ${details.community}";
-    var fullScreenButton = IconButton(
-      onPressed: () {
-        var route = MaterialPageRoute(builder: (context) {
-          return VideoDetailsInfoWidget(details: details);
-        });
-        Navigator.of(context).push(route);
-      },
-      icon: const Icon(Icons.fullscreen),
-    );
-    var closeButton = IconButton(
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-      icon: const Icon(Icons.close),
-    );
     var downIcon = const Icon(Icons.arrow_drop_down_outlined);
     List<Widget> children = [
       Expanded(
         child: Column(
-          // crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(details.title, style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 3),
@@ -99,12 +84,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         ),
       ),
     ];
-    if (fullScreen) {
-      children.add(fullScreenButton);
-      children.add(closeButton);
-    } else {
-      children.add(downIcon);
-    }
+    children.add(downIcon);
     return Container(
       margin: const EdgeInsets.all(10),
       child: Row(
@@ -126,10 +106,26 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           child: Stack(
             children: [
               Container(
-                margin: const EdgeInsets.only(top: 70),
+                margin: const EdgeInsets.only(top: 55),
                 child: descriptionMarkDown(details.description),
               ),
-              titleAndSubtitleCommon(details, true),
+              Container(
+                height: 55,
+                child: AppBar(
+                  title: Text(details.title),
+                  actions: [
+                    IconButton(
+                      onPressed: () {
+                        var route = MaterialPageRoute(builder: (context) {
+                          return VideoDetailsInfoWidget(details: details);
+                        });
+                        Navigator.of(context).push(route);
+                      },
+                      icon: const Icon(Icons.fullscreen),
+                    )
+                  ],
+                ),
+              )
             ],
           ),
         );
@@ -140,7 +136,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   // video description
   Widget titleAndSubtitle(VideoDetails details) {
     return InkWell(
-      child: titleAndSubtitleCommon(details, false),
+      child: titleAndSubtitleCommon(details),
       onTap: () {
         showModalForDescription(details);
       },
@@ -172,7 +168,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                   .join(''),
               shrinkWrap: true,
               onTapLink: (text, url, title) {
-                launch(url!);
+                launchUrl(Uri.parse(url ?? 'https://google.com'));
               },
             ),
           ),
@@ -284,6 +280,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       },
       user: item.owner,
       permlink: item.mediaid,
+      shouldResize: false,
     );
   }
 

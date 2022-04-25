@@ -8,17 +8,18 @@ import 'package:http/http.dart' as http;
 import 'custom_circle_avatar.dart';
 
 class ListTileVideo extends StatelessWidget {
-  const ListTileVideo({
-    Key? key,
-    required this.placeholder,
-    required this.url,
-    required this.userThumbUrl,
-    required this.title,
-    required this.subtitle,
-    required this.onUserTap,
-    required this.user,
-    required this.permlink,
-  }) : super(key: key);
+  const ListTileVideo(
+      {Key? key,
+      required this.placeholder,
+      required this.url,
+      required this.userThumbUrl,
+      required this.title,
+      required this.subtitle,
+      required this.onUserTap,
+      required this.user,
+      required this.permlink,
+      required this.shouldResize})
+      : super(key: key);
 
   final String placeholder;
   final String url;
@@ -28,6 +29,7 @@ class ListTileVideo extends StatelessWidget {
   final Function onUserTap;
   final String user;
   final String permlink;
+  final bool shouldResize;
 
   Widget _errorIndicator() {
     return Container(
@@ -119,7 +121,7 @@ class ListTileVideo extends StatelessWidget {
               width: MediaQuery.of(context).size.width,
               child: FadeInImage.assetNetwork(
                 placeholder: placeholder,
-                image: server.resizedImage(url),
+                image: shouldResize ? server.resizedImage(url) : url,
                 fit: BoxFit.fitWidth,
                 placeholderErrorBuilder: (BuildContext context, Object error,
                     StackTrace? stackTrace) {

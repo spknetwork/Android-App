@@ -5,9 +5,9 @@ import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:http/http.dart' as http;
 
 class VideoDetailsComments extends StatefulWidget {
   const VideoDetailsComments(
@@ -84,7 +84,7 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
                   data: Utilities.removeAllHtmlTags(body),
                   shrinkWrap: true,
                   onTapLink: (text, url, title) {
-                    launch(url!);
+                    launchUrl(Uri.parse(url ?? 'https://google.com'));
                   },
                 ),
                 Container(margin: const EdgeInsets.only(bottom: 10)),

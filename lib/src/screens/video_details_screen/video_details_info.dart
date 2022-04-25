@@ -2,11 +2,12 @@ import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 class VideoDetailsInfoWidget extends StatelessWidget {
-  const VideoDetailsInfoWidget({Key? key, required this.details}) : super(key: key);
+  const VideoDetailsInfoWidget({Key? key, required this.details})
+      : super(key: key);
   final VideoDetails details;
 
   Widget header(BuildContext context) {
@@ -18,8 +19,7 @@ class VideoDetailsInfoWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(details.title,
-                style: Theme.of(context).textTheme.bodyLarge),
+            Text(details.title, style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 3),
             Text(string, style: Theme.of(context).textTheme.bodySmall),
           ],
@@ -33,7 +33,7 @@ class VideoDetailsInfoWidget extends StatelessWidget {
       padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
       data: Utilities.removeAllHtmlTags(markDown),
       onTapLink: (text, url, title) {
-        launch(url!);
+        launchUrl(Uri.parse(url ?? 'https://google.com'));
       },
     );
   }
@@ -42,7 +42,7 @@ class VideoDetailsInfoWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(details.owner),
+        title: Text(details.title),
       ),
       body: SafeArea(
         child: Stack(

@@ -110,6 +110,7 @@ class _SearchScreenState extends State<SearchScreen> {
         },
         user: item.author,
         permlink: item.permlink,
+        shouldResize: false,
       ),
       onTap: () {
         var vm =

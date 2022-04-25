@@ -107,6 +107,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
       },
       user: item.author,
       permlink: item.permlink,
+      shouldResize: true,
     );
   }
 
@@ -163,7 +164,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
     return Markdown(
       data: Utilities.removeAllHtmlTags(markDown),
       onTapLink: (text, url, title) {
-        launch(url!);
+        launchUrl(Uri.parse(url ?? 'https://google.com'));
       },
     );
   }

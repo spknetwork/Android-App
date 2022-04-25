@@ -1,21 +1,21 @@
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/user_profile/request/user_profile_request.dart';
+import 'package:acela/src/models/user_profile/response/user_profile.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
-import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
-import 'package:acela/src/models/user_profile/request/user_profile_request.dart';
-import 'package:acela/src/models/user_profile/response/user_profile.dart';
-import 'package:url_launcher/link.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserChannelProfileWidget extends StatefulWidget {
-  const UserChannelProfileWidget({Key? key, required this.owner}) : super(key: key);
+  const UserChannelProfileWidget({Key? key, required this.owner})
+      : super(key: key);
   final String owner;
 
   @override
-  State<UserChannelProfileWidget> createState() => _UserChannelProfileWidgetState();
+  State<UserChannelProfileWidget> createState() =>
+      _UserChannelProfileWidgetState();
 }
 
 class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
@@ -52,11 +52,11 @@ class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
       padding: const EdgeInsets.all(3),
       data: Utilities.removeAllHtmlTags(markDown),
       onTapLink: (text, url, title) {
-        launch(url!);
+        launchUrl(Uri.parse(url ?? 'https://google.com'));
       },
     );
   }
-  
+
   String _generateMarkDown(UserProfileResponse data) {
     return "![cover image](${data.result.metadata.profile.coverImage})\n## Bio:\n${data.result.metadata.profile.about}\n\n\n## Created At:\n${Utilities.parseAndFormatDateTime(data.result.created)}\n\n## Last Seen At:\n${Utilities.parseAndFormatDateTime(data.result.active)}\n\n## Total Hive Posts:\n${data.result.postCount}\n\n## Hive Reputation:\n${data.result.reputation}\n\n## Location:\n${data.result.metadata.profile.location.isEmpty ? 'None' : data.result.metadata.profile.location}\n\n## Website:\n${data.result.metadata.profile.website.isEmpty ? 'None' : data.result.metadata.profile.website}";
   }
