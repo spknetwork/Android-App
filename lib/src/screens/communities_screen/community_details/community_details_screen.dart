@@ -13,8 +13,8 @@ import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:http/http.dart' as http;
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
 class CommunityDetailScreen extends StatefulWidget {
@@ -94,7 +94,6 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
       Function(HomeFeedItem) onUserTap) {
     String timeInString =
         item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
-    String owner = "👤 ${item.author}";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
     String views = "▶ ${item.views}";
     return ListTileVideo(
@@ -102,7 +101,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
       url: item.images.thumbnail,
       userThumbUrl: server.userOwnerThumb(item.author),
       title: item.title,
-      subtitle: "$timeInString $owner $duration $views",
+      subtitle: "$timeInString $duration $views",
       onUserTap: () {
         onUserTap(item);
       },

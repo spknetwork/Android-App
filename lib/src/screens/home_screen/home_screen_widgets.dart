@@ -15,7 +15,6 @@ class HomeScreenWidgets {
       Function(HomeFeedItem) onUserTap) {
     String timeInString =
         item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
-    String owner = "👤 ${item.author}";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
     String views = "▶ ${item.views}";
     return ListTileVideo(
@@ -23,7 +22,7 @@ class HomeScreenWidgets {
       url: item.images.thumbnail,
       userThumbUrl: server.userOwnerThumb(item.author),
       title: item.title,
-      subtitle: "$timeInString $owner $duration $views",
+      subtitle: "$timeInString $duration $views",
       onUserTap: () {
         onUserTap(item);
       },

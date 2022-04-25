@@ -56,7 +56,7 @@ class ListTileVideo extends StatelessWidget {
                     borderRadius:
                         BorderRadiusDirectional.all(Radius.circular(10)),
                     color: Colors.blueGrey),
-                child: Text('\$ $value'),
+                child: Text('\$ ${value.toStringAsFixed(3)}'),
               ),
               const SizedBox(height: 5),
             ],
@@ -138,7 +138,7 @@ class ListTileVideo extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           child: Row(
             children: [
-              GestureDetector(
+              InkWell(
                 child: CustomCircleAvatar(
                     height: 45, width: 45, url: userThumbUrl),
                 onTap: () {
@@ -151,8 +151,20 @@ class ListTileVideo extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: Theme.of(context).textTheme.bodyText1),
-                    Text(subtitle,
-                        style: Theme.of(context).textTheme.bodyText2),
+                    Row(
+                      children: [
+                        InkWell(
+                          child: Text('👤 $user',
+                              style: Theme.of(context).textTheme.bodyText2),
+                          onTap: () {
+                            onUserTap();
+                          },
+                        ),
+                        const SizedBox(width: 5),
+                        Text(subtitle,
+                            style: Theme.of(context).textTheme.bodyText2),
+                      ],
+                    ),
                   ],
                 ),
               )

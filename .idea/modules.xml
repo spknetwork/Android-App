@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/acela.iml" filepath="$PROJECT_DIR$/acela.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android/acela_android.iml" filepath="$PROJECT_DIR$/android/acela_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Android-App.iml" filepath="$PROJECT_DIR$/.idea/Android-App.iml" />
     </modules>
   </component>
 </project>

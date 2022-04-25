@@ -92,3 +92,5 @@ iOSInjectionProject/
 .dart_tool
 .env
 *.env
+
+.idea

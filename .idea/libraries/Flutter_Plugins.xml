@@ -1,26 +1,26 @@
 <component name="libraryTable">
   <library name="Flutter Plugins" type="FlutterPluginsLibraryType">
     <CLASSES>
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/wakelock-0.6.1+2" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player_android-2.3.2" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/wakelock_web-0.4.0" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player_web-2.0.7" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player_web-2.0.8" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player_web_hls-0.1.11+4" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus-3.1.0" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher-6.1.0" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_ios-6.0.15" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_windows-3.0.0" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher-6.0.20" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-1.6.2" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_macos-3.0.0" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_linux-3.0.0" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/wakelock_macos-0.4.0" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_android-6.0.15" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus-3.1.0" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus_web-2.0.4" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/wakelock-0.6.1+2" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-1.6.1" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player-2.3.0" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_web-2.0.9" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.13.1" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player_avfoundation-2.3.1" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus_macos-2.1.0" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player_android-2.3.1" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player_avfoundation-2.3.2" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_player-2.4.0" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/wakelock_macos-0.4.0" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus_web-2.0.4" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_web-2.0.9" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher_android-6.0.15" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.15.0" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

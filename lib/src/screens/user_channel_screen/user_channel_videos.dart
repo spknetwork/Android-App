@@ -39,7 +39,6 @@ class _UserChannelVideosState extends State<UserChannelVideos>
       Function(HomeFeedItem) onUserTap) {
     String timeInString =
         item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
-    String owner = "👤 ${item.author}";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
     String views = "▶ ${item.views}";
     return ListTileVideo(
@@ -47,7 +46,7 @@ class _UserChannelVideosState extends State<UserChannelVideos>
       url: item.images.thumbnail,
       userThumbUrl: server.userOwnerThumb(item.author),
       title: item.title,
-      subtitle: "$timeInString $owner $duration $views",
+      subtitle: "$timeInString $duration $views",
       onUserTap: () {
         onUserTap(item);
       },
@@ -79,15 +78,16 @@ class _UserChannelVideosState extends State<UserChannelVideos>
           return ListView.separated(
             itemBuilder: (context, index) {
               return _listTile(data[index], context, (item) {
-                var viewModel =
-                VideoDetailsViewModel(author: item.author, permlink: item.permlink);
+                var viewModel = VideoDetailsViewModel(
+                    author: item.author, permlink: item.permlink);
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => VideoDetailsScreen(vm: viewModel)));
               }, (owner) {
                 log("tapped on user ${owner.author}");
               });
             },
-            separatorBuilder: (context, index) => const Divider(thickness: 0, height: 15, color: Colors.transparent),
+            separatorBuilder: (context, index) => const Divider(
+                thickness: 0, height: 15, color: Colors.transparent),
             itemCount: data.length,
           );
         } else {

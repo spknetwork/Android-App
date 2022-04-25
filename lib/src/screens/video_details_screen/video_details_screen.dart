@@ -13,8 +13,8 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 class VideoDetailsScreen extends StatefulWidget {
   const VideoDetailsScreen({Key? key, required this.vm}) : super(key: key);
@@ -263,7 +263,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             );
           }
         },
-        separatorBuilder: (context, index) => const Divider(thickness: 0, height: 15, color: Colors.transparent),
+        separatorBuilder: (context, index) =>
+            const Divider(thickness: 0, height: 15, color: Colors.transparent),
         itemCount: recommendations.length + 2,
       ),
     );
@@ -276,7 +277,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       url: item.image,
       userThumbUrl: server.userOwnerThumb(item.owner),
       title: item.title,
-      subtitle: "👤 ${item.owner}",
+      subtitle: "",
       onUserTap: () {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (c) => UserChannelScreen(owner: item.owner)));

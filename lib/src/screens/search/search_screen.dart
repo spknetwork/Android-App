@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:convert';
+import 'dart:developer';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/search/search_response_models.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -101,7 +102,7 @@ class _SearchScreenState extends State<SearchScreen> {
         url: item.imgUrl,
         userThumbUrl: server.userOwnerThumb(item.author),
         title: item.title,
-        subtitle: "👤 ${item.author} $timeInString ",
+        subtitle: "$timeInString ",
         onUserTap: () {
           var channel = UserChannelScreen(owner: item.author);
           var route = MaterialPageRoute(builder: (_) => channel);
