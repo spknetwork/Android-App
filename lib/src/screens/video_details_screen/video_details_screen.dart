@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
+import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -13,6 +16,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -28,6 +32,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   late Future<List<VideoRecommendationItem>> recommendedVideos;
   List<VideoRecommendationItem> recommendations = [];
   late Future<List<HiveComment>> _loadComments;
+  double? payout;
+  int? upVotes;
+  int? downVotes;
 
   @override
   void initState() {
@@ -39,6 +46,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     });
     _loadComments =
         widget.vm.loadFirstSetOfComments(widget.vm.author, widget.vm.permlink);
+    fetchHiveInfo();
   }
 
   void onUserTap() {
@@ -67,29 +75,95 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
+  // fetch hive info
+  void fetchHiveInfo() async {
+    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    request.body = json.encode({
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "bridge.get_discussion",
+      "params": {
+        "author": widget.vm.author,
+        "permlink": widget.vm.permlink,
+        "observer": ""
+      }
+    });
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var result = HivePostInfo.fromJsonString(string)
+          .result
+          .resultData
+          .where((element) => element.permlink == widget.vm.permlink)
+          .first;
+      setState(() {
+        payout = result.payout;
+        upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
+        downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
+      });
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
+
   // video description
-  Widget titleAndSubtitleCommon(VideoDetails details) {
+  Widget titleAndSubtitle(VideoDetails details) {
     String string =
         "📆 ${timeago.format(DateTime.parse(details.created))} · ▶ ${details.views} views · 👥 ${details.community}";
-    var downIcon = const Icon(Icons.arrow_drop_down_outlined);
-    List<Widget> children = [
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(details.title, style: Theme.of(context).textTheme.bodyLarge),
-            const SizedBox(height: 3),
-            Text(string, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-      ),
-    ];
-    children.add(downIcon);
+    String priceAndVotes =
+        (payout != null && upVotes != null && downVotes != null)
+            ? "\$ ${payout!.toStringAsFixed(3)} · 👍 $upVotes · 👎 $downVotes"
+            : "";
     return Container(
       margin: const EdgeInsets.all(10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: children,
+      child: Column(
+        children: [
+          InkWell(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(details.title,
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      const SizedBox(height: 3),
+                      Text(string,
+                          style: Theme.of(context).textTheme.bodySmall),
+                      const SizedBox(height: 3),
+                      Text(priceAndVotes,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_drop_down_outlined),
+              ],
+            ),
+            onTap: () {
+              showModalForDescription(details);
+            },
+          ),
+          SizedBox(height: 10),
+          InkWell(
+            child: Row(
+              children: [
+                CustomCircleAvatar(
+                  height: 40,
+                  width: 40,
+                  url: server.userOwnerThumb(details.owner),
+                ),
+                SizedBox(width: 10),
+                Text(details.owner,
+                    style: Theme.of(context).textTheme.bodyLarge),
+              ],
+            ),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (c) => UserChannelScreen(owner: details.owner)));
+            },
+          )
+        ],
       ),
     );
   }
@@ -129,16 +203,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             ],
           ),
         );
-      },
-    );
-  }
-
-  // video description
-  Widget titleAndSubtitle(VideoDetails details) {
-    return InkWell(
-      child: titleAndSubtitleCommon(details),
-      onTap: () {
-        showModalForDescription(details);
       },
     );
   }
@@ -220,23 +284,26 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           return commentsSection(data);
         } else {
           return Container(
-              margin: const EdgeInsets.all(10),
-              child: Row(
-                children: const [
-                  SizedBox(
-                      height: 15,
-                      width: 15,
-                      child: CircularProgressIndicator(value: null)),
-                  SizedBox(width: 10),
-                  Text('Loading comments')
-                ],
-              ));
+            margin: const EdgeInsets.all(10),
+            child: Row(
+              children: const [
+                SizedBox(
+                  height: 15,
+                  width: 15,
+                  child: CircularProgressIndicator(),
+                ),
+                SizedBox(width: 10),
+                Text('Loading comments')
+              ],
+            ),
+          );
         }
       },
     );
   }
 
   //endregion
+
   // container list view
   Widget videoWithDetails(VideoDetails details) {
     return Container(

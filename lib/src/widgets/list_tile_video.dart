@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/home_screen_feed_models/hive_payout_response.dart';
+import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'custom_circle_avatar.dart';
 
-class ListTileVideo extends StatelessWidget {
+class ListTileVideo extends StatefulWidget {
   const ListTileVideo(
       {Key? key,
       required this.placeholder,
@@ -31,19 +31,34 @@ class ListTileVideo extends StatelessWidget {
   final String permlink;
   final bool shouldResize;
 
+  @override
+  State<ListTileVideo> createState() => _ListTileVideoState();
+}
+
+class _ListTileVideoState extends State<ListTileVideo> {
+  double? payout;
+  int? upVotes;
+  int? downVotes;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchHiveInfo();
+  }
+
   Widget _errorIndicator() {
     return Container(
       height: 220,
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: Image.asset(placeholder).image,
+          image: Image.asset(widget.placeholder).image,
           fit: BoxFit.fitWidth,
         ),
       ),
     );
   }
 
-  Widget _amount(double value) {
+  Widget _amount(String string) {
     return SizedBox(
       height: 220,
       child: Row(
@@ -58,7 +73,7 @@ class ListTileVideo extends StatelessWidget {
                     borderRadius:
                         BorderRadiusDirectional.all(Radius.circular(10)),
                     color: Colors.blueGrey),
-                child: Text('\$ ${value.toStringAsFixed(3)}'),
+                child: Text(string),
               ),
               const SizedBox(height: 5),
             ],
@@ -69,45 +84,43 @@ class ListTileVideo extends StatelessWidget {
     );
   }
 
-  Future<HivePayoutResponse> _futureHivePayout() async {
-    var request = http.Request('POST', Uri.parse('https://api.deathwing.me/'));
+  // fetch hive info
+  void fetchHiveInfo() async {
+    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
     request.body = json.encode({
-      "id": 0,
+      "id": 1,
       "jsonrpc": "2.0",
-      "method": "condenser_api.get_content",
-      "params": [user, permlink]
+      "method": "bridge.get_discussion",
+      "params": {
+        "author": widget.user,
+        "permlink": widget.permlink,
+        "observer": ""
+      }
     });
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
-      return HivePayoutResponse.fromJsonString(string);
+      var result = HivePostInfo.fromJsonString(string)
+          .result
+          .resultData
+          .where((element) => element.permlink == widget.permlink)
+          .first;
+      setState(() {
+        payout = result.payout;
+        upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
+        downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
+      });
     } else {
-      throw response.reasonPhrase ?? 'Unknown Error';
+      print(response.reasonPhrase);
     }
   }
 
   Widget _hivePayoutLoader() {
-    return FutureBuilder(
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          var data = snapshot.data as HivePayoutResponse;
-          if (data.result.pendingPayoutValue == "0.000 HBD") {
-            var total = double.parse(
-                data.result.totalPayoutValue.replaceAll(' HBD', ''));
-            var curator = double.parse(
-                data.result.curatorPayoutValue.replaceAll(' HBD', ''));
-            return _amount(total + curator);
-          } else {
-            var value = double.parse(
-                data.result.pendingPayoutValue.replaceAll(' HBD', ''));
-            return _amount(value);
-          }
-        } else {
-          return Container();
-        }
-      },
-      future: _futureHivePayout(),
-    );
+    String priceAndVotes =
+        (payout != null && upVotes != null && downVotes != null)
+            ? "\$ ${payout!.toStringAsFixed(3)} · 👍 $upVotes · 👎 $downVotes"
+            : "";
+    return _amount(priceAndVotes);
   }
 
   Widget _thumbnailType(BuildContext context) {
@@ -120,8 +133,10 @@ class ListTileVideo extends StatelessWidget {
               height: 220,
               width: MediaQuery.of(context).size.width,
               child: FadeInImage.assetNetwork(
-                placeholder: placeholder,
-                image: shouldResize ? server.resizedImage(url) : url,
+                placeholder: widget.placeholder,
+                image: widget.shouldResize
+                    ? server.resizedImage(widget.url)
+                    : widget.url,
                 fit: BoxFit.fitWidth,
                 placeholderErrorBuilder: (BuildContext context, Object error,
                     StackTrace? stackTrace) {
@@ -142,9 +157,9 @@ class ListTileVideo extends StatelessWidget {
             children: [
               InkWell(
                 child: CustomCircleAvatar(
-                    height: 45, width: 45, url: userThumbUrl),
+                    height: 45, width: 45, url: widget.userThumbUrl),
                 onTap: () {
-                  onUserTap();
+                  widget.onUserTap();
                 },
               ),
               Container(width: 5),
@@ -152,18 +167,19 @@ class ListTileVideo extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: Theme.of(context).textTheme.bodyText1),
+                    Text(widget.title,
+                        style: Theme.of(context).textTheme.bodyText1),
                     Row(
                       children: [
                         InkWell(
-                          child: Text('👤 $user',
+                          child: Text('👤 ${widget.user}',
                               style: Theme.of(context).textTheme.bodyText2),
                           onTap: () {
-                            onUserTap();
+                            widget.onUserTap();
                           },
                         ),
                         const SizedBox(width: 5),
-                        Text(subtitle,
+                        Text(widget.subtitle,
                             style: Theme.of(context).textTheme.bodyText2),
                       ],
                     ),
