@@ -33,8 +33,8 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
   late TabController _tabController;
 
   static const List<Tab> tabs = [
-    Tab(text: 'About'),
     Tab(text: 'Videos'),
+    Tab(text: 'About'),
     Tab(text: 'Team')
   ];
 
@@ -245,8 +245,8 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _about(),
           _screen(),
+          _about(),
           _team(),
         ],
       ),

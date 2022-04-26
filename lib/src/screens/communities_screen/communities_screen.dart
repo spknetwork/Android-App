@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/communities_models/request/communities_request_model.dart';
 import 'package:acela/src/models/communities_models/response/communities_response_models.dart';
@@ -9,6 +7,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class CommunitiesScreen extends StatefulWidget {
   const CommunitiesScreen({Key? key}) : super(key: key);
@@ -20,7 +19,8 @@ class CommunitiesScreen extends StatefulWidget {
 class _CommunitiesScreenState extends State<CommunitiesScreen> {
   Future<List<CommunityItem>> getData() async {
     var client = http.Client();
-    var body = CommunitiesRequestModel(params: CommunitiesRequestParams()).toJsonString();
+    var body = CommunitiesRequestModel(params: CommunitiesRequestParams())
+        .toJsonString();
     var response = await client.post(Uri.parse(server.hiveDomain), body: body);
     if (response.statusCode == 200) {
       var communitiesResponse =
@@ -32,6 +32,9 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
   }
 
   Widget _listTile(CommunityItem item) {
+    var formatter = NumberFormat();
+    var extra =
+        "${item.about}\n\n${formatter.format(item.subscribers)} subscribers\n\$${formatter.format(item.sumPending)} pending rewards\n${formatter.format(item.numAuthors)} active posters";
     return ListTile(
       leading: CustomCircleAvatar(
         width: 60,
@@ -39,7 +42,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
         url: server.communityIcon(item.name),
       ),
       title: Text(item.title),
-      subtitle: Text(item.about),
+      subtitle: Text(extra),
       onTap: () {
         var screen = CommunityDetailScreen(name: item.name, title: item.title);
         var route = MaterialPageRoute(builder: (c) => screen);
@@ -50,11 +53,12 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
 
   Widget _list(List<CommunityItem> data) {
     return ListView.separated(
-        itemBuilder: (context, index) {
-          return _listTile(data[index]);
-        },
-        separatorBuilder: (context, index) => const Divider(),
-        itemCount: data.length);
+      itemBuilder: (context, index) {
+        return _listTile(data[index]);
+      },
+      separatorBuilder: (context, index) => const Divider(),
+      itemCount: data.length,
+    );
   }
 
   Widget _body() {

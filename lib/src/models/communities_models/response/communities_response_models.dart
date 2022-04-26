@@ -1,5 +1,6 @@
-import 'package:acela/src/utils/safe_convert.dart';
 import 'dart:convert';
+
+import 'package:acela/src/utils/safe_convert.dart';
 
 CommunitiesResponseModel communitiesResponseModelFromString(String string) {
   return CommunitiesResponseModel.fromJson(json.decode(string));
@@ -18,17 +19,20 @@ class CommunitiesResponseModel {
     this.id = 0,
   });
 
-  factory CommunitiesResponseModel.fromJson(Map<String, dynamic>? json) => CommunitiesResponseModel(
-    jsonrpc: asString(json, 'jsonrpc'),
-    result: asList(json, 'result').map((e) => CommunityItem.fromJson(e)).toList(),
-    id: asInt(json, 'id'),
-  );
+  factory CommunitiesResponseModel.fromJson(Map<String, dynamic>? json) =>
+      CommunitiesResponseModel(
+        jsonrpc: asString(json, 'jsonrpc'),
+        result: asList(json, 'result')
+            .map((e) => CommunityItem.fromJson(e))
+            .toList(),
+        id: asInt(json, 'id'),
+      );
 
   Map<String, dynamic> toJson() => {
-    'jsonrpc': jsonrpc,
-    'result': result.map((e) => e.toJson()),
-    'id': id,
-  };
+        'jsonrpc': jsonrpc,
+        'result': result.map((e) => e.toJson()),
+        'id': id,
+      };
 }
 
 class CommunityItem {
@@ -48,6 +52,7 @@ class CommunityItem {
   final int subscribers;
   // 29860
   final int sumPending;
+  final int numAuthors;
   final List<String> admins;
 
   CommunityItem({
@@ -59,31 +64,33 @@ class CommunityItem {
     this.isNsfw = false,
     this.subscribers = 0,
     this.sumPending = 0,
+    this.numAuthors = 0,
     required this.admins,
   });
 
   factory CommunityItem.fromJson(Map<String, dynamic>? json) => CommunityItem(
-    id: asInt(json, 'id'),
-    name: asString(json, 'name'),
-    title: asString(json, 'title'),
-    about: asString(json, 'about'),
-    typeId: asInt(json, 'type_id'),
-    isNsfw: asBool(json, 'is_nsfw'),
-    subscribers: asInt(json, 'subscribers'),
-    sumPending: asInt(json, 'sum_pending'),
-    admins: asList(json, 'admins').map((e) => e.toString()).toList(),
-  );
+        id: asInt(json, 'id'),
+        name: asString(json, 'name'),
+        title: asString(json, 'title'),
+        about: asString(json, 'about'),
+        typeId: asInt(json, 'type_id'),
+        isNsfw: asBool(json, 'is_nsfw'),
+        subscribers: asInt(json, 'subscribers'),
+        sumPending: asInt(json, 'sum_pending'),
+        numAuthors: asInt(json, 'num_authors'),
+        admins: asList(json, 'admins').map((e) => e.toString()).toList(),
+      );
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'title': title,
-    'about': about,
-    'type_id': typeId,
-    'is_nsfw': isNsfw,
-    'subscribers': subscribers,
-    'sum_pending': sumPending,
-    'admins': admins.map((e) => e),
-  };
+        'id': id,
+        'name': name,
+        'title': title,
+        'about': about,
+        'type_id': typeId,
+        'is_nsfw': isNsfw,
+        'subscribers': subscribers,
+        'sum_pending': sumPending,
+        'num_authors': numAuthors,
+        'admins': admins.map((e) => e),
+      };
 }
-

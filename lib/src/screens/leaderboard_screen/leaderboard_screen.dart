@@ -1,5 +1,5 @@
-import 'dart:developer';
 import 'dart:core';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/leaderboard_models/leaderboard_model.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -26,7 +26,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     }
   }
 
-  Widget _listTileSubtitle(LeaderboardResponseItem item) {
+  Widget _listTileSubtitle(LeaderboardResponseItem item, double max) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -35,7 +35,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           height: 5,
         ),
         LinearProgressIndicator(
-          value: item.score / 1000,
+          value: item.score / max,
         )
       ],
     );
@@ -46,7 +46,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         MaterialPageRoute(builder: (c) => UserChannelScreen(owner: author)));
   }
 
-  Widget _medalTile(LeaderboardResponseItem item, String medal) {
+  Widget _medalTile(LeaderboardResponseItem item, String medal, double max) {
     return ListTile(
       leading: CustomCircleAvatar(
         width: 60,
@@ -62,14 +62,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Text(item.username),
         ],
       ),
-      subtitle: _listTileSubtitle(item),
+      subtitle: _listTileSubtitle(item, max),
       onTap: () {
         onUserTap(item.username);
       },
     );
   }
 
-  Widget _listTile(LeaderboardResponseItem item) {
+  Widget _listTile(LeaderboardResponseItem item, double max) {
     return ListTile(
       leading: CustomCircleAvatar(
         width: 60,
@@ -77,7 +77,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         url: server.userOwnerThumb(item.username),
       ),
       title: Text(item.username),
-      subtitle: _listTileSubtitle(item),
+      subtitle: _listTileSubtitle(item, max),
       onTap: () {
         onUserTap(item.username);
       },
@@ -88,12 +88,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     return ListView.separated(
         itemBuilder: (context, index) {
           return index == 0
-              ? _medalTile(data[index], '🥇')
+              ? _medalTile(data[index], '🥇', data[0].score)
               : index == 1
-                  ? _medalTile(data[index], '🥈')
+                  ? _medalTile(data[index], '🥈', data[0].score)
                   : index == 2
-                      ? _medalTile(data[index], '🥉')
-                      : _listTile(data[index]);
+                      ? _medalTile(data[index], '🥉', data[0].score)
+                      : _listTile(data[index], data[0].score);
         },
         separatorBuilder: (context, index) => const Divider(),
         itemCount: data.length);

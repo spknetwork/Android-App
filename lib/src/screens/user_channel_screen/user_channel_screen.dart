@@ -13,16 +13,16 @@ class UserChannelScreen extends StatefulWidget {
   _UserChannelScreenState createState() => _UserChannelScreenState();
 }
 
-class _UserChannelScreenState extends State<UserChannelScreen> with SingleTickerProviderStateMixin {
+class _UserChannelScreenState extends State<UserChannelScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   static const List<Tab> tabs = [
-    Tab(text: 'About'),
     Tab(text: 'Videos'),
+    Tab(text: 'About'),
     Tab(text: 'Followers'),
     Tab(text: 'Following'),
   ];
-
 
   @override
   void initState() {
@@ -47,7 +47,9 @@ class _UserChannelScreenState extends State<UserChannelScreen> with SingleTicker
               width: 40,
               url: server.userOwnerThumb(widget.owner),
             ),
-            const SizedBox(width: 10,),
+            const SizedBox(
+              width: 10,
+            ),
             Text(widget.owner)
           ],
         ),
@@ -60,8 +62,8 @@ class _UserChannelScreenState extends State<UserChannelScreen> with SingleTicker
       body: TabBarView(
         controller: _tabController,
         children: [
-          UserChannelProfileWidget(owner: widget.owner),
           UserChannelVideos(owner: widget.owner),
+          UserChannelProfileWidget(owner: widget.owner),
           UserChannelFollowingWidget(owner: widget.owner, isFollowers: true),
           UserChannelFollowingWidget(owner: widget.owner, isFollowers: false),
         ],
