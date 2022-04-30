@@ -348,6 +348,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       user: item.owner,
       permlink: item.mediaid,
       shouldResize: false,
+      downVotes: item.downVotes,
+      upVotes: item.downVotes,
+      payout: item.payout,
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_following.dar
 import 'package:acela/src/screens/user_channel_screen/user_channel_profile.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_videos.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
+import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 
 class UserChannelScreen extends StatefulWidget {
@@ -16,6 +17,8 @@ class UserChannelScreen extends StatefulWidget {
 class _UserChannelScreenState extends State<UserChannelScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  var currentIndex = 0;
+  var videoKey = GlobalKey<UserChannelVideosState>();
 
   static const List<Tab> tabs = [
     Tab(text: 'Videos'),
@@ -28,12 +31,49 @@ class _UserChannelScreenState extends State<UserChannelScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: tabs.length, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        currentIndex = _tabController.index;
+      });
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
     _tabController.dispose();
+  }
+
+  Widget _sortButton() {
+    return IconButton(
+      onPressed: () {
+        _showBottomSheet();
+      },
+      icon: const Icon(Icons.sort),
+    );
+  }
+
+  void _showBottomSheet() {
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('Sort by:'),
+      androidBorderRadius: 30,
+      actions: <BottomSheetAction>[
+        BottomSheetAction(
+          title: const Text('Newest'),
+          onPressed: () {
+            videoKey.currentState?.sortByNewest();
+          },
+        ),
+        BottomSheetAction(
+          title: const Text('Most Viewed'),
+          onPressed: () {
+            videoKey.currentState?.sortByMostViewed();
+          },
+        ),
+      ],
+      cancelAction: CancelAction(title: const Text('Cancel')),
+    );
   }
 
   @override
@@ -53,6 +93,7 @@ class _UserChannelScreenState extends State<UserChannelScreen>
             Text(widget.owner)
           ],
         ),
+        actions: currentIndex == 0 ? [_sortButton()] : [],
         bottom: TabBar(
           controller: _tabController,
           tabs: tabs,
@@ -62,7 +103,7 @@ class _UserChannelScreenState extends State<UserChannelScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          UserChannelVideos(owner: widget.owner),
+          UserChannelVideos(key: videoKey, owner: widget.owner),
           UserChannelProfileWidget(owner: widget.owner),
           UserChannelFollowingWidget(owner: widget.owner, isFollowers: true),
           UserChannelFollowingWidget(owner: widget.owner, isFollowers: false),

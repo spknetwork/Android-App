@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:acela/src/utils/safe_convert.dart';
 
 // final jsonList = json.decode(jsonStr) as List;
@@ -6,9 +7,19 @@ import 'package:acela/src/utils/safe_convert.dart';
 
 List<HomeFeedItem> homeFeedItemFromString(String string) {
   final jsonList = json.decode(string) as List;
-  final list =
-  jsonList.map((e) => HomeFeedItem.fromJson(e)).toList();
+  final list = jsonList.map((e) => HomeFeedItem.fromJson(e)).toList();
   return list;
+}
+
+class PayoutInfo {
+  double? payout;
+  int? upVotes;
+  int? downVotes;
+  PayoutInfo({
+    required this.payout,
+    required this.upVotes,
+    required this.downVotes,
+  });
 }
 
 class HomeFeedItem {
@@ -25,6 +36,10 @@ class HomeFeedItem {
   final String playUrl;
   final String ipfs;
   final HomeFeedItemImage images;
+
+  double? payout;
+  int? upVotes;
+  int? downVotes;
 
   HomeFeedItem({
     this.created = "",
@@ -47,36 +62,36 @@ class HomeFeedItem {
   }
 
   factory HomeFeedItem.fromJson(Map<String, dynamic>? json) => HomeFeedItem(
-    created: asString(json, 'created'),
-    language: asString(json, 'language'),
-    views: asInt(json, 'views'),
-    author: asString(json, 'author'),
-    permlink: asString(json, 'permlink'),
-    title: asString(json, 'title'),
-    duration: asDouble(json, 'duration'),
-    isNsfw: asBool(json, 'isNsfw'),
-    tags: asList(json, 'tags').map((e) => e.toString()).toList(),
-    isIpfs: asBool(json, 'isIpfs'),
-    playUrl: asString(json, 'playUrl'),
-    ipfs: asString(json, 'ipfs'),
-    images: HomeFeedItemImage.fromJson(asMap(json, 'images')),
-  );
+        created: asString(json, 'created'),
+        language: asString(json, 'language'),
+        views: asInt(json, 'views'),
+        author: asString(json, 'author'),
+        permlink: asString(json, 'permlink'),
+        title: asString(json, 'title'),
+        duration: asDouble(json, 'duration'),
+        isNsfw: asBool(json, 'isNsfw'),
+        tags: asList(json, 'tags').map((e) => e.toString()).toList(),
+        isIpfs: asBool(json, 'isIpfs'),
+        playUrl: asString(json, 'playUrl'),
+        ipfs: asString(json, 'ipfs'),
+        images: HomeFeedItemImage.fromJson(asMap(json, 'images')),
+      );
 
   Map<String, dynamic> toJson() => {
-    'created': created,
-    'language': language,
-    'views': views,
-    'author': author,
-    'permlink': permlink,
-    'title': title,
-    'duration': duration,
-    'isNsfw': isNsfw,
-    'tags': tags.map((e) => e),
-    'isIpfs': isIpfs,
-    'playUrl': playUrl,
-    'ipfs': ipfs,
-    'images': images.toJson(),
-  };
+        'created': created,
+        'language': language,
+        'views': views,
+        'author': author,
+        'permlink': permlink,
+        'title': title,
+        'duration': duration,
+        'isNsfw': isNsfw,
+        'tags': tags.map((e) => e),
+        'isIpfs': isIpfs,
+        'playUrl': playUrl,
+        'ipfs': ipfs,
+        'images': images.toJson(),
+      };
 }
 
 class HomeFeedItemImage {
@@ -88,14 +103,14 @@ class HomeFeedItemImage {
     this.thumbnail = "",
   });
 
-  factory HomeFeedItemImage.fromJson(Map<String, dynamic>? json) => HomeFeedItemImage(
-    ipfsThumbnail: asString(json, 'ipfs_thumbnail'),
-    thumbnail: asString(json, 'thumbnail'),
-  );
+  factory HomeFeedItemImage.fromJson(Map<String, dynamic>? json) =>
+      HomeFeedItemImage(
+        ipfsThumbnail: asString(json, 'ipfs_thumbnail'),
+        thumbnail: asString(json, 'thumbnail'),
+      );
 
   Map<String, dynamic> toJson() => {
-    'ipfs_thumbnail': ipfsThumbnail,
-    'thumbnail': thumbnail,
-  };
+        'ipfs_thumbnail': ipfsThumbnail,
+        'thumbnail': thumbnail,
+      };
 }
-

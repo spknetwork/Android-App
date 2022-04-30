@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
@@ -7,8 +11,9 @@ import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/http.dart' show get;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -60,13 +65,75 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final widgets = HomeScreenWidgets();
   late HomeScreenViewModel vm;
-  late Future<List<HomeFeedItem>> _loadingFeed;
+  List<HomeFeedItem> items = [];
+  var isLoading = false;
+  Map<String, PayoutInfo?> payout = {};
 
   @override
   void initState() {
     super.initState();
     vm = HomeScreenViewModel(path: widget.path);
-    _loadingFeed = vm.loadHomeFeed();
+    loadData();
+  }
+
+  void loadData() async {
+    setState(() {
+      isLoading = true;
+    });
+    var response = await get(Uri.parse(widget.path));
+    if (response.statusCode == 200) {
+      List<HomeFeedItem> list = homeFeedItemFromString(response.body);
+      setState(() {
+        isLoading = false;
+        items = list;
+        var i = 0;
+        Timer.periodic(const Duration(seconds: 1), (timer) {
+          fetchHiveInfo(list[i].author, list[i].permlink);
+          i += 1;
+          if (i == list.length) {
+            timer.cancel();
+          }
+        });
+      });
+    } else {
+      showError('Status code ${response.statusCode}');
+      setState(() {
+        isLoading = false;
+        items = [];
+      });
+    }
+  }
+
+  // fetch hive info
+  void fetchHiveInfo(String user, String permlink) async {
+    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    request.body = json.encode({
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "bridge.get_discussion",
+      "params": {"author": user, "permlink": permlink, "observer": ""}
+    });
+    debugPrint("Loading data for $user/$permlink");
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var result = HivePostInfo.fromJsonString(string)
+          .result
+          .resultData
+          .where((element) => element.permlink == permlink)
+          .first;
+      setState(() {
+        var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
+        var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
+        payout["$user/$permlink"] = PayoutInfo(
+          payout: result.payout,
+          downVotes: downVotes,
+          upVotes: upVotes,
+        );
+      });
+    } else {
+      print(response.reasonPhrase);
+    }
   }
 
   void onTap(HomeFeedItem item) {
@@ -83,22 +150,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void showError(String string) {
+    var snackBar = SnackBar(content: Text('Error: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   Widget _screen() {
-    return FutureBuilder(
-      future: _loadingFeed,
-      builder: (builder, snapshot) {
-        if (snapshot.hasError) {
-          return RetryScreen(
-              error: snapshot.error?.toString() ?? 'Something went wrong',
-              onRetry: vm.loadHomeFeed);
-        } else if (snapshot.hasData) {
-          List<HomeFeedItem> items = snapshot.data! as List<HomeFeedItem>;
-          return widgets.list(items, vm.loadHomeFeed, onTap, onUserTap);
-        } else {
-          return widgets.loadingData();
-        }
-      },
-    );
+    if (isLoading) {
+      return widgets.loadingData();
+    }
+    return widgets.list(items, (item) {
+      onTap(item);
+    }, (item) {
+      onUserTap(item);
+    }, payout);
   }
 
   @override

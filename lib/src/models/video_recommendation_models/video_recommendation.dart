@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:acela/src/utils/safe_convert.dart';
 
 List<VideoRecommendationItem> videoRecommendationItemsFromJson(String str) {
@@ -16,6 +17,10 @@ class VideoRecommendationItem {
   // dobro2020
   final String owner;
 
+  double? payout;
+  int? upVotes;
+  int? downVotes;
+
   VideoRecommendationItem({
     this.image = "",
     this.title = "",
@@ -23,18 +28,18 @@ class VideoRecommendationItem {
     this.owner = "",
   });
 
-  factory VideoRecommendationItem.fromJson(Map<String, dynamic>? json) => VideoRecommendationItem(
-    image: asString(json, 'image'),
-    title: asString(json, 'title'),
-    mediaid: asString(json, 'mediaid'),
-    owner: asString(json, 'owner'),
-  );
+  factory VideoRecommendationItem.fromJson(Map<String, dynamic>? json) =>
+      VideoRecommendationItem(
+        image: asString(json, 'image'),
+        title: asString(json, 'title'),
+        mediaid: asString(json, 'mediaid'),
+        owner: asString(json, 'owner'),
+      );
 
   Map<String, dynamic> toJson() => {
-    'image': image,
-    'title': title,
-    'mediaid': mediaid,
-    'owner': owner,
-  };
+        'image': image,
+        'title': title,
+        'mediaid': mediaid,
+        'owner': owner,
+      };
 }
-

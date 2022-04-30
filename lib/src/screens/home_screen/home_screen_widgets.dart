@@ -11,12 +11,19 @@ class HomeScreenWidgets {
     return const LoadingScreen();
   }
 
-  Widget _tileTitle(HomeFeedItem item, BuildContext context,
-      Function(HomeFeedItem) onUserTap) {
+  Widget _tileTitle(
+    HomeFeedItem item,
+    BuildContext context,
+    Function(HomeFeedItem) onUserTap,
+    Map<String, PayoutInfo?> payout,
+  ) {
     String timeInString =
         item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
     String views = "▶ ${item.views}";
+    double? payoutAmount = payout["${item.author}/${item.permlink}"]?.payout;
+    int? upVotes = payout["${item.author}/${item.permlink}"]?.upVotes;
+    int? downVotes = payout["${item.author}/${item.permlink}"]?.downVotes;
     return ListTileVideo(
       placeholder: 'assets/branding/three_speak_logo.png',
       url: item.images.thumbnail,
@@ -29,34 +36,43 @@ class HomeScreenWidgets {
       user: item.author,
       permlink: item.permlink,
       shouldResize: true,
+      downVotes: downVotes,
+      upVotes: upVotes,
+      payout: payoutAmount,
     );
   }
 
-  Widget _listTile(HomeFeedItem item, BuildContext context,
-      Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
+  Widget _listTile(
+    HomeFeedItem item,
+    BuildContext context,
+    Function(HomeFeedItem) onTap,
+    Function(HomeFeedItem) onUserTap,
+    Map<String, PayoutInfo?> payout,
+  ) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       minVerticalPadding: 0,
-      title: _tileTitle(item, context, onUserTap),
+      title: _tileTitle(item, context, onUserTap, payout),
       onTap: () {
         onTap(item);
       },
     );
   }
 
-  Widget list(List<HomeFeedItem> list, Future<void> Function() onRefresh,
-      Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: ListView.separated(
-        padding: EdgeInsets.zero,
-        itemBuilder: (context, index) {
-          return _listTile(list[index], context, onTap, onUserTap);
-        },
-        separatorBuilder: (context, index) =>
-            const Divider(thickness: 0, height: 15, color: Colors.transparent),
-        itemCount: list.length,
-      ),
+  Widget list(
+    List<HomeFeedItem> list,
+    Function(HomeFeedItem) onTap,
+    Function(HomeFeedItem) onUserTap,
+    Map<String, PayoutInfo?> payout,
+  ) {
+    return ListView.separated(
+      padding: EdgeInsets.zero,
+      itemBuilder: (context, index) {
+        return _listTile(list[index], context, onTap, onUserTap, payout);
+      },
+      separatorBuilder: (context, index) =>
+          const Divider(thickness: 0, height: 15, color: Colors.transparent),
+      itemCount: list.length,
     );
   }
 }

@@ -38,51 +38,53 @@ class AboutHomeScreen extends StatelessWidget {
             leading: const FaIcon(FontAwesomeIcons.twitter),
             title: const Text('Follow us on Twitter'),
             onTap: () {
-              launch(
-                  'https://twitter.com/3speakonline?utm_source=3speak.tv.acela');
+              launchUrl(Uri.parse(
+                  'https://twitter.com/3speakonline?utm_source=3speak.tv.acela'));
             },
           ),
           ListTile(
             leading: const FaIcon(FontAwesomeIcons.telegram),
             title: const Text('Join us on Telegram'),
             onTap: () {
-              launch('https://t.me/threespeak?utm_source=3speak.tv.acela');
+              launchUrl(Uri.parse(
+                  'https://t.me/threespeak?utm_source=3speak.tv.acela'));
             },
           ),
           ListTile(
             leading: const FaIcon(FontAwesomeIcons.discord),
             title: const Text('Join us on Discord'),
             onTap: () {
-              launch('https://discord.me/3speak?utm_source=3speak.tv.acela');
+              launchUrl(Uri.parse(
+                  'https://discord.me/3speak?utm_source=3speak.tv.acela'));
             },
           ),
           ListTile(
             leading: const FaIcon(FontAwesomeIcons.blog),
             title: const Text('Visit blog - hive.blog/@threespeak'),
             onTap: () {
-              launch('https://hive.blog/@threespeak');
+              launchUrl(Uri.parse('https://hive.blog/@threespeak'));
             },
           ),
           ListTile(
             leading: const Icon(Icons.web),
             title: const Text('Visit website - spk.network'),
             onTap: () {
-              launch('https://spk.network/');
+              launchUrl(Uri.parse('https://spk.network/'));
             },
           ),
           ListTile(
             leading: const Icon(Icons.web),
             title: const Text('Visit website - 3speak.tv'),
             onTap: () {
-              launch('https://3speak.tv/');
+              launchUrl(Uri.parse('https://3speak.tv/'));
             },
           ),
           ListTile(
             leading: const Icon(Icons.picture_as_pdf),
             title: const Text('Terms of service'),
             onTap: () {
-              launch(
-                  'https://threespeakvideo.b-cdn.net/static/terms_of_service.pdf');
+              launchUrl(Uri.parse(
+                  'https://threespeakvideo.b-cdn.net/static/terms_of_service.pdf'));
             },
           ),
           ListTile(

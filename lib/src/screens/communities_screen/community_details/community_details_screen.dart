@@ -1,6 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/communities_models/request/community_details_request.dart';
 import 'package:acela/src/models/communities_models/response/community_details_response_models.dart';
+import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
@@ -31,7 +35,7 @@ class CommunityDetailScreen extends StatefulWidget {
 class _CommunityDetailScreenState extends State<CommunityDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
+  Map<String, PayoutInfo?> payout = {};
   static const List<Tab> tabs = [
     Tab(text: 'Videos'),
     Tab(text: 'About'),
@@ -96,6 +100,9 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
         item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
     String views = "▶ ${item.views}";
+    double? payoutAmount = payout["${item.author}/${item.permlink}"]?.payout;
+    int? upVotes = payout["${item.author}/${item.permlink}"]?.upVotes;
+    int? downVotes = payout["${item.author}/${item.permlink}"]?.downVotes;
     return ListTileVideo(
       placeholder: 'assets/branding/three_speak_logo.png',
       url: item.images.thumbnail,
@@ -108,7 +115,41 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
       user: item.author,
       permlink: item.permlink,
       shouldResize: true,
+      downVotes: downVotes,
+      upVotes: upVotes,
+      payout: payoutAmount,
     );
+  }
+
+  void fetchHiveInfo(String user, String permlink) async {
+    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    request.body = json.encode({
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "bridge.get_discussion",
+      "params": {"author": user, "permlink": permlink, "observer": ""}
+    });
+    debugPrint("Loading data for $user/$permlink");
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var result = HivePostInfo.fromJsonString(string)
+          .result
+          .resultData
+          .where((element) => element.permlink == permlink)
+          .first;
+      setState(() {
+        var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
+        var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
+        payout["$user/$permlink"] = PayoutInfo(
+          payout: result.payout,
+          downVotes: downVotes,
+          upVotes: upVotes,
+        );
+      });
+    } else {
+      print(response.reasonPhrase);
+    }
   }
 
   Widget _listTile(HomeFeedItem item, BuildContext context,

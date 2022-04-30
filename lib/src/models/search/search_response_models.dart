@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:acela/src/utils/safe_convert.dart';
 
 class SearchResponseModels {
@@ -43,13 +44,15 @@ class SearchResponseResultsItem {
   final String body;
   final String bodyMarked;
   final String imgUrl;
-  final double payout;
-  final int totalVotes;
-  final int upVotes;
+  double payout;
+  int totalVotes;
+  int upVotes;
   final String createdAt;
   final List<String> tags;
   final String app;
   final int depth;
+
+  int? downVotes;
 
   SearchResponseResultsItem(
       {this.id = 0,
