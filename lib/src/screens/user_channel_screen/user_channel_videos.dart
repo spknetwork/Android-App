@@ -97,7 +97,6 @@ class UserChannelVideosState extends State<UserChannelVideos>
       "method": "bridge.get_discussion",
       "params": {"author": user, "permlink": permlink, "observer": ""}
     });
-    debugPrint("Loading data for $user/$permlink");
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();

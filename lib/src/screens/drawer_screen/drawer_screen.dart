@@ -3,6 +3,7 @@ import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
+import 'package:acela/src/screens/login/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -128,6 +129,18 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
+  Widget _login(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.login),
+      title: const Text("Log in"),
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (c) => const LoginScreen()));
+      },
+    );
+  }
+
   Widget _divider() {
     return const Divider(
       height: 1,
@@ -152,6 +165,8 @@ class DrawerScreen extends StatelessWidget {
         _leaderBoard(context),
         _divider(),
         _changeTheme(context),
+        _divider(),
+        _login(context),
         _divider(),
       ],
     );

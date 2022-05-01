@@ -5,7 +5,6 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
-import 'package:acela/src/screens/home_screen/home_screen_view_model.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -64,7 +63,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final widgets = HomeScreenWidgets();
-  late HomeScreenViewModel vm;
   List<HomeFeedItem> items = [];
   var isLoading = false;
   Map<String, PayoutInfo?> payout = {};
@@ -72,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    vm = HomeScreenViewModel(path: widget.path);
     loadData();
   }
 
@@ -113,7 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
       "method": "bridge.get_discussion",
       "params": {"author": user, "permlink": permlink, "observer": ""}
     });
-    debugPrint("Loading data for $user/$permlink");
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();

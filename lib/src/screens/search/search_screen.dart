@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
+import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/search/search_response_models.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
@@ -26,6 +28,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Timer? _timer;
   List<SearchResponseResultsItem> results = [];
   var loading = false;
+  Map<String, PayoutInfo?> payout = {};
 
   Future<void> search(String term) async {
     var headers = {
@@ -50,11 +53,50 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         results = result.results;
       });
+      var i = 0;
+      Timer.periodic(const Duration(seconds: 1), (timer) {
+        fetchHiveInfo(results[i].author, results[i].permlink);
+        i += 1;
+        if (i == results.length) {
+          timer.cancel();
+        }
+      });
     } else {
       log(response.reasonPhrase.toString());
       setState(() {
         results = [];
       });
+    }
+  }
+
+  // fetch hive info
+  void fetchHiveInfo(String user, String permlink) async {
+    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    request.body = json.encode({
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "bridge.get_discussion",
+      "params": {"author": user, "permlink": permlink, "observer": ""}
+    });
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var result = HivePostInfo.fromJsonString(string)
+          .result
+          .resultData
+          .where((element) => element.permlink == permlink)
+          .first;
+      setState(() {
+        var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
+        var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
+        payout["$user/$permlink"] = PayoutInfo(
+          payout: result.payout,
+          downVotes: downVotes,
+          upVotes: upVotes,
+        );
+      });
+    } else {
+      print(response.reasonPhrase);
     }
   }
 
@@ -94,6 +136,9 @@ class _SearchScreenState extends State<SearchScreen> {
     var created = DateTime.tryParse(item.createdAt);
     String timeInString =
         created != null ? "📆 ${timeago.format(created)}" : "";
+    double? payoutAmount = payout["${item.author}/${item.permlink}"]?.payout;
+    int? upVotes = payout["${item.author}/${item.permlink}"]?.upVotes;
+    int? downVotes = payout["${item.author}/${item.permlink}"]?.downVotes;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       minVerticalPadding: 0,
@@ -111,9 +156,9 @@ class _SearchScreenState extends State<SearchScreen> {
         user: item.author,
         permlink: item.permlink,
         shouldResize: false,
-        downVotes: item.downVotes,
-        upVotes: item.downVotes,
-        payout: item.payout,
+        downVotes: downVotes,
+        upVotes: upVotes,
+        payout: payoutAmount,
       ),
       onTap: () {
         var vm =

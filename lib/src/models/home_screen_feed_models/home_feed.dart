@@ -37,10 +37,6 @@ class HomeFeedItem {
   final String ipfs;
   final HomeFeedItemImage images;
 
-  double? payout;
-  int? upVotes;
-  int? downVotes;
-
   HomeFeedItem({
     this.created = "",
     this.language = "",

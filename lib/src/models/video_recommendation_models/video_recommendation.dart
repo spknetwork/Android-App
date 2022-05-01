@@ -17,10 +17,6 @@ class VideoRecommendationItem {
   // dobro2020
   final String owner;
 
-  double? payout;
-  int? upVotes;
-  int? downVotes;
-
   VideoRecommendationItem({
     this.image = "",
     this.title = "",

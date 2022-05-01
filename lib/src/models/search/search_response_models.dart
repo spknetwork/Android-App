@@ -44,15 +44,13 @@ class SearchResponseResultsItem {
   final String body;
   final String bodyMarked;
   final String imgUrl;
-  double payout;
-  int totalVotes;
-  int upVotes;
+  final double payout;
+  final int totalVotes;
+  final int upVotes;
   final String createdAt;
   final List<String> tags;
   final String app;
   final int depth;
-
-  int? downVotes;
 
   SearchResponseResultsItem(
       {this.id = 0,

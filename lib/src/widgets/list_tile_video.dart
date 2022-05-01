@@ -38,26 +38,6 @@ class ListTileVideo extends StatefulWidget {
 }
 
 class _ListTileVideoState extends State<ListTileVideo> {
-  // double? payout;
-  // int? upVotes;
-  // int? downVotes;
-  //
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   if (widget.payout == null &&
-  //       widget.upVotes == null &&
-  //       widget.downVotes == null) {
-  //     fetchHiveInfo();
-  //   } else {
-  //     setState(() {
-  //       payout = widget.payout;
-  //       upVotes = widget.upVotes;
-  //       downVotes = widget.downVotes;
-  //     });
-  //   }
-  // }
-
   Widget _errorIndicator() {
     return Container(
       height: 220,
@@ -95,40 +75,6 @@ class _ListTileVideoState extends State<ListTileVideo> {
       ),
     );
   }
-
-  // fetch hive info
-  // void fetchHiveInfo() async {
-  //   var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
-  //   request.body = json.encode({
-  //     "id": 1,
-  //     "jsonrpc": "2.0",
-  //     "method": "bridge.get_discussion",
-  //     "params": {
-  //       "author": widget.user,
-  //       "permlink": widget.permlink,
-  //       "observer": ""
-  //     }
-  //   });
-  //   http.StreamedResponse response = await request.send();
-  //   if (response.statusCode == 200) {
-  //     var string = await response.stream.bytesToString();
-  //     var result = HivePostInfo.fromJsonString(string)
-  //         .result
-  //         .resultData
-  //         .where((element) => element.permlink == widget.permlink)
-  //         .first;
-  //     setState(() {
-  //       payout = result.payout;
-  //       var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
-  //       var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
-  //       this.upVotes = upVotes;
-  //       this.downVotes = downVotes;
-  //       widget.hiveInfo(result.payout, upVotes, downVotes);
-  //     });
-  //   } else {
-  //     print(response.reasonPhrase);
-  //   }
-  // }
 
   Widget _hivePayoutLoader() {
     String priceAndVotes = (widget.payout != null &&
