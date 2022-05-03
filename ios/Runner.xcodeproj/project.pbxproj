@@ -11,6 +11,7 @@
 		1B6A5097281E206800480755 /* AcelaWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6A5096281E206800480755 /* AcelaWebViewController.swift */; };
 		1B6A509E281E219E00480755 /* public in Resources */ = {isa = PBXBuildFile; fileRef = 1B6A509D281E219E00480755 /* public */; };
 		1B6A50A1281E290300480755 /* AuthBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6A50A0281E290300480755 /* AuthBridge.swift */; };
+		1B6A50A4281F5AEF00480755 /* ValidateHiveKeyResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6A50A3281F5AEF00480755 /* ValidateHiveKeyResponse.swift */; };
 		1BBABA1B27E2F977000ABB58 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1BBABA1A27E2F977000ABB58 /* GoogleService-Info.plist */; };
 		23F3017383FF2D45A9FFE1B2 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 900CC1210BBABA2901A394FB /* Pods_Runner.framework */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
@@ -39,6 +40,7 @@
 		1B6A5096281E206800480755 /* AcelaWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcelaWebViewController.swift; sourceTree = "<group>"; };
 		1B6A509D281E219E00480755 /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		1B6A50A0281E290300480755 /* AuthBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthBridge.swift; sourceTree = "<group>"; };
+		1B6A50A3281F5AEF00480755 /* ValidateHiveKeyResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidateHiveKeyResponse.swift; sourceTree = "<group>"; };
 		1BBABA1A27E2F977000ABB58 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		3655DA9EF6F21F87FCBD0D8C /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
@@ -72,9 +74,18 @@
 		1B6A509F281E28F600480755 /* Bridges */ = {
 			isa = PBXGroup;
 			children = (
-				1B6A50A0281E290300480755 /* AuthBridge.swift */,
+				1B6A50A2281F5AE500480755 /* Auth */,
 			);
 			path = Bridges;
+			sourceTree = "<group>";
+		};
+		1B6A50A2281F5AE500480755 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				1B6A50A0281E290300480755 /* AuthBridge.swift */,
+				1B6A50A3281F5AEF00480755 /* ValidateHiveKeyResponse.swift */,
+			);
+			path = Auth;
 			sourceTree = "<group>";
 		};
 		2BD77FF19862F46541915B75 /* Pods */ = {
@@ -295,6 +306,7 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1B6A5097281E206800480755 /* AcelaWebViewController.swift in Sources */,
+				1B6A50A4281F5AEF00480755 /* ValidateHiveKeyResponse.swift in Sources */,
 				1B6A50A1281E290300480755 /* AuthBridge.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);

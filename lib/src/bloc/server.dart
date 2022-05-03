@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+
 class Server {
   final String domain = "https://3speak.tv";
 
@@ -22,13 +24,22 @@ class Server {
   final String hiveDomain = "https://api.hive.blog";
 
   final _controller = StreamController<bool>();
+  final _hiveUserDataController = StreamController<HiveUserData?>();
 
   Stream<bool> get theme {
     return _controller.stream;
   }
 
+  Stream<HiveUserData?> get hiveUserData {
+    return _hiveUserDataController.stream;
+  }
+
   void changeTheme(bool value) async {
     _controller.sink.add(!value);
+  }
+
+  void updateHiveUserData(HiveUserData? data) {
+    _hiveUserDataController.sink.add(data);
   }
 }
 

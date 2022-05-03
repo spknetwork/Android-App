@@ -1,5 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'custom_circle_avatar.dart';
 
@@ -50,105 +51,86 @@ class _ListTileVideoState extends State<ListTileVideo> {
     );
   }
 
-  Widget _amount(String string) {
-    return SizedBox(
-      height: 220,
-      child: Row(
-        children: [
-          const Spacer(),
-          Column(
-            children: [
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: const BoxDecoration(
-                    borderRadius:
-                        BorderRadiusDirectional.all(Radius.circular(10)),
-                    color: Colors.blueGrey),
-                child: Text(string),
-              ),
-              const SizedBox(height: 5),
-            ],
-          ),
-          const Spacer(),
-        ],
-      ),
-    );
-  }
-
-  Widget _hivePayoutLoader() {
+  Widget _thumbnailType(BuildContext context) {
     String priceAndVotes = (widget.payout != null &&
             widget.upVotes != null &&
             widget.downVotes != null)
         ? "\$ ${widget.payout!.toStringAsFixed(3)} · 👍 ${widget.upVotes} · 👎 ${widget.downVotes}"
         : "";
-    return _amount(priceAndVotes);
-  }
-
-  Widget _thumbnailType(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Stack(
-          children: [
-            SizedBox(
-              height: 220,
-              width: MediaQuery.of(context).size.width,
-              child: FadeInImage.assetNetwork(
-                placeholder: widget.placeholder,
-                image: widget.shouldResize
-                    ? server.resizedImage(widget.url)
-                    : widget.url,
-                fit: BoxFit.fitWidth,
-                placeholderErrorBuilder: (BuildContext context, Object error,
-                    StackTrace? stackTrace) {
-                  return _errorIndicator();
-                },
-                imageErrorBuilder: (BuildContext context, Object error,
-                    StackTrace? stackTrace) {
-                  return _errorIndicator();
-                },
-              ),
+    var isDarkMode = Provider.of<bool>(context);
+    return Container(
+      margin: EdgeInsets.all(3),
+      decoration: BoxDecoration(boxShadow: [
+        BoxShadow(
+          color: isDarkMode ? Colors.black26 : Colors.black12,
+          spreadRadius: 3,
+          blurRadius: 3,
+        )
+      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 220,
+            width: MediaQuery.of(context).size.width,
+            child: FadeInImage.assetNetwork(
+              placeholder: widget.placeholder,
+              image: widget.shouldResize
+                  ? server.resizedImage(widget.url)
+                  : widget.url,
+              fit: BoxFit.fitWidth,
+              placeholderErrorBuilder:
+                  (BuildContext context, Object error, StackTrace? stackTrace) {
+                return _errorIndicator();
+              },
+              imageErrorBuilder:
+                  (BuildContext context, Object error, StackTrace? stackTrace) {
+                return _errorIndicator();
+              },
             ),
-            _hivePayoutLoader(),
-          ],
-        ),
-        Container(
-          padding: const EdgeInsets.all(3),
-          child: Row(
-            children: [
-              InkWell(
-                child: CustomCircleAvatar(
-                    height: 45, width: 45, url: widget.userThumbUrl),
-                onTap: () {
-                  widget.onUserTap();
-                },
-              ),
-              SizedBox(width: 5),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.title,
-                        style: Theme.of(context).textTheme.bodyText1),
-                    SizedBox(height: 5),
-                    InkWell(
-                      child: Text('👤 ${widget.user}',
-                          style: Theme.of(context).textTheme.bodyText2),
-                      onTap: () {
-                        widget.onUserTap();
-                      },
-                    ),
-                  ],
-                ),
-              )
-            ],
           ),
-        ),
-        Center(
-            child: Text(widget.subtitle,
-                style: Theme.of(context).textTheme.bodyText2)),
-      ],
+          Container(
+            padding: const EdgeInsets.all(3),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 50,
+                  child: InkWell(
+                    child: Column(
+                      children: [
+                        CustomCircleAvatar(
+                            height: 45, width: 45, url: widget.userThumbUrl),
+                        SizedBox(height: 3),
+                        Text(widget.user,
+                            style: Theme.of(context).textTheme.bodyText2),
+                      ],
+                    ),
+                    onTap: () {
+                      widget.onUserTap();
+                    },
+                  ),
+                ),
+                SizedBox(width: 5),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.title,
+                          style: Theme.of(context).textTheme.bodyText1),
+                      SizedBox(height: 2),
+                      Text(widget.subtitle,
+                          style: Theme.of(context).textTheme.bodyText2),
+                      SizedBox(height: 2),
+                      Text(priceAndVotes,
+                          style: Theme.of(context).textTheme.bodyText2),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

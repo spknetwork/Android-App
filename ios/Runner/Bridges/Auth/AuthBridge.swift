@@ -42,8 +42,8 @@ class AuthBridge {
 													details: nil))
 			return
 		}
-		acela.validatePostingKey(username: username, postingKey: postingKey) { isValid in
-			result(isValid ? "true" : "false")
+		acela.validatePostingKey(username: username, postingKey: postingKey) { response in
+			result(response)
 		}
 	}
 }

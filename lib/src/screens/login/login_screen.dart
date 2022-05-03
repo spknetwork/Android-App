@@ -1,5 +1,9 @@
+import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/login/login_bridge_response.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -11,29 +15,44 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   var isLoading = false;
   static const platform = MethodChannel('com.example.acela/auth');
-  var isValid = 'not validated yet';
+  var username = '';
+  var postingKey = '';
+
+  // Create storage
+  final storage = new FlutterSecureStorage();
 
   void onLoginTapped() async {
     setState(() {
       isLoading = true;
     });
     try {
-      final String result = await platform.invokeMethod(
-        'validate',
-        {
-          'username': 'sagarkothari88',
-          'postingKey': '',
-        },
-      );
+      final String result = await platform.invokeMethod('validate', {
+        'username': username,
+        'postingKey': postingKey,
+      });
+      var response = LoginBridgeResponse.fromJsonString(result);
+      if (response.valid && response.error.isEmpty) {
+        debugPrint("Successful login");
+        await storage.write(key: 'username', value: username);
+        await storage.write(key: 'postingKey', value: postingKey);
+        server.updateHiveUserData(
+          HiveUserData(
+            username: username,
+            postingKey: postingKey,
+          ),
+        );
+        Navigator.of(context).pop();
+      } else {
+        showError(response.error);
+      }
       setState(() {
         isLoading = false;
-        isValid = result;
       });
     } catch (e) {
       setState(() {
         isLoading = false;
-        isValid = 'failed';
       });
+      showError('Error occurred - ${e.toString()}');
     }
   }
 
@@ -42,25 +61,59 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  Widget _loginForm() {
+    return Container(
+      margin: EdgeInsets.all(10),
+      child: Column(
+        children: [
+          TextField(
+            decoration: InputDecoration(
+              icon: const Icon(Icons.person),
+              label: const Text('Hive Username'),
+              hintText: 'Enter Hive username here',
+            ),
+            autocorrect: false,
+            onChanged: (value) {
+              setState(() {
+                username = value;
+              });
+            },
+            enabled: isLoading ? false : true,
+          ),
+          SizedBox(height: 20),
+          TextField(
+            decoration: InputDecoration(
+              icon: const Icon(Icons.key),
+              label: const Text('Hive Posting Key'),
+              hintText: 'Copy & paste posting key here',
+            ),
+            obscureText: true,
+            onChanged: (value) {
+              setState(() {
+                postingKey = value;
+              });
+            },
+            enabled: isLoading ? false : true,
+          ),
+          SizedBox(height: 20),
+          isLoading
+              ? CircularProgressIndicator()
+              : ElevatedButton(
+                  onPressed: onLoginTapped,
+                  child: const Text('Log in'),
+                ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Text('is valid key - $isValid'),
-              ],
-            ),
-      floatingActionButton: isLoading
-          ? null
-          : FloatingActionButton(
-              onPressed: onLoginTapped,
-              child: Icon(Icons.login),
-            ),
+      body: _loginForm(),
     );
   }
 }

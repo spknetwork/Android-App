@@ -14,7 +14,7 @@ class AcelaWebViewController: UIViewController {
 	let rect = CGRect(x: 0, y: 0, width: 10, height: 10)
 	var webView: WKWebView?
 	var didFinish = false
-	var postingKeyValidationHandler: ((Bool) -> Void)?
+	var postingKeyValidationHandler: ((String) -> Void)?
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -31,7 +31,7 @@ class AcelaWebViewController: UIViewController {
 	func validatePostingKey(
 		username: String,
 		postingKey: String,
-		handler: @escaping (Bool) -> Void
+		handler: @escaping (String) -> Void
 	) {
 		postingKeyValidationHandler = handler
 		OperationQueue.main.addOperation {
@@ -60,13 +60,14 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 					let isValid = dict["valid"] as? Bool,
 					let accountName = dict["accountName"] as? String,
 					let postingKey = dict["postingKey"] as? String,
-					let error = dict["error"] as? String
+					let error = dict["error"] as? String,
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
 				debugPrint("Is it valid? \(isValid ? "TRUE" : "FALSE")")
 				debugPrint("account name is \(accountName)")
 				debugPrint("posting key is \(postingKey)")
 				debugPrint("Error is \(error)")
-				postingKeyValidationHandler?(isValid)
+				postingKeyValidationHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}

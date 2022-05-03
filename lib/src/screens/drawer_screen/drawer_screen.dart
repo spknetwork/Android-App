@@ -1,9 +1,11 @@
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/login_screen.dart';
+import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -141,6 +143,18 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
+  Widget _myAccount(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.person),
+      title: const Text("My account"),
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (c) => const MyAccountScreen()));
+      },
+    );
+  }
+
   Widget _divider() {
     return const Divider(
       height: 1,
@@ -149,6 +163,7 @@ class DrawerScreen extends StatelessWidget {
   }
 
   Widget _drawerMenu(BuildContext context) {
+    var user = Provider.of<HiveUserData?>(context);
     return ListView(
       children: [
         _drawerHeader(context),
@@ -166,7 +181,7 @@ class DrawerScreen extends StatelessWidget {
         _divider(),
         _changeTheme(context),
         _divider(),
-        _login(context),
+        user == null ? _login(context) : _myAccount(context),
         _divider(),
       ],
     );

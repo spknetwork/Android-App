@@ -1,6 +1,11 @@
 # This is a generated file; do not edit or check into version control.
 firebase_core=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.15.0/
 firebase_core_web=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-1.6.2/
+flutter_secure_storage=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage-5.0.2/
+flutter_secure_storage_linux=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_linux-1.1.0/
+flutter_secure_storage_macos=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_macos-1.1.0/
+flutter_secure_storage_web=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_web-1.0.2/
+flutter_secure_storage_windows=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_windows-1.1.2/
 share_plus=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus-4.0.4/
 share_plus_linux=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus_linux-3.0.0/
 share_plus_macos=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/share_plus_macos-3.0.0/

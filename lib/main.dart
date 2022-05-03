@@ -1,9 +1,9 @@
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -20,32 +20,43 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final Future<FirebaseApp> _fbApp =
-      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  Widget futureBuilder(Widget withWidget) {
-    return FutureBuilder(
-      future: _fbApp,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Text('Firebase not initialized');
-        } else if (snapshot.hasData) {
-          return withWidget;
-        } else {
-          return const CircularProgressIndicator();
-        }
-      },
-    );
-  }
+  // Create storage
+  final storage = new FlutterSecureStorage();
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return StreamProvider<bool>.value(
-      value: server.theme,
-      initialData: true,
-      child: const AcelaApp(),
+    return StreamProvider<HiveUserData?>.value(
+      value: server.hiveUserData,
+      initialData: null,
+      child: StreamProvider<bool>.value(
+        value: server.theme,
+        initialData: true,
+        child: const AcelaApp(),
+      ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  void loadData() async {
+    String? username = await storage.read(key: 'username');
+    String? postingKey = await storage.read(key: 'postingKey');
+    if (username != null &&
+        postingKey != null &&
+        username.isNotEmpty &&
+        postingKey.isNotEmpty) {
+      server.updateHiveUserData(
+        HiveUserData(
+          username: username,
+          postingKey: postingKey,
+        ),
+      );
+    }
   }
 }
 
@@ -63,4 +74,3 @@ class AcelaApp extends StatelessWidget {
     );
   }
 }
-
