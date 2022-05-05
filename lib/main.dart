@@ -21,7 +21,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   // Create storage
-  final storage = new FlutterSecureStorage();
+  static const storage = FlutterSecureStorage();
 
   // This widget is the root of your application.
   @override

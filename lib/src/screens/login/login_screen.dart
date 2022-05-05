@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   var postingKey = '';
 
   // Create storage
-  final storage = new FlutterSecureStorage();
+  static const storage = FlutterSecureStorage();
 
   void onLoginTapped() async {
     setState(() {

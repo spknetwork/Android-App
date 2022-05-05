@@ -13,7 +13,7 @@ class MyAccountScreen extends StatefulWidget {
 
 class _MyAccountScreenState extends State<MyAccountScreen> {
   // Create storage
-  final storage = new FlutterSecureStorage();
+  static const storage = FlutterSecureStorage();
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData?>(context);
