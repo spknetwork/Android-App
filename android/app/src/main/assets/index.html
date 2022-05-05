@@ -21,22 +21,26 @@
           console.log('PubWif: ', pubWif)
           const Valid = hive.auth.wifIsValid(postingKey, pubWif);
           console.log(`is valid ${Valid}`);
-          window.webkit.messageHandlers.acela.postMessage({
+          var result = {
             type: 'validateHiveKey',
             valid: Valid,
             accountName: accountName,
             postingKey: postingKey,
             error: '',
-          });
+          };
+          // window.webkit.messageHandlers.acela.postMessage(result);
+          Android.postMessage(JSON.stringify(result));
         }).catch(function (err) {
           console.log('Error: ', err)
-          window.webkit.messageHandlers.acela.postMessage({
+          var result = {
             type: 'validateHiveKey',
             valid: false,
             accountName: accountName,
             postingKey: postingKey,
             error: err.message,
-          });
+          };
+          // window.webkit.messageHandlers.acela.postMessage(result);
+          Android.postMessage(JSON.stringify(result));
         });
       }
     </script>

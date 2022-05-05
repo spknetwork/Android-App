@@ -1,5 +1,6 @@
 package com.example.acela
 
+import android.annotation.SuppressLint
 import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -30,26 +31,33 @@ import org.json.JSONException
 import org.json.JSONObject
 import android.net.Uri
 import android.util.Log
+import android.webkit.ValueCallback
 import android.webkit.WebResourceResponse
+import androidx.annotation.RequiresApi
 import androidx.webkit.WebViewAssetLoader
 
 class MainActivity: FlutterActivity() {
     var webView: WebView? = null
-    // var assetLoader: WebViewAssetLoader? = null
+    var result: MethodChannel.Result? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         if (webView == null) {
             setupView()
         }
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "channel").setMethodCallHandler {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.acela/auth").setMethodCallHandler {
                 call, result ->
-            // Note: this method is invoked on the main thread.
-            // TODO
+            this.result = result
+            val username = call.argument<String>("username")
+            val postingKey = call.argument<String>("postingKey")
+            if (call.method == "validate" && username != null && postingKey != null) {
+                webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
+            }
         }
     }
 
-    fun setupView() {
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun setupView() {
         val params = FrameLayout.LayoutParams(0, 0)
         webView = WebView(activity)
         val decorView = activity.window.decorView as FrameLayout
@@ -57,12 +65,12 @@ class MainActivity: FlutterActivity() {
         webView?.visibility = View.GONE
         webView?.settings?.javaScriptEnabled = true
         webView?.settings?.domStorageEnabled = true
-        webView?.settings?.allowFileAccessFromFileURLs = true
         WebView.setWebContentsDebuggingEnabled(true)
-        var assetLoader = WebViewAssetLoader.Builder()
+        val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
         val client: WebViewClient = object: WebViewClient() {
+            @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
             override fun shouldInterceptRequest(
                 view: WebView,
                 request: WebResourceRequest
@@ -86,11 +94,13 @@ class MainActivity: FlutterActivity() {
 class WebAppInterface(private val mContext: Context) {
     @JavascriptInterface
     fun postMessage(message: String) {
+        var main = mContext as? MainActivity ?: return
         val gson = Gson()
         val dataObject = gson.fromJson(message, JSEvent::class.java)
         when (dataObject.type) {
-            JSBridgeAction.GET_SERVERS.value -> {
+            JSBridgeAction.VALIDATE_HIVE_KEY.value -> {
                 // now respond back to flutter
+                main.result?.success(message)
             }
         }
     }
@@ -101,5 +111,5 @@ data class JSEvent (
 )
 
 enum class JSBridgeAction(val value: String) {
-    GET_SERVERS("GetDRAppCloudServers"),
+    VALIDATE_HIVE_KEY("validateHiveKey"),
 }

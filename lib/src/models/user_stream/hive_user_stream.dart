@@ -6,6 +6,5 @@ class HiveUserData {
   HiveUserData({
     required this.username,
     required this.postingKey,
-    // required this.avatar,
   });
 }
