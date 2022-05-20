@@ -16,9 +16,10 @@ PODS:
   - Flutter (1.0.0)
   - flutter_secure_storage (3.3.1):
     - Flutter
-  - GoogleDataTransport (9.1.2):
-    - GoogleUtilities/Environment (~> 7.2)
-    - nanopb (~> 2.30908.0)
+  - FYVideoCompressor (0.0.3)
+  - GoogleDataTransport (9.1.4):
+    - GoogleUtilities/Environment (~> 7.7)
+    - nanopb (< 2.30910.0, >= 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
   - GoogleUtilities/Environment (7.7.0):
     - PromisesObjC (< 3.0, >= 1.2)
@@ -32,6 +33,7 @@ PODS:
   - PromisesObjC (2.1.0)
   - share_plus (0.0.1):
     - Flutter
+  - TUSKit (3.1.2)
   - url_launcher_ios (0.0.1):
     - Flutter
   - video_player_avfoundation (0.0.1):
@@ -43,7 +45,9 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - Flutter (from `Flutter`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
+  - FYVideoCompressor
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
+  - TUSKit
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/ios`)
   - wakelock (from `.symlinks/plugins/wakelock/ios`)
@@ -53,10 +57,12 @@ SPEC REPOS:
     - Firebase
     - FirebaseCore
     - FirebaseCoreDiagnostics
+    - FYVideoCompressor
     - GoogleDataTransport
     - GoogleUtilities
     - nanopb
     - PromisesObjC
+    - TUSKit
 
 EXTERNAL SOURCES:
   firebase_core:
@@ -81,15 +87,17 @@ SPEC CHECKSUMS:
   FirebaseCoreDiagnostics: 92e07a649aeb66352b319d43bdd2ee3942af84cb
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   flutter_secure_storage: 7953c38a04c3fdbb00571bcd87d8e3b5ceb9daec
-  GoogleDataTransport: 629c20a4d363167143f30ea78320d5a7eb8bd940
+  FYVideoCompressor: 6d745d0b28432c6abacb234c3c1263755248136b
+  GoogleDataTransport: 5fffe35792f8b96ec8d6775f5eccd83c998d5a3b
   GoogleUtilities: e0913149f6b0625b553d70dae12b49fc62914fd1
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: 99b6f43f9e1044bd87a95a60beff28c2c44ddb72
   share_plus: 056a1e8ac890df3e33cb503afffaf1e9b4fbae68
+  TUSKit: 0dedde8a33b84c3b7248a24bc25b41c47797afa8
   url_launcher_ios: 839c58cdb4279282219f5e248c3321761ff3c4de
   video_player_avfoundation: e489aac24ef5cf7af82702979ed16f2a5ef84cff
   wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
 
-PODFILE CHECKSUM: 56099e53bf102df458f588dbe78632cd13d5357b
+PODFILE CHECKSUM: d7b9207ef5ec0d27f2f43c2baddc012d3c0af642
 
 COCOAPODS: 1.11.3

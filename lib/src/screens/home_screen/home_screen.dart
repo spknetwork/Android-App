@@ -11,6 +11,7 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart' show get;
 
@@ -66,6 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<HomeFeedItem> items = [];
   var isLoading = false;
   Map<String, PayoutInfo?> payout = {};
+
+  static const platform = MethodChannel('com.example.acela/encoder');
 
   @override
   void initState() {
@@ -162,6 +165,19 @@ class _HomeScreenState extends State<HomeScreen> {
     }, payout);
   }
 
+  Widget _fab() {
+    return FloatingActionButton(
+      onPressed: () async {
+        // final String result =
+        await platform.invokeMethod('video', {
+          'username': 'a',
+          'postingKey': 'b',
+        });
+      },
+      child: const Icon(Icons.add),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,6 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _screen(),
       drawer: widget.showDrawer ? const DrawerScreen() : null,
+      floatingActionButton: _fab(),
     );
   }
 }

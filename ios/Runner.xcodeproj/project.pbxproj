@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		1B24F3CC282EC1F600256625 /* VideoEncoderSizes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B24F3CB282EC1F600256625 /* VideoEncoderSizes.swift */; };
+		1B24F3CF282EC27300256625 /* EncoderBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B24F3CE282EC27300256625 /* EncoderBridge.swift */; };
 		1B6A5097281E206800480755 /* AcelaWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6A5096281E206800480755 /* AcelaWebViewController.swift */; };
 		1B6A509E281E219E00480755 /* public in Resources */ = {isa = PBXBuildFile; fileRef = 1B6A509D281E219E00480755 /* public */; };
 		1B6A50A1281E290300480755 /* AuthBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6A50A0281E290300480755 /* AuthBridge.swift */; };
@@ -37,6 +39,8 @@
 /* Begin PBXFileReference section */
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		1B24F3CB282EC1F600256625 /* VideoEncoderSizes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoEncoderSizes.swift; sourceTree = "<group>"; };
+		1B24F3CE282EC27300256625 /* EncoderBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncoderBridge.swift; sourceTree = "<group>"; };
 		1B6A5096281E206800480755 /* AcelaWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcelaWebViewController.swift; sourceTree = "<group>"; };
 		1B6A509D281E219E00480755 /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		1B6A50A0281E290300480755 /* AuthBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthBridge.swift; sourceTree = "<group>"; };
@@ -71,9 +75,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1B24F3CA282E8AF900256625 /* Encoder */ = {
+			isa = PBXGroup;
+			children = (
+				1B24F3CB282EC1F600256625 /* VideoEncoderSizes.swift */,
+			);
+			path = Encoder;
+			sourceTree = "<group>";
+		};
+		1B24F3CD282EC26500256625 /* Encoder */ = {
+			isa = PBXGroup;
+			children = (
+				1B24F3CE282EC27300256625 /* EncoderBridge.swift */,
+			);
+			path = Encoder;
+			sourceTree = "<group>";
+		};
 		1B6A509F281E28F600480755 /* Bridges */ = {
 			isa = PBXGroup;
 			children = (
+				1B24F3CD282EC26500256625 /* Encoder */,
 				1B6A50A2281F5AE500480755 /* Auth */,
 			);
 			path = Bridges;
@@ -146,6 +167,7 @@
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
+				1B24F3CA282E8AF900256625 /* Encoder */,
 				1B6A509F281E28F600480755 /* Bridges */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				1BBABA1A27E2F977000ABB58 /* GoogleService-Info.plist */,
@@ -305,10 +327,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
+				1B24F3CC282EC1F600256625 /* VideoEncoderSizes.swift in Sources */,
 				1B6A5097281E206800480755 /* AcelaWebViewController.swift in Sources */,
 				1B6A50A4281F5AEF00480755 /* ValidateHiveKeyResponse.swift in Sources */,
 				1B6A50A1281E290300480755 /* AuthBridge.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				1B24F3CF282EC27300256625 /* EncoderBridge.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
