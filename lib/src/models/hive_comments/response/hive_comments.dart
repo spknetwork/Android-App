@@ -1,6 +1,8 @@
-import 'package:acela/src/utils/safe_convert.dart';
-import 'active_vote.dart';
 import 'dart:convert';
+
+import 'package:acela/src/utils/safe_convert.dart';
+
+import 'active_vote.dart';
 
 HiveComments hiveCommentsFromString(String string) {
   return HiveComments.fromJson(json.decode(string));
@@ -48,6 +50,8 @@ class HiveComment {
   final String parentPermlink;
   final String url;
   final List<ActiveVote> activeVotes;
+  final int? authorReputation;
+  final int? netRshares;
 
   HiveComment({
     this.author = "",
@@ -66,6 +70,8 @@ class HiveComment {
     this.parentPermlink = "",
     this.url = "",
     required this.activeVotes,
+    required this.authorReputation,
+    required this.netRshares,
   });
 
   DateTime? get createdAt {
@@ -86,6 +92,8 @@ class HiveComment {
         parentAuthor: asString(json, 'parent_author'),
         parentPermlink: asString(json, 'parent_permlink'),
         url: asString(json, 'url'),
+        authorReputation: asInt(json, 'author_reputation'),
+        netRshares: asInt(json, 'net_rshares'),
         activeVotes: asList(json, 'active_votes')
             .map((e) => ActiveVote.fromJson(json))
             .toList(),

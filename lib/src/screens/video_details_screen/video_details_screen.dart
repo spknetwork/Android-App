@@ -286,7 +286,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
 
   // video comments
   Widget commentsSection(List<HiveComment> comments) {
-    if (comments.isEmpty) {
+    var filtered = comments.where((element) =>
+        (element.netRshares ?? 0) >= 0 && (element.authorReputation ?? 0) >= 0);
+    if (filtered.isEmpty) {
       return Container(
         margin: const EdgeInsets.all(10),
         child: const Text('No comments added'),
@@ -299,7 +301,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Comments :', style: Theme.of(context).textTheme.bodyLarge),
-            listTile(comments.last)
+            listTile(filtered.last)
           ],
         ),
       ),
@@ -418,17 +420,18 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           if (data != null) {
             return Scaffold(
               body: SafeArea(
-                  child: Stack(
-                children: [
-                  videoWithDetails(data),
-                  SizedBox(
-                    height: 230,
-                    child: SPKVideoPlayer(
-                      playUrl: data.playUrl,
+                child: Stack(
+                  children: [
+                    videoWithDetails(data),
+                    SizedBox(
+                      height: 230,
+                      child: SPKVideoPlayer(
+                        playUrl: data.playUrl,
+                      ),
                     ),
-                  ),
-                ],
-              )),
+                  ],
+                ),
+              ),
             );
           } else {
             return container(
