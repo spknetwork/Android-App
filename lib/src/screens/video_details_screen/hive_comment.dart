@@ -31,7 +31,10 @@ class _HiveCommentWidgetState extends State<HiveCommentWidget> {
       if (expanded) {
         return Text(text);
       } else {
-        return Text('Comment is hidden for security reasons');
+        return Text(
+          '--- HIDDEN ---',
+          style: TextStyle(color: Colors.grey),
+        );
       }
     }
     return MarkdownBody(
