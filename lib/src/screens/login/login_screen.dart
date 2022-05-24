@@ -35,10 +35,12 @@ class _LoginScreenState extends State<LoginScreen> {
         debugPrint("Successful login");
         await storage.write(key: 'username', value: username);
         await storage.write(key: 'postingKey', value: postingKey);
+        await storage.delete(key: 'cookie');
         server.updateHiveUserData(
           HiveUserData(
             username: username,
             postingKey: postingKey,
+            cookie: null,
           ),
         );
         Navigator.of(context).pop();

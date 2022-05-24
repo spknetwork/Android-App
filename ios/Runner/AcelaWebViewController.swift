@@ -15,6 +15,7 @@ class AcelaWebViewController: UIViewController {
 	var webView: WKWebView?
 	var didFinish = false
 	var postingKeyValidationHandler: ((String) -> Void)?
+	var decryptTokenHandler: ((String) -> Void)?
 
 	override func viewDidLoad() {
 		super.viewDidLoad()

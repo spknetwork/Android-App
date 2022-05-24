@@ -22,16 +22,29 @@ class AuthBridge {
 		authChannel.setMethodCallHandler({
 			[weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
 			// Note: this method is invoked on the UI thread.
-			guard
-				call.method == "validate",
-				let arguments = call.arguments as? NSDictionary,
-				let username = arguments ["username"] as? String,
-				let password = arguments["postingKey"] as? String
-			else {
-				result(FlutterMethodNotImplemented)
-				return
+			switch (call.method) {
+				case "validate":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let username = arguments ["username"] as? String,
+						let password = arguments["postingKey"] as? String
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					self?.authenticate(username: username, postingKey: password, result: result)
+				case "encryptedToken":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let username = arguments ["username"] as? String,
+						let password = arguments["postingKey"] as? String,
+						let encryptedToken = arguments["encryptedToken"] as? String
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					self?.decryptMemo(username: username, postingKey: password, encryptedMemo: encryptedToken, result: result)
 			}
-			self?.authenticate(username: username, postingKey: password, result: result)
 		})
 	}
 
@@ -42,6 +55,24 @@ class AuthBridge {
 													details: nil))
 			return
 		}
+		acela.validatePostingKey(username: username, postingKey: postingKey) { response in
+			result(response)
+		}
+	}
+
+	private func decryptMemo(
+		username: String,
+		postingKey: String,
+		encryptedMemo: String,
+		result: @escaping FlutterResult
+	) {
+		guard let acela = acela else {
+			result(FlutterError(code: "ERROR",
+													message: "Error setting up Hive",
+													details: nil))
+			return
+		}
+		acela.
 		acela.validatePostingKey(username: username, postingKey: postingKey) { response in
 			result(response)
 		}

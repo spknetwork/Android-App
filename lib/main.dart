@@ -46,15 +46,14 @@ class _MyAppState extends State<MyApp> {
   void loadData() async {
     String? username = await storage.read(key: 'username');
     String? postingKey = await storage.read(key: 'postingKey');
+    String? cookie = await storage.read(key: 'cookie');
     if (username != null &&
         postingKey != null &&
         username.isNotEmpty &&
         postingKey.isNotEmpty) {
       server.updateHiveUserData(
         HiveUserData(
-          username: username,
-          postingKey: postingKey,
-        ),
+            username: username, postingKey: postingKey, cookie: cookie),
       );
     }
   }

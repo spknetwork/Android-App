@@ -6,6 +6,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/models/video_upload/video_upload_login_response.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
@@ -89,14 +90,14 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         isLoading = false;
         items = list;
-        var i = 0;
-        Timer.periodic(const Duration(seconds: 1), (timer) {
-          fetchHiveInfo(list[i].author, list[i].permlink);
-          i += 1;
-          if (i == list.length) {
-            timer.cancel();
-          }
-        });
+      });
+      var i = 0;
+      Timer.periodic(const Duration(seconds: 1), (timer) {
+        fetchHiveInfo(list[i].author, list[i].permlink);
+        i += 1;
+        if (i == list.length) {
+          timer.cancel();
+        }
       });
     } else {
       showError('Status code ${response.statusCode}');
@@ -168,6 +169,52 @@ class _HomeScreenState extends State<HomeScreen> {
     }, payout);
   }
 
+  void getAccessToken(HiveUserData user, String encryptedToken) async {
+    final String result = await platform.invokeMethod('encryptedToken', {
+      'username': user.username,
+      'postingKey': user.postingKey,
+      'encryptedToken': encryptedToken,
+    });
+  }
+
+  void getMemo(HiveUserData user) async {
+    var request = http.Request(
+        'GET',
+        Uri.parse(
+            'http://localhost:13050/mobile/login?username=${user.username}'));
+    if (user.cookie != null) {
+      Map<String, String> map = {"cookie": user.cookie!};
+      request.headers.addAll(map);
+    }
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var loginResponse = VideoUploadLoginResponse.fromJsonString(string);
+      if (loginResponse.error != null) {
+        showError('Error - ${loginResponse.error}');
+        setState(() {
+          isLoading = false;
+        });
+      } else if (loginResponse.memo != null) {
+        getAccessToken(user, loginResponse.memo!);
+      } else if (loginResponse.network == "hive" &&
+          loginResponse.banned == true &&
+          loginResponse.userId != null) {
+      } else {
+        log('This should never happen. No error, no memo, no user info. How?');
+        showError('Something went wrong.');
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } else {
+      showError('Status code ${response.statusCode}');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   Widget _fab(HiveUserData user) {
     return FloatingActionButton(
       onPressed: () async {
@@ -177,6 +224,8 @@ class _HomeScreenState extends State<HomeScreen> {
             'postingKey': user.postingKey,
           });
           log('Result is $result');
+
+          // http://localhost:13050/mobile/login?username=shaktimaaan
         } catch (e) {
           showError(e.toString());
         }
