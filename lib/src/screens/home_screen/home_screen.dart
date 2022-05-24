@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
@@ -14,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart' show get;
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -165,14 +168,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }, payout);
   }
 
-  Widget _fab() {
+  Widget _fab(HiveUserData user) {
     return FloatingActionButton(
       onPressed: () async {
-        // final String result =
-        await platform.invokeMethod('video', {
-          'username': 'a',
-          'postingKey': 'b',
-        });
+        try {
+          final String result = await platform.invokeMethod('video', {
+            'username': user.username,
+            'postingKey': user.postingKey,
+          });
+          log('Result is $result');
+        } catch (e) {
+          showError(e.toString());
+        }
       },
       child: const Icon(Icons.add),
     );
@@ -180,6 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<HiveUserData?>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -195,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _screen(),
       drawer: widget.showDrawer ? const DrawerScreen() : null,
-      floatingActionButton: _fab(),
+      floatingActionButton: user == null ? null : _fab(user),
     );
   }
 }

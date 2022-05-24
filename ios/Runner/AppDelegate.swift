@@ -21,4 +21,10 @@ import Flutter
 		GeneratedPluginRegistrant.register(with: self)
 		return super.application(application, didFinishLaunchingWithOptions: launchOptions)
 	}
+
+//	override func applicationDidBecomeActive(_ application: UIApplication) {
+//		if (TSSocket.shared.tusClient == nil) {
+//			TSSocket.shared.connect()
+//		}
+//	}
 }

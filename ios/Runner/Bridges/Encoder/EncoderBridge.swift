@@ -17,6 +17,7 @@ class EncoderBridge: NSObject {
 	var acela: AcelaWebViewController?
 	var controller: FlutterViewController?
 	let picker = UIImagePickerController()
+	var result: FlutterResult?
 
 	func initiate(controller: FlutterViewController, window: UIWindow?, acela: AcelaWebViewController?) {
 		self.window = window
@@ -49,57 +50,65 @@ class EncoderBridge: NSObject {
 													details: nil))
 			return
 		}
-//		acela.validatePostingKey(username: username, postingKey: postingKey) { response in
-//			guard
-//				let data = response.data(using: .utf8),
-//				let object = try? JSONDecoder().decode(ValidateHiveKeyResponse.self, from: data),
-//				object.valid == true
-//			else {
-//				result(response)
-//				return
-//			}
-//			showPicker()
-//		}
-		showPicker()
-	}
-
-	func showPicker() {
-		if #available(iOS 14, *) {
-			PHPhotoLibrary.requestAuthorization(for: .readWrite) { (status) in
-				DispatchQueue.main.async {
-					self.showUI(for: status)
-				}
+		acela.validatePostingKey(username: username, postingKey: postingKey) { [weak self] response in
+			guard
+				let data = response.data(using: .utf8),
+				let object = try? JSONDecoder().decode(ValidateHiveKeyResponse.self, from: data),
+				object.valid == true
+			else {
+				result(response)
+				return
 			}
-		} else {
-			showVideoPicker()
+			self?.showPicker(result: result)
 		}
 	}
 
-	func showUI(for status: PHAuthorizationStatus) {
+	func showPicker(result: @escaping FlutterResult) {
+		if #available(iOS 14, *) {
+			PHPhotoLibrary.requestAuthorization(for: .readWrite) { (status) in
+				DispatchQueue.main.async {
+					self.showUI(for: status, result: result)
+				}
+			}
+		} else {
+			showVideoPicker(result: result)
+		}
+	}
+
+	func showUI(for status: PHAuthorizationStatus, result: @escaping FlutterResult) {
 		switch status {
 		case .authorized:
-			showVideoPicker()
+			showVideoPicker(result: result)
 		case .limited:
-			showVideoPicker()
+			showVideoPicker(result: result)
 		case .restricted:
-			showVideoPicker()
+			showVideoPicker(result: result)
 		case .denied:
-			print("Denied")
+				result(FlutterError(code: "ERROR",
+														message: "Please provide access. Go to Settings > Acela > Photos > Selected Photos / All Photos",
+														details: nil))
 		case .notDetermined:
-			print("Denied")
+				result(FlutterError(code: "ERROR",
+														message: "Please provide access. Go to Settings > Acela > Photos > Selected Photos / All Photos.",
+														details: nil))
 			break
 		@unknown default:
 			break
 		}
 	}
 
-	func showVideoPicker() {
+	func showVideoPicker(result: @escaping FlutterResult) {
 		if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
 			picker.sourceType = .photoLibrary
 			picker.mediaTypes = ["public.movie"]
 			picker.allowsEditing = false
 			picker.delegate = self
 			controller?.present(picker, animated: true, completion: nil)
+			self.result = result
+		} else {
+			result(FlutterError(code: "ERROR",
+													message: "Please provide access. Go to Settings > Acela > Photos > Selected Photos / All Photos.",
+													details: nil))
 		}
 	}
 
@@ -118,6 +127,7 @@ class EncoderBridge: NSObject {
 		export?.outputFileType = AVFileType.mp4
 		export?.exportAsynchronously(completionHandler: {
 			debugPrint("DocDir url - \(docDirFileUrl.absoluteString)")
+			self.result?(docDirFileUrl.absoluteString)
 		})
 	}
 }
@@ -133,15 +143,19 @@ extension EncoderBridge: UIImagePickerControllerDelegate, UINavigationController
 			picker.dismiss(animated: true) {
 				debugPrint("URL of media is \(url.debugDescription)")
 				self.convertToMP4(url: url)
-				// self.encodingOptions(url)
-				// self.performSegue(withIdentifier: "encode", sender: url)
 			}
 		} else {
 			picker.dismiss(animated: true, completion: nil)
+			result?(FlutterError(code: "ERROR",
+													message: "Selection of media is not a video.",
+													details: nil))
 		}
 	}
 
 	func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
 		picker.dismiss(animated: true, completion: nil)
+		result?(FlutterError(code: "ERROR",
+												message: "You cancelled selection of videos.",
+												details: nil))
 	}
 }

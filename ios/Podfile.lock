@@ -33,7 +33,6 @@ PODS:
   - PromisesObjC (2.1.0)
   - share_plus (0.0.1):
     - Flutter
-  - TUSKit (3.1.2)
   - url_launcher_ios (0.0.1):
     - Flutter
   - video_player_avfoundation (0.0.1):
@@ -47,7 +46,6 @@ DEPENDENCIES:
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - FYVideoCompressor
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
-  - TUSKit
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/ios`)
   - wakelock (from `.symlinks/plugins/wakelock/ios`)
@@ -62,7 +60,6 @@ SPEC REPOS:
     - GoogleUtilities
     - nanopb
     - PromisesObjC
-    - TUSKit
 
 EXTERNAL SOURCES:
   firebase_core:
@@ -93,11 +90,10 @@ SPEC CHECKSUMS:
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: 99b6f43f9e1044bd87a95a60beff28c2c44ddb72
   share_plus: 056a1e8ac890df3e33cb503afffaf1e9b4fbae68
-  TUSKit: 0dedde8a33b84c3b7248a24bc25b41c47797afa8
   url_launcher_ios: 839c58cdb4279282219f5e248c3321761ff3c4de
   video_player_avfoundation: e489aac24ef5cf7af82702979ed16f2a5ef84cff
   wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
 
-PODFILE CHECKSUM: d7b9207ef5ec0d27f2f43c2baddc012d3c0af642
+PODFILE CHECKSUM: c47b194cb97680e602c9d704f278cff245139eb7
 
 COCOAPODS: 1.11.3
