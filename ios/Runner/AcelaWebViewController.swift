@@ -39,6 +39,18 @@ class AcelaWebViewController: UIViewController {
 			self.webView?.evaluateJavaScript("validateHiveKey('\(username)', '\(postingKey)')")
 		}
 	}
+
+	func decryptMemo(
+		username: String,
+		postingKey: String,
+		encryptedMemo: String,
+		handler: @escaping (String) -> Void
+	) {
+		decryptTokenHandler = handler
+		OperationQueue.main.addOperation {
+			self.webView?.evaluateJavaScript("decryptMemo('\(username)', '\(postingKey)', '\(encryptedMemo)')")
+		}
+	}
 }
 
 extension AcelaWebViewController: WKNavigationDelegate {
@@ -66,9 +78,19 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 				else { return }
 				debugPrint("Is it valid? \(isValid ? "TRUE" : "FALSE")")
 				debugPrint("account name is \(accountName)")
-				debugPrint("posting key is \(postingKey)")
 				debugPrint("Error is \(error)")
 				postingKeyValidationHandler?(response)
+			case "decryptedMemo":
+				guard
+					let accountName = dict["accountName"] as? String,
+					let error = dict["error"] as? String,
+					let decrypted = dict["decrypted"] as? String,
+					let response = DecryptMemoResponse.jsonStringFrom(dict: dict)
+				else { return }
+				debugPrint("account name is \(accountName)")
+				debugPrint("Error is \(error)")
+				debugPrint("decrypted is \(decrypted)")
+				decryptTokenHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}

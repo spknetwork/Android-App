@@ -77,23 +77,23 @@ class EncoderBridge: NSObject {
 
 	func showUI(for status: PHAuthorizationStatus, result: @escaping FlutterResult) {
 		switch status {
-		case .authorized:
-			showVideoPicker(result: result)
-		case .limited:
-			showVideoPicker(result: result)
-		case .restricted:
-			showVideoPicker(result: result)
-		case .denied:
+			case .authorized:
+				showVideoPicker(result: result)
+			case .limited:
+				showVideoPicker(result: result)
+			case .restricted:
+				showVideoPicker(result: result)
+			case .denied:
 				result(FlutterError(code: "ERROR",
 														message: "Please provide access. Go to Settings > Acela > Photos > Selected Photos / All Photos",
 														details: nil))
-		case .notDetermined:
+			case .notDetermined:
 				result(FlutterError(code: "ERROR",
 														message: "Please provide access. Go to Settings > Acela > Photos > Selected Photos / All Photos.",
 														details: nil))
-			break
-		@unknown default:
-			break
+				break
+			@unknown default:
+				break
 		}
 	}
 
@@ -127,8 +127,37 @@ class EncoderBridge: NSObject {
 		export?.outputFileType = AVFileType.mp4
 		export?.exportAsynchronously(completionHandler: {
 			debugPrint("DocDir url - \(docDirFileUrl.absoluteString)")
-			self.result?(docDirFileUrl.absoluteString)
+			let asset = AVAsset(url: docDirFileUrl)
+			let duration = asset.duration
+			let durationTime = CMTimeGetSeconds(duration)
+			debugPrint("Video duration is in seconds - \(durationTime) seconds")
+			do {
+				let attr = try FileManager.default.attributesOfItem(atPath: docDirFilePath)
+				let fileSize = attr[FileAttributeKey.size] as! UInt64
+				debugPrint("Video file size is - \(fileSize)")
+				let responseString = VideoDataResponse.jsonStringFrom(size: Double(fileSize), duration: Double(durationTime), oFilename: docDirFileUrl.absoluteString)
+				self.result?(responseString)
+			} catch {
+				print("Error: \(error)")
+			}
 		})
+	}
+}
+
+struct VideoDataResponse: Codable {
+	let size: Double
+	let duration: Double
+	let oFilename: String
+
+	static func jsonStringFrom(size: Double, duration: Double, oFilename: String) -> String? {
+		let response = VideoDataResponse(
+			size: size,
+			duration: duration,
+			oFilename: oFilename
+		)
+		guard let data = try? JSONEncoder().encode(response) else { return nil }
+		guard let dataString = String(data: data, encoding: .utf8) else { return nil }
+		return dataString
 	}
 }
 
@@ -147,15 +176,15 @@ extension EncoderBridge: UIImagePickerControllerDelegate, UINavigationController
 		} else {
 			picker.dismiss(animated: true, completion: nil)
 			result?(FlutterError(code: "ERROR",
-													message: "Selection of media is not a video.",
-													details: nil))
+													 message: "Selection of media is not a video.",
+													 details: nil))
 		}
 	}
 
 	func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
 		picker.dismiss(animated: true, completion: nil)
 		result?(FlutterError(code: "ERROR",
-												message: "You cancelled selection of videos.",
-												details: nil))
+												 message: "You cancelled selection of videos.",
+												 details: nil))
 	}
 }

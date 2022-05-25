@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
+import 'package:acela/src/models/login/memo_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_upload/video_upload_login_response.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
@@ -15,6 +16,7 @@ import 'package:acela/src/screens/video_details_screen/video_details_screen.dart
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
@@ -169,15 +171,25 @@ class _HomeScreenState extends State<HomeScreen> {
     }, payout);
   }
 
-  void getAccessToken(HiveUserData user, String encryptedToken) async {
+  Future<String> getAccessToken(
+      HiveUserData user, String encryptedToken) async {
+    const platform = MethodChannel('com.example.acela/auth');
     final String result = await platform.invokeMethod('encryptedToken', {
       'username': user.username,
       'postingKey': user.postingKey,
       'encryptedToken': encryptedToken,
     });
+    var memo = MemoResponse.fromJsonString(result);
+    if (memo.error.isNotEmpty) {
+      showError('Error ${memo.error}');
+      throw memo.error;
+    } else if (memo.decrypted.isEmpty) {
+      throw 'Decrypted memo is empty';
+    }
+    return memo.decrypted.replaceFirst("#", '');
   }
 
-  void getMemo(HiveUserData user) async {
+  Future<String> getValidCookie(HiveUserData user) async {
     var request = http.Request(
         'GET',
         Uri.parse(
@@ -190,28 +202,66 @@ class _HomeScreenState extends State<HomeScreen> {
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
       var loginResponse = VideoUploadLoginResponse.fromJsonString(string);
-      if (loginResponse.error != null) {
-        showError('Error - ${loginResponse.error}');
-        setState(() {
-          isLoading = false;
-        });
+      if (loginResponse.error != null && loginResponse.error!.isNotEmpty) {
+        throw 'Error - ${loginResponse.error}';
       } else if (loginResponse.memo != null) {
-        getAccessToken(user, loginResponse.memo!);
+        var token = await getAccessToken(user, loginResponse.memo!);
+        var url =
+            'http://localhost:13050/mobile/login?username=${user.username}&access_token=$token';
+        var request = http.Request('GET', Uri.parse(url));
+        http.StreamedResponse response = await request.send();
+        var string = await response.stream.bytesToString();
+        var tokenResponse = VideoUploadLoginResponse.fromJsonString(string);
+        var cookie = response.headers['set-cookie'];
+        if (tokenResponse.error != null && tokenResponse.error!.isNotEmpty) {
+          throw 'Error - ${tokenResponse.error}';
+        } else if (tokenResponse.network == "hive" &&
+            tokenResponse.banned != true &&
+            tokenResponse.userId != null &&
+            cookie != null &&
+            cookie.isNotEmpty) {
+          const storage = FlutterSecureStorage();
+          await storage.write(key: 'cookie', value: cookie);
+          var newData = HiveUserData(
+            username: user.username,
+            postingKey: user.postingKey,
+            cookie: cookie,
+          );
+          server.updateHiveUserData(newData);
+          return cookie;
+        } else {
+          log('This should never happen. No error, no user info. How?');
+          throw 'Something went wrong.';
+        }
       } else if (loginResponse.network == "hive" &&
-          loginResponse.banned == true &&
-          loginResponse.userId != null) {
+          loginResponse.banned != true &&
+          loginResponse.userId != null &&
+          user.cookie != null) {
+        return user.cookie!;
       } else {
         log('This should never happen. No error, no memo, no user info. How?');
-        showError('Something went wrong.');
-        setState(() {
-          isLoading = false;
-        });
+        throw 'Something went wrong.';
+      }
+    } else if (response.statusCode == 500) {
+      var string = await response.stream.bytesToString();
+      var errorResponse = VideoUploadLoginResponse.fromJsonString(string);
+      if (errorResponse.error != null &&
+          errorResponse.error!.isNotEmpty &&
+          errorResponse.error == 'session expired') {
+        const storage = FlutterSecureStorage();
+        await storage.delete(key: 'cookie');
+        var newData = HiveUserData(
+          username: user.username,
+          postingKey: user.postingKey,
+          cookie: null,
+        );
+        server.updateHiveUserData(newData);
+        return await getValidCookie(newData);
+      } else {
+        throw 'Status code ${response.statusCode}';
       }
     } else {
-      showError('Status code ${response.statusCode}');
-      setState(() {
-        isLoading = false;
-      });
+      throw 'Status code ${response.statusCode}';
     }
   }
 
@@ -224,8 +274,8 @@ class _HomeScreenState extends State<HomeScreen> {
             'postingKey': user.postingKey,
           });
           log('Result is $result');
-
-          // http://localhost:13050/mobile/login?username=shaktimaaan
+          var cookie = await getValidCookie(user);
+          log('Cookie is $cookie');
         } catch (e) {
           showError(e.toString());
         }

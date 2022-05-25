@@ -44,6 +44,7 @@ class AuthBridge {
 						return
 					}
 					self?.decryptMemo(username: username, postingKey: password, encryptedMemo: encryptedToken, result: result)
+				default: debugPrint("do nothing")
 			}
 		})
 	}
@@ -72,8 +73,7 @@ class AuthBridge {
 													details: nil))
 			return
 		}
-		acela.
-		acela.validatePostingKey(username: username, postingKey: postingKey) { response in
+		acela.decryptMemo(username: username, postingKey: postingKey, encryptedMemo: encryptedMemo) { response in
 			result(response)
 		}
 	}
