@@ -135,7 +135,7 @@ class EncoderBridge: NSObject {
 				let attr = try FileManager.default.attributesOfItem(atPath: docDirFilePath)
 				let fileSize = attr[FileAttributeKey.size] as! UInt64
 				debugPrint("Video file size is - \(fileSize)")
-				let responseString = VideoDataResponse.jsonStringFrom(size: Double(fileSize), duration: Double(durationTime), oFilename: docDirFileUrl.absoluteString)
+				let responseString = VideoDataResponse.jsonStringFrom(size: Int(fileSize), duration: Int(durationTime), oFilename: "\(fileName).mp4", path: docDirFileUrl.absoluteString)
 				self.result?(responseString)
 			} catch {
 				print("Error: \(error)")
@@ -145,15 +145,17 @@ class EncoderBridge: NSObject {
 }
 
 struct VideoDataResponse: Codable {
-	let size: Double
-	let duration: Double
+	let size: Int
+	let duration: Int
 	let oFilename: String
+	let path: String
 
-	static func jsonStringFrom(size: Double, duration: Double, oFilename: String) -> String? {
+	static func jsonStringFrom(size: Int, duration: Int, oFilename: String, path: String) -> String? {
 		let response = VideoDataResponse(
 			size: size,
 			duration: duration,
-			oFilename: oFilename
+			oFilename: oFilename,
+			path: path
 		)
 		guard let data = try? JSONEncoder().encode(response) else { return nil }
 		guard let dataString = String(data: data, encoding: .utf8) else { return nil }
