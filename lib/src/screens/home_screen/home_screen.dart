@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/models/video_upload/platform_video_info.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
@@ -10,10 +12,13 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:cross_file/cross_file.dart' show XFile;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
+import 'package:tus_client/tus_client.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -151,19 +156,52 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             isFabLoading = true;
           });
-          final String result = await platform.invokeMethod('video', {
-            'username': user.username,
-            'postingKey': user.postingKey,
-          });
-          log('Result is $result');
-          var cookie = await Communicator().getValidCookie(user);
-          log('Cookie is $cookie');
-          var response =
-              await Communicator().prepareVideo(user, result, cookie);
-          log('Response file name is ${response.filename}');
-          setState(() {
-            isFabLoading = false;
-          });
+          FilePickerResult? fileResult =
+              await FilePicker.platform.pickFiles(type: FileType.video);
+
+          if (fileResult != null && fileResult.files.single.path != null) {
+            PlatformFile file = fileResult.files.single;
+            print(file.name);
+            print(file.bytes);
+            print(file.size);
+            print(file.extension);
+            print(file.path);
+            final xfile = XFile(fileResult.files.single.path!);
+            var fileInfoInString = json.encode(PlatformVideoInfo(
+                    duration: 10,
+                    oFilename: file.name,
+                    path: file.path!,
+                    size: file.size)
+                .toJson());
+            var cookie = await Communicator().getValidCookie(user);
+            log('Cookie is $cookie');
+            var response = await Communicator()
+                .prepareVideo(user, fileInfoInString, cookie);
+            log('Response file name is ${response.filename}');
+            final client = TusClient(
+              Uri.parse("https://uploads.3speak.tv/files"),
+              xfile,
+              store: TusMemoryStore(),
+            );
+
+            // Starts the upload
+            await client.upload(
+              onComplete: () {
+                print("Complete!");
+                // Prints the uploaded file URL
+                print(client.uploadUrl.toString());
+              },
+              onProgress: (progress) {
+                print("Progress: $progress");
+              },
+            );
+            setState(() {
+              isFabLoading = false;
+            });
+          } else {
+            // User canceled the picker
+            throw 'User cancelled the video picker';
+          }
         } catch (e) {
           showError(e.toString());
           setState(() {

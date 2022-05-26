@@ -239,6 +239,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.1.2"
+  file_picker:
+    dependency: "direct main"
+    description:
+      name: file_picker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.5.1"
   firebase_core:
     dependency: "direct main"
     description:
@@ -293,6 +300,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.10"
+  flutter_plugin_android_lifecycle:
+    dependency: transitive
+    description:
+      name: flutter_plugin_android_lifecycle
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.6"
   flutter_secure_storage:
     dependency: "direct main"
     description:

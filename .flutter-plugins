@@ -1,6 +1,8 @@
 # This is a generated file; do not edit or check into version control.
+file_picker=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/file_picker-4.5.1/
 firebase_core=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-1.15.0/
 firebase_core_web=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-1.6.2/
+flutter_plugin_android_lifecycle=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_plugin_android_lifecycle-2.0.6/
 flutter_secure_storage=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage-5.0.2/
 flutter_secure_storage_linux=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_linux-1.1.0/
 flutter_secure_storage_macos=/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_secure_storage_macos-1.1.0/
