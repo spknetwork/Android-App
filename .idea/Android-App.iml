@@ -47,6 +47,15 @@
       <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/firebase_core/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/firebase_core/example/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/firebase_core/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/file_picker/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/file_picker/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/file_picker/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/file_picker/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/file_picker/build" />
+      <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/file_picker/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/ffmpeg_kit_flutter/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/ffmpeg_kit_flutter/build" />
+      <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/ffmpeg_kit_flutter/.pub" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 32 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

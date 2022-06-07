@@ -13,7 +13,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class Communicator {
-  static const tsServer = "http://localhost:13050";
+  static const tsServer = "http://10.0.2.2:13050";
   Future<PayoutInfo> fetchHiveInfo(String user, String permlink) async {
     var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
     request.body = json.encode({

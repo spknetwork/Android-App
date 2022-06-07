@@ -13,6 +13,8 @@ import 'package:acela/src/screens/video_details_screen/video_details_screen.dart
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:cross_file/cross_file.dart' show XFile;
+import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -166,12 +168,18 @@ class _HomeScreenState extends State<HomeScreen> {
             print(file.size);
             print(file.extension);
             print(file.path);
+            MediaInformationSession session =
+                await FFprobeKit.getMediaInformation(file.path!);
+            var info = session.getMediaInformation();
+            var duration =
+                (double.tryParse(info?.getDuration() ?? "0.0") ?? 0.0).toInt();
+            log('Video duration is $duration');
             final xfile = XFile(fileResult.files.single.path!);
             var fileInfoInString = json.encode(PlatformVideoInfo(
-                    duration: 10,
-                    oFilename: file.name,
-                    path: file.path!,
-                    size: file.size)
+                    duration: int.tryParse(info?.getDuration() ?? "0") ?? 0,
+                    oFilename: xfile.name,
+                    path: xfile.path,
+                    size: int.tryParse(info?.getSize() ?? "0") ?? 0)
                 .toJson());
             var cookie = await Communicator().getValidCookie(user);
             log('Cookie is $cookie');
