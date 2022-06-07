@@ -42,22 +42,22 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    widget.vm.getRecommendedVideos().then((value) {
-      setState(() {
-        recommendations = value;
-      });
-      var i = 0;
-      Timer.periodic(const Duration(seconds: 1), (timer) {
-        fetchHiveInfo(value[i].owner, value[i].mediaid);
-        i += 1;
-        if (i == value.length) {
-          timer.cancel();
-        }
-      });
-    });
-    _loadComments =
-        widget.vm.loadFirstSetOfComments(widget.vm.author, widget.vm.permlink);
-    fetchHiveInfoForThisVideo();
+    // widget.vm.getRecommendedVideos().then((value) {
+    //   setState(() {
+    //     recommendations = value;
+    //   });
+    //   var i = 0;
+    //   Timer.periodic(const Duration(seconds: 1), (timer) {
+    //     fetchHiveInfo(value[i].owner, value[i].mediaid);
+    //     i += 1;
+    //     if (i == value.length) {
+    //       timer.cancel();
+    //     }
+    //   });
+    // });
+    // _loadComments =
+    //     widget.vm.loadFirstSetOfComments(widget.vm.author, widget.vm.permlink);
+    // fetchHiveInfoForThisVideo();
   }
 
   void onUserTap() {
@@ -415,7 +415,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           String text =
               'Something went wrong while loading video information - ${snapshot.error?.toString() ?? ""}';
           return container(widget.vm.author, Text(text));
-        } else if (snapshot.hasData) {
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data as VideoDetails?;
           if (data != null) {
             return Scaffold(

@@ -28,6 +28,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   adaptive_action_sheet: ^2.0.1
+  better_player: ^0.0.83
   bs58: ^1.0.2
   bs58check: ^1.0.2
   chewie: ^1.3.0
