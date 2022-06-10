@@ -35,13 +35,17 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   List<VideoRecommendationItem> recommendations = [];
   late Future<List<HiveComment>> _loadComments;
   Map<String, PayoutInfo?> payoutData = {};
-  double? payout;
-  int? upVotes;
-  int? downVotes;
+
+  late Future<HivePostInfoPostResultBody> _fetchHiveInfoForThisVideo;
+
+  // double? payout;
+  // int? upVotes;
+  // int? downVotes;
 
   @override
   void initState() {
     super.initState();
+    _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo();
     // widget.vm.getRecommendedVideos().then((value) {
     //   setState(() {
     //     recommendations = value;
@@ -87,7 +91,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   // fetch hive info
-  void fetchHiveInfoForThisVideo() async {
+  Future<HivePostInfoPostResultBody> fetchHiveInfoForThisVideo() async {
     var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
     request.body = json.encode({
       "id": 1,
@@ -107,13 +111,10 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           .resultData
           .where((element) => element.permlink == widget.vm.permlink)
           .first;
-      setState(() {
-        payout = result.payout;
-        upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
-        downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
-      });
+      return result;
     } else {
       print(response.reasonPhrase);
+      throw response.reasonPhrase ?? 'Can not load payout info';
     }
   }
 
@@ -150,63 +151,77 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
 
   // video description
   Widget titleAndSubtitle(VideoDetails details) {
-    String string =
-        "📆 ${timeago.format(DateTime.parse(details.created))} · ▶ ${details.views} views · 👥 ${details.community}";
-    String priceAndVotes =
-        (payout != null && upVotes != null && downVotes != null)
-            ? "\$ ${payout!.toStringAsFixed(3)} · 👍 $upVotes · 👎 $downVotes"
-            : "";
-    return Container(
-      margin: const EdgeInsets.all(10),
-      child: Column(
-        children: [
-          InkWell(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return FutureBuilder(
+      future: _fetchHiveInfoForThisVideo,
+      builder: (builder, snapshot) {
+        if (snapshot.hasError) {
+          return const Text('Error loading hive payout info');
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
+          String string =
+              "📆 ${timeago.format(DateTime.parse(details.created))} · ▶ ${details.views} views · 👥 ${details.community}";
+          var data = snapshot.data as HivePostInfoPostResultBody;
+          var upVotes = data.activeVotes.where((e) => e.rshares > 0).length;
+          var downVotes = data.activeVotes.where((e) => e.rshares < 0).length;
+          String priceAndVotes =
+              "\$ ${data.payout.toStringAsFixed(3)} · 👍 $upVotes · 👎 $downVotes";
+          return Container(
+            margin: const EdgeInsets.all(10),
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
+                InkWell(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(details.title,
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      const SizedBox(height: 3),
-                      Text(string,
-                          style: Theme.of(context).textTheme.bodySmall),
-                      const SizedBox(height: 3),
-                      Text(priceAndVotes,
-                          style: Theme.of(context).textTheme.bodySmall),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(details.title,
+                                style: Theme.of(context).textTheme.bodyLarge),
+                            const SizedBox(height: 3),
+                            Text(string,
+                                style: Theme.of(context).textTheme.bodySmall),
+                            const SizedBox(height: 3),
+                            Text(priceAndVotes,
+                                style: Theme.of(context).textTheme.bodySmall),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_drop_down_outlined),
                     ],
                   ),
+                  onTap: () {
+                    showModalForDescription(details);
+                  },
                 ),
-                const Icon(Icons.arrow_drop_down_outlined),
+                SizedBox(height: 10),
+                InkWell(
+                  child: Row(
+                    children: [
+                      CustomCircleAvatar(
+                        height: 40,
+                        width: 40,
+                        url: server.userOwnerThumb(details.owner),
+                      ),
+                      SizedBox(width: 10),
+                      Text(details.owner,
+                          style: Theme.of(context).textTheme.bodyLarge),
+                    ],
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (c) =>
+                            UserChannelScreen(owner: details.owner)));
+                  },
+                )
               ],
             ),
-            onTap: () {
-              showModalForDescription(details);
-            },
-          ),
-          SizedBox(height: 10),
-          InkWell(
-            child: Row(
-              children: [
-                CustomCircleAvatar(
-                  height: 40,
-                  width: 40,
-                  url: server.userOwnerThumb(details.owner),
-                ),
-                SizedBox(width: 10),
-                Text(details.owner,
-                    style: Theme.of(context).textTheme.bodyLarge),
-              ],
-            ),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (c) => UserChannelScreen(owner: details.owner)));
-            },
-          )
-        ],
-      ),
+          );
+        } else {
+          return const Text('Loading hive payout info');
+        }
+      },
     );
   }
 

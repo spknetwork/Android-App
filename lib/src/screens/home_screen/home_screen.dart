@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _screen(),
       drawer: widget.showDrawer ? const DrawerScreen() : null,
-      floatingActionButton: user == null ? null : _fab(user),
+      // floatingActionButton: user == null ? null : _fab(user),
     );
   }
 }
