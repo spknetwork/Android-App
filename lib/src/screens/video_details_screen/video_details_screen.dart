@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -32,36 +31,17 @@ class VideoDetailsScreen extends StatefulWidget {
 
 class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   late Future<List<VideoRecommendationItem>> recommendedVideos;
-  List<VideoRecommendationItem> recommendations = [];
   late Future<List<HiveComment>> _loadComments;
-  Map<String, PayoutInfo?> payoutData = {};
 
   late Future<HivePostInfoPostResultBody> _fetchHiveInfoForThisVideo;
-
-  // double? payout;
-  // int? upVotes;
-  // int? downVotes;
 
   @override
   void initState() {
     super.initState();
     _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo();
-    // widget.vm.getRecommendedVideos().then((value) {
-    //   setState(() {
-    //     recommendations = value;
-    //   });
-    //   var i = 0;
-    //   Timer.periodic(const Duration(seconds: 1), (timer) {
-    //     fetchHiveInfo(value[i].owner, value[i].mediaid);
-    //     i += 1;
-    //     if (i == value.length) {
-    //       timer.cancel();
-    //     }
-    //   });
-    // });
-    // _loadComments =
-    //     widget.vm.loadFirstSetOfComments(widget.vm.author, widget.vm.permlink);
-    // fetchHiveInfoForThisVideo();
+    recommendedVideos = widget.vm.getRecommendedVideos();
+    _loadComments =
+        widget.vm.loadFirstSetOfComments(widget.vm.author, widget.vm.permlink);
   }
 
   void onUserTap() {
@@ -115,37 +95,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     } else {
       print(response.reasonPhrase);
       throw response.reasonPhrase ?? 'Can not load payout info';
-    }
-  }
-
-  // fetch hive info
-  void fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
-    request.body = json.encode({
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "bridge.get_discussion",
-      "params": {"author": user, "permlink": permlink, "observer": ""}
-    });
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      var string = await response.stream.bytesToString();
-      var result = HivePostInfo.fromJsonString(string)
-          .result
-          .resultData
-          .where((element) => element.permlink == permlink)
-          .first;
-      setState(() {
-        var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
-        var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
-        payoutData["$user/$permlink"] = PayoutInfo(
-          payout: result.payout,
-          downVotes: downVotes,
-          upVotes: upVotes,
-        );
-      });
-    } else {
-      print(response.reasonPhrase);
     }
   }
 
@@ -367,8 +316,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
 
   //endregion
 
-  // container list view
-  Widget videoWithDetails(VideoDetails details) {
+  Widget videoWithDetailsWithoutRecommendation(VideoDetails details) {
     return Container(
       margin: const EdgeInsets.only(top: 230),
       child: ListView.separated(
@@ -377,30 +325,66 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             return titleAndSubtitle(details);
           } else if (index == 1) {
             return videoComments();
-          } else if (index == 2) {
-            return const ListTile(
-              title: Text('Recommended Videos'),
-            );
           } else {
             return ListTile(
               contentPadding: EdgeInsets.zero,
               minVerticalPadding: 0,
-              title: videoRecommendationListItem(recommendations[index - 3]),
+              title: const Text('Unknown'),
             );
           }
         },
         separatorBuilder: (context, index) =>
             const Divider(thickness: 0, height: 15, color: Colors.transparent),
-        itemCount: recommendations.length + 2,
+        itemCount: 2,
       ),
     );
   }
 
+  // container list view
+  Widget videoWithDetails(VideoDetails details) {
+    return FutureBuilder(
+        future: recommendedVideos,
+        builder: (builder, snapshot) {
+          if (snapshot.hasError) {
+            return videoWithDetailsWithoutRecommendation(details);
+          } else if (snapshot.hasData &&
+              snapshot.connectionState == ConnectionState.done) {
+            var recommendations =
+                snapshot.data as List<VideoRecommendationItem>;
+            return Container(
+              margin: const EdgeInsets.only(top: 230),
+              child: ListView.separated(
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return titleAndSubtitle(details);
+                  } else if (index == 1) {
+                    return videoComments();
+                  } else if (index == 2) {
+                    return const ListTile(
+                      title: Text('Recommended Videos'),
+                    );
+                  } else {
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      minVerticalPadding: 0,
+                      title: videoRecommendationListItem(
+                          recommendations[index - 3]),
+                    );
+                  }
+                },
+                separatorBuilder: (context, index) => const Divider(
+                    thickness: 0, height: 15, color: Colors.transparent),
+                itemCount: recommendations.length + 2,
+              ),
+            );
+          } else {
+            return videoWithDetailsWithoutRecommendation(details);
+          }
+        });
+  }
+
   // container list view - recommendations
   Widget videoRecommendationListItem(VideoRecommendationItem item) {
-    double? payoutAmount = payoutData["${item.owner}/${item.mediaid}"]?.payout;
-    int? upVotes = payoutData["${item.owner}/${item.mediaid}"]?.upVotes;
-    int? downVotes = payoutData["${item.owner}/${item.mediaid}"]?.downVotes;
     return ListTileVideo(
       placeholder: 'assets/branding/three_speak_logo.png',
       url: item.image,
@@ -414,9 +398,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       user: item.owner,
       permlink: item.mediaid,
       shouldResize: false,
-      downVotes: downVotes,
-      upVotes: upVotes,
-      payout: payoutAmount,
     );
   }
 

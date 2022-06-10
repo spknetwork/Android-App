@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
+import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import 'custom_circle_avatar.dart';
@@ -16,9 +21,6 @@ class ListTileVideo extends StatefulWidget {
     required this.user,
     required this.permlink,
     required this.shouldResize,
-    required this.payout,
-    required this.upVotes,
-    required this.downVotes,
   }) : super(key: key);
 
   final String placeholder;
@@ -30,15 +32,20 @@ class ListTileVideo extends StatefulWidget {
   final String user;
   final String permlink;
   final bool shouldResize;
-  final double? payout;
-  final int? upVotes;
-  final int? downVotes;
 
   @override
   State<ListTileVideo> createState() => _ListTileVideoState();
 }
 
 class _ListTileVideoState extends State<ListTileVideo> {
+  late Future<PayoutInfo> _fetchHiveInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHiveInfo = fetchHiveInfo(widget.user, widget.permlink);
+  }
+
   Widget _errorIndicator() {
     return Container(
       height: 220,
@@ -51,12 +58,56 @@ class _ListTileVideoState extends State<ListTileVideo> {
     );
   }
 
+  Future<PayoutInfo> fetchHiveInfo(String user, String permlink) async {
+    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    request.body = json.encode({
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "bridge.get_discussion",
+      "params": {"author": user, "permlink": permlink, "observer": ""}
+    });
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var result = HivePostInfo.fromJsonString(string)
+          .result
+          .resultData
+          .where((element) => element.permlink == permlink)
+          .first;
+      var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
+      var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
+      return PayoutInfo(
+        payout: result.payout,
+        downVotes: downVotes,
+        upVotes: upVotes,
+      );
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase ?? 'Could not load hive payout info';
+    }
+  }
+
+  Widget payoutInfo() {
+    return FutureBuilder(
+      future: _fetchHiveInfo,
+      builder: (builder, snapshot) {
+        if (snapshot.hasError) {
+          return const Text('Error loading hive payout info');
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
+          var data = snapshot.data as PayoutInfo;
+          String priceAndVotes =
+              "\$ ${data.payout?.toStringAsFixed(3)} · 👍 ${data.upVotes} · 👎 ${data.downVotes}";
+          return Text(priceAndVotes,
+              style: Theme.of(context).textTheme.bodyText2);
+        } else {
+          return const Text('Loading hive payout info');
+        }
+      },
+    );
+  }
+
   Widget _thumbnailType(BuildContext context) {
-    String priceAndVotes = (widget.payout != null &&
-            widget.upVotes != null &&
-            widget.downVotes != null)
-        ? "\$ ${widget.payout!.toStringAsFixed(3)} · 👍 ${widget.upVotes} · 👎 ${widget.downVotes}"
-        : "";
     var isDarkMode = Provider.of<bool>(context);
     return Container(
       margin: EdgeInsets.all(3),
@@ -121,8 +172,7 @@ class _ListTileVideoState extends State<ListTileVideo> {
                       Text(widget.subtitle,
                           style: Theme.of(context).textTheme.bodyText2),
                       SizedBox(height: 2),
-                      Text(priceAndVotes,
-                          style: Theme.of(context).textTheme.bodyText2),
+                      payoutInfo(),
                     ],
                   ),
                 )
