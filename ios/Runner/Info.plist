@@ -35,6 +35,8 @@
 	</dict>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>Allow access to music</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow access to videos</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allow access to videos</string>
 	<key>UIBackgroundModes</key>

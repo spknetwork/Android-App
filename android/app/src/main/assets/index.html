@@ -13,35 +13,72 @@
     <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
     <script>
       function validateHiveKey(accountName, postingKey) {
-        console.log('In here before async')
-        hive.api.getAccountsAsync([accountName]).then(function (accounts) {
-          console.log('In here after async')
-          console.log('Accounts: ', accounts)
-          const pubWif = accounts[0].posting.key_auths[0][0];
-          console.log('PubWif: ', pubWif)
-          const Valid = hive.auth.wifIsValid(postingKey, pubWif);
-          console.log(`is valid ${Valid}`);
-          var result = {
-            type: 'validateHiveKey',
-            valid: Valid,
-            accountName: accountName,
-            postingKey: postingKey,
-            error: '',
-          };
-          // window.webkit.messageHandlers.acela.postMessage(result);
-          Android.postMessage(JSON.stringify(result));
-        }).catch(function (err) {
-          console.log('Error: ', err)
-          var result = {
-            type: 'validateHiveKey',
-            valid: false,
-            accountName: accountName,
-            postingKey: postingKey,
-            error: err.message,
-          };
-          // window.webkit.messageHandlers.acela.postMessage(result);
-          Android.postMessage(JSON.stringify(result));
-        });
+        console.log("In here before async");
+        hive.api
+          .getAccountsAsync([accountName])
+          .then(function (accounts) {
+            console.log("In here after async");
+            console.log("Accounts: ", accounts);
+            const pubWif = accounts[0].posting.key_auths[0][0];
+            console.log("PubWif: ", pubWif);
+            const Valid = hive.auth.wifIsValid(postingKey, pubWif);
+            console.log(`is valid ${Valid}`);
+            var result = {
+              type: "validateHiveKey",
+              valid: Valid,
+              accountName: accountName,
+              postingKey: postingKey,
+              error: "",
+            };
+            // window.webkit.messageHandlers.acela.postMessage(result);
+            Android.postMessage(JSON.stringify(result));
+          })
+          .catch(function (err) {
+            console.log("Error: ", err);
+            var result = {
+              type: "validateHiveKey",
+              valid: false,
+              accountName: accountName,
+              postingKey: postingKey,
+              error: err.message,
+            };
+            // window.webkit.messageHandlers.acela.postMessage(result);
+            Android.postMessage(JSON.stringify(result));
+          });
+      }
+
+      function decryptMemo(accountName, postingKey, encrypted) {
+        console.log("In here before async");
+        hive.api
+          .getAccountsAsync([accountName])
+          .then(function (accounts) {
+            console.log("In here after async");
+            console.log("Accounts: ", accounts);
+            const pubWif = accounts[0].posting.key_auths[0][0];
+            console.log("PubWif: ", pubWif);
+            const Valid = hive.auth.wifIsValid(postingKey, pubWif);
+            console.log(`is valid ${Valid}`);
+            let decrypted = hive.memo.decode(postingKey, encrypted);
+            let result = {
+              type: "decryptedMemo",
+              accountName: accountName,
+              decrypted: decrypted,
+              error: "",
+            };
+            // window.webkit.messageHandlers.acela.postMessage(result);
+            Android.postMessage(JSON.stringify(result));
+          })
+          .catch(function (err) {
+            console.log("Error: ", err);
+            let result = {
+              type: "decryptedMemo",
+              accountName: accountName,
+              decrypted: "",
+              error: err.message,
+            };
+            // window.webkit.messageHandlers.acela.postMessage(result);
+            Android.postMessage(JSON.stringify(result));
+          });
       }
     </script>
   </body>

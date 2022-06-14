@@ -6,6 +6,7 @@ import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/login/memo_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/models/video_upload/video_upload_complete_request.dart';
 import 'package:acela/src/models/video_upload/video_upload_login_response.dart';
 import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
 import 'package:flutter/services.dart';
@@ -13,8 +14,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class Communicator {
-  // static const tsServer = "http://10.0.2.2:13050";
-  static const tsServer = "http://localhost:13050";
+  static const tsServer = "http://10.0.2.2:13050";
+  static const fsServer = "https://uploads.3speak.tv/files";
+  // static const tsServer = "http://localhost:13050";
+  // static const tsServer = "http://192.168.1.10:13050";
   Future<PayoutInfo> fetchHiveInfo(String user, String permlink) async {
     var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
     request.body = json.encode({
@@ -155,6 +158,67 @@ class Communicator {
       }
     } else {
       throw 'Status code ${response.statusCode}';
+    }
+  }
+
+  Future<void> addToken(HiveUserData user, String token) async {
+    var request = http.Request(
+        'POST', Uri.parse('${Communicator.tsServer}/mobile/api/token/add'));
+    request.body = "{\"token\": \"$token\"}";
+    Map<String, String> map = {
+      "cookie": user.cookie ?? "",
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      log("Successfully registered token");
+      return;
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase.toString();
+    }
+  }
+
+  Future<void> removeToken(HiveUserData user, String token) async {
+    var request = http.Request(
+        'POST', Uri.parse('${Communicator.tsServer}/mobile/api/token/remove'));
+    request.body = "{\"token\": \"$token\"}";
+    Map<String, String> map = {
+      "cookie": user.cookie ?? "",
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      log("Successfully un-registered token");
+      return;
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase.toString();
+    }
+  }
+
+  Future<VideoUploadInfo> uploadComplete(
+      HiveUserData user, String videoId, String name) async {
+    var request = http.Request(
+        'POST', Uri.parse('${Communicator.tsServer}/mobile/upload/complete'));
+    request.body = VideoUploadCompleteRequest(videoId: videoId, filename: name)
+        .toJsonString();
+    Map<String, String> map = {
+      "cookie": user.cookie ?? "",
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      log("Successfully sent upload complete");
+      var string = await response.stream.bytesToString();
+      log('Video complete response is\n$string');
+      return VideoUploadInfo.fromJsonString(string);
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase.toString();
     }
   }
 }

@@ -121,6 +121,9 @@ class VideoUploadInfo {
     this.v = 0,
   });
 
+  factory VideoUploadInfo.fromJsonString(String jsonString) =>
+      VideoUploadInfo.fromJson(json.decode(jsonString));
+
   factory VideoUploadInfo.fromJson(Map<String, dynamic>? json) =>
       VideoUploadInfo(
         encoding: VideoEncoding.fromJson(asMap(json, 'encoding')),
