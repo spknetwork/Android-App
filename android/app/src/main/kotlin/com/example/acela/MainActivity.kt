@@ -50,8 +50,11 @@ class MainActivity: FlutterActivity() {
             this.result = result
             val username = call.argument<String>("username")
             val postingKey = call.argument<String>("postingKey")
+            val encryptedToken = call.argument<String>("encryptedToken")
             if (call.method == "validate" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
+            } else if (call.method == "encryptedToken" && username != null && postingKey != null && encryptedToken != null) {
+                webView?.evaluateJavascript("decryptMemo('$username','$postingKey', '$encryptedToken');", null)
             }
         }
     }
@@ -102,6 +105,9 @@ class WebAppInterface(private val mContext: Context) {
                 // now respond back to flutter
                 main.result?.success(message)
             }
+            JSBridgeAction.DECRYPTED_MEMO.value -> {
+                main.result?.success(message)
+            }
         }
     }
 }
@@ -112,4 +118,5 @@ data class JSEvent (
 
 enum class JSBridgeAction(val value: String) {
     VALIDATE_HIVE_KEY("validateHiveKey"),
+    DECRYPTED_MEMO("decryptedMemo"),
 }

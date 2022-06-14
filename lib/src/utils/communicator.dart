@@ -201,8 +201,8 @@ class Communicator {
 
   Future<VideoUploadInfo> uploadComplete(
       HiveUserData user, String videoId, String name) async {
-    var request = http.Request(
-        'POST', Uri.parse('${Communicator.tsServer}/mobile/upload/complete'));
+    var request = http.Request('POST',
+        Uri.parse('${Communicator.tsServer}/mobile/api/upload/complete'));
     request.body = VideoUploadCompleteRequest(videoId: videoId, filename: name)
         .toJsonString();
     Map<String, String> map = {
