@@ -8,6 +8,7 @@ import 'package:acela/src/models/video_upload/platform_video_info.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
+import 'package:acela/src/screens/upload/upload_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
@@ -21,7 +22,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
-import 'package:tus_client/tus_client.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -137,6 +137,11 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  void showMessage(String string) {
+    var snackBar = SnackBar(content: Text('Message: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   Widget _screen() {
     if (isLoading) {
       return widgets.loadingData();
@@ -190,33 +195,13 @@ class _HomeScreenState extends State<HomeScreen> {
             var response = await Communicator()
                 .prepareVideo(user, fileInfoInString, cookie);
             log('Response file name is ${response.filename}');
-            final client = TusClient(
-              Uri.parse(Communicator.fsServer),
-              xfile,
-              store: TusMemoryStore(),
-            );
-
-            // Starts the upload
-            await client.upload(
-              onComplete: () async {
-                print("Complete!");
-                // Prints the uploaded file URL
-                print(client.uploadUrl.toString());
-                var url = client.uploadUrl.toString();
-                var ipfsName = url.replaceAll("${Communicator.fsServer}/", "");
-                var videoUploadInfo = await Communicator()
-                    .uploadComplete(user, response.video.id, ipfsName);
-                print(videoUploadInfo.status);
-              },
-              onProgress: (progress) {
-                print("Progress: $progress");
-              },
-            );
             setState(() {
-              isFabLoading = false;
+              isLoading = false;
             });
+            var screen = UploadScreen(videoId: response.video.id, xFile: xfile);
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
           } else {
-            // User canceled the picker
             throw 'User cancelled the video picker';
           }
         } catch (e) {

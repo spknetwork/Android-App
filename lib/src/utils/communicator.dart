@@ -14,10 +14,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class Communicator {
-  static const tsServer = "http://10.0.2.2:13050";
-  static const fsServer = "https://uploads.3speak.tv/files";
   // static const tsServer = "http://localhost:13050";
-  // static const tsServer = "http://192.168.1.10:13050";
+  static const tsServer = "http://10.0.2.2:13050";
+
+  // static const fsServer = "https://uploads.3speak.tv/files";
+  static const fsServer = "http://10.0.2.2:1080/files";
+
   Future<PayoutInfo> fetchHiveInfo(String user, String permlink) async {
     var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
     request.body = json.encode({
@@ -200,11 +202,20 @@ class Communicator {
   }
 
   Future<VideoUploadInfo> uploadComplete(
-      HiveUserData user, String videoId, String name) async {
+    HiveUserData user,
+    String videoId,
+    String name,
+    String title,
+    String description,
+  ) async {
     var request = http.Request('POST',
         Uri.parse('${Communicator.tsServer}/mobile/api/upload/complete'));
-    request.body = VideoUploadCompleteRequest(videoId: videoId, filename: name)
-        .toJsonString();
+    request.body = VideoUploadCompleteRequest(
+      videoId: videoId,
+      filename: name,
+      title: title,
+      description: description,
+    ).toJsonString();
     Map<String, String> map = {
       "cookie": user.cookie ?? "",
       "Content-Type": "application/json"
