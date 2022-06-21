@@ -195,12 +195,13 @@ class _HomeScreenState extends State<HomeScreen> {
             var response = await Communicator()
                 .prepareVideo(user, fileInfoInString, cookie);
             log('Response file name is ${response.filename}');
-            setState(() {
-              isLoading = false;
-            });
             var screen = UploadScreen(videoId: response.video.id, xFile: xfile);
             var route = MaterialPageRoute(builder: (c) => screen);
             Navigator.of(context).push(route);
+            setState(() {
+              isLoading = false;
+              log('Loading is set to false - $isLoading');
+            });
           } else {
             throw 'User cancelled the video picker';
           }

@@ -1,4 +1,5 @@
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/upload/upload_extra_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:flutter/material.dart';
@@ -36,7 +37,6 @@ class _UploadScreenState extends State<UploadScreen> {
   var ipfsName = '';
   var uploadStarted = false;
   var uploadComplete = false;
-  var isCompleting = false;
 
   @override
   void initState() {
@@ -71,29 +71,6 @@ class _UploadScreenState extends State<UploadScreen> {
         this.progress = progress;
       },
     );
-  }
-
-  void completeVideo(HiveUserData user) async {
-    setState(() {
-      isCompleting = true;
-    });
-    try {
-      var videoUploadInfo = await Communicator().uploadComplete(
-        user,
-        widget.videoId,
-        ipfsName,
-        title,
-        description,
-      );
-      print(videoUploadInfo.status);
-      showMessage('Video is uploaded & moved to encoding queue');
-      setState(() {
-        isCompleting = false;
-      });
-      Navigator.of(context).pop();
-    } catch (e) {
-      showError(e.toString());
-    }
   }
 
   Widget _body() {
@@ -146,16 +123,22 @@ class _UploadScreenState extends State<UploadScreen> {
       appBar: AppBar(
         title: const Text('Video Info'),
       ),
-      body: isCompleting ? Center(child: CircularProgressIndicator()) : _body(),
-      floatingActionButton:
-          user != null && uploadComplete && title.isNotEmpty && !isCompleting
-              ? FloatingActionButton(
-                  onPressed: () {
-                    completeVideo(user);
-                  },
-                  child: Text('Save'),
-                )
-              : null,
+      body: _body(),
+      floatingActionButton: user != null && uploadComplete && title.isNotEmpty
+          ? FloatingActionButton(
+              onPressed: () {
+                var screen = UploadExtraScreen(
+                  videoId: widget.videoId,
+                  title: title,
+                  description: description,
+                  ipfsName: ipfsName,
+                );
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(context).push(route);
+              },
+              child: Text('Next'),
+            )
+          : null,
     );
   }
 }

@@ -201,13 +201,16 @@ class Communicator {
     }
   }
 
-  Future<VideoUploadInfo> uploadComplete(
-    HiveUserData user,
-    String videoId,
-    String name,
-    String title,
-    String description,
-  ) async {
+  Future<VideoUploadInfo> uploadComplete({
+    required HiveUserData user,
+    required String videoId,
+    required String name,
+    required String title,
+    required String description,
+    required bool isNsfwContent,
+    required String tags,
+    required String thumbnail,
+  }) async {
     var request = http.Request('POST',
         Uri.parse('${Communicator.tsServer}/mobile/api/upload/complete'));
     request.body = VideoUploadCompleteRequest(
@@ -215,6 +218,9 @@ class Communicator {
       filename: name,
       title: title,
       description: description,
+      isNsfwContent: isNsfwContent,
+      tags: tags,
+      thumbnail: thumbnail,
     ).toJsonString();
     Map<String, String> map = {
       "cookie": user.cookie ?? "",

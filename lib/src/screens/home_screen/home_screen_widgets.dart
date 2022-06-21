@@ -21,9 +21,6 @@ class HomeScreenWidgets {
         item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
     String views = "▶ ${item.views}";
-    double? payoutAmount = payout["${item.author}/${item.permlink}"]?.payout;
-    int? upVotes = payout["${item.author}/${item.permlink}"]?.upVotes;
-    int? downVotes = payout["${item.author}/${item.permlink}"]?.downVotes;
     return ListTileVideo(
       placeholder: 'assets/branding/three_speak_logo.png',
       url: item.images.thumbnail,
