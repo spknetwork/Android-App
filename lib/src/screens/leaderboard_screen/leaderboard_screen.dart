@@ -108,7 +108,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 error: snapshot.error?.toString() ?? "Something went wrong",
                 onRetry: getData,
               );
-            } else if (snapshot.hasData) {
+            } else if (snapshot.hasData &&
+                snapshot.connectionState == ConnectionState.done) {
               return Container(
                 margin: const EdgeInsets.only(top: 10, bottom: 10),
                 child: _list(snapshot.data!.take(100).toList()),

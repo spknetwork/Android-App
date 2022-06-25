@@ -67,7 +67,7 @@ class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text('Error loading user profile');
-        } else if (snapshot.hasData) {
+        } else if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data! as UserProfileResponse;
           return _descriptionMarkDown(_generateMarkDown(data));
         } else {

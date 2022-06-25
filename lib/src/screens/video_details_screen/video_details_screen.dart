@@ -291,7 +291,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           String text =
               'Something went wrong while loading video comments - ${snapshot.error?.toString() ?? ""}';
           return Container(margin: const EdgeInsets.all(10), child: Text(text));
-        } else if (snapshot.hasData) {
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data! as List<HiveComment>;
           return commentsSection(data);
         } else {

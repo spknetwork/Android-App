@@ -1,11 +1,11 @@
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:acela/src/models/user_profile/request/user_profile_request.dart';
 import 'package:acela/src/models/user_profile/response/user_profile.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class FollowerListTile extends StatefulWidget {
   const FollowerListTile({Key? key, required this.name}) : super(key: key);
@@ -37,7 +37,8 @@ class _FollowerListTileState extends State<FollowerListTile>
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return ListTile(title: Text(widget.name));
-        } else if (snapshot.hasData) {
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data! as UserProfileResponse;
           return ListTile(
             leading: SizedBox(

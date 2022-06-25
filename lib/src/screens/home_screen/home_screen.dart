@@ -19,7 +19,6 @@ import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
 
@@ -76,8 +75,6 @@ class _HomeScreenState extends State<HomeScreen> {
   var isLoading = false;
   Map<String, PayoutInfo?> payout = {};
   var isFabLoading = false;
-
-  static const platform = MethodChannel('com.example.acela/encoder');
 
   @override
   void initState() {

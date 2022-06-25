@@ -183,7 +183,8 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
           return RetryScreen(
               error: snapshot.error?.toString() ?? 'Something went wrong',
               onRetry: _loadHomeFeed);
-        } else if (snapshot.hasData) {
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
           List<HomeFeedItem> items = snapshot.data! as List<HomeFeedItem>;
           return list(items, _loadHomeFeed, onTap, onUserTap);
         } else {
@@ -214,7 +215,8 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
           return RetryScreen(
               error: snapshot.error?.toString() ?? 'Something went wrong',
               onRetry: _loadDetails);
-        } else if (snapshot.hasData) {
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
           CommunityDetailsResponse data =
               snapshot.data! as CommunityDetailsResponse;
           return _descriptionMarkDown(_generateMarkDown(data));
@@ -233,7 +235,8 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
           return RetryScreen(
               error: snapshot.error?.toString() ?? 'Something went wrong',
               onRetry: _loadDetails);
-        } else if (snapshot.hasData) {
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
           CommunityDetailsResponse data =
               snapshot.data! as CommunityDetailsResponse;
           return ListView.separated(

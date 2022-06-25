@@ -86,7 +86,8 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
           return _container(
               Container(margin: const EdgeInsets.all(10), child: Text(text)),
               null);
-        } else if (snapshot.hasData) {
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data! as List<HiveComment>;
           return _container(commentsListView(data), data.length);
         } else {

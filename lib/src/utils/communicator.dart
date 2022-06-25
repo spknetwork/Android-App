@@ -5,7 +5,9 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/login/memo_response.dart';
+import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_upload/video_upload_complete_request.dart';
 import 'package:acela/src/models/video_upload/video_upload_login_response.dart';
 import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
@@ -233,6 +235,43 @@ class Communicator {
       var string = await response.stream.bytesToString();
       log('Video complete response is\n$string');
       return VideoUploadInfo.fromJsonString(string);
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase.toString();
+    }
+  }
+
+  Future<List<VideoDetails>> loadVideos(HiveUserData user) async {
+    var cookie = await getValidCookie(user);
+    var request = http.Request(
+        'GET', Uri.parse('${Communicator.tsServer}/mobile/api/my-videos'));
+    Map<String, String> map = {"cookie": cookie};
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var videos = videoItemsFromString(string);
+      return videos;
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase.toString();
+    }
+  }
+
+  Future<String> loadOperations(HiveUserData user, String videoId) async {
+    var cookie = await getValidCookie(user);
+    var request = http.Request('POST',
+        Uri.parse('${Communicator.tsServer}/mobile/api/my-videos/operations'));
+    request.body = "{\"videoId\": \"$videoId\"}";
+    Map<String, String> map = {
+      "cookie": cookie,
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      return VideoOps.fromJsonString(string).data;
     } else {
       print(response.reasonPhrase);
       throw response.reasonPhrase.toString();

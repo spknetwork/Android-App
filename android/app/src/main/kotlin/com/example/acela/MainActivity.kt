@@ -50,11 +50,14 @@ class MainActivity: FlutterActivity() {
             this.result = result
             val username = call.argument<String>("username")
             val postingKey = call.argument<String>("postingKey")
+            val params = call.argument<String>("params")
             val encryptedToken = call.argument<String>("encryptedToken")
             if (call.method == "validate" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
             } else if (call.method == "encryptedToken" && username != null && postingKey != null && encryptedToken != null) {
                 webView?.evaluateJavascript("decryptMemo('$username','$postingKey', '$encryptedToken');", null)
+            } else if (call.method == "postVideo" && params != null && postingKey != null) {
+                webView?.evaluateJavascript("postVideo('$params','$postingKey');", null)
             }
         }
     }
@@ -97,7 +100,7 @@ class MainActivity: FlutterActivity() {
 class WebAppInterface(private val mContext: Context) {
     @JavascriptInterface
     fun postMessage(message: String) {
-        var main = mContext as? MainActivity ?: return
+        val main = mContext as? MainActivity ?: return
         val gson = Gson()
         val dataObject = gson.fromJson(message, JSEvent::class.java)
         when (dataObject.type) {
@@ -106,6 +109,9 @@ class WebAppInterface(private val mContext: Context) {
                 main.result?.success(message)
             }
             JSBridgeAction.DECRYPTED_MEMO.value -> {
+                main.result?.success(message)
+            }
+            JSBridgeAction.POST_VIDEO.value -> {
                 main.result?.success(message)
             }
         }
@@ -119,4 +125,5 @@ data class JSEvent (
 enum class JSBridgeAction(val value: String) {
     VALIDATE_HIVE_KEY("validateHiveKey"),
     DECRYPTED_MEMO("decryptedMemo"),
+    POST_VIDEO("postVideo")
 }

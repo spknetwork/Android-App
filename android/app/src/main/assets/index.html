@@ -80,6 +80,39 @@
             Android.postMessage(JSON.stringify(result));
           });
       }
+
+      function postVideo(params, postingKey) {
+        console.log(`params in string ${params}`);
+        const utf8String = btoa(params);
+        console.log(`utf8String in json ${JSON.parse(utf8String)}`);
+        const ops = JSON.parse(utf8String);
+        async function tryPublish(operations, key) {
+          try {
+            return hive.broadcast.sendAsync({ operations }, { posting: key });
+          } catch (e) {
+            return e;
+          }
+        }
+        tryPublish(ops, postingKey)
+          .then((result) => {
+            var newResult = {
+              type: "postVideo",
+              valid: true,
+              error: JSON.stringify(result),
+            };
+            // window.webkit.messageHandlers.acela.postMessage(result);
+            Android.postMessage(JSON.stringify(newResult));
+          })
+          .catch((error) => {
+            var result = {
+              type: "postVideo",
+              valid: false,
+              error: error.message,
+            };
+            // window.webkit.messageHandlers.acela.postMessage(result);
+            Android.postMessage(JSON.stringify(result));
+          });
+      }
     </script>
   </body>
 </html>

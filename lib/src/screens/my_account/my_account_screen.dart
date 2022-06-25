@@ -1,6 +1,13 @@
+import 'dart:developer';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/models/video_details_model/video_details.dart';
+import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/widgets/custom_circle_avatar.dart';
+import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
@@ -12,41 +19,146 @@ class MyAccountScreen extends StatefulWidget {
 }
 
 class _MyAccountScreenState extends State<MyAccountScreen> {
-  // Create storage
-  static const storage = FlutterSecureStorage();
+  Future<List<VideoDetails>>? loadVideos;
+  Future<void>? loadOperations;
+  var isLoading = false;
+
+  void logout() async {
+    // Create storage
+    const storage = FlutterSecureStorage();
+    await storage.delete(key: 'username');
+    await storage.delete(key: 'postingKey');
+    server.updateHiveUserData(null);
+    Navigator.of(context).pop();
+  }
+
+  void loadVideoInfo(HiveUserData user, String videoId) async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      var operations = await Communicator().loadOperations(user, videoId);
+      var platform = MethodChannel('com.example.acela/auth');
+      final String result = await platform.invokeMethod('postVideo', {
+        'params': operations,
+        'postingKey': user.postingKey,
+      });
+      log('Result from android platform is \n$result');
+      // var response = LoginBridgeResponse.fromJsonString(result);
+      // if (response.valid && response.error.isEmpty) {
+      //   debugPrint("Successful login");
+      //   await storage.write(key: 'username', value: username);
+      //   await storage.write(key: 'postingKey', value: postingKey);
+      //   await storage.delete(key: 'cookie');
+      //   server.updateHiveUserData(
+      //     HiveUserData(
+      //       username: username,
+      //       postingKey: postingKey,
+      //       cookie: null,
+      //     ),
+      //   );
+      //   Navigator.of(context).pop();
+      // } else {
+      //   showError(response.error);
+      // }
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      showError('Error occurred - ${e.toString()}');
+    }
+  }
+
+  void showError(String string) {
+    var snackBar = SnackBar(content: Text('Error: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData?>(context);
+    if (user != null && loadVideos == null) {
+      setState(() {
+        loadVideos = Communicator().loadVideos(user);
+      });
+    }
     var username = user?.username ?? 'Unknown';
     return Scaffold(
       appBar: AppBar(
-        title: Text(user?.username ?? 'Unknown'),
+        title: Row(
+          children: [
+            CustomCircleAvatar(
+              height: 36,
+              width: 36,
+              url: 'https://images.hive.blog/u/$username/avatar',
+            ),
+            const SizedBox(width: 5),
+            Text(user?.username ?? 'Unknown'),
+          ],
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              logout();
+            },
+            icon: Icon(Icons.exit_to_app),
+          )
+        ],
       ),
       body: Container(
-        margin: EdgeInsets.all(10),
-        child: Center(
-          child: Column(
-            children: [
-              Image.network(
-                'https://images.hive.blog/u/$username/avatar',
-                width: 100,
-                height: 100,
-              ),
-              SizedBox(height: 10),
-              Text(username, style: Theme.of(context).textTheme.headline4),
-              SizedBox(height: 10),
-              ElevatedButton(
-                child: const Text('Log out'),
-                onPressed: () async {
-                  await storage.delete(key: 'username');
-                  await storage.delete(key: 'postingKey');
-                  server.updateHiveUserData(null);
-                  Navigator.of(context).pop();
-                },
-              )
-            ],
-          ),
-        ),
+        child: user == null
+            ? Center(child: const Text('Nothing'))
+            : isLoading
+                ? Center(child: const CircularProgressIndicator())
+                : FutureBuilder(
+                    future: loadVideos,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(
+                            child: const Text('Something went wrong'));
+                      } else if (snapshot.hasData &&
+                          snapshot.connectionState == ConnectionState.done) {
+                        List<VideoDetails> items =
+                            snapshot.data! as List<VideoDetails>;
+                        return ListView.separated(
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              leading: Image.network(
+                                items[index].thumbUrl,
+                              ),
+                              title: Text(items[index].title),
+                              subtitle: Text(items[index].description),
+                              trailing: items[index].status == 'published'
+                                  ? Icon(Icons.check, color: Colors.green)
+                                  : items[index].status == 'publish_manual'
+                                      ? IconButton(
+                                          onPressed: () {
+                                            loadVideoInfo(
+                                                user, items[index].id);
+                                          },
+                                          icon: Icon(
+                                            Icons.rocket_launch,
+                                            color: Colors.green,
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.hourglass_top,
+                                          color: Colors.blue,
+                                        ),
+                              onTap: () {},
+                            );
+                          },
+                          separatorBuilder: (context, index) => const Divider(),
+                          itemCount: items.length,
+                        );
+                      } else {
+                        return const LoadingScreen();
+                      }
+                    },
+                  ),
       ),
     );
   }

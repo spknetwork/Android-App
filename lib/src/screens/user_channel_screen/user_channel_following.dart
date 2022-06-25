@@ -48,11 +48,13 @@ class _UserChannelFollowingWidgetState extends State<UserChannelFollowingWidget>
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text('Error loading user followers');
-        } else if (snapshot.hasData) {
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data! as Followers;
           if (data.result.isEmpty) {
             return Center(
-              child: Text('No ${widget.isFollowers ? 'Followers' : 'Followings'} found.'),
+              child: Text(
+                  'No ${widget.isFollowers ? 'Followers' : 'Followings'} found.'),
             );
           }
           return ListView.separated(
