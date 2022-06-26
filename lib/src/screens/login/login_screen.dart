@@ -109,11 +109,25 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void showMessage(String string) {
+    var snackBar = SnackBar(content: Text(string));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              showMessage(
+                  'Concerned about security? Rest assured.\nYour posting key never leaves this app.\nIt is securely stored on your device ONLY.\nNo one, including us, will ever have it.');
+            },
+            icon: Icon(Icons.help),
+          )
+        ],
       ),
       body: _loginForm(),
     );
