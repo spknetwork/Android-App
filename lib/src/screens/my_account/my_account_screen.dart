@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -43,6 +44,15 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         'data': result,
         'postingKey': user.postingKey,
       });
+      var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
+      if (bridgeResponse.valid == true) {
+        await Communicator().updatePublishState(user, videoId);
+        setState(() {
+          loadVideos = Communicator().loadVideos(user);
+        });
+      } else {
+        showError('Error occurred: ${bridgeResponse.error}');
+      }
       log('Result from android platform is \n$response');
       setState(() {
         isLoading = false;

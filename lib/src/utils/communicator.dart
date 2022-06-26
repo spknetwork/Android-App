@@ -5,6 +5,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/login/memo_response.dart';
+import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_upload/video_upload_complete_request.dart';
@@ -45,8 +46,11 @@ class Communicator {
         upVotes: upVotes,
       );
     } else {
-      print(response.reasonPhrase);
-      throw response.reasonPhrase.toString();
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
     }
   }
 
@@ -83,8 +87,11 @@ class Communicator {
       log('Video upload prepare response is\n$string');
       return VideoUploadPrepareResponse.fromJsonString(string);
     } else {
-      print(response.reasonPhrase);
-      throw response.reasonPhrase.toString();
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
     }
   }
 
@@ -178,8 +185,11 @@ class Communicator {
       log("Successfully registered token");
       return;
     } else {
-      print(response.reasonPhrase);
-      throw response.reasonPhrase.toString();
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
     }
   }
 
@@ -197,8 +207,11 @@ class Communicator {
       log("Successfully un-registered token");
       return;
     } else {
-      print(response.reasonPhrase);
-      throw response.reasonPhrase.toString();
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
     }
   }
 
@@ -235,8 +248,11 @@ class Communicator {
       log('Video complete response is\n$string');
       return VideoUploadInfo.fromJsonString(string);
     } else {
-      print(response.reasonPhrase);
-      throw response.reasonPhrase.toString();
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
     }
   }
 
@@ -252,8 +268,11 @@ class Communicator {
       var videos = videoItemsFromString(string);
       return videos;
     } else {
-      print(response.reasonPhrase);
-      throw response.reasonPhrase.toString();
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
     }
   }
 
@@ -270,11 +289,41 @@ class Communicator {
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
-      log('video ops response is $string');
       return string;
     } else {
-      print(response.reasonPhrase);
-      throw response.reasonPhrase.toString();
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
+    }
+  }
+
+  Future<void> updatePublishState(HiveUserData user, String videoId) async {
+    var cookie = await getValidCookie(user);
+    var request = http.Request('POST',
+        Uri.parse('${Communicator.tsServer}/mobile/api/my-videos/iPublished'));
+    request.body = "{\"videoId\": \"$videoId\"}";
+    Map<String, String> map = {
+      "cookie": cookie,
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var result = VideoOpsResponse.fromJsonString(string);
+      if (result.success) {
+        return;
+      } else {
+        throw 'Error updating video status';
+      }
+    } else {
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
     }
   }
 }
