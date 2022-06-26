@@ -27,7 +27,6 @@
               type: "validateHiveKey",
               valid: Valid,
               accountName: accountName,
-              postingKey: postingKey,
               error: "",
             };
             // window.webkit.messageHandlers.acela.postMessage(result);
@@ -39,7 +38,6 @@
               type: "validateHiveKey",
               valid: false,
               accountName: accountName,
-              postingKey: postingKey,
               error: err.message,
             };
             // window.webkit.messageHandlers.acela.postMessage(result);
@@ -81,11 +79,30 @@
           });
       }
 
-      function postVideo(params, postingKey) {
-        console.log(`params in string ${params}`);
-        const utf8String = btoa(params);
-        console.log(`utf8String in json ${JSON.parse(utf8String)}`);
-        const ops = JSON.parse(utf8String);
+      function postVideo(data, postingKey) {
+        console.log(`Response received from server: ${data}`);
+        const result = JSON.parse(data).data;
+        const json_metadata = JSON.stringify(result.json_metadata);
+        const comment = { ...result.comment, json_metadata: json_metadata };
+        const newExtensions = result.extensions.sort((a, b) => {
+          let fa = a.account.toLowerCase(),
+            fb = b.account.toLowerCase();
+          if (fa < fb) return -1;
+          if (fa > fb) return 1;
+          return 0;
+        });
+        const comment_options = {
+          ...result.comment_options,
+          extensions: [[0, { beneficiaries: newExtensions }]],
+        };
+        const json = JSON.stringify(result.custom_json.json);
+        const custom_json = { ...result.custom_json, json: json };
+        const ops = [
+          ["comment", comment],
+          ["comment_options", comment_options],
+          ["custom_json", custom_json],
+        ];
+				console.log(`ops is ${ops}`);
         async function tryPublish(operations, key) {
           try {
             return hive.broadcast.sendAsync({ operations }, { posting: key });
@@ -104,6 +121,7 @@
             Android.postMessage(JSON.stringify(newResult));
           })
           .catch((error) => {
+            console.error(error);
             var result = {
               type: "postVideo",
               valid: false,

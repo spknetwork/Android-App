@@ -51,13 +51,15 @@ class MainActivity: FlutterActivity() {
             val username = call.argument<String>("username")
             val postingKey = call.argument<String>("postingKey")
             val params = call.argument<String>("params")
-            val encryptedToken = call.argument<String>("encryptedToken")
+            val encryptedToken = call.argument<String?>("encryptedToken")
+
+            val data = call.argument<String?>("data")
             if (call.method == "validate" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
             } else if (call.method == "encryptedToken" && username != null && postingKey != null && encryptedToken != null) {
                 webView?.evaluateJavascript("decryptMemo('$username','$postingKey', '$encryptedToken');", null)
-            } else if (call.method == "postVideo" && params != null && postingKey != null) {
-                webView?.evaluateJavascript("postVideo('$params','$postingKey');", null)
+            } else if (call.method == "postVideo" && data != null && postingKey != null ) {
+                webView?.evaluateJavascript("postVideo('$data','$postingKey');", null)
             }
         }
     }

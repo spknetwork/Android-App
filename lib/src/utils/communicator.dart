@@ -5,7 +5,6 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/login/memo_response.dart';
-import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_upload/video_upload_complete_request.dart';
@@ -271,7 +270,8 @@ class Communicator {
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
-      return VideoOps.fromJsonString(string).data;
+      log('video ops response is $string');
+      return string;
     } else {
       print(response.reasonPhrase);
       throw response.reasonPhrase.toString();
