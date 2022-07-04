@@ -13,12 +13,14 @@ class UploadExtraScreen extends StatefulWidget {
     required this.title,
     required this.description,
     required this.ipfsName,
+    required this.thumbUrl,
   }) : super(key: key);
 
   final String videoId;
   final String title;
   final String description;
   final String ipfsName;
+  final String? thumbUrl;
 
   @override
   State<UploadExtraScreen> createState() => _UploadExtraScreenState();
@@ -34,6 +36,7 @@ class _UploadExtraScreenState extends State<UploadExtraScreen> {
   var thumbUrl = '';
   var tags = '';
   var progress = 0.0;
+
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -211,6 +214,9 @@ class _UploadExtraScreenState extends State<UploadExtraScreen> {
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData?>(context);
+    if (user != null && thumbUrl.isEmpty && widget.thumbUrl != null) {
+      initiateUpload(user, XFile(widget.thumbUrl!));
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Provide more info'),
@@ -223,6 +229,7 @@ class _UploadExtraScreenState extends State<UploadExtraScreen> {
                 _tagField(),
                 _notSafe(),
                 _thumbnailPicker(user),
+                const Text('Tap to change video thumbnail'),
               ],
             ),
       floatingActionButton: isCompleting

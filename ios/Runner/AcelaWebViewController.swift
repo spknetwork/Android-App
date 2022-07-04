@@ -16,6 +16,7 @@ class AcelaWebViewController: UIViewController {
 	var didFinish = false
 	var postingKeyValidationHandler: ((String) -> Void)?
 	var decryptTokenHandler: ((String) -> Void)?
+	var postVideoHandler: ((String) -> Void)?
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -36,7 +37,7 @@ class AcelaWebViewController: UIViewController {
 	) {
 		postingKeyValidationHandler = handler
 		OperationQueue.main.addOperation {
-			self.webView?.evaluateJavaScript("validateHiveKey('\(username)', '\(postingKey)')")
+			self.webView?.evaluateJavaScript("validateHiveKey('\(username)', '\(postingKey)');")
 		}
 	}
 
@@ -48,7 +49,18 @@ class AcelaWebViewController: UIViewController {
 	) {
 		decryptTokenHandler = handler
 		OperationQueue.main.addOperation {
-			self.webView?.evaluateJavaScript("decryptMemo('\(username)', '\(postingKey)', '\(encryptedMemo)')")
+			self.webView?.evaluateJavaScript("decryptMemo('\(username)', '\(postingKey)', '\(encryptedMemo)');")
+		}
+	}
+
+	func postVideo(
+		data: String,
+		postingKey: String,
+		handler: @escaping (String) -> Void
+	) {
+		postVideoHandler = handler
+		OperationQueue.main.addOperation {
+			self.webView?.evaluateJavaScript("postVideo('\(data)', '\(postingKey)');")
 		}
 	}
 }
@@ -72,7 +84,6 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 				guard
 					let isValid = dict["valid"] as? Bool,
 					let accountName = dict["accountName"] as? String,
-					let postingKey = dict["postingKey"] as? String,
 					let error = dict["error"] as? String,
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
@@ -91,6 +102,15 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 				debugPrint("Error is \(error)")
 				debugPrint("decrypted is \(decrypted)")
 				decryptTokenHandler?(response)
+			case "postVideo":
+				guard
+					let isValid = dict["valid"] as? Bool,
+					let error = dict["error"] as? String,
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				debugPrint("Is it valid? \(isValid ? "TRUE" : "FALSE")")
+				debugPrint("Error is \(error)")
+				postingKeyValidationHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}

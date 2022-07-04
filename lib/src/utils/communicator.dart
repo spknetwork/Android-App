@@ -16,11 +16,17 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class Communicator {
-  // static const tsServer = "http://localhost:13050";
-  static const tsServer = "http://10.0.2.2:13050";
+  // Production
+  static const tsServer = "https://studio.3speak.tv";
+  static const fsServer = "https://uploads.3speak.tv/files";
 
-  // static const fsServer = "https://uploads.3speak.tv/files";
-  static const fsServer = "http://10.0.2.2:1080/files";
+  // Android
+  // static const fsServer = "http://10.0.2.2:1080/files";
+  // static const tsServer = "http://10.0.2.2:13050";
+
+  // iOS
+  // static const tsServer = "http://localhost:13050";
+  // static const fsServer = "http://localhost:1080/files";
 
   Future<PayoutInfo> fetchHiveInfo(String user, String permlink) async {
     var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
@@ -241,18 +247,23 @@ class Communicator {
       "Content-Type": "application/json"
     };
     request.headers.addAll(map);
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      log("Successfully sent upload complete");
-      var string = await response.stream.bytesToString();
-      log('Video complete response is\n$string');
-      return VideoUploadInfo.fromJsonString(string);
-    } else {
-      var string = await response.stream.bytesToString();
-      var error = ErrorResponse.fromJsonString(string).error ??
-          response.reasonPhrase.toString();
-      log('Error from server is $error');
-      throw error;
+    try {
+      http.StreamedResponse response = await request.send();
+      if (response.statusCode == 200) {
+        log("Successfully sent upload complete");
+        var string = await response.stream.bytesToString();
+        log('Video complete response is\n$string');
+        return VideoUploadInfo.fromJsonString(string);
+      } else {
+        var string = await response.stream.bytesToString();
+        var error = ErrorResponse.fromJsonString(string).error ??
+            response.reasonPhrase.toString();
+        log('Error from server is $error');
+        throw error;
+      }
+    } catch (e) {
+      log('Error from server is ${e.toString()}');
+      rethrow;
     }
   }
 

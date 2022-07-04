@@ -123,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
           IconButton(
             onPressed: () {
               showMessage(
-                  'Concerned about security? Rest assured.\nYour posting key never leaves this app.\nIt is securely stored on your device ONLY.\nNo one, including us, will ever have it.');
+                  'Concerned about security? Rest assured.\nYour posting key never leaves this app.\nIt is securely stored on your device ONLY.\nNo one, including us, will have it.');
             },
             icon: Icon(Icons.help),
           )

@@ -70,6 +70,89 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  AppBar _appBar(String username) {
+    return AppBar(
+      title: Row(
+        children: [
+          CustomCircleAvatar(
+            height: 36,
+            width: 36,
+            url: 'https://images.hive.blog/u/$username/avatar',
+          ),
+          const SizedBox(width: 5),
+          Text(username),
+        ],
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {
+            logout();
+          },
+          icon: Icon(Icons.exit_to_app),
+        )
+      ],
+    );
+  }
+
+  Widget _trailingActionOnVideoListItem(VideoDetails item, HiveUserData user) {
+    return item.status == 'published'
+        ? Icon(Icons.check, color: Colors.green)
+        : item.status == 'publish_manual'
+            ? IconButton(
+                onPressed: () {
+                  loadVideoInfo(user, item.id);
+                },
+                icon: Icon(
+                  Icons.rocket_launch,
+                  color: Colors.green,
+                ),
+              )
+            : Icon(
+                Icons.hourglass_top,
+                color: Colors.blue,
+              );
+  }
+
+  Widget _videoListItem(VideoDetails item, HiveUserData user) {
+    return ListTile(
+      leading: Image.network(
+        item.thumbUrl,
+      ),
+      title: Text(item.title),
+      subtitle: Text(item.description.length > 30
+          ? item.description.substring(0, 30)
+          : item.description),
+      trailing: _trailingActionOnVideoListItem(item, user),
+      onTap: () {},
+    );
+  }
+
+  Widget _videosList(List<VideoDetails> items, HiveUserData user) {
+    return ListView.separated(
+      itemBuilder: (context, index) {
+        return _videoListItem(items[index], user);
+      },
+      separatorBuilder: (context, index) => const Divider(),
+      itemCount: items.length,
+    );
+  }
+
+  Widget _videoFuture(HiveUserData user) {
+    return FutureBuilder(
+      future: loadVideos,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: const Text('Something went wrong'));
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
+          return _videosList(snapshot.data as List<VideoDetails>, user);
+        } else {
+          return const LoadingScreen();
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData?>(context);
@@ -80,78 +163,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     }
     var username = user?.username ?? 'Unknown';
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            CustomCircleAvatar(
-              height: 36,
-              width: 36,
-              url: 'https://images.hive.blog/u/$username/avatar',
-            ),
-            const SizedBox(width: 5),
-            Text(user?.username ?? 'Unknown'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              logout();
-            },
-            icon: Icon(Icons.exit_to_app),
-          )
-        ],
-      ),
+      appBar: _appBar(username),
       body: Container(
         child: user == null
             ? Center(child: const Text('Nothing'))
             : isLoading
                 ? Center(child: const CircularProgressIndicator())
-                : FutureBuilder(
-                    future: loadVideos,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(
-                            child: const Text('Something went wrong'));
-                      } else if (snapshot.hasData &&
-                          snapshot.connectionState == ConnectionState.done) {
-                        List<VideoDetails> items =
-                            snapshot.data! as List<VideoDetails>;
-                        return ListView.separated(
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              leading: Image.network(
-                                items[index].thumbUrl,
-                              ),
-                              title: Text(items[index].title),
-                              subtitle: Text(items[index].description),
-                              trailing: items[index].status == 'published'
-                                  ? Icon(Icons.check, color: Colors.green)
-                                  : items[index].status == 'publish_manual'
-                                      ? IconButton(
-                                          onPressed: () {
-                                            loadVideoInfo(
-                                                user, items[index].id);
-                                          },
-                                          icon: Icon(
-                                            Icons.rocket_launch,
-                                            color: Colors.green,
-                                          ),
-                                        )
-                                      : Icon(
-                                          Icons.hourglass_top,
-                                          color: Colors.blue,
-                                        ),
-                              onTap: () {},
-                            );
-                          },
-                          separatorBuilder: (context, index) => const Divider(),
-                          itemCount: items.length,
-                        );
-                      } else {
-                        return const LoadingScreen();
-                      }
-                    },
-                  ),
+                : _videoFuture(user),
       ),
     );
   }

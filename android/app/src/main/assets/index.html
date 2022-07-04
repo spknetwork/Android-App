@@ -79,11 +79,21 @@
           });
       }
 
+      function renderTemplate(video) {
+        const PostTemplate = `<center><br/><br/>[![](@@@thumbnail@@@)](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/><br/>[Watch on 3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/><br/></center><br/><br/>---<br/><br/>@@@description@@@<br/><br/>---<br/><br/>[3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/>`;
+        return PostTemplate.replace(/@@@thumbnail@@@/g, video.baseThumbUrl)
+          .replace(/@@@author@@@/g, video.owner)
+          .replace(/@@@permlink@@@/g, video.permlink)
+          .replace(/@@@description@@@/g, video.description);
+      }
+
       function postVideo(data, postingKey) {
         console.log(`Response received from server: ${data}`);
         const result = JSON.parse(data).data;
         const json_metadata = JSON.stringify(result.json_metadata);
-        const comment = { ...result.comment, json_metadata: json_metadata };
+        const video = result.videoBody;
+        let comment = { ...result.comment, json_metadata: json_metadata };
+        comment.body = renderTemplate(video);
         const newExtensions = result.extensions.sort((a, b) => {
           let fa = a.account.toLowerCase(),
             fb = b.account.toLowerCase();
@@ -102,7 +112,7 @@
           ["comment_options", comment_options],
           ["custom_json", custom_json],
         ];
-				console.log(`ops is ${ops}`);
+        console.log(`ops is ${ops}`);
         async function tryPublish(operations, key) {
           try {
             return hive.broadcast.sendAsync({ operations }, { posting: key });

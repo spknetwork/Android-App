@@ -44,6 +44,15 @@ class AuthBridge {
 						return
 					}
 					self?.decryptMemo(username: username, postingKey: password, encryptedMemo: encryptedToken, result: result)
+				case "postVideo":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let data = arguments ["data"] as? String,
+						let password = arguments["postingKey"] as? String
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
 				default: debugPrint("do nothing")
 			}
 		})
@@ -74,6 +83,18 @@ class AuthBridge {
 			return
 		}
 		acela.decryptMemo(username: username, postingKey: postingKey, encryptedMemo: encryptedMemo) { response in
+			result(response)
+		}
+	}
+
+	private func postVideo(data: String, postingKey: String, result: @escaping FlutterResult) {
+		guard let acela = acela else {
+			result(FlutterError(code: "ERROR",
+													message: "Error Uploading video from iOS native bridge",
+													details: nil))
+			return
+		}
+		acela.postVideo(data: data, postingKey: postingKey) { response in
 			result(response)
 		}
 	}

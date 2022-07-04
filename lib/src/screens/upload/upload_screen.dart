@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/upload/upload_extra_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -5,6 +7,7 @@ import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tus_client/tus_client.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({
@@ -37,6 +40,7 @@ class _UploadScreenState extends State<UploadScreen> {
   var ipfsName = '';
   var uploadStarted = false;
   var uploadComplete = false;
+  String? thumbUrl;
 
   @override
   void initState() {
@@ -61,8 +65,10 @@ class _UploadScreenState extends State<UploadScreen> {
         print(client.uploadUrl.toString());
         var url = client.uploadUrl.toString();
         var ipfsName = url.replaceAll("${Communicator.fsServer}/", "");
+        var pathImageThumb = await getThumbnail(widget.xFile.path);
         setState(() {
           this.ipfsName = ipfsName;
+          this.thumbUrl = pathImageThumb;
           uploadComplete = true;
         });
       },
@@ -116,6 +122,18 @@ class _UploadScreenState extends State<UploadScreen> {
     );
   }
 
+  Future<String?> getThumbnail(String path) async {
+    Directory tempDir = Directory.systemTemp;
+    var imagePath = await VideoThumbnail.thumbnailFile(
+      video: path,
+      thumbnailPath: tempDir.path,
+      imageFormat: ImageFormat.PNG,
+      maxWidth: 320,
+      quality: 100,
+    );
+    return imagePath;
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData?>(context);
@@ -132,6 +150,7 @@ class _UploadScreenState extends State<UploadScreen> {
                   title: title,
                   description: description,
                   ipfsName: ipfsName,
+                  thumbUrl: thumbUrl,
                 );
                 var route = MaterialPageRoute(builder: (c) => screen);
                 Navigator.of(context).push(route);

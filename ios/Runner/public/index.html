@@ -27,7 +27,6 @@
               type: "validateHiveKey",
               valid: Valid,
               accountName: accountName,
-              postingKey: postingKey,
               error: "",
             });
           })
@@ -37,11 +36,11 @@
               type: "validateHiveKey",
               valid: false,
               accountName: accountName,
-              postingKey: postingKey,
               error: err.message,
             });
           });
       }
+
       function decryptMemo(accountName, postingKey, encrypted) {
         console.log("In here before async");
         hive.api
@@ -69,6 +68,69 @@
               decrypted: "",
               error: err.message,
             });
+          });
+      }
+
+      function renderTemplate(video) {
+        const PostTemplate = `<center><br/><br/>[![](@@@thumbnail@@@)](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/><br/>[Watch on 3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/><br/></center><br/><br/>---<br/><br/>@@@description@@@<br/><br/>---<br/><br/>[3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/>`;
+        return PostTemplate.replace(/@@@thumbnail@@@/g, video.baseThumbUrl)
+          .replace(/@@@author@@@/g, video.owner)
+          .replace(/@@@permlink@@@/g, video.permlink)
+          .replace(/@@@description@@@/g, video.description);
+      }
+
+      function postVideo(data, postingKey) {
+        console.log(`Response received from server: ${data}`);
+        const result = JSON.parse(data).data;
+        const json_metadata = JSON.stringify(result.json_metadata);
+        const video = result.videoBody;
+        let comment = { ...result.comment, json_metadata: json_metadata };
+        comment.body = renderTemplate(video);
+        const newExtensions = result.extensions.sort((a, b) => {
+          let fa = a.account.toLowerCase(),
+            fb = b.account.toLowerCase();
+          if (fa < fb) return -1;
+          if (fa > fb) return 1;
+          return 0;
+        });
+        const comment_options = {
+          ...result.comment_options,
+          extensions: [[0, { beneficiaries: newExtensions }]],
+        };
+        const json = JSON.stringify(result.custom_json.json);
+        const custom_json = { ...result.custom_json, json: json };
+        const ops = [
+          ["comment", comment],
+          ["comment_options", comment_options],
+          ["custom_json", custom_json],
+        ];
+        console.log(`ops is ${ops}`);
+        async function tryPublish(operations, key) {
+          try {
+            return hive.broadcast.sendAsync({ operations }, { posting: key });
+          } catch (e) {
+            return e;
+          }
+        }
+        tryPublish(ops, postingKey)
+          .then((result) => {
+            var newResult = {
+              type: "postVideo",
+              valid: true,
+              error: JSON.stringify(result),
+            };
+            window.webkit.messageHandlers.acela.postMessage(result);
+            // Android.postMessage(JSON.stringify(newResult));
+          })
+          .catch((error) => {
+            console.error(error);
+            var result = {
+              type: "postVideo",
+              valid: false,
+              error: error.message,
+            };
+            window.webkit.messageHandlers.acela.postMessage(result);
+            // Android.postMessage(JSON.stringify(result));
           });
       }
     </script>

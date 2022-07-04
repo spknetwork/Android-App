@@ -55,6 +55,7 @@ dependencies:
   url_launcher: ^6.0.20
   video_player: ^2.2.14
   video_player_web_hls: ^0.1.11+3
+  video_thumbnail: ^0.5.0
 
 dev_dependencies:
   flutter_test:

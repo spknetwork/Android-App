@@ -4,7 +4,7 @@ import 'package:acela/src/utils/safe_convert.dart';
 
 class LoginBridgeResponse {
   final bool valid;
-  final String accountName;
+  final String? accountName;
   final String error;
 
   LoginBridgeResponse({
