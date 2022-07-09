@@ -49,3 +49,22 @@ struct DecryptMemoResponse: Codable {
 		return dataString
 	}
 }
+
+struct PostVideoResponse: Codable {
+	let valid: Bool
+	let error: String
+
+	static func jsonStringFrom(dict: [String: AnyObject]) -> String? {
+		guard
+			let valid = dict["valid"] as? Bool,
+			let error = dict["error"] as? String
+		else { return nil }
+		let response = PostVideoResponse(
+			valid: valid,
+			error: error
+		)
+		guard let data = try? JSONEncoder().encode(response) else { return nil }
+		guard let dataString = String(data: data, encoding: .utf8) else { return nil }
+		return dataString
+	}
+}

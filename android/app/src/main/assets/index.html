@@ -89,7 +89,8 @@
 
       function postVideo(data, postingKey) {
         console.log(`Response received from server: ${data}`);
-        const result = JSON.parse(data).data;
+        const bdata = atob(data);
+        const result = JSON.parse(bdata).data;
         const json_metadata = JSON.stringify(result.json_metadata);
         const video = result.videoBody;
         let comment = { ...result.comment, json_metadata: json_metadata };

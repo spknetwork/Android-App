@@ -53,6 +53,7 @@ class AuthBridge {
 						result(FlutterMethodNotImplemented)
 						return
 					}
+					self?.postVideo(data: data, postingKey: password, result: result)
 				default: debugPrint("do nothing")
 			}
 		})

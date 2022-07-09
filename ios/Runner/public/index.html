@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="3Speak Acela" />
-    <title>3Speak Acela</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <!-- <script src="./hive.min.js"></script> -->
-    <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
-    <script>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="3Speak Acela" />
+  <title>3Speak Acela</title>
+</head>
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<!-- <script src="./hive.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+<script>
       function validateHiveKey(accountName, postingKey) {
         console.log("In here before async");
         hive.api
@@ -23,21 +23,25 @@
             console.log("PubWif: ", pubWif);
             const Valid = hive.auth.wifIsValid(postingKey, pubWif);
             console.log(`is valid ${Valid}`);
-            window.webkit.messageHandlers.acela.postMessage({
+            var result = {
               type: "validateHiveKey",
               valid: Valid,
               accountName: accountName,
               error: "",
-            });
+            };
+            window.webkit.messageHandlers.acela.postMessage(result);
+            // Android.postMessage(JSON.stringify(result));
           })
           .catch(function (err) {
             console.log("Error: ", err);
-            window.webkit.messageHandlers.acela.postMessage({
+            var result = {
               type: "validateHiveKey",
               valid: false,
               accountName: accountName,
               error: err.message,
-            });
+            };
+            window.webkit.messageHandlers.acela.postMessage(result);
+            // Android.postMessage(JSON.stringify(result));
           });
       }
 
@@ -52,22 +56,26 @@
             console.log("PubWif: ", pubWif);
             const Valid = hive.auth.wifIsValid(postingKey, pubWif);
             console.log(`is valid ${Valid}`);
-            var decrypted = hive.memo.decode(postingKey, encrypted);
-            window.webkit.messageHandlers.acela.postMessage({
+            let decrypted = hive.memo.decode(postingKey, encrypted);
+            let result = {
               type: "decryptedMemo",
               accountName: accountName,
               decrypted: decrypted,
               error: "",
-            });
+            };
+            window.webkit.messageHandlers.acela.postMessage(result);
+            // Android.postMessage(JSON.stringify(result));
           })
           .catch(function (err) {
             console.log("Error: ", err);
-            window.webkit.messageHandlers.acela.postMessage({
+            let result = {
               type: "decryptedMemo",
               accountName: accountName,
               decrypted: "",
               error: err.message,
-            });
+            };
+            window.webkit.messageHandlers.acela.postMessage(result);
+            // Android.postMessage(JSON.stringify(result));
           });
       }
 
@@ -81,7 +89,8 @@
 
       function postVideo(data, postingKey) {
         console.log(`Response received from server: ${data}`);
-        const result = JSON.parse(data).data;
+        const bdata = atob(data);
+        const result = JSON.parse(bdata).data;
         const json_metadata = JSON.stringify(result.json_metadata);
         const video = result.videoBody;
         let comment = { ...result.comment, json_metadata: json_metadata };
@@ -134,5 +143,5 @@
           });
       }
     </script>
-  </body>
+</body>
 </html>

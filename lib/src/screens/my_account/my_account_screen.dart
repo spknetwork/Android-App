@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
@@ -39,9 +40,11 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     });
     try {
       var result = await Communicator().loadOperations(user, videoId);
+      var utf8data = utf8.encode(result);
+      final base64Str = base64.encode(utf8data);
       var platform = MethodChannel('com.example.acela/auth');
       final String response = await platform.invokeMethod('postVideo', {
-        'data': result,
+        'data': base64Str,
         'postingKey': user.postingKey,
       });
       var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
