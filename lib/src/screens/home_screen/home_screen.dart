@@ -17,7 +17,6 @@ import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
@@ -186,9 +185,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 .toJson());
             var cookie = await Communicator().getValidCookie(user);
             log('Cookie is $cookie');
-            final fcmToken = await FirebaseMessaging.instance.getToken();
-            log('FCM Token is $fcmToken');
-            await Communicator().addToken(user, fcmToken ?? "");
             var response = await Communicator()
                 .prepareVideo(user, fileInfoInString, cookie);
             log('Response file name is ${response.filename}');

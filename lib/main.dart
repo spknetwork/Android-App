@@ -1,13 +1,25 @@
+import 'dart:io';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
+
+class PushNotification {
+  PushNotification({
+    this.title,
+    this.body,
+  });
+  String? title;
+  String? body;
+}
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
@@ -25,6 +37,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final Future<FirebaseApp> _fbApp =
       Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  late final FirebaseMessaging _messaging;
   // Create storage
   static const storage = FlutterSecureStorage();
 
@@ -66,6 +79,32 @@ class _MyAppState extends State<MyApp> {
   }
 
   void loadData() async {
+    // 3. On iOS, this helps to take the user permissions
+    if (Platform.isIOS) {
+      NotificationSettings settings = await _messaging.requestPermission(
+        alert: true,
+        badge: true,
+        provisional: false,
+        sound: true,
+      );
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        print('User granted permission');
+      } else {
+        print('User declined or has not accepted permission');
+      }
+    }
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // Parse the message received
+      PushNotification notification = PushNotification(
+        title: message.notification?.title,
+        body: message.notification?.body,
+      );
+
+      setState(() {
+        _notificationInfo = notification;
+        _totalNotifications++;
+      });
+    });
     String? username = await storage.read(key: 'username');
     String? postingKey = await storage.read(key: 'postingKey');
     String? cookie = await storage.read(key: 'cookie');

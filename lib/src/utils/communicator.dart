@@ -5,6 +5,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/login/memo_response.dart';
+import 'package:acela/src/models/my_account/my_devices.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
@@ -17,12 +18,12 @@ import 'package:http/http.dart' as http;
 
 class Communicator {
   // Production
-  static const tsServer = "https://studio.3speak.tv";
-  static const fsServer = "https://uploads.3speak.tv/files";
+  // static const tsServer = "https://studio.3speak.tv";
+  // static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
-  // static const fsServer = "http://10.0.2.2:1080/files";
-  // static const tsServer = "http://10.0.2.2:13050";
+  static const fsServer = "http://10.0.2.2:1080/files";
+  static const tsServer = "http://10.0.2.2:13050";
 
   // iOS
   // static const tsServer = "http://localhost:13050";
@@ -177,10 +178,10 @@ class Communicator {
     }
   }
 
-  Future<void> addToken(HiveUserData user, String token) async {
+  Future<void> addToken(HiveUserData user, String token, String model) async {
     var request = http.Request(
         'POST', Uri.parse('${Communicator.tsServer}/mobile/api/token/add'));
-    request.body = "{\"token\": \"$token\"}";
+    request.body = "{\"token\": \"$token\", \"deviceName\": \"$model\"}";
     Map<String, String> map = {
       "cookie": user.cookie ?? "",
       "Content-Type": "application/json"
@@ -203,6 +204,27 @@ class Communicator {
     var request = http.Request(
         'POST', Uri.parse('${Communicator.tsServer}/mobile/api/token/remove'));
     request.body = "{\"token\": \"$token\"}";
+    Map<String, String> map = {
+      "cookie": user.cookie ?? "",
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      log("Successfully un-registered token");
+      return;
+    } else {
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
+    }
+  }
+
+  Future<void> testTokens(HiveUserData user) async {
+    var request = http.Request(
+        'GET', Uri.parse('${Communicator.tsServer}/mobile/api/token/test'));
     Map<String, String> map = {
       "cookie": user.cookie ?? "",
       "Content-Type": "application/json"
@@ -307,6 +329,46 @@ class Communicator {
           response.reasonPhrase.toString();
       log('Error from server is $error');
       throw error;
+    }
+  }
+
+  Future<List<MyDevicesDataItem>> loadDevices(HiveUserData user) async {
+    var cookie = await getValidCookie(user);
+    var request = http.Request(
+        'GET', Uri.parse('${Communicator.tsServer}/mobile/api/token/list'));
+    Map<String, String> map = {
+      "cookie": cookie,
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      return MyDevices.fromString(string).data;
+    } else {
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
+    }
+  }
+
+  Future<void> deleteToken(HiveUserData user, String token) async {
+    var cookie = await getValidCookie(user);
+    var request = http.Request(
+        'POST', Uri.parse('${Communicator.tsServer}/mobile/api/token/remove'));
+    request.body = "{\"token\": \"$token\"}";
+    Map<String, String> map = {
+      "cookie": cookie,
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      return;
+    } else {
+      throw response.reasonPhrase.toString();
     }
   }
 

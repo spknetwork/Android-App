@@ -35,6 +35,10 @@ import android.webkit.ValueCallback
 import android.webkit.WebResourceResponse
 import androidx.annotation.RequiresApi
 import androidx.webkit.WebViewAssetLoader
+import android.webkit.WebChromeClient
+
+
+
 
 class MainActivity: FlutterActivity() {
     var webView: WebView? = null
@@ -73,6 +77,7 @@ class MainActivity: FlutterActivity() {
         webView?.visibility = View.GONE
         webView?.settings?.javaScriptEnabled = true
         webView?.settings?.domStorageEnabled = true
+        webView?.setWebChromeClient(WebChromeClient())
         WebView.setWebContentsDebuggingEnabled(true)
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
