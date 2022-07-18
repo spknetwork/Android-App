@@ -6,6 +6,8 @@ PODS:
     - HLSCachingReverseProxyServer
     - PINCache
   - Cache (6.0.0)
+  - device_info_plus (0.0.1):
+    - Flutter
   - DKImagePickerController/Core (4.3.3):
     - DKImagePickerController/ImageDataManager
     - DKImagePickerController/Resource
@@ -156,6 +158,7 @@ PODS:
 
 DEPENDENCIES:
   - better_player (from `.symlinks/plugins/better_player/ios`)
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - ffmpeg_kit_flutter (from `.symlinks/plugins/ffmpeg_kit_flutter/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
@@ -197,6 +200,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   better_player:
     :path: ".symlinks/plugins/better_player/ios"
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
   ffmpeg_kit_flutter:
     :path: ".symlinks/plugins/ffmpeg_kit_flutter/ios"
   file_picker:
@@ -225,6 +230,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   better_player: 2406bfe8175203c7a46fa15f9d778d73b12e1646
   Cache: 4ca7e00363fca5455f26534e5607634c820ffc2d
+  device_info_plus: e5c5da33f982a436e103237c0c85f9031142abed
   DKImagePickerController: 72fd378f244cef3d27288e0aebf217a4467e4012
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
   ffmpeg-kit-ios-https: cec24d405b511e4f274980d8a9c751d384f89558

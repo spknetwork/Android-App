@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -45,7 +46,10 @@ class _UploadScreenState extends State<UploadScreen> {
   @override
   void initState() {
     super.initState();
-    initiateUpload();
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      timer.cancel();
+      initiateUpload();
+    });
   }
 
   void initiateUpload() async {

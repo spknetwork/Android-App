@@ -47,7 +47,15 @@ class _MyAppState extends State<MyApp> {
         } else if (snapshot.connectionState == ConnectionState.done) {
           return withWidget;
         } else {
-          return const CircularProgressIndicator();
+          return MaterialApp(
+            title: 'Acela',
+            home: Scaffold(
+              appBar: AppBar(title: const Text('Acela')),
+              body: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
         }
       },
     );
