@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
@@ -8,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
@@ -35,19 +34,17 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final Future<FirebaseApp> _fbApp =
-      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  late final Future<void> _futureToLoadData;
   late final FirebaseMessaging _messaging;
   // Create storage
-  static const storage = FlutterSecureStorage();
 
   Widget futureBuilder(Widget withWidget) {
     return FutureBuilder(
-      future: _fbApp,
+      future: _futureToLoadData,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text('Firebase not initialized');
-        } else if (snapshot.hasData) {
+        } else if (snapshot.connectionState == ConnectionState.done) {
           return withWidget;
         } else {
           return const CircularProgressIndicator();
@@ -59,14 +56,16 @@ class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return futureBuilder(
-      StreamProvider<HiveUserData?>.value(
-        value: server.hiveUserData,
-        initialData: null,
-        child: StreamProvider<bool>.value(
-          value: server.theme,
-          initialData: true,
-          child: const AcelaApp(),
+    return OverlaySupport.global(
+      child: futureBuilder(
+        StreamProvider<HiveUserData?>.value(
+          value: server.hiveUserData,
+          initialData: null,
+          child: StreamProvider<bool>.value(
+            value: server.theme,
+            initialData: true,
+            child: const AcelaApp(),
+          ),
         ),
       ),
     );
@@ -75,36 +74,55 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    loadData();
+    _futureToLoadData = loadData();
   }
 
-  void loadData() async {
-    // 3. On iOS, this helps to take the user permissions
-    if (Platform.isIOS) {
+  Future<void> handlingNotification() async {
+    try {
+      // 3. On iOS, this helps to take the user permissions
       NotificationSettings settings = await _messaging.requestPermission(
         alert: true,
-        badge: true,
+        badge: false,
         provisional: false,
         sound: true,
       );
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         print('User granted permission');
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+          // Parse the message received
+          PushNotification notification = PushNotification(
+            title: message.notification?.title,
+            body: message.notification?.body,
+          );
+
+          setState(() {
+            showSimpleNotification(
+              Text(notification.title ?? "No title for notification"),
+              // leading: NotificationBadge(totalNotifications: _totalNotifications),
+              subtitle: Text(notification.body ??
+                  "No text provided for info of notification"),
+              background: Colors.cyan.shade700,
+              duration: Duration(seconds: 2),
+            );
+          });
+        });
       } else {
         print('User declined or has not accepted permission');
       }
+    } catch (e) {
+      print("Something went wrong in setting up fcm ${e.toString()}");
     }
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      // Parse the message received
-      PushNotification notification = PushNotification(
-        title: message.notification?.title,
-        body: message.notification?.body,
-      );
+  }
 
-      setState(() {
-        _notificationInfo = notification;
-        _totalNotifications++;
-      });
-    });
+  Future<void> loadData() async {
+    // setup firebase
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+    _messaging = FirebaseMessaging.instance;
+    // handle notifications
+    await handlingNotification();
+    // load storage
+    const storage = FlutterSecureStorage();
     String? username = await storage.read(key: 'username');
     String? postingKey = await storage.read(key: 'postingKey');
     String? cookie = await storage.read(key: 'cookie');
