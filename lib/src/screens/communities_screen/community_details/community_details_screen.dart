@@ -9,6 +9,7 @@ import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
@@ -60,7 +61,8 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
   Future<CommunityDetailsResponse> _loadDetails() async {
     var client = http.Client();
     var body = CommunityDetailsRequest.forName(widget.name).toJsonString();
-    var response = await client.post(Uri.parse(server.hiveDomain), body: body);
+    var response =
+        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
     if (response.statusCode == 200) {
       return CommunityDetailsResponse.fromString(response.body);
     } else {
@@ -119,7 +121,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
   }
 
   void fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",

@@ -78,7 +78,9 @@ class _UploadScreenState extends State<UploadScreen> {
       },
       onProgress: (progress) {
         print("Progress: $progress");
-        this.progress = progress;
+        setState(() {
+          this.progress = progress / 100.0;
+        });
       },
     );
   }

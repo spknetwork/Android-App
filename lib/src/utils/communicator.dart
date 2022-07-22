@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
+import 'package:acela/src/models/hive_post_info/hive_user_posting_key.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/login/memo_response.dart';
 import 'package:acela/src/models/my_account/my_devices.dart';
@@ -18,19 +19,42 @@ import 'package:http/http.dart' as http;
 
 class Communicator {
   // Production
-  static const tsServer = "https://studio.3speak.tv";
-  static const fsServer = "https://uploads.3speak.tv/files";
+  // static const tsServer = "https://studio.3speak.tv";
+  // static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
   // static const fsServer = "http://10.0.2.2:1080/files";
   // static const tsServer = "http://10.0.2.2:13050";
 
   // iOS
-  // static const tsServer = "http://localhost:13050";
-  // static const fsServer = "http://localhost:1080/files";
+  static const tsServer = "http://localhost:13050";
+  static const fsServer = "http://localhost:1080/files";
+
+  static const hiveApiUrl = 'https://api.hive.blog/';
+
+  Future<String> getPublicKey(String user) async {
+    var request = http.Request('POST', Uri.parse(hiveApiUrl));
+    request.body = json.encode({
+      "id": 8,
+      "jsonrpc": "2.0",
+      "method": "database_api.find_accounts",
+      "params": {
+        "accounts": [user]
+      }
+    });
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var responseBody = await response.stream.bytesToString();
+      var key = HiveUserPostingKey.fromString(responseBody);
+      return key.publicPostingKey;
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase.toString();
+    }
+  }
 
   Future<PayoutInfo> fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",

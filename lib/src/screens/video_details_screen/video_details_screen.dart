@@ -10,6 +10,7 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
@@ -72,7 +73,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
 
   // fetch hive info
   Future<HivePostInfoPostResultBody> fetchHiveInfoForThisVideo() async {
-    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",

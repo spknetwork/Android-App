@@ -1,6 +1,6 @@
-import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_profile/request/user_profile_request.dart';
 import 'package:acela/src/models/user_profile/response/user_profile.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +26,8 @@ class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
   Future<UserProfileResponse> _loadUserProfile() async {
     var client = http.Client();
     var body = UserProfileRequest.forOwner(widget.owner).toJsonString();
-    var response = await client.post(Uri.parse(server.hiveDomain), body: body);
+    var response =
+        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
     if (response.statusCode == 200) {
       return UserProfileResponse.fromString(response.body);
     } else {
@@ -67,7 +68,8 @@ class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text('Error loading user profile');
-        } else if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
+        } else if (snapshot.hasData &&
+            snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data! as UserProfileResponse;
           return _descriptionMarkDown(_generateMarkDown(data));
         } else {

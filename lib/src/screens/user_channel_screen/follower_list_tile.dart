@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_profile/request/user_profile_request.dart';
 import 'package:acela/src/models/user_profile/response/user_profile.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +24,8 @@ class _FollowerListTileState extends State<FollowerListTile>
   Future<UserProfileResponse> _loadUserProfile() async {
     var client = http.Client();
     var body = UserProfileRequest.forOwner(widget.name).toJsonString();
-    var response = await client.post(Uri.parse(server.hiveDomain), body: body);
+    var response =
+        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
     if (response.statusCode == 200) {
       return UserProfileResponse.fromString(response.body);
     } else {

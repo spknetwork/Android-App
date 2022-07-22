@@ -1,7 +1,7 @@
-import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/screens/video_details_screen/hive_comment.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -23,7 +23,8 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
     var client = http.Client();
     var body =
         hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
-    var response = await client.post(Uri.parse(server.hiveDomain), body: body);
+    var response =
+        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
     if (response.statusCode == 200) {
       var hiveCommentsResponse = hiveCommentsFromString(response.body);
       var comments = hiveCommentsResponse.result;

@@ -1,6 +1,7 @@
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/utils/priv_to_pub.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -26,12 +27,10 @@ class _LoginScreenState extends State<LoginScreen> {
       isLoading = true;
     });
     try {
-      final String result = await platform.invokeMethod('validate', {
-        'username': username,
-        'postingKey': postingKey,
-      });
-      var response = LoginBridgeResponse.fromJsonString(result);
-      if (response.valid && response.error.isEmpty) {
+      var publicKey = await Communicator().getPublicKey(username);
+      var resultingKey = CryptoManager().privToPub(postingKey);
+      if (resultingKey == publicKey) {
+        // it is valid key
         debugPrint("Successful login");
         await storage.write(key: 'username', value: username);
         await storage.write(key: 'postingKey', value: postingKey);
@@ -44,12 +43,16 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
         Navigator.of(context).pop();
+        setState(() {
+          isLoading = false;
+        });
       } else {
-        showError(response.error);
+        // it is NO valid key
+        showError('Not valid key.');
+        setState(() {
+          isLoading = false;
+        });
       }
-      setState(() {
-        isLoading = false;
-      });
     } catch (e) {
       setState(() {
         isLoading = false;

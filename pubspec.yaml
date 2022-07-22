@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.1+22
+version: 1.0.1+23
 
 environment:
   sdk: ">=2.15.1 <3.0.0"
@@ -52,6 +52,10 @@ dependencies:
   overlay_support: ^2.0.1
   provider: ^6.0.2
   share_plus: ^4.0.4
+  steemdart_ecc:
+    git:
+      url: https://github.com/anpigon/steemdart_ecc
+      ref: master
   timeago: ^3.1.0
   tus_client: ^1.0.2
   url_launcher: ^6.0.20

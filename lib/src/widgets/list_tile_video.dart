@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -59,7 +60,7 @@ class _ListTileVideoState extends State<ListTileVideo> {
   }
 
   Future<PayoutInfo> fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",

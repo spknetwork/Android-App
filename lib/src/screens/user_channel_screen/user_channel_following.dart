@@ -1,7 +1,7 @@
-import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_profile/request/user_followers_request.dart';
 import 'package:acela/src/models/user_profile/response/followers_and_following.dart';
 import 'package:acela/src/screens/user_channel_screen/follower_list_tile.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -28,7 +28,8 @@ class _UserChannelFollowingWidgetState extends State<UserChannelFollowingWidget>
     var body = widget.isFollowers
         ? UserFollowerRequest.followers(widget.owner).toJsonString()
         : UserFollowerRequest.following(widget.owner).toJsonString();
-    var response = await client.post(Uri.parse(server.hiveDomain), body: body);
+    var response =
+        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
     if (response.statusCode == 200) {
       return Followers.fromJsonString(response.body);
     } else {

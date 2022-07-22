@@ -21,8 +21,6 @@ class Server {
     return "https://images.hive.blog/320x160/$value";
   }
 
-  final String hiveDomain = "https://api.hive.blog";
-
   final _controller = StreamController<bool>();
   final _hiveUserDataController = StreamController<HiveUserData?>();
 

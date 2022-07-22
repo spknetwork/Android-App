@@ -2,6 +2,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/communities_models/request/communities_request_model.dart';
 import 'package:acela/src/models/communities_models/response/communities_response_models.dart';
 import 'package:acela/src/screens/communities_screen/community_details/community_details_screen.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
@@ -21,7 +22,8 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
     var client = http.Client();
     var body = CommunitiesRequestModel(params: CommunitiesRequestParams())
         .toJsonString();
-    var response = await client.post(Uri.parse(server.hiveDomain), body: body);
+    var response =
+        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
     if (response.statusCode == 200) {
       var communitiesResponse =
           communitiesResponseModelFromString(response.body);

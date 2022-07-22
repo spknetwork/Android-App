@@ -61,13 +61,13 @@ class _UserChannelScreenState extends State<UserChannelScreen>
       actions: <BottomSheetAction>[
         BottomSheetAction(
           title: const Text('Newest'),
-          onPressed: () {
+          onPressed: (context) {
             videoKey.currentState?.sortByNewest();
           },
         ),
         BottomSheetAction(
           title: const Text('Most Viewed'),
-          onPressed: () {
+          onPressed: (context) {
             videoKey.currentState?.sortByMostViewed();
           },
         ),

@@ -9,6 +9,7 @@ import 'package:acela/src/models/search/search_response_models.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -71,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // fetch hive info
   void fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse('https://api.hive.blog/'));
+    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",
