@@ -1,5 +1,6 @@
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,7 @@ class _UploadExtraScreenState extends State<UploadExtraScreen> {
   var thumbUrl = '';
   var tags = '';
   var progress = 0.0;
+  var processText = '';
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -85,6 +87,7 @@ class _UploadExtraScreenState extends State<UploadExtraScreen> {
   void completeVideo(HiveUserData user) async {
     setState(() {
       isCompleting = true;
+      processText = 'Updating video info';
     });
     try {
       var videoUploadInfo = await Communicator().uploadComplete(
@@ -101,6 +104,7 @@ class _UploadExtraScreenState extends State<UploadExtraScreen> {
       showMessage('Video is uploaded & moved to encoding queue');
       setState(() {
         isCompleting = false;
+        processText = '';
       });
       Navigator.of(context).pop();
       Navigator.of(context).pop();
@@ -222,7 +226,12 @@ class _UploadExtraScreenState extends State<UploadExtraScreen> {
         title: const Text('Provide more info'),
       ),
       body: isCompleting
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: LoadingScreen(
+                title: 'Please wait',
+                subtitle: processText,
+              ),
+            )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [

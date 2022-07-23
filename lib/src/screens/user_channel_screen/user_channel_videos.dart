@@ -163,7 +163,10 @@ class UserChannelVideosState extends State<UserChannelVideos>
 
   Widget _futureVideos() {
     if (isLoading) {
-      return const LoadingScreen();
+      return const LoadingScreen(
+        title: 'Loading Data',
+        subtitle: 'Please wait',
+      );
     }
     if (list.isEmpty) {
       return Center(child: const Text('No videos found.'));

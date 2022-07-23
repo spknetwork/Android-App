@@ -37,8 +37,6 @@ dependencies:
   elliptic: ^0.3.8
   ffmpeg_kit_flutter: ^4.5.1
   file_picker: ^4.5.1
-  firebase_core: ^1.12.0
-  firebase_messaging: ^11.4.1
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.0.2

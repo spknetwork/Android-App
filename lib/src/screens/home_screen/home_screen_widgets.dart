@@ -8,7 +8,10 @@ import 'package:timeago/timeago.dart' as timeago;
 
 class HomeScreenWidgets {
   Widget loadingData() {
-    return const LoadingScreen();
+    return const LoadingScreen(
+      title: 'Loading Data',
+      subtitle: 'Please wait',
+    );
   }
 
   Widget _tileTitle(

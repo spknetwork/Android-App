@@ -440,7 +440,13 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             );
           }
         } else {
-          return container(widget.vm.author, const LoadingScreen());
+          return container(
+            widget.vm.author,
+            const LoadingScreen(
+              title: 'Loading Data',
+              subtitle: 'Please wait',
+            ),
+          );
         }
       },
     );

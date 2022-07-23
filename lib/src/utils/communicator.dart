@@ -19,16 +19,16 @@ import 'package:http/http.dart' as http;
 
 class Communicator {
   // Production
-  // static const tsServer = "https://studio.3speak.tv";
-  // static const fsServer = "https://uploads.3speak.tv/files";
+  static const tsServer = "https://studio.3speak.tv";
+  static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
   // static const fsServer = "http://10.0.2.2:1080/files";
   // static const tsServer = "http://10.0.2.2:13050";
 
   // iOS
-  static const tsServer = "http://localhost:13050";
-  static const fsServer = "http://localhost:1080/files";
+  // static const tsServer = "http://localhost:13050";
+  // static const fsServer = "http://localhost:1080/files";
 
   static const hiveApiUrl = 'https://api.hive.blog/';
 
@@ -314,6 +314,7 @@ class Communicator {
   }
 
   Future<List<VideoDetails>> loadVideos(HiveUserData user) async {
+    print("Starting fetch videos ${DateTime.now().toIso8601String()}");
     var cookie = await getValidCookie(user);
     var request = http.Request(
         'GET', Uri.parse('${Communicator.tsServer}/mobile/api/my-videos'));
@@ -323,6 +324,7 @@ class Communicator {
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
       var videos = videoItemsFromString(string);
+      print("Ended fetch videos ${DateTime.now().toIso8601String()}");
       return videos;
     } else {
       var string = await response.stream.bytesToString();

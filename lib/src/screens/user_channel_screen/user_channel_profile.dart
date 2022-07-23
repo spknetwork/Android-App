@@ -73,7 +73,10 @@ class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
           var data = snapshot.data! as UserProfileResponse;
           return _descriptionMarkDown(_generateMarkDown(data));
         } else {
-          return const LoadingScreen();
+          return const LoadingScreen(
+            title: 'Loading Data',
+            subtitle: 'Please wait',
+          );
         }
       },
     );

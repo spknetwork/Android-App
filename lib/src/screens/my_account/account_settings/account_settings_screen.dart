@@ -1,5 +1,4 @@
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/screens/my_account/account_settings/manage_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
@@ -44,15 +43,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       body: SafeArea(
         child: ListView(
           children: [
-            ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Manage Notifications'),
-              onTap: () {
-                var screen = ManageNotificationsScreen();
-                var route = MaterialPageRoute(builder: (c) => screen);
-                Navigator.of(context).push(route);
-              },
-            ),
+            // ListTile(
+            //   leading: const Icon(Icons.notifications),
+            //   title: const Text('Manage Notifications'),
+            //   onTap: () {
+            //     var screen = ManageNotificationsScreen();
+            //     var route = MaterialPageRoute(builder: (c) => screen);
+            //     Navigator.of(context).push(route);
+            //   },
+            // ),
             _changeTheme(context),
             ListTile(
               leading: const Icon(Icons.logout),

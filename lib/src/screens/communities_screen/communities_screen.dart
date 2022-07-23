@@ -84,7 +84,10 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
               );
             }
           } else {
-            return const LoadingScreen();
+            return const LoadingScreen(
+              title: 'Loading Data',
+              subtitle: 'Please wait',
+            );
           }
         },
         future: getData());

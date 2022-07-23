@@ -1,15 +1,13 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
-
-import 'firebase_options.dart';
 
 class PushNotification {
   PushNotification({
@@ -35,7 +33,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final Future<void> _futureToLoadData;
-  late final FirebaseMessaging _messaging;
+  // late final FirebaseMessaging _messaging;
   // Create storage
 
   Widget futureBuilder(Widget withWidget) {
@@ -85,50 +83,50 @@ class _MyAppState extends State<MyApp> {
     _futureToLoadData = loadData();
   }
 
-  Future<void> handlingNotification() async {
-    try {
-      // 3. On iOS, this helps to take the user permissions
-      NotificationSettings settings = await _messaging.requestPermission(
-        alert: true,
-        badge: false,
-        provisional: false,
-        sound: true,
-      );
-      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        print('User granted permission');
-        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-          // Parse the message received
-          PushNotification notification = PushNotification(
-            title: message.notification?.title,
-            body: message.notification?.body,
-          );
-
-          setState(() {
-            showSimpleNotification(
-              Text(notification.title ?? "No title for notification"),
-              // leading: NotificationBadge(totalNotifications: _totalNotifications),
-              subtitle: Text(notification.body ??
-                  "No text provided for info of notification"),
-              background: Colors.cyan.shade700,
-              duration: Duration(seconds: 2),
-            );
-          });
-        });
-      } else {
-        print('User declined or has not accepted permission');
-      }
-    } catch (e) {
-      print("Something went wrong in setting up fcm ${e.toString()}");
-    }
-  }
+  // Future<void> handlingNotification() async {
+  //   try {
+  //     // 3. On iOS, this helps to take the user permissions
+  //     NotificationSettings settings = await _messaging.requestPermission(
+  //       alert: true,
+  //       badge: false,
+  //       provisional: false,
+  //       sound: true,
+  //     );
+  //     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+  //       print('User granted permission');
+  //       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //         // Parse the message received
+  //         PushNotification notification = PushNotification(
+  //           title: message.notification?.title,
+  //           body: message.notification?.body,
+  //         );
+  //
+  //         setState(() {
+  //           showSimpleNotification(
+  //             Text(notification.title ?? "No title for notification"),
+  //             // leading: NotificationBadge(totalNotifications: _totalNotifications),
+  //             subtitle: Text(notification.body ??
+  //                 "No text provided for info of notification"),
+  //             background: Colors.cyan.shade700,
+  //             duration: Duration(seconds: 2),
+  //           );
+  //         });
+  //       });
+  //     } else {
+  //       print('User declined or has not accepted permission');
+  //     }
+  //   } catch (e) {
+  //     print("Something went wrong in setting up fcm ${e.toString()}");
+  //   }
+  // }
 
   Future<void> loadData() async {
     // setup firebase
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
-    _messaging = FirebaseMessaging.instance;
+    // await Firebase.initializeApp(
+    //     options: DefaultFirebaseOptions.currentPlatform);
+    // _messaging = FirebaseMessaging.instance;
     // handle notifications
-    await handlingNotification();
+    // await handlingNotification();
     // load storage
     const storage = FlutterSecureStorage();
     String? username = await storage.read(key: 'username');

@@ -110,7 +110,7 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 				else { return }
 				debugPrint("Is it valid? \(isValid ? "TRUE" : "FALSE")")
 				debugPrint("Error is \(error)")
-				postingKeyValidationHandler?(response)
+				postVideoHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}

@@ -190,7 +190,10 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
           List<HomeFeedItem> items = snapshot.data! as List<HomeFeedItem>;
           return list(items, _loadHomeFeed, onTap, onUserTap);
         } else {
-          return const LoadingScreen();
+          return const LoadingScreen(
+            title: 'Loading Data',
+            subtitle: 'Please wait',
+          );
         }
       },
     );
@@ -223,7 +226,10 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
               snapshot.data! as CommunityDetailsResponse;
           return _descriptionMarkDown(_generateMarkDown(data));
         } else {
-          return const LoadingScreen();
+          return const LoadingScreen(
+            title: 'Loading Data',
+            subtitle: 'Please wait',
+          );
         }
       },
     );
@@ -257,7 +263,10 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
             itemCount: data.result.team.length,
           );
         } else {
-          return const LoadingScreen();
+          return const LoadingScreen(
+            title: 'Loading Data',
+            subtitle: 'Please wait',
+          );
         }
       },
     );

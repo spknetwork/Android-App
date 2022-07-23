@@ -1,12 +1,8 @@
-import 'dart:developer';
-import 'dart:io';
-
 import 'package:acela/src/models/my_account/my_devices.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -88,42 +84,45 @@ class _ManageNotificationsScreenState extends State<ManageNotificationsScreen> {
             snapshot.connectionState == ConnectionState.done) {
           return _deviceList(snapshot.data as List<MyDevicesDataItem>, user);
         } else {
-          return const LoadingScreen();
+          return const LoadingScreen(
+            title: 'Loading Data',
+            subtitle: 'Please wait',
+          );
         }
       },
     );
   }
 
-  void registerForNotification(HiveUserData user) async {
-    setState(() {
-      isDeletingOrSending = true;
-    });
-    try {
-      final fcmToken = await FirebaseMessaging.instance.getToken();
-      var model = '';
-      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      if (Platform.isAndroid) {
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        print('Running on ${androidInfo.model}');
-        model = androidInfo.model ?? 'Some Android Device';
-      } else if (Platform.isIOS) {
-        IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
-        print('Running on ${iosDeviceInfo.model}');
-        model = iosDeviceInfo.model ?? 'Some iOS Device';
-      } else {
-        model = 'Unknown Device type';
-      }
-      log('FCM Token is $fcmToken');
-      await Communicator().addToken(user, fcmToken ?? "", model);
-    } catch (e) {
-      showError("Something went wrong\n${e.toString()}");
-    } finally {
-      setState(() {
-        isDeletingOrSending = false;
-        getDevices = null;
-      });
-    }
-  }
+  // void registerForNotification(HiveUserData user) async {
+  //   setState(() {
+  //     isDeletingOrSending = true;
+  //   });
+  //   try {
+  //     final fcmToken = await FirebaseMessaging.instance.getToken();
+  //     var model = '';
+  //     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  //     if (Platform.isAndroid) {
+  //       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+  //       print('Running on ${androidInfo.model}');
+  //       model = androidInfo.model ?? 'Some Android Device';
+  //     } else if (Platform.isIOS) {
+  //       IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
+  //       print('Running on ${iosDeviceInfo.model}');
+  //       model = iosDeviceInfo.model ?? 'Some iOS Device';
+  //     } else {
+  //       model = 'Unknown Device type';
+  //     }
+  //     log('FCM Token is $fcmToken');
+  //     await Communicator().addToken(user, fcmToken ?? "", model);
+  //   } catch (e) {
+  //     showError("Something went wrong\n${e.toString()}");
+  //   } finally {
+  //     setState(() {
+  //       isDeletingOrSending = false;
+  //       getDevices = null;
+  //     });
+  //   }
+  // }
 
   void sendTestNotification(HiveUserData user) async {
     // testTokens
@@ -164,21 +163,27 @@ class _ManageNotificationsScreenState extends State<ManageNotificationsScreen> {
         title: const Text('Manage Notifications'),
         actions: isDeletingOrSending
             ? []
-            : [IconButton(onPressed: () {sendTestNotification(user);}, icon: Icon(Icons.notifications))],
+            : [
+                IconButton(
+                    onPressed: () {
+                      sendTestNotification(user);
+                    },
+                    icon: Icon(Icons.notifications))
+              ],
       ),
       body: SafeArea(
         child: isDeletingOrSending
             ? const Center(child: CircularProgressIndicator())
             : _futureForDevices(user),
       ),
-      floatingActionButton: isDeletingOrSending
-          ? null
-          : FloatingActionButton(
-              onPressed: () {
-                registerForNotification(user);
-              },
-              child: const Icon(Icons.add),
-            ),
+      // floatingActionButton: isDeletingOrSending
+      //     ? null
+      //     : FloatingActionButton(
+      //         onPressed: () {
+      //           registerForNotification(user);
+      //         },
+      //         child: const Icon(Icons.add),
+      //       ),
     );
   }
 }

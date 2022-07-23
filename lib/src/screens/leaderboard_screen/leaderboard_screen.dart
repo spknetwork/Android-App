@@ -121,7 +121,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               );
             }
           } else {
-            return const LoadingScreen();
+            return const LoadingScreen(
+              title: 'Loading Data',
+              subtitle: 'Please wait',
+            );
           }
         },
         future: getData());

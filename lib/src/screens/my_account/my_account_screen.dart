@@ -25,6 +25,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   Future<List<VideoDetails>>? loadVideos;
   Future<void>? loadOperations;
   var isLoading = false;
+  var loadingText = '';
 
   void logout() async {
     // Create storage
@@ -38,11 +39,15 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   void loadVideoInfo(HiveUserData user, String videoId) async {
     setState(() {
       isLoading = true;
+      loadingText = 'Getting video data to post on Hive';
     });
     try {
       var result = await Communicator().loadOperations(user, videoId);
       var utf8data = utf8.encode(result);
       final base64Str = base64.encode(utf8data);
+      setState(() {
+        loadingText = 'Publishing on Hive';
+      });
       var platform = MethodChannel('com.example.acela/auth');
       final String response = await platform.invokeMethod('postVideo', {
         'data': base64Str,
@@ -50,8 +55,12 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       });
       var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
       if (bridgeResponse.valid == true) {
+        setState(() {
+          loadingText = 'Marking video as published';
+        });
         await Communicator().updatePublishState(user, videoId);
         setState(() {
+          isLoading = false;
           loadVideos = Communicator().loadVideos(user);
         });
       } else {
@@ -153,7 +162,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             snapshot.connectionState == ConnectionState.done) {
           return _videosList(snapshot.data as List<VideoDetails>, user);
         } else {
-          return const LoadingScreen();
+          return const LoadingScreen(
+            title: 'Getting your videos',
+            subtitle: 'Please wait',
+          );
         }
       },
     );
@@ -174,7 +186,12 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         child: user == null
             ? Center(child: const Text('Nothing'))
             : isLoading
-                ? Center(child: const CircularProgressIndicator())
+                ? Center(
+                    child: LoadingScreen(
+                      title: 'Publishing Your Video',
+                      subtitle: loadingText,
+                    ),
+                  )
                 : _videoFuture(user),
       ),
     );

@@ -67,7 +67,10 @@ class _UserChannelFollowingWidgetState extends State<UserChannelFollowingWidget>
             itemCount: data.result.length,
           );
         } else {
-          return const LoadingScreen();
+          return const LoadingScreen(
+            title: 'Loading Data',
+            subtitle: 'Please wait',
+          );
         }
       },
     );
