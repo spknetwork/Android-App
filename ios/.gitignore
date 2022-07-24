@@ -1,3 +1,7 @@
+fastlane
+*.ipa
+*.app.dSYM.zip
+
 **/dgph
 *.mode1v3
 *.mode2v3
