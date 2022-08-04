@@ -157,7 +157,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       future: loadVideos,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: const Text('Something went wrong'));
+          return const Center(child: Text('Something went wrong'));
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
           return _videosList(snapshot.data as List<VideoDetails>, user);
@@ -184,7 +184,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       appBar: _appBar(username),
       body: Container(
         child: user == null
-            ? Center(child: const Text('Nothing'))
+            ? const Center(child: Text('Nothing'))
             : isLoading
                 ? Center(
                     child: LoadingScreen(

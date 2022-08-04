@@ -8,12 +8,12 @@ import 'package:acela/src/models/video_upload/platform_video_info.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
+import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/upload/upload_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
-import 'package:acela/src/utils/crypto_manager.dart';
 import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
@@ -21,6 +21,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
+import 'package:video_compress/video_compress.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -150,19 +151,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }, payout);
   }
 
-  Widget _fab2(HiveUserData user) {
-    if (isFabLoading) {
-      return FloatingActionButton(
-          onPressed: () {}, child: const CircularProgressIndicator());
-    }
+  Widget _fabNewUpload() {
     return FloatingActionButton(
       onPressed: () {
-        var text =
-            "#28A2K2zxWrh1n6oEm6tq5mgascootxuDHaGEAXEN86ZHpiGRhgnSUN2Xm2FgtUnq82QtLybJKtProLeJdntA3LCL2J9SAnfru965mbC8D3XZZKgx1vXP8osxvLuPCqhUW6xZZQ3J5mixDwtwLwPdtYcxRTbHtL66H9jDK1C1Q5wyR4F21K3SihJGeacM63eUceW1ThK8kV9Pv24eMnv3aD2oQgrJywNgqZqNH7GcAnYh4wnytMNkDKyy2h5ApUhmBkfqKjgmEWm5ngxBgn1jpaxxmN8guJgRkB1HSgAdM29MQSgPoXHUJ8hkf9jkRXyz6TW7W45PsboBWi1xs1nu3xwySKq4BxxetQzNRHkRiudQ2HDQCWKJNFJieFpVq1M1qUVbMqUuAyaxKcAAroCJbdvEnUvcfh4";
-        var data = CryptoManager().decodeMemo(text, user.postingKey);
-        print("Data is $data");
+        var screen = const NewVideoUploadScreen();
+        var route = MaterialPageRoute(builder: (c) => screen);
+        Navigator.of(context).push(route);
       },
-      child: const Icon(Icons.bolt),
+      child: const Icon(Icons.add),
     );
   }
 
@@ -187,19 +183,34 @@ class _HomeScreenState extends State<HomeScreen> {
             print(file.size);
             print(file.extension);
             print(file.path);
+            final compressInfo = await VideoCompress.compressVideo(
+              file.path!,
+              quality: VideoQuality.Res1280x720Quality,
+              deleteOrigin: false,
+              includeAudio: true,
+            );
+            var fileSize = compressInfo?.filesize ?? file.size;
+            var sizeInMb = fileSize / 1000 / 1000;
+            if (sizeInMb > 500) {
+              throw 'Video is too big to be uploaded from mobile (exceeding 500 mb)';
+            }
             MediaInformationSession session =
-                await FFprobeKit.getMediaInformation(file.path!);
+                await FFprobeKit.getMediaInformation(
+                    compressInfo?.file?.path ?? file.path!);
             var info = session.getMediaInformation();
             var duration =
                 (double.tryParse(info?.getDuration() ?? "0.0") ?? 0.0).toInt();
             log('Video duration is $duration');
-            final xfile = XFile(fileResult.files.single.path!);
+            final xfile = XFile(
+                compressInfo?.file?.path ?? fileResult.files.single.path!);
             var fileInfoInString = json.encode(PlatformVideoInfo(
                     duration: int.tryParse(info?.getDuration() ?? "0") ?? 0,
                     oFilename: xfile.name,
                     path: xfile.path,
-                    size: int.tryParse(info?.getSize() ?? "0") ?? 0)
+                    size: fileSize)
                 .toJson());
+            // change from here.
+            throw 'compression done';
             var cookie = await Communicator().getValidCookie(user);
             log('Cookie is $cookie');
             var response = await Communicator()
@@ -231,21 +242,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData?>(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-              onPressed: () {
-                var route = MaterialPageRoute(
-                    builder: (context) => const SearchScreen());
-                Navigator.of(context).push(route);
-              },
-              icon: const Icon(Icons.search))
-        ],
-      ),
-      body: _screen(),
-      drawer: widget.showDrawer ? const DrawerScreen() : null,
-      floatingActionButton: user == null ? null : _fab(user),
-    );
+        appBar: AppBar(
+          title: Text(widget.title),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  var route = MaterialPageRoute(
+                      builder: (context) => const SearchScreen());
+                  Navigator.of(context).push(route);
+                },
+                icon: const Icon(Icons.search))
+          ],
+        ),
+        body: _screen(),
+        drawer: widget.showDrawer ? const DrawerScreen() : null,
+        floatingActionButton:
+            user == null ? null : _fabNewUpload() //_fab(user),
+        );
   }
 }

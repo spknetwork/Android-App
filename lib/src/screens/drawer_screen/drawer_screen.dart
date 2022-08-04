@@ -137,6 +137,8 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("Log in"),
       onTap: () {
         Navigator.pop(context);
+        // Navigator.of(context)
+        //     .push(MaterialPageRoute(builder: (c) => const NewLoginScreen()));
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (c) => const LoginScreen()));
       },
