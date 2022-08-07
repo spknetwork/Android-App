@@ -181,7 +181,34 @@
         }];
       }
 
+      async function hivePostExist(author, permlink) {
+        try {
+          let content = await hive.api.getContentAsync(author, permlink);
+
+          //Apparently Hive API returns a string when post is empty and object when post exists! :shrug:
+          if (typeof content === "string") {
+            return JSON.parse(content).result.length !== 0;
+          } else {
+            //Just to be sure there is actual content
+            return !!content.body;
+          }
+        } catch (e) {
+          console.log(e);
+          return false;
+        }
+      }
+
       function newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,thumbnail,cdn,postingKey,benes,beneWeights) {
+        let result = await hivePostExist(author,permlink);
+        if (result) {
+          var newResult = {
+            type: "postVideo",
+            valid: true,
+            error: "success",
+          };
+          window.webkit.messageHandlers.acela.postMessage(result);
+          return;
+        }
         let description = atob(dDescription);
         description =  decodeURIComponent(escape(description));
         let title = atob(dTitle);
