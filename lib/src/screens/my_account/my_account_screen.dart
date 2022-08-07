@@ -2,6 +2,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/my_account/account_settings/account_settings_screen.dart';
+import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -117,7 +118,9 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         : item.status == 'publish_manual'
             ? IconButton(
                 onPressed: () {
-                  // loadVideoInfo(user, item.id);
+                  var screen = VideoPrimaryInfo(item: item);
+                  var route = MaterialPageRoute(builder: (c) => screen);
+                  Navigator.of(context).push(route);
                 },
                 icon: const Icon(
                   Icons.rocket_launch,

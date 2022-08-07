@@ -198,7 +198,7 @@
         }
       }
 
-      function newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,thumbnail,cdn,postingKey,benes,beneWeights) {
+      function newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,thumbnail,cdn,benes,beneWeights,postingKey) {
         let result = await hivePostExist(author,permlink);
         if (result) {
           var newResult = {
