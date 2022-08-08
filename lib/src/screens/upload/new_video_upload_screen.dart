@@ -89,19 +89,42 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         log("path - ${file.path}");
         // ---- Step 1. Select Video
 
+        // read video dimension
+        var probeSession = await FFprobeKit.execute(
+            "-i ${file.path!} -v quiet -show_entries stream=width,height -hide_banner");
+
+        var information = await probeSession.getLogsAsString();
+        var data = information
+            .replaceAll("[STREAM]", "")
+            .replaceAll("[/STREAM]", "")
+            .replaceAll("[SIDE_DATA]", "")
+            .replaceAll("[/SIDE_DATA]", "")
+            .split("\n")
+            .where((e) => e.isNotEmpty);
+        var widthString =
+            data.firstWhere((e) => e.contains("width=")).split("=")[1];
+        var heightString =
+            data.firstWhere((e) => e.contains("height=")).split("=")[1];
+        int? width = int.parse(widthString);
+        int? height = int.parse(heightString);
+
         // Step 2. Compress Video
         setState(() {
           didStartCompress = true;
         });
-        final compressInfo = await VideoCompress.compressVideo(
-          file.path!,
-          quality: VideoQuality.Res640x480Quality,
-          deleteOrigin: false,
-          includeAudio: true,
-        );
+        MediaInfo? compressInfo;
+        if (width != null && height != null && (width > 720 || height > 720)) {
+          compressInfo = await VideoCompress.compressVideo(
+            file.path!,
+            quality: VideoQuality.Res1280x720Quality,
+            deleteOrigin: false,
+            includeAudio: true,
+          );
+        }
         setState(() {
           didCompress = true;
         });
+        throw 'Stop for now';
         // --- Step 2. Compress Video
 
         // Step 3. Video upload
@@ -110,6 +133,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         });
         var fileSize = compressInfo?.filesize ?? file.size;
         var sizeInMb = fileSize / 1000 / 1000;
+        log("Compressed video file size in mb is - $sizeInMb");
         if (sizeInMb > 500) {
           throw 'Video is too big to be uploaded from mobile (exceeding 500 mb)';
         }
