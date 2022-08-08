@@ -1,4 +1,5 @@
 import 'package:acela/src/models/video_details_model/video_details.dart';
+import 'package:acela/src/screens/my_account/update_video/video_details_info.dart';
 import 'package:flutter/material.dart';
 
 class VideoPrimaryInfo extends StatefulWidget {
@@ -65,15 +66,13 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
       floatingActionButton: title.isNotEmpty && description.isNotEmpty
           ? FloatingActionButton(
               onPressed: () {
-                // var screen = UploadExtraScreen(
-                //   videoId: widget.videoId,
-                //   title: title,
-                //   description: description,
-                //   ipfsName: ipfsName,
-                //   thumbUrl: thumbUrl,
-                // );
-                // var route = MaterialPageRoute(builder: (c) => screen);
-                // Navigator.of(context).push(route);
+                var screen = VideoDetailsInfo(
+                  item: widget.item,
+                  title: title,
+                  subtitle: description,
+                );
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(context).push(route);
               },
               child: const Text('Next'),
             )

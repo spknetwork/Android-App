@@ -15,19 +15,25 @@ class VideoDetails {
   final List<String> tagsV2;
   final String id;
   final String community;
-  final String permlink;
-  final double duration;
-  final int size;
   final String owner;
-  final String description;
-  final String thumbnail;
-  final String title;
-  final String thumbUrl;
   final String baseThumbUrl;
   final bool steemPosted;
   final String status;
-
   final String playUrl;
+
+  final String thumbnail;
+
+  final String thumbUrl;
+  final String video_v2;
+  final String description;
+  final String title;
+  final String tags;
+  final String permlink;
+  final double duration;
+  final int size;
+  final String originalFilename;
+  final bool firstUpload;
+  final String beneficiaries;
 
   VideoDetails({
     this.created = "",
@@ -48,6 +54,11 @@ class VideoDetails {
     this.playUrl = "",
     this.steemPosted = false,
     this.status = "",
+    required this.video_v2,
+    required this.tags,
+    required this.originalFilename,
+    required this.firstUpload,
+    required this.beneficiaries,
   });
 
   factory VideoDetails.fromJsonString(String jsonString) =>
@@ -72,6 +83,11 @@ class VideoDetails {
         playUrl: asString(json, 'playUrl'),
         steemPosted: asBool(json, 'steemPosted'),
         status: asString(json, 'status'),
+        tags: asString(json, 'tags'),
+        video_v2: asString(json, 'video_v2'),
+        originalFilename: asString(json, 'originalFilename'),
+        firstUpload: asBool(json, 'firstUpload'),
+        beneficiaries: asString(json, 'beneficiaries'),
       );
 
   String toJsonString() => json.encode(toJson());

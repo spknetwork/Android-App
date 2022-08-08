@@ -99,9 +99,6 @@
       }
 
       function buildJSONMetadata(thumbnail,videoV2,description,title,tags,author,permlink,duration,size,file,language,firstUpload,cdn) {
-        // 1. Set the imageUrl
-        let imageUrl = cdn + `/ipfs/${thumbnail.replace("ipfs://", "")}`;
-
         // 2. set the sourceMap
         const sourceMap = [];
         if (videoV2 !== undefined) {
@@ -117,7 +114,7 @@
           tags: processTags(tags.split(",")),
           app: "3speak/0.3.0",
           type: "3speak/video",
-          image: [imageUrl],
+          image: [thumbnail],
           video: {
             info: {
               platform: "3speak",
@@ -134,7 +131,7 @@
               ...sourceMap,
               {
                 type: "thumbnail",
-                url: imageUrl,
+                url: thumbnail,
               },
               ],
             },
@@ -154,11 +151,10 @@
         .replace(/@@@description@@@/g, description);
       }
 
-      function videoObjectForBody(description, thumbnail, cdn, owner, permlink) {
-        let imageUrl = cdn + `/ipfs/${thumbnail.replace("ipfs://", "")}`;
+      function videoObjectForBody(description, thumbnail, owner, permlink) {
         let escapedVideoDescription = customStringEscaping(description);
         return {
-          baseThumbUrl: imageUrl,
+          baseThumbUrl: thumbnail,
           owner: owner,
           permlink: permlink,
           description: escapedVideoDescription,
@@ -198,7 +194,7 @@
         }
       }
 
-      function newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,thumbnail,cdn,benes,beneWeights,postingKey) {
+      function newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,benes,beneWeights,postingKey) {
         let result = await hivePostExist(author,permlink);
         if (result) {
           var newResult = {
@@ -213,7 +209,7 @@
         description =  decodeURIComponent(escape(description));
         let title = atob(dTitle);
         title =  decodeURIComponent(escape(title));
-        let jsonMetaData = buildJSONMetadata(thumbnail,videoV2,description,title,tags,author,permlink,duration,size,file,language,firstUpload,cdn);
+        let jsonMetaData = buildJSONMetadata(thumbnail,videoV2,description,title,tags,author,permlink,duration,size,file,language,firstUpload);
         let customJson = buildPublishCustomJson(author,permlink,language,duration,title);
         let newBen = [
           { account: "threespeakleader", weight: 100 },
@@ -255,7 +251,7 @@
           allow_curation_rewards: true,
           extensions: benefactor_global
         }];
-        let videoObject = videoObjectForBody(description, thumbnail, cdn, author, permlink);
+        let videoObject = videoObjectForBody(description, thumbnail, author, permlink);
         let body = renderTemplate(videoObject.baseThumbUrl,videoObject.owner,videoObject.permlink,videoObject.description);
         hive.broadcast.updateOperations();
         const operations = [];

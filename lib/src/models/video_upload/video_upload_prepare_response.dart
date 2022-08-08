@@ -47,7 +47,6 @@ class VideoUploadPrepareResponse {
 }
 
 class VideoUploadInfo {
-  final VideoEncoding encoding;
   final bool updateSteem;
   final bool lowRc;
   final bool needsBlockchainUpdate;
@@ -82,9 +81,9 @@ class VideoUploadInfo {
   final String owner;
   final String uploadType;
   final int v;
+  final String cdn;
 
   VideoUploadInfo({
-    required this.encoding,
     this.updateSteem = false,
     this.lowRc = false,
     this.needsBlockchainUpdate = false,
@@ -119,6 +118,7 @@ class VideoUploadInfo {
     this.owner = "",
     this.uploadType = "",
     this.v = 0,
+    this.cdn = "https://ipfs-3speak.b-cdn.net",
   });
 
   factory VideoUploadInfo.fromJsonString(String jsonString) =>
@@ -126,7 +126,6 @@ class VideoUploadInfo {
 
   factory VideoUploadInfo.fromJson(Map<String, dynamic>? json) =>
       VideoUploadInfo(
-        encoding: VideoEncoding.fromJson(asMap(json, 'encoding')),
         updateSteem: asBool(json, 'updateSteem'),
         lowRc: asBool(json, 'lowRc'),
         needsBlockchainUpdate: asBool(json, 'needsBlockchainUpdate'),
@@ -164,7 +163,6 @@ class VideoUploadInfo {
       );
 
   Map<String, dynamic> toJson() => {
-        'encoding': encoding.toJson(),
         'updateSteem': updateSteem,
         'lowRc': lowRc,
         'needsBlockchainUpdate': needsBlockchainUpdate,
@@ -199,33 +197,5 @@ class VideoUploadInfo {
         'owner': owner,
         'upload_type': uploadType,
         '__v': v,
-      };
-}
-
-class VideoEncoding {
-  final bool e360;
-  final bool e480;
-  final bool e720;
-  final bool e1080;
-
-  VideoEncoding({
-    this.e360 = false,
-    this.e480 = false,
-    this.e720 = false,
-    this.e1080 = false,
-  });
-
-  factory VideoEncoding.fromJson(Map<String, dynamic>? json) => VideoEncoding(
-        e360: asBool(json, '360'),
-        e480: asBool(json, '480'),
-        e720: asBool(json, '720'),
-        e1080: asBool(json, '1080'),
-      );
-
-  Map<String, dynamic> toJson() => {
-        '360': 360,
-        '480': 480,
-        '720': 720,
-        '1080': 1080,
       };
 }

@@ -47,7 +47,7 @@ class Communicator {
       var key = HiveUserPostingKey.fromString(responseBody);
       return key.publicPostingKey;
     } else {
-      print(response.reasonPhrase);
+      log(response.reasonPhrase.toString());
       throw response.reasonPhrase.toString();
     }
   }
@@ -201,7 +201,7 @@ class Communicator {
     }
   }
 
-  Future<VideoUploadInfo> newUploadComplete({
+  Future<VideoUploadInfo> newUpload({
     required HiveUserData user,
     required String thumbnail,
     required String oFilename,
@@ -245,21 +245,19 @@ class Communicator {
     }
   }
 
-  Future<VideoUploadInfo> uploadComplete({
+  Future<VideoDetails> newComplete({
     required HiveUserData user,
     required String videoId,
-    required String name,
     required String title,
     required String description,
     required bool isNsfwContent,
     required String tags,
-    required String thumbnail,
+    required String? thumbnail,
   }) async {
     var request = http.Request('POST',
-        Uri.parse('${Communicator.tsServer}/mobile/api/upload/complete'));
+        Uri.parse('${Communicator.tsServer}/mobile/api/upload/newComplete'));
     request.body = VideoUploadCompleteRequest(
       videoId: videoId,
-      filename: name,
       title: title,
       description: description,
       isNsfwContent: isNsfwContent,
@@ -277,7 +275,7 @@ class Communicator {
         log("Successfully sent upload complete");
         var string = await response.stream.bytesToString();
         log('Video complete response is\n$string');
-        return VideoUploadInfo.fromJsonString(string);
+        return VideoDetails.fromJsonString(string);
       } else {
         var string = await response.stream.bytesToString();
         var error = ErrorResponse.fromJsonString(string).error ??
@@ -292,7 +290,7 @@ class Communicator {
   }
 
   Future<List<VideoDetails>> loadVideos(HiveUserData user) async {
-    print("Starting fetch videos ${DateTime.now().toIso8601String()}");
+    log("Starting fetch videos ${DateTime.now().toIso8601String()}");
     var cookie = await getValidCookie(user);
     var request = http.Request(
         'GET', Uri.parse('${Communicator.tsServer}/mobile/api/my-videos'));
@@ -301,32 +299,10 @@ class Communicator {
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
+      log('My videos response\n\n$string\n\n');
       var videos = videoItemsFromString(string);
-      print("Ended fetch videos ${DateTime.now().toIso8601String()}");
+      log("Ended fetch videos ${DateTime.now().toIso8601String()}");
       return videos;
-    } else {
-      var string = await response.stream.bytesToString();
-      var error = ErrorResponse.fromJsonString(string).error ??
-          response.reasonPhrase.toString();
-      log('Error from server is $error');
-      throw error;
-    }
-  }
-
-  Future<String> loadOperations(HiveUserData user, String videoId) async {
-    var cookie = await getValidCookie(user);
-    var request = http.Request('POST',
-        Uri.parse('${Communicator.tsServer}/mobile/api/my-videos/operations'));
-    request.body = "{\"videoId\": \"$videoId\"}";
-    Map<String, String> map = {
-      "cookie": cookie,
-      "Content-Type": "application/json"
-    };
-    request.headers.addAll(map);
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      var string = await response.stream.bytesToString();
-      return string;
     } else {
       var string = await response.stream.bytesToString();
       var error = ErrorResponse.fromJsonString(string).error ??

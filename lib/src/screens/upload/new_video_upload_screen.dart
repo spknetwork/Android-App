@@ -152,7 +152,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         setState(() {
           didStartMoveToQueue = true;
         });
-        var videoUploadInfo = await Communicator().newUploadComplete(
+        var videoUploadInfo = await Communicator().newUpload(
           user: user!,
           thumbnail: thumbName,
           oFilename: originalFileName,

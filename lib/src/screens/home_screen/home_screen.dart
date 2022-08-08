@@ -1,27 +1,17 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
-import 'package:acela/src/models/video_upload/platform_video_info.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
-import 'package:acela/src/screens/upload/upload_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
-import 'package:cross_file/cross_file.dart' show XFile;
-import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter/media_information_session.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
-import 'package:video_compress/video_compress.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -157,82 +147,6 @@ class _HomeScreenState extends State<HomeScreen> {
         var screen = const NewVideoUploadScreen();
         var route = MaterialPageRoute(builder: (c) => screen);
         Navigator.of(context).push(route);
-      },
-      child: const Icon(Icons.add),
-    );
-  }
-
-  Widget _fab(HiveUserData user) {
-    if (isFabLoading) {
-      return FloatingActionButton(
-          onPressed: () {}, child: const CircularProgressIndicator());
-    }
-    return FloatingActionButton(
-      onPressed: () async {
-        try {
-          setState(() {
-            isFabLoading = true;
-          });
-          FilePickerResult? fileResult =
-              await FilePicker.platform.pickFiles(type: FileType.video);
-
-          if (fileResult != null && fileResult.files.single.path != null) {
-            PlatformFile file = fileResult.files.single;
-            print(file.name);
-            print(file.bytes);
-            print(file.size);
-            print(file.extension);
-            print(file.path);
-            final compressInfo = await VideoCompress.compressVideo(
-              file.path!,
-              quality: VideoQuality.Res1280x720Quality,
-              deleteOrigin: false,
-              includeAudio: true,
-            );
-            var fileSize = compressInfo?.filesize ?? file.size;
-            var sizeInMb = fileSize / 1000 / 1000;
-            if (sizeInMb > 500) {
-              throw 'Video is too big to be uploaded from mobile (exceeding 500 mb)';
-            }
-            MediaInformationSession session =
-                await FFprobeKit.getMediaInformation(
-                    compressInfo?.file?.path ?? file.path!);
-            var info = session.getMediaInformation();
-            var duration =
-                (double.tryParse(info?.getDuration() ?? "0.0") ?? 0.0).toInt();
-            log('Video duration is $duration');
-            final xfile = XFile(
-                compressInfo?.file?.path ?? fileResult.files.single.path!);
-            var fileInfoInString = json.encode(PlatformVideoInfo(
-                    duration: int.tryParse(info?.getDuration() ?? "0") ?? 0,
-                    oFilename: xfile.name,
-                    path: xfile.path,
-                    size: fileSize)
-                .toJson());
-            // change from here.
-            throw 'compression done';
-            var cookie = await Communicator().getValidCookie(user);
-            log('Cookie is $cookie');
-            var response = await Communicator()
-                .prepareVideo(user, fileInfoInString, cookie);
-            log('Response file name is ${response.filename}');
-            setState(() {
-              isFabLoading = false;
-              log('Loading is set to false - $isLoading');
-              var screen =
-                  UploadScreen(videoId: response.video.id, xFile: xfile);
-              var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).push(route);
-            });
-          } else {
-            throw 'User cancelled the video picker';
-          }
-        } catch (e) {
-          showError(e.toString());
-          setState(() {
-            isFabLoading = false;
-          });
-        }
       },
       child: const Icon(Icons.add),
     );

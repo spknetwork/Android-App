@@ -31,9 +31,10 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var isNsfwContent = false;
   var thumbIpfs = '';
   var thumbUrl = '';
-  var tags = '';
+  var tags = 'threespeak,mobile';
   var progress = 0.0;
   var processText = '';
+  TextEditingController tagsController = TextEditingController();
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -43,6 +44,12 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   void showMessage(String string) {
     var snackBar = SnackBar(content: Text('Message: $string'));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    tagsController.text = "threespeak,mobile";
   }
 
   void initiateUpload(
@@ -87,24 +94,24 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     });
     try {
       // TO-DO change following to new video complete api
-      var videoUploadInfo = await Communicator().uploadComplete(
+      var v = await Communicator().newComplete(
         user: user,
         videoId: widget.item.id,
-        name: widget.ipfsName,
         title: widget.title,
-        description: widget.description,
+        description: widget.subtitle,
         isNsfwContent: isNsfwContent,
         tags: tags,
-        thumbnail: thumbIpfs,
+        thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
       );
-      print(videoUploadInfo.status);
-      showMessage('Video is uploaded & moved to encoding queue');
+      // next publish on hive
+      // v.thumbUrl,
+      // thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,
+      // benes,beneWeights,postingKey
+      // next mark video as published
       setState(() {
         isCompleting = false;
         processText = '';
       });
-      Navigator.of(context).pop();
-      Navigator.of(context).pop();
     } catch (e) {
       showError(e.toString());
     }
@@ -140,9 +147,15 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                             width: 320,
                             height: 160,
                           )
-                        : const Text(
-                            'Tap here to add thumbnail for your video\n\nThumbnail is MANDATORY to set.',
-                            textAlign: TextAlign.center),
+                        : widget.item.thumbUrl.isNotEmpty
+                            ? Image.network(
+                                widget.item.thumbUrl,
+                                width: 320,
+                                height: 160,
+                              )
+                            : const Text(
+                                'Tap here to add thumbnail for your video\n\nThumbnail is MANDATORY to set.',
+                                textAlign: TextAlign.center),
           ),
           onTap: () async {
             try {
@@ -176,6 +189,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     return Container(
       margin: const EdgeInsets.all(10),
       child: TextField(
+        controller: tagsController,
         decoration: const InputDecoration(
           hintText: 'Comma separated tags',
           labelText: 'Tags',
@@ -237,7 +251,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             ),
       floatingActionButton: isCompleting
           ? null
-          : thumbIpfs.isNotEmpty
+          : thumbIpfs.isNotEmpty || widget.item.thumbUrl.isNotEmpty
               ? FloatingActionButton(
                   onPressed: () {
                     if (user != null) {
