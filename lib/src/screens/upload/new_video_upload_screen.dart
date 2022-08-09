@@ -112,30 +112,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           didPickFile = true;
         });
 
-        // Step 2. Compress Video
-        // var dateStartProcessingVideo = DateTime.now();
-        // setState(() {
-        //   didStartCompress = true;
-        // });
-        // MediaInfo? compressInfo;
-        // if (width != null && height != null && width > 720 && height > 720) {
-        //   compressInfo = await VideoCompress.compressVideo(
-        //     file.path!,
-        //     quality: VideoQuality.Res1280x720Quality,
-        //     deleteOrigin: false,
-        //     includeAudio: true,
-        //   );
-        // }
-        // var dateEndProcessingVideo = DateTime.now();
-        // diff = dateEndProcessingVideo.difference(dateStartProcessingVideo);
-        // setState(() {
-        //   timeCompress = '${diff.inSeconds} seconds';
-        //   didCompress = true;
-        // });
-        // --- Step 2. Compress Video
-
-        // throw 'stop from here';
-
         // Step 3. Video upload
         var dateStartUploadVideo = DateTime.now();
         setState(() {
@@ -147,7 +123,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         if (sizeInMb > 500) {
           throw 'Video is too big to be uploaded from mobile (exceeding 500 mb)';
         }
-        var path = file.path!;
+        var path = file.path;
         MediaInformationSession session =
             await FFprobeKit.getMediaInformation(path);
         var info = session.getMediaInformation();
