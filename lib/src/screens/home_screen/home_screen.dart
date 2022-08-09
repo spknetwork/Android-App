@@ -9,6 +9,7 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
@@ -144,9 +145,31 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _fabNewUpload() {
     return FloatingActionButton(
       onPressed: () {
-        var screen = const NewVideoUploadScreen();
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).push(route);
+        showAdaptiveActionSheet(
+          context: context,
+          title: const Text('Select record type'),
+          androidBorderRadius: 30,
+          actions: <BottomSheetAction>[
+            BottomSheetAction(
+              title: const Text('Camera'),
+              onPressed: (c) {
+                var screen = const NewVideoUploadScreen(camera: true);
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(context).pop();
+                Navigator.of(context).push(route);
+              },
+            ),
+            BottomSheetAction(
+                title: const Text('Photo Gallery'),
+                onPressed: (c) {
+                  var screen = const NewVideoUploadScreen(camera: false);
+                  var route = MaterialPageRoute(builder: (c) => screen);
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(route);
+                }),
+          ],
+          cancelAction: CancelAction(title: const Text('Cancel')),
+        );
       },
       child: const Icon(Icons.add),
     );

@@ -5,10 +5,8 @@ import 'dart:io';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
-import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
-// import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +15,11 @@ import 'package:video_compress/video_compress.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class NewVideoUploadScreen extends StatefulWidget {
-  const NewVideoUploadScreen({Key? key}) : super(key: key);
+  const NewVideoUploadScreen({
+    Key? key,
+    required this.camera,
+  }) : super(key: key);
+  final bool camera;
 
   @override
   State<NewVideoUploadScreen> createState() => _NewVideoUploadScreenState();
@@ -26,7 +28,7 @@ class NewVideoUploadScreen extends StatefulWidget {
 class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
   var didShowFilePicker = false;
   var didPickFile = false;
-  var didCompress = false;
+  // var didCompress = false;
   var didUpload = false;
   var didTakeDefaultThumbnail = false;
   var didUploadThumbnail = false;
@@ -34,14 +36,14 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
 
   var timeShowFilePicker = '0.5 seconds';
   var timePickFile = '';
-  var timeCompress = '';
+  // var timeCompress = '';
   var timeUpload = '';
   var timeTakeDefaultThumbnail = '';
   var timeUploadThumbnail = '';
   var timeMoveToQueue = '';
 
   var didStartPickFile = false;
-  var didStartCompress = false;
+  // var didStartCompress = false;
   var didStartUpload = false;
   var didStartTakeDefaultThumbnail = false;
   var didStartUploadThumbnail = false;
@@ -87,34 +89,22 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         didShowFilePicker = true;
       });
 
-      final XFile? file = await _picker.pickVideo(source: ImageSource.gallery);
+      final XFile? file = await _picker.pickVideo(
+          source: widget.camera ? ImageSource.camera : ImageSource.gallery);
       if (file != null) {
+        setState(() {
+          didPickFile = true;
+        });
+
         var originalFileName = file.name;
         log(originalFileName);
         // log("bytes - ${videoFile.bytes ?? 0}");
         // log("size - ${file.size}");
         log("path - ${file.path}");
         var size = await file.length();
+        // var size = file.size;
         // ---- Step 1. Select Video
 
-        // read video dimension
-        var probeSession = await FFprobeKit.execute(
-            "-i ${file.path} -v quiet -show_entries stream=width,height -hide_banner");
-
-        var information = await probeSession.getLogsAsString();
-        var data = information
-            .replaceAll("[STREAM]", "")
-            .replaceAll("[/STREAM]", "")
-            .replaceAll("[SIDE_DATA]", "")
-            .replaceAll("[/SIDE_DATA]", "")
-            .split("\n")
-            .where((e) => e.isNotEmpty);
-        var widthString =
-            data.firstWhere((e) => e.contains("width=")).split("=")[1];
-        var heightString =
-            data.firstWhere((e) => e.contains("height=")).split("=")[1];
-        int? width = int.parse(widthString);
-        int? height = int.parse(heightString);
         var dateEndGettingVideo = DateTime.now();
         var diff = dateEndGettingVideo.difference(dateStartGettingVideo);
         setState(() {
@@ -123,39 +113,41 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         });
 
         // Step 2. Compress Video
-        var dateStartProcessingVideo = DateTime.now();
-        setState(() {
-          didStartCompress = true;
-        });
-        MediaInfo? compressInfo;
-        if (width != null && height != null && width > 720 && height > 720) {
-          compressInfo = await VideoCompress.compressVideo(
-            file.path,
-            quality: VideoQuality.Res1280x720Quality,
-            deleteOrigin: false,
-            includeAudio: true,
-          );
-        }
-        var dateEndProcessingVideo = DateTime.now();
-        diff = dateEndProcessingVideo.difference(dateStartProcessingVideo);
-        setState(() {
-          timeCompress = '${diff.inSeconds} seconds';
-          didCompress = true;
-        });
+        // var dateStartProcessingVideo = DateTime.now();
+        // setState(() {
+        //   didStartCompress = true;
+        // });
+        // MediaInfo? compressInfo;
+        // if (width != null && height != null && width > 720 && height > 720) {
+        //   compressInfo = await VideoCompress.compressVideo(
+        //     file.path!,
+        //     quality: VideoQuality.Res1280x720Quality,
+        //     deleteOrigin: false,
+        //     includeAudio: true,
+        //   );
+        // }
+        // var dateEndProcessingVideo = DateTime.now();
+        // diff = dateEndProcessingVideo.difference(dateStartProcessingVideo);
+        // setState(() {
+        //   timeCompress = '${diff.inSeconds} seconds';
+        //   didCompress = true;
+        // });
         // --- Step 2. Compress Video
+
+        // throw 'stop from here';
 
         // Step 3. Video upload
         var dateStartUploadVideo = DateTime.now();
         setState(() {
           didStartUpload = true;
         });
-        var fileSize = compressInfo?.filesize ?? size;
+        var fileSize = size;
         var sizeInMb = fileSize / 1000 / 1000;
         log("Compressed video file size in mb is - $sizeInMb");
         if (sizeInMb > 500) {
           throw 'Video is too big to be uploaded from mobile (exceeding 500 mb)';
         }
-        var path = compressInfo?.file?.path ?? file.path;
+        var path = file.path!;
         MediaInformationSession session =
             await FFprobeKit.getMediaInformation(path);
         var info = session.getMediaInformation();
@@ -200,8 +192,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         // --- Step 5. Upload Thumbnail
         log('Uploaded file name is $name');
         log('Uploaded thumbnail file name is $thumbName');
-
-        throw 'stop now';
 
         // Step 6. Move Video to Queue
         var dateStartMoveToQueue = DateTime.now();
@@ -314,7 +304,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
     var items = [
       timeShowFilePicker,
       timePickFile,
-      timeCompress,
       timeUpload,
       timeTakeDefaultThumbnail,
       timeUploadThumbnail,
@@ -344,7 +333,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
             subtitle: didShowFilePicker ? Text(timeShowFilePicker) : null,
           ),
           ListTile(
-            title: const Text('Getting the Video'),
+            title: const Text('Getting/Compressing the Video'),
             trailing: !didPickFile
                 ? !didStartPickFile
                     ? const Icon(Icons.pending)
@@ -352,20 +341,20 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                 : const Icon(Icons.check),
             subtitle: didPickFile ? Text(timePickFile) : null,
           ),
-          ListTile(
-            title: Text(
-                'Encoding video if needed (${didCompress ? 100.0 : compressionProgress.toStringAsFixed(2)}%)'),
-            trailing: !didStartCompress
-                ? const Icon(Icons.pending)
-                : !didCompress
-                    ? SizedBox(
-                        width: 200,
-                        child: LinearProgressIndicator(
-                            value: compressionProgress / 100.0),
-                      )
-                    : const Icon(Icons.check),
-            subtitle: didCompress ? Text(timeCompress) : null,
-          ),
+          // ListTile(
+          //   title: Text(
+          //       'Encoding video if needed (${didCompress ? 100.0 : compressionProgress.toStringAsFixed(2)}%)'),
+          //   trailing: !didStartCompress
+          //       ? const Icon(Icons.pending)
+          //       : !didCompress
+          //           ? SizedBox(
+          //               width: 200,
+          //               child: LinearProgressIndicator(
+          //                   value: compressionProgress / 100.0),
+          //             )
+          //           : const Icon(Icons.check),
+          //   subtitle: didCompress ? Text(timeCompress) : null,
+          // ),
           ListTile(
             title: Text(
                 'Uploading video (${didUpload ? 100.0 : (progress * 100).toStringAsFixed(2)}%)'),

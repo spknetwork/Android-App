@@ -26,12 +26,12 @@ class Communicator {
   // static const tsServer = "http://10.0.2.2:13050";
 
   // iOS
-  // static const tsServer = "http://localhost:13050";
-  // static const fsServer = "http://localhost:1080/files";
+  static const tsServer = "http://localhost:13050";
+  static const fsServer = "http://localhost:1080/files";
 
   // iOS Device
-  static const tsServer = "http://192.168.1.8:13050";
-  static const fsServer = "http://192.168.1.8:1080/files";
+  // static const tsServer = "http://192.168.1.8:13050";
+  // static const fsServer = "http://192.168.1.8:1080/files";
 
   static const hiveApiUrl = 'https://api.hive.blog/';
 
