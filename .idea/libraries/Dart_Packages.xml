@@ -310,13 +310,6 @@
             </list>
           </value>
         </entry>
-        <entry key="file_picker">
-          <value>
-            <list>
-              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/file_picker-4.6.1/lib" />
-            </list>
-          </value>
-        </entry>
         <entry key="fixnum">
           <value>
             <list>
@@ -489,6 +482,41 @@
           <value>
             <list>
               <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/http_parser-4.0.1/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="image_picker">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker-0.8.5+3/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="image_picker_android">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker_android-0.8.5+2/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="image_picker_for_web">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker_for_web-2.1.8/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="image_picker_ios">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker_ios-0.8.5+6/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="image_picker_platform_interface">
+          <value>
+            <list>
+              <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker_platform_interface-2.6.1/lib" />
             </list>
           </value>
         </entry>
@@ -1163,7 +1191,6 @@
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/ffmpeg_kit_flutter-4.5.1/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/ffmpeg_kit_flutter_platform_interface-0.2.1/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/file-6.1.2/lib" />
-      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/file_picker-4.6.1/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/fixnum-1.0.1/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_dotenv-5.0.2/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_lints-1.0.4/lib" />
@@ -1186,6 +1213,11 @@
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/http-0.13.4/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/http_multi_server-3.2.1/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/http_parser-4.0.1/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker-0.8.5+3/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker_android-0.8.5+2/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker_for_web-2.1.8/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker_ios-0.8.5+6/lib" />
+      <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker_platform_interface-2.6.1/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/intl-0.17.0/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/io-1.0.3/lib" />
       <root url="file:///Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/js-0.6.4/lib" />

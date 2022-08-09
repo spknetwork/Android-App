@@ -1,10 +1,11 @@
+import 'dart:developer';
+
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
-import 'package:cross_file/cross_file.dart' show XFile;
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tus_client/tus_client.dart';
 
@@ -35,6 +36,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var progress = 0.0;
   var processText = '';
   TextEditingController tagsController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -79,7 +81,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         });
       },
       onProgress: (progress) {
-        print("Progress: $progress");
+        log("Progress: $progress");
         setState(() {
           this.progress = progress;
         });
@@ -162,14 +164,13 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               setState(() {
                 isPickingImage = true;
               });
-              FilePickerResult? fileResult =
-                  await FilePicker.platform.pickFiles(type: FileType.image);
-              if (fileResult != null && fileResult.files.single.path != null) {
+              final XFile? file =
+                  await _picker.pickImage(source: ImageSource.gallery);
+              if (file != null) {
                 setState(() {
                   isPickingImage = false;
                 });
-                final xfile = XFile(fileResult.files.single.path!);
-                initiateUpload(user, xfile);
+                initiateUpload(user, file);
               } else {
                 throw 'User cancelled image picker';
               }

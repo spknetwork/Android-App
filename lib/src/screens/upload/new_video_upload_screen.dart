@@ -4,11 +4,13 @@ import 'dart:io';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:cross_file/cross_file.dart' show XFile;
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tus_client/tus_client.dart';
 import 'package:video_compress/video_compress.dart';
@@ -30,6 +32,14 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
   var didUploadThumbnail = false;
   var didMoveToQueue = false;
 
+  var timeShowFilePicker = '0.5 seconds';
+  var timePickFile = '';
+  var timeCompress = '';
+  var timeUpload = '';
+  var timeTakeDefaultThumbnail = '';
+  var timeUploadThumbnail = '';
+  var timeMoveToQueue = '';
+
   var didStartPickFile = false;
   var didStartCompress = false;
   var didStartUpload = false;
@@ -42,6 +52,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
   var compressionProgress = 0.0;
   late Subscription _subscription;
   HiveUserData? user;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -52,7 +63,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         compressionProgress = progress;
       });
     });
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
       timer.cancel();
       videoPickerFunction();
     });
@@ -70,28 +81,25 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         throw 'User not logged in';
       }
       // Step 1. Select Video
+      var dateStartGettingVideo = DateTime.now();
       setState(() {
         didStartPickFile = true;
         didShowFilePicker = true;
       });
-      FilePickerResult? fileResult =
-          await FilePicker.platform.pickFiles(type: FileType.video);
-      if (fileResult != null && fileResult.files.single.path != null) {
-        setState(() {
-          didPickFile = true;
-        });
-        PlatformFile file = fileResult.files.single;
+
+      final XFile? file = await _picker.pickVideo(source: ImageSource.gallery);
+      if (file != null) {
         var originalFileName = file.name;
-        log(file.name);
-        log("bytes - ${file.bytes ?? 0}");
-        log("size - ${file.size}");
-        log("Extension - ${file.extension}");
+        log(originalFileName);
+        // log("bytes - ${videoFile.bytes ?? 0}");
+        // log("size - ${file.size}");
         log("path - ${file.path}");
+        var size = await file.length();
         // ---- Step 1. Select Video
 
         // read video dimension
         var probeSession = await FFprobeKit.execute(
-            "-i ${file.path!} -v quiet -show_entries stream=width,height -hide_banner");
+            "-i ${file.path} -v quiet -show_entries stream=width,height -hide_banner");
 
         var information = await probeSession.getLogsAsString();
         var data = information
@@ -107,37 +115,47 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
             data.firstWhere((e) => e.contains("height=")).split("=")[1];
         int? width = int.parse(widthString);
         int? height = int.parse(heightString);
+        var dateEndGettingVideo = DateTime.now();
+        var diff = dateEndGettingVideo.difference(dateStartGettingVideo);
+        setState(() {
+          timePickFile = '${diff.inSeconds} seconds';
+          didPickFile = true;
+        });
 
         // Step 2. Compress Video
+        var dateStartProcessingVideo = DateTime.now();
         setState(() {
           didStartCompress = true;
         });
         MediaInfo? compressInfo;
-        if (width != null && height != null && (width > 720 || height > 720)) {
+        if (width != null && height != null && width > 720 && height > 720) {
           compressInfo = await VideoCompress.compressVideo(
-            file.path!,
+            file.path,
             quality: VideoQuality.Res1280x720Quality,
             deleteOrigin: false,
             includeAudio: true,
           );
         }
+        var dateEndProcessingVideo = DateTime.now();
+        diff = dateEndProcessingVideo.difference(dateStartProcessingVideo);
         setState(() {
+          timeCompress = '${diff.inSeconds} seconds';
           didCompress = true;
         });
-        throw 'Stop for now';
         // --- Step 2. Compress Video
 
         // Step 3. Video upload
+        var dateStartUploadVideo = DateTime.now();
         setState(() {
           didStartUpload = true;
         });
-        var fileSize = compressInfo?.filesize ?? file.size;
+        var fileSize = compressInfo?.filesize ?? size;
         var sizeInMb = fileSize / 1000 / 1000;
         log("Compressed video file size in mb is - $sizeInMb");
         if (sizeInMb > 500) {
           throw 'Video is too big to be uploaded from mobile (exceeding 500 mb)';
         }
-        var path = compressInfo?.file?.path ?? file.path!;
+        var path = compressInfo?.file?.path ?? file.path;
         MediaInformationSession session =
             await FFprobeKit.getMediaInformation(path);
         var info = session.getMediaInformation();
@@ -145,34 +163,48 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
             (double.tryParse(info?.getDuration() ?? "0.0") ?? 0.0).toInt();
         log('Video duration is $duration');
         var name = await initiateUpload(path, false);
+        var dateEndUploadVideo = DateTime.now();
+        diff = dateEndUploadVideo.difference(dateStartUploadVideo);
         setState(() {
+          timeUpload = '${diff.inSeconds} seconds';
           didUpload = true;
         });
         // --- Step 3. Video upload
 
         // Step 4. Generate Thumbnail
+        var dateStartTakingThumbnail = DateTime.now();
         setState(() {
           didStartTakeDefaultThumbnail = true;
         });
         var thumbPath = await getThumbnail(path);
+        var dateEndTakingThumbnail = DateTime.now();
+        diff = dateEndTakingThumbnail.difference(dateStartTakingThumbnail);
         setState(() {
+          timeTakeDefaultThumbnail = '${diff.inSeconds} seconds';
           didTakeDefaultThumbnail = true;
         });
         // --- Step 4. Generate Thumbnail
 
         // Step 5. Upload Thumbnail
+        var dateStartUploadThumbnail = DateTime.now();
         setState(() {
           didStartUploadThumbnail = true;
         });
         var thumbName = await initiateUpload(thumbPath, true);
+        var dateEndUploadThumbnail = DateTime.now();
+        diff = dateEndUploadThumbnail.difference(dateStartUploadThumbnail);
         setState(() {
+          timeUploadThumbnail = '${diff.inSeconds} seconds';
           didUploadThumbnail = true;
         });
         // --- Step 5. Upload Thumbnail
         log('Uploaded file name is $name');
         log('Uploaded thumbnail file name is $thumbName');
 
+        throw 'stop now';
+
         // Step 6. Move Video to Queue
+        var dateStartMoveToQueue = DateTime.now();
         setState(() {
           didStartMoveToQueue = true;
         });
@@ -185,7 +217,10 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           tusFileName: name,
         );
         log(videoUploadInfo.status);
+        var dateEndMoveToQueue = DateTime.now();
+        diff = dateEndMoveToQueue.difference(dateStartMoveToQueue);
         setState(() {
+          timeMoveToQueue = '${diff.inSeconds} seconds';
           didMoveToQueue = true;
           showMessage('Video is uploaded & moved to encoding queue');
         });
@@ -276,6 +311,25 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
     if (user != null && this.user == null) {
       this.user = user;
     }
+    var items = [
+      timeShowFilePicker,
+      timePickFile,
+      timeCompress,
+      timeUpload,
+      timeTakeDefaultThumbnail,
+      timeUploadThumbnail,
+      timeMoveToQueue
+    ].where((e) => e.isNotEmpty);
+    var doubleItems = items
+        .map((e) => double.tryParse(e.replaceAll(" seconds", "")))
+        .whereType<int>()
+        .toList();
+    var formatValue = doubleItems.isEmpty
+        ? 1.0
+        : doubleItems.reduce((sum, element) {
+            return sum + element;
+          });
+    var totalDuration = Utilities.formatTime(formatValue.toInt());
     return Scaffold(
       appBar: AppBar(
         title: const Text('Video Upload Process'),
@@ -283,16 +337,24 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
       body: ListView(
         children: [
           ListTile(
-            title: const Text('Selecting & processing video'),
+            title: const Text('Launching Video Picker'),
+            trailing: didShowFilePicker
+                ? const Icon(Icons.check)
+                : const Icon(Icons.pending),
+            subtitle: didShowFilePicker ? Text(timeShowFilePicker) : null,
+          ),
+          ListTile(
+            title: const Text('Getting the Video'),
             trailing: !didPickFile
                 ? !didStartPickFile
                     ? const Icon(Icons.pending)
                     : const CircularProgressIndicator()
                 : const Icon(Icons.check),
+            subtitle: didPickFile ? Text(timePickFile) : null,
           ),
           ListTile(
             title: Text(
-                'Compressing video (${didCompress ? 100.0 : compressionProgress.toStringAsFixed(2)}%)'),
+                'Encoding video if needed (${didCompress ? 100.0 : compressionProgress.toStringAsFixed(2)}%)'),
             trailing: !didStartCompress
                 ? const Icon(Icons.pending)
                 : !didCompress
@@ -302,6 +364,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                             value: compressionProgress / 100.0),
                       )
                     : const Icon(Icons.check),
+            subtitle: didCompress ? Text(timeCompress) : null,
           ),
           ListTile(
             title: Text(
@@ -314,15 +377,17 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                         child: LinearProgressIndicator(value: progress),
                       )
                     : const Icon(Icons.check),
+            subtitle: didUpload ? Text(timeUpload) : null,
           ),
           ListTile(
             title: const Text('Taking video thumbnail'),
-            subtitle: const Text('You can edit thumbnail later'),
             trailing: !didStartTakeDefaultThumbnail
                 ? const Icon(Icons.pending)
                 : !didTakeDefaultThumbnail
                     ? const CircularProgressIndicator()
                     : const Icon(Icons.check),
+            subtitle:
+                didTakeDefaultThumbnail ? Text(timeTakeDefaultThumbnail) : null,
           ),
           ListTile(
             title: Text(
@@ -336,6 +401,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                             value: thumbnailUploadProgress),
                       )
                     : const Icon(Icons.check),
+            subtitle: didUploadThumbnail ? Text(timeUploadThumbnail) : null,
           ),
           ListTile(
             title: const Text('Move video to Encoding Queue'),
@@ -344,6 +410,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                 : !didMoveToQueue
                     ? const CircularProgressIndicator()
                     : const Icon(Icons.check),
+            subtitle: didMoveToQueue ? Text(timeMoveToQueue) : null,
           ),
         ],
       ),

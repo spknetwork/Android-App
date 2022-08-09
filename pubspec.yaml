@@ -36,7 +36,7 @@ dependencies:
   device_info_plus: ^4.0.0
   elliptic: ^0.3.8
   ffmpeg_kit_flutter: ^4.5.1
-  file_picker: ^4.5.1
+  # file_picker: ^4.5.1
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.0.2
@@ -62,6 +62,7 @@ dependencies:
   video_compress: ^3.1.0
   video_thumbnail: ^0.5.0
   webview_flutter: ^3.0.4
+  image_picker: ^0.8.5+3
 
 dev_dependencies:
   flutter_test:
