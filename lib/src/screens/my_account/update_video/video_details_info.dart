@@ -96,7 +96,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     });
     try {
       // TO-DO change following to new video complete api
-      var v = await Communicator().newComplete(
+      var v = await Communicator().updateInfo(
         user: user,
         videoId: widget.item.id,
         title: widget.title,
@@ -105,11 +105,26 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         tags: tags,
         thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
       );
+      log('Benes are ${v.benes}');
+      // v.thumbUrl
+      // v.video_v2
+      // v.description to encode
+      // v.title to encode
+      // v.tags
+      // user.username
+      // v.permlink
+      // v.duration
+      // v.size
+      // v.originalFilename
+      // "en"
+      // v.firstUpload
+      // v.benes[0]
+      // v.benes[1]
+      // postingKey
+
       // next publish on hive
-      // v.thumbUrl,
-      // thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,
-      // benes,beneWeights,postingKey
-      // next mark video as published
+      // newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,
+      // duration,size,file,language,firstUpload,benes,beneWeights,postingKey
       setState(() {
         isCompleting = false;
         processText = '';

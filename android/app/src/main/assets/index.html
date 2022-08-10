@@ -15,104 +15,259 @@
       function validateHiveKey(accountName, postingKey) {
         console.log("In here before async");
         hive.api
-          .getAccountsAsync([accountName])
-          .then(function (accounts) {
-            console.log("In here after async");
-            console.log("Accounts: ", accounts);
-            const pubWif = accounts[0].posting.key_auths[0][0];
-            console.log("PubWif: ", pubWif);
-            const Valid = hive.auth.wifIsValid(postingKey, pubWif);
-            console.log(`is valid ${Valid}`);
-            var result = {
-              type: "validateHiveKey",
-              valid: Valid,
-              accountName: accountName,
-              error: "",
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
-          })
-          .catch(function (err) {
-            console.log("Error: ", err);
-            var result = {
-              type: "validateHiveKey",
-              valid: false,
-              accountName: accountName,
-              error: err.message,
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
-          });
+        .getAccountsAsync([accountName])
+        .then(function (accounts) {
+          console.log("In here after async");
+          console.log("Accounts: ", accounts);
+          const pubWif = accounts[0].posting.key_auths[0][0];
+          console.log("PubWif: ", pubWif);
+          const Valid = hive.auth.wifIsValid(postingKey, pubWif);
+          console.log(`is valid ${Valid}`);
+          var result = {
+            type: "validateHiveKey",
+            valid: Valid,
+            accountName: accountName,
+            error: "",
+          };
+          // window.webkit.messageHandlers.acela.postMessage(result);
+          Android.postMessage(JSON.stringify(result));
+        })
+        .catch(function (err) {
+          console.log("Error: ", err);
+          var result = {
+            type: "validateHiveKey",
+            valid: false,
+            accountName: accountName,
+            error: err.message,
+          };
+          // window.webkit.messageHandlers.acela.postMessage(result);
+          Android.postMessage(JSON.stringify(result));
+        });
       }
 
       function decryptMemo(accountName, postingKey, encrypted) {
         console.log("In here before async");
         hive.api
-          .getAccountsAsync([accountName])
-          .then(function (accounts) {
-            console.log("In here after async");
-            console.log("Accounts: ", accounts);
-            const pubWif = accounts[0].posting.key_auths[0][0];
-            console.log("PubWif: ", pubWif);
-            const Valid = hive.auth.wifIsValid(postingKey, pubWif);
-            console.log(`is valid ${Valid}`);
-            let decrypted = hive.memo.decode(postingKey, encrypted);
-            let result = {
-              type: "decryptedMemo",
-              accountName: accountName,
-              decrypted: decrypted,
-              error: "",
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
-          })
-          .catch(function (err) {
-            console.log("Error: ", err);
-            let result = {
-              type: "decryptedMemo",
-              accountName: accountName,
-              decrypted: "",
-              error: err.message,
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
-          });
-      }
-
-      function renderTemplate(video) {
-        const PostTemplate = `<center><br/><br/>[![](@@@thumbnail@@@)](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/><br/>[Watch on 3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/><br/></center><br/><br/>---<br/><br/>@@@description@@@<br/><br/>---<br/><br/>[3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/>`;
-        return PostTemplate.replace(/@@@thumbnail@@@/g, video.baseThumbUrl)
-          .replace(/@@@author@@@/g, video.owner)
-          .replace(/@@@permlink@@@/g, video.permlink)
-          .replace(/@@@description@@@/g, video.description);
-      }
-
-      function postVideo(data, postingKey) {
-        console.log(`Response received from server: ${data}`);
-        const bdata = atob(data);
-        const result = JSON.parse(bdata).data;
-        const json_metadata = JSON.stringify(result.json_metadata);
-        const video = result.videoBody;
-        let comment = { ...result.comment, json_metadata: json_metadata };
-        comment.body = renderTemplate(video);
-        const newExtensions = result.extensions.sort((a, b) => {
-          let fa = a.account.toLowerCase(),
-            fb = b.account.toLowerCase();
-          if (fa < fb) return -1;
-          if (fa > fb) return 1;
-          return 0;
+        .getAccountsAsync([accountName])
+        .then(function (accounts) {
+          console.log("In here after async");
+          console.log("Accounts: ", accounts);
+          const pubWif = accounts[0].posting.key_auths[0][0];
+          console.log("PubWif: ", pubWif);
+          const Valid = hive.auth.wifIsValid(postingKey, pubWif);
+          console.log(`is valid ${Valid}`);
+          let decrypted = hive.memo.decode(postingKey, encrypted);
+          let result = {
+            type: "decryptedMemo",
+            accountName: accountName,
+            decrypted: decrypted,
+            error: "",
+          };
+          // window.webkit.messageHandlers.acela.postMessage(result);
+          Android.postMessage(JSON.stringify(result));
+        })
+        .catch(function (err) {
+          console.log("Error: ", err);
+          let result = {
+            type: "decryptedMemo",
+            accountName: accountName,
+            decrypted: "",
+            error: err.message,
+          };
+          // window.webkit.messageHandlers.acela.postMessage(result);
+          Android.postMessage(JSON.stringify(result));
         });
-        const comment_options = {
-          ...result.comment_options,
-          extensions: [[0, { beneficiaries: newExtensions }]],
+      }
+
+      function processTags(tags) {
+        const fallback = ["threespeak", "video"];
+        const processed = [];
+        for (let tag of tags) {
+          tag = tag.toLowerCase().trim();
+          if (!tag.startsWith("hive-") && tag.length >= 3) {
+            tag = tag.replace(/[^a-z0-9]/g, "");
+            if (!processed.includes(tag) && tag.length >= 3) {
+              processed.push(tag);
+            }
+          }
+        }
+        return processed.length === 0 ? fallback : processed;
+      }
+
+      function customStringEscaping(string) {
+        return string.split("'").join("’").split('"').join("“");
+      }
+
+      function buildJSONMetadata(thumbnail,videoV2,description,title,tags,author,permlink,duration,size,file,language,firstUpload,cdn) {
+        // 2. set the sourceMap
+        const sourceMap = [];
+        if (videoV2 !== undefined) {
+          sourceMap.push({
+            type: "video",
+            url: videoV2,
+            format: "m3u8",
+          });
+        }
+        let escapedVideoDescription = customStringEscaping(description);
+        let escapedVideoTitle = customStringEscaping(title);
+        return {
+          tags: processTags(tags.split(",")),
+          app: "3speak/0.3.0",
+          type: "3speak/video",
+          image: [thumbnail],
+          video: {
+            info: {
+              platform: "3speak",
+              title: escapedVideoTitle,
+              author: author,
+              permlink: permlink,
+              duration: duration,
+              filesize: size,
+              file: file,
+              lang: language,
+              firstUpload: firstUpload,
+              video_v2: videoV2,
+              sourceMap: [
+              ...sourceMap,
+              {
+                type: "thumbnail",
+                url: thumbnail,
+              },
+              ],
+            },
+            content: {
+              description: escapedVideoDescription,
+              tags: processTags(tags.split(",")),
+            },
+          },
         };
-        const json = JSON.stringify(result.custom_json.json);
-        const custom_json = { ...result.custom_json, json: json };
-        const ops = [
-          ["comment", comment],
-          ["comment_options", comment_options],
-          ["custom_json", custom_json],
+      }
+
+      function renderTemplate(baseThumbUrl,owner,permlink,description) {
+        const PostTemplate = `<br/><br/>[![](@@@thumbnail@@@)](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/><br/>[Watch on 3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/><br/><br/><br/>---<br/><br/>@@@description@@@<br/><br/>---<br/><br/>[3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)<br/>`;
+        return PostTemplate.replace(/@@@thumbnail@@@/g, baseThumbUrl)
+        .replace(/@@@author@@@/g, owner)
+        .replace(/@@@permlink@@@/g, permlink)
+        .replace(/@@@description@@@/g, description);
+      }
+
+      function videoObjectForBody(description, thumbnail, owner, permlink) {
+        let escapedVideoDescription = customStringEscaping(description);
+        return {
+          baseThumbUrl: thumbnail,
+          owner: owner,
+          permlink: permlink,
+          description: escapedVideoDescription,
+        };
+      }
+
+      function buildPublishCustomJson(owner,permlink,language,duration,title) {
+        return ['custom_json', {
+          required_posting_auths: ['threespeak', owner],
+          required_auths: [],
+          id: '3speak-publish',
+          json: JSON.stringify({
+            author: owner,
+            permlink: permlink,
+            category: 'general',
+            language: language,
+            duration: duration,
+            title: title
+          })
+        }];
+      }
+
+      async function hivePostExist(author, permlink) {
+        try {
+          let content = await hive.api.getContentAsync(author, permlink);
+
+          //Apparently Hive API returns a string when post is empty and object when post exists! :shrug:
+          if (typeof content === "string") {
+            return JSON.parse(content).result.length !== 0;
+          } else {
+            //Just to be sure there is actual content
+            return !!content.body;
+          }
+        } catch (e) {
+          console.log(e);
+          return false;
+        }
+      }
+
+      function newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,benes,beneWeights,postingKey) {
+        let result = await hivePostExist(author,permlink);
+        if (result) {
+          var newResult = {
+            type: "postVideo",
+            valid: true,
+            error: "success",
+          };
+          window.webkit.messageHandlers.acela.postMessage(result);
+          return;
+        }
+        let description = atob(dDescription);
+        description =  decodeURIComponent(escape(description));
+        let title = atob(dTitle);
+        title =  decodeURIComponent(escape(title));
+        let jsonMetaData = buildJSONMetadata(thumbnail,videoV2,description,title,tags,author,permlink,duration,size,file,language,firstUpload);
+        let customJson = buildPublishCustomJson(author,permlink,language,duration,title);
+        let newBen = [
+          { account: "threespeakleader", weight: 100 },
+          { account: "spk.beneficiary", weight: 850 },
         ];
+        let [account] = await hive.api.getAccountsAsync([author]);
+        if (account && account.json_metadata) {
+          let json = JSON.parse(account.json_metadata);
+          if (json.beneficiaries) {
+            if (Array.isArray(json.beneficiaries)) {
+              let benefactors = json.beneficiaries
+              .filter((x) => x.name !== "spk.delegation")
+              .filter((x) => x.name && x.label);
+              for (let bene of benefactors) {
+                switch (bene.label) {
+                  case "referrer":
+                  newBen.push({ account: bene.name, weight: bene.weight });
+                  break;
+                  case "provider":
+                  newBen.push({ account: bene.name, weight: bene.weight });
+                  break;
+                  case "creator":
+                  newBen.push({ account: bene.name, weight: bene.weight });
+                  break;
+                }
+              }
+            }
+          }
+        }
+        benes.split(",").forEach((string, index) => {
+          const value = parseInt(beneWeights.split(",")[index]);
+          newBen.push({ account: string, weight: value });
+        });
+        let benefactor_global = [[0, {beneficiaries: newBen}]];
+        let comment_options = ['comment_options', {
+          author: author,
+          permlink: permlink,
+          allow_votes: true,
+          allow_curation_rewards: true,
+          extensions: benefactor_global
+        }];
+        let videoObject = videoObjectForBody(description, thumbnail, author, permlink);
+        let body = renderTemplate(videoObject.baseThumbUrl,videoObject.owner,videoObject.permlink,videoObject.description);
+        hive.broadcast.updateOperations();
+        const operations = [];
+        operations.push([
+          'comment', {
+            parent_author: '',
+            parent_permlink: 'hive-181335',
+            author: author,
+            permlink: permlink,
+            title: title.substr(0, 254),
+            body: body,
+            json_metadata: JSON.stringify(jsonMetaData)
+          }
+        ]);
+        operations.push(comment_options);
+        operations.push(customJson);
         console.log(`ops is ${ops}`);
         async function tryPublish(operations, key) {
           try {
@@ -121,25 +276,25 @@
             return e;
           }
         }
-        tryPublish(ops, postingKey)
-          .then((result) => {
-            var newResult = {
-              type: "postVideo",
-              valid: true,
-              error: JSON.stringify(result),
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(newResult));
+        tryPublish(operations, postingKey)
+        .then((result) => {
+          var newResult = {
+            type: "postVideo",
+            valid: true,
+            error: "success",
+          };
+          //window.webkit.messageHandlers.acela.postMessage(result);
+          Android.postMessage(JSON.stringify(newResult));
           })
-          .catch((error) => {
-            console.error(error);
-            var result = {
-              type: "postVideo",
-              valid: false,
-              error: error.message,
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
+        .catch((error) => {
+          console.error(error);
+          var result = {
+            type: "postVideo",
+            valid: false,
+            error: error.message,
+          };
+          // window.webkit.messageHandlers.acela.postMessage(result);
+          Android.postMessage(JSON.stringify(result));
           });
       }
     </script>

@@ -36,7 +36,7 @@
 	<key>NSAppleMusicUsageDescription</key>
 	<string>Allow access to music</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Allow access to videos</string>
+	<string>Allow access to camera to capture the video</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allow access to videos</string>
 	<key>UIBackgroundModes</key>
@@ -66,5 +66,7 @@
 	<true/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Allow access to microphone while capturing the video</string>
 </dict>
 </plist>

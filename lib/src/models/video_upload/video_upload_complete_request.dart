@@ -17,14 +17,19 @@ class VideoUploadCompleteRequest {
     required this.thumbnail,
   });
 
-  Map<String, dynamic> toJson() => {
-        'videoId': videoId,
-        'title': title,
-        'description': description,
-        'isNsfwContent': isNsfwContent,
-        'tags': tags,
-        'thumbnail': thumbnail
-      };
+  Map<String, dynamic> toJson() {
+    var map = {
+      'videoId': videoId,
+      'title': title,
+      'description': description,
+      'isNsfwContent': isNsfwContent,
+      'tags': tags,
+    };
+    if (thumbnail != null && thumbnail!.isNotEmpty) {
+      map['thumbnail'] = thumbnail!;
+    }
+    return map;
+  }
 
   String toJsonString() => json.encode(toJson());
 }

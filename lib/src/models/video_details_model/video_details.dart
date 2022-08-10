@@ -64,6 +64,25 @@ class VideoDetails {
   factory VideoDetails.fromJsonString(String jsonString) =>
       VideoDetails.fromJson(json.decode(jsonString));
 
+  List<String> get benes {
+    if (beneficiaries == "[]") {
+      return ["sagarkothari88", "100"];
+    } else {
+      try {
+        var array = json.decode(beneficiaries) as List<dynamic>;
+        var list = array.map((e) => e['account']).toList();
+        var amounts = array.map((e) => e['weight']).toList();
+        if (!list.contains('sagarkothari88')) {
+          list.add('sagarkothari88');
+          amounts.add('100');
+        }
+        return [list.join(","), amounts.join(",")];
+      } catch (e) {
+        return ["sagarkothari88", "100"];
+      }
+    }
+  }
+
   factory VideoDetails.fromJson(Map<String, dynamic>? json) => VideoDetails(
         created: asString(json, 'created'),
         paid: asBool(json, 'paid'),
