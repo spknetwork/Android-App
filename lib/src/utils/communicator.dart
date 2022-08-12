@@ -34,6 +34,7 @@ class Communicator {
   // static const fsServer = "http://192.168.1.8:1080/files";
 
   static const hiveApiUrl = 'https://api.hive.blog/';
+  static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
 
   Future<String> getPublicKey(String user) async {
     var request = http.Request('POST', Uri.parse(hiveApiUrl));

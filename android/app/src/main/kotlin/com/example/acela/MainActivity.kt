@@ -57,13 +57,32 @@ class MainActivity: FlutterActivity() {
             val params = call.argument<String>("params")
             val encryptedToken = call.argument<String?>("encryptedToken")
 
+            val thumbnail = call.argument<String?>("thumbnail")
+            val video_v2 = call.argument<String?>("video_v2")
+            val description = call.argument<String?>("description")
+            val title = call.argument<String?>("title")
+            val tags = call.argument<String?>("tags")
+            val permlink = call.argument<String?>("permlink")
+            val duration = call.argument<Double?>("duration")
+            val size = call.argument<Int?>("size")
+            val originalFilename = call.argument<String?>("originalFilename")
+            val firstUpload = call.argument<Boolean?>("firstUpload")
+            val bene = call.argument<String?>("bene")
+            val beneW = call.argument<String?>("beneW")
+
             val data = call.argument<String?>("data")
             if (call.method == "validate" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
-            } else if (call.method == "encryptedToken" && username != null && postingKey != null && encryptedToken != null) {
+            } else if (call.method == "encryptedToken" && username != null
+                && postingKey != null && encryptedToken != null) {
                 webView?.evaluateJavascript("decryptMemo('$username','$postingKey', '$encryptedToken');", null)
             } else if (call.method == "postVideo" && data != null && postingKey != null ) {
                 webView?.evaluateJavascript("postVideo('$data','$postingKey');", null)
+            } else if (call.method == "newPostVideo" && thumbnail != null && video_v2 != null
+                && description != null && title != null && tags != null && username != null
+                && permlink != null && duration != null && size != null && originalFilename != null
+                && firstUpload != null && bene != null && beneW != null) {
+                webView?.evaluateJavascript("newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey');", null)
             }
         }
     }
@@ -77,7 +96,7 @@ class MainActivity: FlutterActivity() {
         webView?.visibility = View.GONE
         webView?.settings?.javaScriptEnabled = true
         webView?.settings?.domStorageEnabled = true
-        webView?.setWebChromeClient(WebChromeClient())
+//        webView?.webChromeClient = WebChromeClient()
         WebView.setWebContentsDebuggingEnabled(true)
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))

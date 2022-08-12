@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 
 List<VideoDetails> videoItemsFromString(String string) {
@@ -34,6 +35,20 @@ class VideoDetails {
   final String originalFilename;
   final bool firstUpload;
   final String beneficiaries;
+
+  String get thumbnailValue {
+    if (thumbnail.startsWith("http")) {
+      return thumbnail;
+    }
+    return '${Communicator.threeSpeakCDN}/ipfs/${thumbnail.replaceAll("ipfs://", '')}';
+  }
+
+  String get videoValue {
+    if (video_v2.startsWith("http")) {
+      return thumbnail;
+    }
+    return '${Communicator.threeSpeakCDN}/ipfs/${video_v2.replaceAll("ipfs://", '')}';
+  }
 
   VideoDetails({
     this.created = "",

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -5,6 +6,7 @@ import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tus_client/tus_client.dart';
@@ -95,7 +97,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       processText = 'Updating video info';
     });
     try {
-      // TO-DO change following to new video complete api
       var v = await Communicator().updateInfo(
         user: user,
         videoId: widget.item.id,
@@ -105,9 +106,26 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         tags: tags,
         thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
       );
-      log('Benes are ${v.benes}');
-      // v.thumbUrl
-      // v.video_v2
+      const platform = MethodChannel('com.example.acela/auth');
+      final String response = await platform.invokeMethod('newPostVideo', {
+        'thumbnail': v.thumbnailValue,
+        'video_v2': v.videoValue,
+        'description': base64.encode(utf8.encode(v.description)),
+        'title': base64.encode(utf8.encode(v.title)),
+        'tags': v.tags,
+        'username': user.username,
+        'permlink': v.permlink,
+        'duration': v.duration,
+        'size': v.size,
+        'originalFilename': v.originalFilename,
+        'firstUpload': v.firstUpload,
+        'bene': v.benes[0],
+        'beneW': v.benes[1],
+        'postingKey': user.postingKey,
+      });
+      log('Response from platform $response');
+      throw 'mark video published';
+
       // v.description to encode
       // v.title to encode
       // v.tags
