@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -124,31 +125,26 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         'postingKey': user.postingKey,
       });
       log('Response from platform $response');
-      throw 'mark video published';
-
-      // v.description to encode
-      // v.title to encode
-      // v.tags
-      // user.username
-      // v.permlink
-      // v.duration
-      // v.size
-      // v.originalFilename
-      // "en"
-      // v.firstUpload
-      // v.benes[0]
-      // v.benes[1]
-      // postingKey
-
-      // next publish on hive
-      // newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,
-      // duration,size,file,language,firstUpload,benes,beneWeights,postingKey
+      var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
+      if (bridgeResponse.error == "success") {
+        await Communicator().updatePublishState(user, v.id);
+        setState(() {
+          isCompleting = false;
+          processText = '';
+          showMessage('Congratulations. Your video is published.');
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+        });
+      } else {
+        throw bridgeResponse.error;
+      }
+    } catch (e) {
+      showError(e.toString());
       setState(() {
         isCompleting = false;
         processText = '';
       });
-    } catch (e) {
-      showError(e.toString());
     }
   }
 
