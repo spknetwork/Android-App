@@ -44,16 +44,46 @@ class AuthBridge {
 						return
 					}
 					self?.decryptMemo(username: username, postingKey: password, encryptedMemo: encryptedToken, result: result)
-				case "postVideo":
+				case "newPostVideo":
 					guard
 						let arguments = call.arguments as? NSDictionary,
-						let data = arguments ["data"] as? String,
-						let password = arguments["postingKey"] as? String
+						let thumbnail = arguments["thumbnail"] as? String,
+						let video_v2 = arguments["video_v2"] as? String,
+						let description = arguments["description"] as? String,
+						let title = arguments["title"] as? String,
+						let tags = arguments["tags"] as? String,
+						let username = arguments["username"] as? String,
+						let permlink = arguments["permlink"] as? String,
+						let duration = arguments["duration"] as? Double,
+						let size = arguments["size"] as? Int,
+						let originalFilename = arguments["originalFilename"] as? String,
+						let firstUpload = arguments["firstUpload"] as? String,
+						let bene = arguments["bene"] as? String,
+						let beneW = arguments["beneW"] as? String,
+						let postingKey = arguments["postingKey"] as? String,
+						let acela = acela
 					else {
 						result(FlutterMethodNotImplemented)
 						return
 					}
-					self?.postVideo(data: data, postingKey: password, result: result)
+					acela.postVideo(
+						thumbnail: thumbnail,
+						video_v2: video_v2,
+						description: description,
+						title: title,
+						tags: tags,
+						username: username,
+						permlink: permlink,
+						duration: duration,
+						size: size,
+						originalFilename: originalFilename,
+						firstUpload: firstUpload,
+						bene: bene,
+						beneW: beneW,
+						postingKey: postingKey,
+					) { response in
+						result(response)
+					}
 				default: debugPrint("do nothing")
 			}
 		})

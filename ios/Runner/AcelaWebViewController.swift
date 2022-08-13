@@ -54,13 +54,25 @@ class AcelaWebViewController: UIViewController {
 	}
 
 	func postVideo(
-		data: String,
+		thumbnail: String,
+		video_v2: String,
+		description: String,
+		title: String,
+		tags: String,
+		username: String,
+		permlink: String,
+		duration: Double,
+		size: Int,
+		originalFilename: String,
+		firstUpload: String,
+		bene: String,
+		beneW: String,
 		postingKey: String,
 		handler: @escaping (String) -> Void
 	) {
 		postVideoHandler = handler
 		OperationQueue.main.addOperation {
-			self.webView?.evaluateJavaScript("postVideo('\(data)', '\(postingKey)');")
+			webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', 'en', \(firstUpload), '\(bene)', '\(beneW)', '\(postingKey)');")
 		}
 	}
 }

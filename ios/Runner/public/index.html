@@ -30,8 +30,8 @@
             error: "",
           };
           window.webkit.messageHandlers.acela.postMessage(result);
-                            // Android.postMessage(JSON.stringify(result));
-                          })
+          // Android.postMessage(JSON.stringify(result));
+        })
         .catch(function (err) {
           console.log("Error: ", err);
           var result = {
@@ -41,8 +41,8 @@
             error: err.message,
           };
           window.webkit.messageHandlers.acela.postMessage(result);
-                            // Android.postMessage(JSON.stringify(result));
-                          });
+          // Android.postMessage(JSON.stringify(result));
+        });
       }
 
       function decryptMemo(accountName, postingKey, encrypted) {
@@ -64,8 +64,8 @@
             error: "",
           };
           window.webkit.messageHandlers.acela.postMessage(result);
-                            // Android.postMessage(JSON.stringify(result));
-                          })
+          // Android.postMessage(JSON.stringify(result));
+        })
         .catch(function (err) {
           console.log("Error: ", err);
           let result = {
@@ -75,8 +75,8 @@
             error: err.message,
           };
           window.webkit.messageHandlers.acela.postMessage(result);
-                            // Android.postMessage(JSON.stringify(result));
-                          });
+          // Android.postMessage(JSON.stringify(result));
+        });
       }
 
       function processTags(tags) {
@@ -163,7 +163,7 @@
 
       function buildPublishCustomJson(owner,permlink,language,duration,title) {
         return ['custom_json', {
-          required_posting_auths: ['threespeak', owner],
+          required_posting_auths: [owner],
           required_auths: [],
           id: '3speak-publish',
           json: JSON.stringify({
@@ -177,34 +177,7 @@
         }];
       }
 
-      async function hivePostExist(author, permlink) {
-        try {
-          let content = await hive.api.getContentAsync(author, permlink);
-
-          //Apparently Hive API returns a string when post is empty and object when post exists! :shrug:
-          if (typeof content === "string") {
-            return JSON.parse(content).result.length !== 0;
-          } else {
-            //Just to be sure there is actual content
-            return !!content.body;
-          }
-        } catch (e) {
-          console.log(e);
-          return false;
-        }
-      }
-
       function newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,benes,beneWeights,postingKey) {
-        let result = await hivePostExist(author,permlink);
-        if (result) {
-          var newResult = {
-            type: "postVideo",
-            valid: true,
-            error: "success",
-          };
-          window.webkit.messageHandlers.acela.postMessage(result);
-          return;
-        }
         let description = atob(dDescription);
         description =  decodeURIComponent(escape(description));
         let title = atob(dTitle);
@@ -215,8 +188,11 @@
           { account: "threespeakleader", weight: 100 },
           { account: "spk.beneficiary", weight: 850 },
         ];
-        let [account] = await hive.api.getAccountsAsync([author]);
-        if (account && account.json_metadata) {
+        hive.api
+        .getAccountsAsync([author])
+        .then(function (accounts) {
+          const account = accounts[0];
+          if (account && account.json_metadata) {
           let json = JSON.parse(account.json_metadata);
           if (json.beneficiaries) {
             if (Array.isArray(json.beneficiaries)) {
@@ -248,6 +224,8 @@
           author: author,
           permlink: permlink,
           allow_votes: true,
+          max_accepted_payout: '100000.000 SBD',
+          percent_hbd: 10000,
           allow_curation_rewards: true,
           extensions: benefactor_global
         }];
@@ -268,7 +246,7 @@
         ]);
         operations.push(comment_options);
         operations.push(customJson);
-        console.log(`operations is ${operations}`);
+        console.log(`operations are ${JSON.stringify(operations)}`);
         async function tryPublish(operations, key) {
           try {
             return hive.broadcast.sendAsync({ operations }, { posting: key });
@@ -284,7 +262,7 @@
             error: "success",
           };
           window.webkit.messageHandlers.acela.postMessage(result);
-            // Android.postMessage(JSON.stringify(newResult));
+          //Android.postMessage(JSON.stringify(newResult));
           })
         .catch((error) => {
           console.error(error);
@@ -294,8 +272,19 @@
             error: error.message,
           };
           window.webkit.messageHandlers.acela.postMessage(result);
-            // Android.postMessage(JSON.stringify(result));
+          //Android.postMessage(JSON.stringify(result));
           });
+        })
+        .catch(function (err) {
+          console.error(err);
+          var result = {
+            type: "postVideo",
+            valid: false,
+            error: err.message,
+          };
+          window.webkit.messageHandlers.acela.postMessage(result);
+          //Android.postMessage(JSON.stringify(result));
+        });
       }
     </script>
   </body>
