@@ -132,9 +132,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           isCompleting = false;
           processText = '';
           showMessage('Congratulations. Your video is published.');
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
+          showMyDialog();
         });
       } else {
         throw bridgeResponse.error;
@@ -146,6 +144,26 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         processText = '';
       });
     }
+  }
+
+  void showMyDialog() {
+    Widget okButton = TextButton(
+      child: Text("Okay"),
+      onPressed: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      },
+    );
+    AlertDialog alert = AlertDialog(
+      title: Text("🎉 Congratulations 🎉"),
+      content: Text("✅ Your Video is published on Hive. ✅"),
+      actions: [
+        okButton,
+      ],
+    );
+    showDialog(context: context, builder: (c) => alert);
   }
 
   Widget _thumbnailPicker(HiveUserData? user) {

@@ -80,7 +80,7 @@ class AuthBridge {
 						firstUpload: firstUpload,
 						bene: bene,
 						beneW: beneW,
-						postingKey: postingKey,
+						postingKey: postingKey
 					) { response in
 						result(response)
 					}
@@ -114,18 +114,6 @@ class AuthBridge {
 			return
 		}
 		acela.decryptMemo(username: username, postingKey: postingKey, encryptedMemo: encryptedMemo) { response in
-			result(response)
-		}
-	}
-
-	private func postVideo(data: String, postingKey: String, result: @escaping FlutterResult) {
-		guard let acela = acela else {
-			result(FlutterError(code: "ERROR",
-													message: "Error Uploading video from iOS native bridge",
-													details: nil))
-			return
-		}
-		acela.postVideo(data: data, postingKey: postingKey) { response in
 			result(response)
 		}
 	}

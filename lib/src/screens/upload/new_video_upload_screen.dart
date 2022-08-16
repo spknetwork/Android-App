@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
-import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:flutter/material.dart';
@@ -189,10 +188,9 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           timeMoveToQueue = '${diff.inSeconds} seconds';
           didMoveToQueue = true;
           showMessage('Video is uploaded & moved to encoding queue');
+          showMyDialog();
         });
         // Step 6. Move Video to Queue
-
-        throw 'compression, upload done';
       } else {
         throw 'User cancelled the video picker';
       }
@@ -204,6 +202,25 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
       }
       rethrow;
     }
+  }
+
+  void showMyDialog() {
+    Widget okButton = TextButton(
+      child: Text("Okay"),
+      onPressed: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      },
+    );
+    AlertDialog alert = AlertDialog(
+      title: Text("🎉 Congratulations 🎉"),
+      content: Text(
+          "✅ Your Video is uploaded.\n✅It is also moved to encoding queue.\n- Don't forget to check your video status from My Account section."),
+      actions: [
+        okButton,
+      ],
+    );
+    showDialog(context: context, builder: (c) => alert);
   }
 
   void showMessage(String string) {
@@ -277,24 +294,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
     if (user != null && this.user == null) {
       this.user = user;
     }
-    var items = [
-      timeShowFilePicker,
-      timePickFile,
-      timeUpload,
-      timeTakeDefaultThumbnail,
-      timeUploadThumbnail,
-      timeMoveToQueue
-    ].where((e) => e.isNotEmpty);
-    var doubleItems = items
-        .map((e) => double.tryParse(e.replaceAll(" seconds", "")))
-        .whereType<int>()
-        .toList();
-    var formatValue = doubleItems.isEmpty
-        ? 1.0
-        : doubleItems.reduce((sum, element) {
-            return sum + element;
-          });
-    var totalDuration = Utilities.formatTime(formatValue.toInt());
     return Scaffold(
       appBar: AppBar(
         title: const Text('Video Upload Process'),
@@ -304,7 +303,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           ListTile(
             title: const Text('Launching Video Picker'),
             trailing: didShowFilePicker
-                ? const Icon(Icons.check)
+                ? const Icon(Icons.check, color: Colors.lightGreen)
                 : const Icon(Icons.pending),
             subtitle: didShowFilePicker ? Text(timeShowFilePicker) : null,
           ),
@@ -314,23 +313,9 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                 ? !didStartPickFile
                     ? const Icon(Icons.pending)
                     : const CircularProgressIndicator()
-                : const Icon(Icons.check),
+                : const Icon(Icons.check, color: Colors.lightGreen),
             subtitle: didPickFile ? Text(timePickFile) : null,
           ),
-          // ListTile(
-          //   title: Text(
-          //       'Encoding video if needed (${didCompress ? 100.0 : compressionProgress.toStringAsFixed(2)}%)'),
-          //   trailing: !didStartCompress
-          //       ? const Icon(Icons.pending)
-          //       : !didCompress
-          //           ? SizedBox(
-          //               width: 200,
-          //               child: LinearProgressIndicator(
-          //                   value: compressionProgress / 100.0),
-          //             )
-          //           : const Icon(Icons.check),
-          //   subtitle: didCompress ? Text(timeCompress) : null,
-          // ),
           ListTile(
             title: Text(
                 'Uploading video (${didUpload ? 100.0 : (progress * 100).toStringAsFixed(2)}%)'),
@@ -341,7 +326,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                         width: 200,
                         child: LinearProgressIndicator(value: progress),
                       )
-                    : const Icon(Icons.check),
+                    : const Icon(Icons.check, color: Colors.lightGreen),
             subtitle: didUpload ? Text(timeUpload) : null,
           ),
           ListTile(
@@ -350,7 +335,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                 ? const Icon(Icons.pending)
                 : !didTakeDefaultThumbnail
                     ? const CircularProgressIndicator()
-                    : const Icon(Icons.check),
+                    : const Icon(Icons.check, color: Colors.lightGreen),
             subtitle:
                 didTakeDefaultThumbnail ? Text(timeTakeDefaultThumbnail) : null,
           ),
@@ -365,7 +350,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                         child: LinearProgressIndicator(
                             value: thumbnailUploadProgress),
                       )
-                    : const Icon(Icons.check),
+                    : const Icon(Icons.check, color: Colors.lightGreen),
             subtitle: didUploadThumbnail ? Text(timeUploadThumbnail) : null,
           ),
           ListTile(
@@ -374,7 +359,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
                 ? const Icon(Icons.pending)
                 : !didMoveToQueue
                     ? const CircularProgressIndicator()
-                    : const Icon(Icons.check),
+                    : const Icon(Icons.check, color: Colors.lightGreen),
             subtitle: didMoveToQueue ? Text(timeMoveToQueue) : null,
           ),
         ],
