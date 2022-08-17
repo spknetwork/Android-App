@@ -74,7 +74,8 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
         title: const Text('Video Info'),
       ),
       body: _body(),
-      floatingActionButton: title.isNotEmpty && description.isNotEmpty
+      floatingActionButton: titleController.text.isNotEmpty &&
+              descriptionController.text.isNotEmpty
           ? FloatingActionButton(
               onPressed: () {
                 var screen = VideoDetailsInfo(

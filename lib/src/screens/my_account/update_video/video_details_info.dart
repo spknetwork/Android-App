@@ -170,7 +170,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     );
     AlertDialog alert = AlertDialog(
       title: Text("🎉 Congratulations 🎉"),
-      content: Text("✅ Your Video is published on Hive. ✅"),
+      content: Text("Your Video is published on Hive."),
       actions: [
         okButton,
       ],
