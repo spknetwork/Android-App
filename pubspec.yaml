@@ -63,6 +63,7 @@ dependencies:
   video_thumbnail: ^0.5.0
   webview_flutter: ^3.0.4
   image_picker: ^0.8.5+3
+  localstorage: ^4.0.0+1
 
 dev_dependencies:
   flutter_test:

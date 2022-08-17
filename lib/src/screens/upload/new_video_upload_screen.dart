@@ -8,10 +8,33 @@ import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 import 'package:tus_client/tus_client.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
+
+class UploadedItem {
+  String fileName;
+  String filePath;
+  UploadedItem({required this.fileName, required this.filePath});
+  toJSONEncodable() {
+    Map<String, dynamic> m = new Map();
+    m['fileName'] = fileName;
+    m['filePath'] = filePath;
+    return m;
+  }
+}
+
+class UploadedItemList {
+  List<UploadedItem> items = [];
+
+  toJSONEncodable() {
+    return items.map((item) {
+      return item.toJSONEncodable();
+    }).toList();
+  }
+}
 
 class NewVideoUploadScreen extends StatefulWidget {
   const NewVideoUploadScreen({
@@ -54,10 +77,25 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
   late Subscription _subscription;
   HiveUserData? user;
   final ImagePicker _picker = ImagePicker();
+  final LocalStorage storage = LocalStorage('uploaded_data');
+  final UploadedItemList list = UploadedItemList();
 
   @override
   void initState() {
     super.initState();
+    var items = storage.getItem('uploads');
+    if (items != null) {
+      setState(() {
+        list.items = List<UploadedItem>.from(
+          (items as List).map(
+            (item) => UploadedItem(
+              fileName: item['fileName'],
+              filePath: item['filePath'],
+            ),
+          ),
+        );
+      });
+    }
     _subscription = VideoCompress.compressProgress$.subscribe((progress) {
       debugPrint('progress: $progress');
       setState(() {
@@ -74,6 +112,18 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
   void dispose() {
     super.dispose();
     _subscription.unsubscribe();
+  }
+
+  void _addItem(String fileName, String filePath) {
+    setState(() {
+      final item = new UploadedItem(fileName: fileName, filePath: filePath);
+      list.items.add(item);
+      _saveToStorage();
+    });
+  }
+
+  void _saveToStorage() {
+    storage.setItem('uploads', list.toJSONEncodable());
   }
 
   void videoPickerFunction() async {
@@ -100,6 +150,12 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         // log("bytes - ${videoFile.bytes ?? 0}");
         // log("size - ${file.size}");
         log("path - ${file.path}");
+        var alreadyUploaded = list.items.contains((e) {
+          return e.fileName == originalFileName || e.filePath == file.path;
+        });
+        if (alreadyUploaded) {
+          throw 'This video is already uploaded by you';
+        }
         var size = await file.length();
         // var size = file.size;
         // ---- Step 1. Select Video
@@ -181,6 +237,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           size: fileSize.toDouble(),
           tusFileName: name,
         );
+        _addItem(originalFileName, file.path);
         log(videoUploadInfo.status);
         var dateEndMoveToQueue = DateTime.now();
         diff = dateEndMoveToQueue.difference(dateStartMoveToQueue);

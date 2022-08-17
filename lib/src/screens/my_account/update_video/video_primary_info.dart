@@ -16,6 +16,15 @@ class VideoPrimaryInfo extends StatefulWidget {
 class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
   var title = '';
   var description = '';
+  var titleController = TextEditingController();
+  var descriptionController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    titleController.text = widget.item.title;
+    descriptionController.text = widget.item.description;
+  }
 
   Widget _body() {
     return SafeArea(
@@ -33,6 +42,7 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
                   title = text;
                 });
               },
+              controller: titleController,
               maxLines: 1,
               minLines: 1,
               maxLength: 150,
@@ -47,6 +57,7 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
                   description = text;
                 });
               },
+              controller: descriptionController,
               maxLines: 8,
               minLines: 5,
             )

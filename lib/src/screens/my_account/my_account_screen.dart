@@ -19,9 +19,6 @@ class MyAccountScreen extends StatefulWidget {
 
 class _MyAccountScreenState extends State<MyAccountScreen> {
   Future<List<VideoDetails>>? loadVideos;
-  Future<void>? loadOperations;
-  // var isLoading = false;
-  // var loadingText = '';
 
   void logout() async {
     // Create storage
@@ -31,48 +28,6 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     server.updateHiveUserData(null);
     Navigator.of(context).pop();
   }
-
-  // void loadVideoInfo(HiveUserData user, String videoId) async {
-  //   setState(() {
-  //     isLoading = true;
-  //     loadingText = 'Getting video data to post on Hive';
-  //   });
-  //   try {
-  //     var result = await Communicator().loadOperations(user, videoId);
-  //     var utf8data = utf8.encode(result);
-  //     final base64Str = base64.encode(utf8data);
-  //     setState(() {
-  //       loadingText = 'Publishing on Hive';
-  //     });
-  //     var platform = MethodChannel('com.example.acela/auth');
-  //     final String response = await platform.invokeMethod('postVideo', {
-  //       'data': base64Str,
-  //       'postingKey': user.postingKey,
-  //     });
-  //     var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
-  //     if (bridgeResponse.valid == true) {
-  //       setState(() {
-  //         loadingText = 'Marking video as published';
-  //       });
-  //       await Communicator().updatePublishState(user, videoId);
-  //       setState(() {
-  //         isLoading = false;
-  //         loadVideos = Communicator().loadVideos(user);
-  //       });
-  //     } else {
-  //       showError('Error occurred: ${bridgeResponse.error}');
-  //     }
-  //     log('Result from android platform is \n$response');
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //     showError('Error occurred - ${e.toString()}');
-  //   }
-  // }
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));

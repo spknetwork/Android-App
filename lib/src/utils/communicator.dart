@@ -9,6 +9,7 @@ import 'package:acela/src/models/login/memo_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
+import 'package:acela/src/models/video_upload/does_post_exists.dart';
 import 'package:acela/src/models/video_upload/video_upload_complete_request.dart';
 import 'package:acela/src/models/video_upload/video_upload_login_response.dart';
 import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
@@ -18,12 +19,12 @@ import 'package:http/http.dart' as http;
 
 class Communicator {
   // Production
-  // static const tsServer = "https://studio.3speak.tv";
-  // static const fsServer = "https://uploads.3speak.tv/files";
+  static const tsServer = "https://studio.3speak.tv";
+  static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
-  static const fsServer = "http://10.0.2.2:1080/files";
-  static const tsServer = "http://10.0.2.2:13050";
+  // static const fsServer = "http://10.0.2.2:1080/files";
+  // static const tsServer = "http://10.0.2.2:13050";
 
   // iOS
   // static const tsServer = "http://localhost:13050";
@@ -35,6 +36,26 @@ class Communicator {
 
   static const hiveApiUrl = 'https://api.hive.blog/';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
+
+  Future<bool> doesPostNotExist(String user, String post) async {
+    var request = http.Request('POST', Uri.parse(hiveApiUrl));
+    request.body = json.encode({
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "bridge.get_discussion",
+      "params": {"author": user, "permlink": post, "observer": user}
+    });
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var responseBody = await response.stream.bytesToString();
+      var data = DoesPostExistsResponse.fromJsonString(responseBody);
+      var error = data.error?.data ?? "";
+      return error.contains("does not exist");
+    } else {
+      log(response.reasonPhrase.toString());
+      throw response.reasonPhrase.toString();
+    }
+  }
 
   Future<String> getPublicKey(String user) async {
     var request = http.Request('POST', Uri.parse(hiveApiUrl));

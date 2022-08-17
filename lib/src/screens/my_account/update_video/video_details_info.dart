@@ -98,44 +98,56 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       processText = 'Updating video info';
     });
     try {
-      var v = await Communicator().updateInfo(
-        user: user,
-        videoId: widget.item.id,
-        title: widget.title,
-        description: widget.subtitle,
-        isNsfwContent: isNsfwContent,
-        tags: tags,
-        thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
-      );
-      const platform = MethodChannel('com.example.acela/auth');
-      final String response = await platform.invokeMethod('newPostVideo', {
-        'thumbnail': v.thumbnailValue,
-        'video_v2': v.videoValue,
-        'description': base64.encode(utf8.encode(v.description)),
-        'title': base64.encode(utf8.encode(v.title)),
-        'tags': v.tags,
-        'username': user.username,
-        'permlink': v.permlink,
-        'duration': v.duration,
-        'size': v.size,
-        'originalFilename': v.originalFilename,
-        'firstUpload': v.firstUpload,
-        'bene': v.benes[0],
-        'beneW': v.benes[1],
-        'postingKey': user.postingKey,
-      });
-      log('Response from platform $response');
-      var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
-      if (bridgeResponse.error == "success") {
-        await Communicator().updatePublishState(user, v.id);
+      var doesPostNotExist = await Communicator()
+          .doesPostNotExist(widget.item.owner, widget.item.permlink);
+      if (doesPostNotExist != true) {
+        await Communicator().updatePublishState(user, widget.item.id);
         setState(() {
           isCompleting = false;
           processText = '';
-          showMessage('Congratulations. Your video is published.');
+          showMessage('Your video was already published.');
           showMyDialog();
         });
       } else {
-        throw bridgeResponse.error;
+        var v = await Communicator().updateInfo(
+          user: user,
+          videoId: widget.item.id,
+          title: widget.title,
+          description: widget.subtitle,
+          isNsfwContent: isNsfwContent,
+          tags: tags,
+          thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
+        );
+        const platform = MethodChannel('com.example.acela/auth');
+        final String response = await platform.invokeMethod('newPostVideo', {
+          'thumbnail': v.thumbnailValue,
+          'video_v2': v.videoValue,
+          'description': base64.encode(utf8.encode(v.description)),
+          'title': base64.encode(utf8.encode(v.title)),
+          'tags': v.tags,
+          'username': user.username,
+          'permlink': v.permlink,
+          'duration': v.duration,
+          'size': v.size,
+          'originalFilename': v.originalFilename,
+          'firstUpload': v.firstUpload,
+          'bene': v.benes[0],
+          'beneW': v.benes[1],
+          'postingKey': user.postingKey,
+        });
+        log('Response from platform $response');
+        var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
+        if (bridgeResponse.error == "success") {
+          await Communicator().updatePublishState(user, v.id);
+          setState(() {
+            isCompleting = false;
+            processText = '';
+            showMessage('Congratulations. Your video is published.');
+            showMyDialog();
+          });
+        } else {
+          throw bridgeResponse.error;
+        }
       }
     } catch (e) {
       showError(e.toString());
