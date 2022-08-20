@@ -80,8 +80,8 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
               onPressed: () {
                 var screen = VideoDetailsInfo(
                   item: widget.item,
-                  title: title,
-                  subtitle: description,
+                  title: titleController.text,
+                  subtitle: descriptionController.text,
                 );
                 var route = MaterialPageRoute(builder: (c) => screen);
                 Navigator.of(context).push(route);

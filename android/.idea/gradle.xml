@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -8,6 +9,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/app" />
             <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/better_player-0.0.83/android" />
             <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/device_info_plus-4.0.0/android" />
             <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/ffmpeg_kit_flutter-4.5.1/android" />
@@ -23,8 +26,6 @@
             <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/video_thumbnail-0.5.2/android" />
             <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/wakelock-0.6.2/android" />
             <option value="/Applications/flutter/flutter/.pub-cache/hosted/pub.dartlang.org/webview_flutter_android-2.9.2/android" />
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
           </set>
         </option>
       </GradleProjectSettings>

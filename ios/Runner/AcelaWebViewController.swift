@@ -62,9 +62,9 @@ class AcelaWebViewController: UIViewController {
 		username: String,
 		permlink: String,
 		duration: Double,
-		size: Int,
+		size: Double,
 		originalFilename: String,
-		firstUpload: String,
+		firstUpload: Bool,
 		bene: String,
 		beneW: String,
 		postingKey: String,
@@ -72,7 +72,7 @@ class AcelaWebViewController: UIViewController {
 	) {
 		postVideoHandler = handler
 		OperationQueue.main.addOperation {
-			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', 'en', \(firstUpload), '\(bene)', '\(beneW)', '\(postingKey)');")
+			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', 'en', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)');")
 		}
 	}
 }

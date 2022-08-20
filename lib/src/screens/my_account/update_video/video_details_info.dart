@@ -119,11 +119,13 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
         );
         const platform = MethodChannel('com.example.acela/auth');
+        var title = base64.encode(utf8.encode(widget.title));
+        var description = base64.encode(utf8.encode(widget.subtitle));
         final String response = await platform.invokeMethod('newPostVideo', {
           'thumbnail': v.thumbnailValue,
           'video_v2': v.videoValue,
-          'description': base64.encode(utf8.encode(v.description)),
-          'title': base64.encode(utf8.encode(v.title)),
+          'description': description,
+          'title': title,
           'tags': v.tags,
           'username': user.username,
           'permlink': v.permlink,
