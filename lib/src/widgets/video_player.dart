@@ -66,7 +66,7 @@ class _SPKVideoPlayerState extends State<SPKVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return  BetterPlayer(
+    return BetterPlayer(
       controller: _betterPlayerController,
       key: _betterPlayerKey,
     );
