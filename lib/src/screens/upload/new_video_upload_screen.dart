@@ -4,11 +4,14 @@ import 'dart:io';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:localstorage/localstorage.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:tus_client/tus_client.dart';
 import 'package:video_compress/video_compress.dart';
@@ -159,6 +162,28 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         var size = await file.length();
         // var size = file.size;
         // ---- Step 1. Select Video
+
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          await Permission.storage.request();
+        }
+
+        List<Directory>? storage = await getExternalStorageDirectories();
+        if (storage == null) {
+          throw 'Storage null';
+        }
+
+        var externalDirPath = storage.first.path;
+
+        var pathOfDir = file.path.replaceAll(file.name, "");
+        var resultOfFfmpeg = await FFmpegKit.execute(
+            "-i ${file.path} -codec: copy -bsf:v h264_mp4toannexb -start_number 0 -hls_time 10 -hls_list_size 0 -f hls $externalDirPath/index.m3u8");
+        log('Result is ${resultOfFfmpeg.toString()}');
+        var code = await resultOfFfmpeg.getReturnCode();
+        final output = await resultOfFfmpeg.getOutput();
+        log('code is ${(code?.isValueSuccess() ?? false) ? 'Success' : 'Failure'}');
+        log('output is ${output.toString()}');
+        throw 'Throwing error now';
 
         var dateEndGettingVideo = DateTime.now();
         var diff = dateEndGettingVideo.difference(dateStartGettingVideo);
