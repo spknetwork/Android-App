@@ -69,8 +69,13 @@ class DrawerScreen extends StatelessWidget {
       title: const Text("Communities"),
       onTap: () {
         Navigator.pop(context);
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (c) => const CommunitiesScreen()));
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (c) => CommunitiesScreen(
+              didSelectCommunity: null,
+            ),
+          ),
+        );
       },
     );
   }

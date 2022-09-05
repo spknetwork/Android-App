@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/communities_models/request/communities_request_model.dart';
+import 'package:acela/src/models/communities_models/response/communities_response_models.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/hive_post_info/hive_user_posting_key.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
@@ -75,6 +77,22 @@ class Communicator {
     } else {
       log(response.reasonPhrase.toString());
       throw response.reasonPhrase.toString();
+    }
+  }
+
+  Future<List<CommunityItem>> getListOfCommunities(String? query) async {
+    var client = http.Client();
+    var body =
+        CommunitiesRequestModel(params: CommunitiesRequestParams(query: query))
+            .toJsonString();
+    var response =
+        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
+    if (response.statusCode == 200) {
+      var communitiesResponse =
+          communitiesResponseModelFromString(response.body);
+      return communitiesResponse.result;
+    } else {
+      throw "Status code is ${response.statusCode}";
     }
   }
 

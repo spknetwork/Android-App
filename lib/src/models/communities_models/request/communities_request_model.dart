@@ -1,5 +1,6 @@
-import 'package:acela/src/utils/safe_convert.dart';
 import 'dart:convert';
+
+import 'package:acela/src/utils/safe_convert.dart';
 
 class CommunitiesRequestModel {
   final CommunitiesRequestParams params;
@@ -41,9 +42,11 @@ class CommunitiesRequestModel {
 class CommunitiesRequestParams {
   // 100
   final int limit;
+  final String? query;
 
   CommunitiesRequestParams({
     this.limit = 100,
+    this.query,
   });
 
   factory CommunitiesRequestParams.fromJson(Map<String, dynamic>? json) =>
@@ -51,7 +54,13 @@ class CommunitiesRequestParams {
         limit: asInt(json, 'limit'),
       );
 
-  Map<String, dynamic> toJson() => {
-        'limit': limit,
-      };
+  Map<String, dynamic> toJson() {
+    Map<String, dynamic> map = {
+      'limit': limit,
+    };
+    if (query != null && query!.isNotEmpty) {
+      map['query'] = query;
+    }
+    return map;
+  }
 }

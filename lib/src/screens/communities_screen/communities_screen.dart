@@ -1,5 +1,4 @@
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/communities_models/request/communities_request_model.dart';
 import 'package:acela/src/models/communities_models/response/communities_response_models.dart';
 import 'package:acela/src/screens/communities_screen/community_details/community_details_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -7,32 +6,29 @@ import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 class CommunitiesScreen extends StatefulWidget {
-  const CommunitiesScreen({Key? key}) : super(key: key);
+  const CommunitiesScreen({
+    Key? key,
+    required this.didSelectCommunity,
+  }) : super(key: key);
+  final Function(String, String)? didSelectCommunity;
 
   @override
   _CommunitiesScreenState createState() => _CommunitiesScreenState();
 }
 
 class _CommunitiesScreenState extends State<CommunitiesScreen> {
-  Future<List<CommunityItem>> getData() async {
-    var client = http.Client();
-    var body = CommunitiesRequestModel(params: CommunitiesRequestParams())
-        .toJsonString();
-    var response =
-        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
-    if (response.statusCode == 200) {
-      var communitiesResponse =
-          communitiesResponseModelFromString(response.body);
-      return communitiesResponse.result;
-    } else {
-      throw "Status code is ${response.statusCode}";
-    }
+  late Future<List<CommunityItem>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = getListOfCommunities();
   }
 
+  TextEditingController searchController = TextEditingController();
   Widget _listTile(CommunityItem item) {
     var formatter = NumberFormat();
     var extra =
@@ -46,51 +42,91 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
       title: Text(item.title),
       subtitle: Text(extra),
       onTap: () {
-        var screen = CommunityDetailScreen(name: item.name, title: item.title);
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).push(route);
+        if (widget.didSelectCommunity != null) {
+          widget.didSelectCommunity!(item.title, item.name);
+          Navigator.of(context).pop();
+        } else {
+          var screen =
+              CommunityDetailScreen(name: item.name, title: item.title);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        }
       },
     );
   }
 
   Widget _list(List<CommunityItem> data) {
-    return ListView.separated(
-      itemBuilder: (context, index) {
-        return _listTile(data[index]);
-      },
-      separatorBuilder: (context, index) => const Divider(),
-      itemCount: data.length,
+    return Stack(
+      children: [
+        Container(
+          margin: EdgeInsets.only(top: 80),
+          child: ListView.separated(
+            itemBuilder: (context, index) {
+              return _listTile(data[index]);
+            },
+            separatorBuilder: (context, index) => const Divider(),
+            itemCount: data.length,
+          ),
+        ),
+        Container(
+          margin: EdgeInsets.all(10),
+          child: TextFormField(
+            controller: searchController,
+            decoration: InputDecoration(
+              // icon: const Icon(Icons.search),
+              label: const Text('Search'),
+              hintText: 'Search community',
+              suffixIcon: ElevatedButton(
+                child: const Text('Search'),
+                onPressed: () {
+                  setState(() {
+                    _future = getListOfCommunities();
+                  });
+                },
+              ),
+            ),
+            autocorrect: false,
+            enabled: true,
+          ),
+        ),
+      ],
     );
+  }
+
+  Future<List<CommunityItem>> getListOfCommunities() {
+    var value = searchController.value.text;
+    return Communicator().getListOfCommunities(value.isEmpty ? null : value);
   }
 
   Widget _body() {
     return FutureBuilder<List<CommunityItem>>(
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              return RetryScreen(
-                error: snapshot.error?.toString() ?? "Something went wrong",
-                onRetry: getData,
-              );
-            } else if (snapshot.hasData) {
-              return Container(
-                margin: const EdgeInsets.only(top: 10, bottom: 10),
-                child: _list(snapshot.data!.take(100).toList()),
-              );
-            } else {
-              return RetryScreen(
-                error: "Something went wrong",
-                onRetry: getData,
-              );
-            }
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasError) {
+            return RetryScreen(
+              error: snapshot.error?.toString() ?? "Something went wrong",
+              onRetry: getListOfCommunities,
+            );
+          } else if (snapshot.hasData) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: _list(snapshot.data!.take(100).toList()),
+            );
           } else {
-            return const LoadingScreen(
-              title: 'Loading Data',
-              subtitle: 'Please wait',
+            return RetryScreen(
+              error: "Something went wrong",
+              onRetry: getListOfCommunities,
             );
           }
-        },
-        future: getData());
+        } else {
+          return const LoadingScreen(
+            title: 'Loading Data',
+            subtitle: 'Please wait',
+          );
+        }
+      },
+      future: _future,
+    );
   }
 
   @override
