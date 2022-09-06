@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
+import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -40,6 +43,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var processText = '';
   TextEditingController tagsController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
+  var selectedCommunity = 'hive-181335';
+  var selectedCommunityVisibleName = 'Threespeak';
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -136,6 +141,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'bene': v.benes[0],
           'beneW': v.benes[1],
           'postingKey': user.postingKey,
+          'community': selectedCommunity,
         });
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
@@ -288,6 +294,45 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     );
   }
 
+  Widget _communityPicker() {
+    return Container(
+      margin: EdgeInsets.all(10),
+      child: Row(
+        children: [
+          const Text('Post to:'),
+          SizedBox(width: 10),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (c) => CommunitiesScreen(
+                    didSelectCommunity: (name, id) {
+                      setState(() {
+                        selectedCommunity = id;
+                        selectedCommunityVisibleName = name;
+                      });
+                    },
+                  ),
+                ),
+              );
+            },
+            child: Row(
+              children: [
+                CustomCircleAvatar(
+                  width: 44,
+                  height: 44,
+                  url: server.communityIcon(selectedCommunity),
+                ),
+                SizedBox(width: 10),
+                Text(selectedCommunityVisibleName),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData?>(context);
@@ -307,6 +352,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               children: [
                 _tagField(),
                 _notSafe(),
+                _communityPicker(),
                 _thumbnailPicker(user),
                 const Text('Tap to change video thumbnail'),
               ],

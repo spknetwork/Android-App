@@ -1,6 +1,5 @@
 import 'package:acela/src/screens/about/about_faq.dart';
 import 'package:acela/src/screens/about/about_us.dart';
-import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -39,7 +38,7 @@ class AboutHomeScreen extends StatelessWidget {
             title: const Text('Follow us on Twitter'),
             onTap: () {
               launchUrl(Uri.parse(
-                  'https://twitter.com/3speakonline?utm_source=3speak.tv.acela'));
+                  'https://twitter.com/3speakonline??utm_source=3speak.tv.acela'));
             },
           ),
           ListTile(
@@ -55,7 +54,7 @@ class AboutHomeScreen extends StatelessWidget {
             title: const Text('Join us on Discord'),
             onTap: () {
               launchUrl(Uri.parse(
-                  'https://discord.me/3speak?utm_source=3speak.tv.acela'));
+                  'https://discord.gg/NSFS2VGj83?utm_source=3speak.tv.acela'));
             },
           ),
           ListTile(
@@ -63,20 +62,6 @@ class AboutHomeScreen extends StatelessWidget {
             title: const Text('Visit blog - hive.blog/@threespeak'),
             onTap: () {
               launchUrl(Uri.parse('https://hive.blog/@threespeak'));
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.web),
-            title: const Text('Visit website - spk.network'),
-            onTap: () {
-              launchUrl(Uri.parse('https://spk.network/'));
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.web),
-            title: const Text('Visit website - 3speak.tv'),
-            onTap: () {
-              launchUrl(Uri.parse('https://3speak.tv/'));
             },
           ),
           ListTile(
@@ -88,12 +73,43 @@ class AboutHomeScreen extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.developer_mode),
-            title: const Text('Who built this app?'),
+            leading: const Icon(Icons.how_to_vote),
+            title: const Text('Vote for 3Speak proposal'),
             onTap: () {
-              var screen = const UserChannelScreen(owner: 'sagarkothari88');
-              var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).push(route);
+              launchUrl(Uri.parse(
+                  'https://peakd.com/hive-112019/@spknetwork/spk-network-funding-proposal-rhnv7e'));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.phone_iphone),
+            title: const Text('Download iOS App'),
+            onTap: () {
+              launchUrl(
+                  Uri.parse('https://testflight.apple.com/join/0tipqwsZ'));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.android),
+            title: const Text('Download Android App via Firebase'),
+            onTap: () {
+              launchUrl(Uri.parse(
+                  'https://appdistribution.firebase.dev/i/047cfb506633e639'));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.check_box_outline_blank),
+            title: const Text('Download Android App via DropBox'),
+            onTap: () {
+              launchUrl(Uri.parse(
+                  'https://www.dropbox.com/sh/a0q5u7l3j9ygzty/AABAqtxnLrPBYbk4q5H9BBWja?dl=0'));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.developer_mode),
+            title: const Text('Contact Dev - @sagarkothari88'),
+            onTap: () {
+              launchUrl(Uri.parse(
+                  'https://hivesigner.com/sign/account-witness-vote?witness=sagarkothari88&approve=1'));
             },
           ),
         ],

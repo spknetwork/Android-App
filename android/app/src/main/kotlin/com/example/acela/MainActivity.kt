@@ -69,6 +69,7 @@ class MainActivity: FlutterActivity() {
             val firstUpload = call.argument<Boolean?>("firstUpload")
             val bene = call.argument<String?>("bene")
             val beneW = call.argument<String?>("beneW")
+            val community = call.argument<String?>("community")
 
             val data = call.argument<String?>("data")
             if (call.method == "validate" && username != null && postingKey != null) {
@@ -81,8 +82,8 @@ class MainActivity: FlutterActivity() {
             } else if (call.method == "newPostVideo" && thumbnail != null && video_v2 != null
                 && description != null && title != null && tags != null && username != null
                 && permlink != null && duration != null && size != null && originalFilename != null
-                && firstUpload != null && bene != null && beneW != null) {
-                webView?.evaluateJavascript("newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey');", null)
+                && firstUpload != null && bene != null && beneW != null && community != null) {
+                webView?.evaluateJavascript("newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey', '$community');", null)
             }
         }
     }

@@ -61,6 +61,7 @@ class AuthBridge {
 						let bene = arguments["bene"] as? String,
 						let beneW = arguments["beneW"] as? String,
 						let postingKey = arguments["postingKey"] as? String,
+						let community = arguments["community"] as? String,
 						let acela = acela
 					else {
 						result(FlutterMethodNotImplemented)
@@ -80,7 +81,8 @@ class AuthBridge {
 						firstUpload: firstUpload,
 						bene: bene,
 						beneW: beneW,
-						postingKey: postingKey
+						postingKey: postingKey,
+						community: community
 					) { response in
 						result(response)
 					}

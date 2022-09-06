@@ -162,6 +162,18 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
+  Widget _importantLinks(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.link),
+      title: const Text("Important links"),
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (c) => const AboutHomeScreen()));
+      },
+    );
+  }
+
   Widget _divider() {
     return const Divider(
       height: 1,
@@ -189,6 +201,8 @@ class DrawerScreen extends StatelessWidget {
         _changeTheme(context),
         _divider(),
         user == null ? _login(context) : _myAccount(context),
+        _divider(),
+        _importantLinks(context),
         _divider(),
       ],
     );
