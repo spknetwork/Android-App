@@ -32,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (resultingKey == publicKey) {
         // it is valid key
         debugPrint("Successful login");
+        String resolution = await storage.read(key: 'resolution') ?? '480p';
         await storage.write(key: 'username', value: username);
         await storage.write(key: 'postingKey', value: postingKey);
         await storage.delete(key: 'cookie');
@@ -40,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
             username: username,
             postingKey: postingKey,
             cookie: null,
+            resolution: resolution,
           ),
         );
         Navigator.of(context).pop();

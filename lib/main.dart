@@ -64,9 +64,14 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return OverlaySupport.global(
       child: futureBuilder(
-        StreamProvider<HiveUserData?>.value(
+        StreamProvider<HiveUserData>.value(
           value: server.hiveUserData,
-          initialData: null,
+          initialData: HiveUserData(
+            resolution: '480p',
+            cookie: null,
+            postingKey: null,
+            username: null,
+          ),
           child: StreamProvider<bool>.value(
             value: server.theme,
             initialData: true,
@@ -132,15 +137,15 @@ class _MyAppState extends State<MyApp> {
     String? username = await storage.read(key: 'username');
     String? postingKey = await storage.read(key: 'postingKey');
     String? cookie = await storage.read(key: 'cookie');
-    if (username != null &&
-        postingKey != null &&
-        username.isNotEmpty &&
-        postingKey.isNotEmpty) {
-      server.updateHiveUserData(
-        HiveUserData(
-            username: username, postingKey: postingKey, cookie: cookie),
-      );
-    }
+    String resolution = await storage.read(key: 'resolution') ?? '480p';
+    server.updateHiveUserData(
+      HiveUserData(
+        username: username,
+        postingKey: postingKey,
+        cookie: cookie,
+        resolution: resolution,
+      ),
+    );
   }
 }
 

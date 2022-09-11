@@ -129,7 +129,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
 
   void videoPickerFunction() async {
     try {
-      if (user == null) {
+      if (user?.username == null) {
         throw 'User not logged in';
       }
       // Step 1. Select Video
@@ -373,8 +373,8 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var user = Provider.of<HiveUserData?>(context);
-    if (user != null && this.user == null) {
+    var user = Provider.of<HiveUserData>(context);
+    if (user.username != null && this.user == null) {
       this.user = user;
     }
     return Scaffold(

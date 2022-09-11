@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var user = Provider.of<HiveUserData?>(context);
+    var user = Provider.of<HiveUserData>(context);
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
@@ -194,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
         body: _screen(),
         drawer: widget.showDrawer ? const DrawerScreen() : null,
         floatingActionButton:
-            user == null ? null : _fabNewUpload() //_fab(user),
+            user.username == null ? null : _fabNewUpload() //_fab(user),
         );
   }
 }

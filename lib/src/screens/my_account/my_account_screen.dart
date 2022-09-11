@@ -25,7 +25,16 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     const storage = FlutterSecureStorage();
     await storage.delete(key: 'username');
     await storage.delete(key: 'postingKey');
-    server.updateHiveUserData(null);
+    await storage.delete(key: 'cookie');
+    String resolution = await storage.read(key: 'resolution') ?? '480p';
+    server.updateHiveUserData(
+      HiveUserData(
+        username: null,
+        postingKey: null,
+        cookie: null,
+        resolution: resolution,
+      ),
+    );
     Navigator.of(context).pop();
   }
 
@@ -160,19 +169,19 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var user = Provider.of<HiveUserData?>(context);
-    if (user != null && loadVideos == null) {
+    var user = Provider.of<HiveUserData>(context);
+    if (user.username != null && loadVideos == null) {
       setState(() {
         loadVideos = Communicator().loadVideos(user);
       });
     }
-    var username = user?.username ?? 'Unknown';
+    var username = user.username ?? 'Unknown';
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: _appBar(username),
         body: Container(
-            child: user == null
+            child: user.username == null
                 ? const Center(child: Text('Nothing'))
                 : _videoFuture(user)),
       ),

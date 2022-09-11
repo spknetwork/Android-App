@@ -22,13 +22,13 @@ class Server {
   }
 
   final _controller = StreamController<bool>();
-  final _hiveUserDataController = StreamController<HiveUserData?>();
+  final _hiveUserDataController = StreamController<HiveUserData>();
 
   Stream<bool> get theme {
     return _controller.stream;
   }
 
-  Stream<HiveUserData?> get hiveUserData {
+  Stream<HiveUserData> get hiveUserData {
     return _hiveUserDataController.stream;
   }
 
@@ -36,7 +36,7 @@ class Server {
     _controller.sink.add(!value);
   }
 
-  void updateHiveUserData(HiveUserData? data) {
+  void updateHiveUserData(HiveUserData data) {
     _hiveUserDataController.sink.add(data);
   }
 }

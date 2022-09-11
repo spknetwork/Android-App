@@ -202,10 +202,12 @@ class Communicator {
             cookie.isNotEmpty) {
           const storage = FlutterSecureStorage();
           await storage.write(key: 'cookie', value: cookie);
+          String resolution = await storage.read(key: 'resolution') ?? '480p';
           var newData = HiveUserData(
             username: user.username,
             postingKey: user.postingKey,
             cookie: cookie,
+            resolution: resolution,
           );
           server.updateHiveUserData(newData);
           return cookie;
@@ -230,10 +232,12 @@ class Communicator {
           errorResponse.error == 'session expired') {
         const storage = FlutterSecureStorage();
         await storage.delete(key: 'cookie');
+        String resolution = await storage.read(key: 'resolution') ?? '480p';
         var newData = HiveUserData(
           username: user.username,
           postingKey: user.postingKey,
           cookie: null,
+          resolution: resolution,
         );
         server.updateHiveUserData(newData);
         return await getValidCookie(newData);
@@ -262,7 +266,7 @@ class Communicator {
       oFilename: oFilename,
       duration: duration,
       filename: tusFileName,
-      owner: user.username,
+      owner: user.username ?? '',
     ).toJsonString();
     Map<String, String> map = {
       "cookie": cookie,

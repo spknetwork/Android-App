@@ -63,7 +63,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   }
 
   void initiateUpload(
-    HiveUserData? data,
+    HiveUserData data,
     XFile xFile,
   ) async {
     if (uploadStarted) return;
@@ -186,7 +186,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     showDialog(context: context, builder: (c) => alert);
   }
 
-  Widget _thumbnailPicker(HiveUserData? user) {
+  Widget _thumbnailPicker(HiveUserData user) {
     return Center(
       child: Container(
         width: 320,
@@ -335,7 +335,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
 
   @override
   Widget build(BuildContext context) {
-    var user = Provider.of<HiveUserData?>(context);
+    var user = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Provide more info'),
@@ -362,7 +362,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           : thumbIpfs.isNotEmpty || widget.item.thumbUrl.isNotEmpty
               ? FloatingActionButton(
                   onPressed: () {
-                    if (user != null) {
+                    if (user.username != null) {
                       completeVideo(user);
                     }
                   },

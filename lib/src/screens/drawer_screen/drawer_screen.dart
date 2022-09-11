@@ -1,4 +1,3 @@
-import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
@@ -6,6 +5,7 @@ import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
+import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -92,19 +92,6 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-  Widget _changeTheme(BuildContext context) {
-    var isDarkMode = Provider.of<bool>(context);
-    return ListTile(
-      leading: !isDarkMode
-          ? const Icon(Icons.wb_sunny)
-          : const Icon(Icons.mode_night),
-      title: const Text("Change Theme"),
-      onTap: () async {
-        server.changeTheme(isDarkMode);
-      },
-    );
-  }
-
   Widget _drawerHeader(BuildContext context) {
     return DrawerHeader(
       child: InkWell(
@@ -174,6 +161,18 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
+  Widget _settings(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.settings),
+      title: const Text("Settings"),
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (c) => const SettingsScreen()));
+      },
+    );
+  }
+
   Widget _divider() {
     return const Divider(
       height: 1,
@@ -182,7 +181,7 @@ class DrawerScreen extends StatelessWidget {
   }
 
   Widget _drawerMenu(BuildContext context) {
-    var user = Provider.of<HiveUserData?>(context);
+    var user = Provider.of<HiveUserData>(context);
     return ListView(
       children: [
         _drawerHeader(context),
@@ -198,9 +197,9 @@ class DrawerScreen extends StatelessWidget {
         _divider(),
         _leaderBoard(context),
         _divider(),
-        _changeTheme(context),
+        _settings(context),
         _divider(),
-        user == null ? _login(context) : _myAccount(context),
+        user.username == null ? _login(context) : _myAccount(context),
         _divider(),
         _importantLinks(context),
         _divider(),

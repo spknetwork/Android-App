@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -21,6 +22,7 @@ import 'package:acela/src/widgets/video_player_android.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -372,7 +374,18 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                       contentPadding: EdgeInsets.zero,
                       minVerticalPadding: 0,
                       title: videoRecommendationListItem(
-                          recommendations[index - 3]),
+                        recommendations[index - 3],
+                      ),
+                      onTap: () {
+                        var viewModel = VideoDetailsViewModel(
+                          author: recommendations[index - 3].owner,
+                          permlink: recommendations[index - 3].mediaid,
+                        );
+                        var screen = VideoDetailsScreen(vm: viewModel);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (c) => screen),
+                        );
+                      },
                     );
                   }
                 },
@@ -408,6 +421,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   // main container
   @override
   Widget build(BuildContext context) {
+    var userData = Provider.of<HiveUserData>(context);
     return FutureBuilder(
       future: widget.vm.getVideoDetails(),
       builder: (builder, snapshot) {
@@ -419,6 +433,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data as VideoDetails?;
           if (data != null) {
+            var url = data.getVideoUrl(userData);
             return Scaffold(
               body: SafeArea(
                 child: Stack(
@@ -427,8 +442,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     SizedBox(
                       height: 230,
                       child: Platform.isAndroid
-                          ? SPKVideoPlayerForAndroid(playUrl: data.playUrl)
-                          : SPKVideoPlayer(playUrl: data.playUrl),
+                          ? SPKVideoPlayerForAndroid(playUrl: url)
+                          : SPKVideoPlayer(playUrl: url),
                     ),
                   ],
                 ),
