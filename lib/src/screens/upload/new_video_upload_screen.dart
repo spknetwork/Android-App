@@ -8,6 +8,7 @@ import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:images_picker/images_picker.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 import 'package:tus_client/tus_client.dart';
@@ -146,6 +147,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         });
 
         var originalFileName = file.name;
+        var fileToSave = File(file.path);
         log(originalFileName);
         // log("bytes - ${videoFile.bytes ?? 0}");
         // log("size - ${file.size}");
@@ -183,6 +185,9 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         log('output is ${output.toString()}');
         throw 'Throwing error now';
 */
+        if (widget.camera) {
+          await ImagesPicker.saveVideoToAlbum(fileToSave);
+        }
         var dateEndGettingVideo = DateTime.now();
         var diff = dateEndGettingVideo.difference(dateStartGettingVideo);
         setState(() {
@@ -198,7 +203,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         var fileSize = size;
         var sizeInMb = fileSize / 1000 / 1000;
         log("Compressed video file size in mb is - $sizeInMb");
-        if (sizeInMb > 500) {
+        if (sizeInMb > 1024) {
           throw 'Video is too big to be uploaded from mobile (exceeding 500 mb)';
         }
         var path = file.path;
@@ -275,11 +280,9 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         throw 'User cancelled the video picker';
       }
     } catch (e) {
-      if (e.toString() == "User cancelled the video picker") {
-        setState(() {
-          Navigator.of(context).pop();
-        });
-      }
+      setState(() {
+        Navigator.of(context).pop();
+      });
       rethrow;
     }
   }
