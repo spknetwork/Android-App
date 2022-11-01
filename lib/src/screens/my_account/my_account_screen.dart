@@ -2,10 +2,12 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/my_account/account_settings/account_settings_screen.dart';
+import 'package:acela/src/screens/my_account/update_thumb/update_thumb_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
+import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
@@ -61,6 +63,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           Tab(icon: Icon(Icons.hourglass_top)),
           Tab(icon: Icon(Icons.rocket_launch)),
           Tab(icon: Icon(Icons.check)),
+          Tab(icon: Icon(Icons.cancel_rounded)),
         ],
       ),
       actions: [
@@ -79,22 +82,46 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   Widget _trailingActionOnVideoListItem(VideoDetails item, HiveUserData user) {
     return item.status == 'published'
         ? const Icon(Icons.check, color: Colors.green)
-        : item.status == 'publish_manual'
-            ? IconButton(
-                onPressed: () {
-                  var screen = VideoPrimaryInfo(item: item);
-                  var route = MaterialPageRoute(builder: (c) => screen);
-                  Navigator.of(context).push(route);
-                },
-                icon: const Icon(
-                  Icons.rocket_launch,
-                  color: Colors.green,
-                ),
-              )
-            : const Icon(
-                Icons.hourglass_top,
-                color: Colors.blue,
-              );
+        : item.status == "encoding_failed"
+            ? const Icon(Icons.cancel_outlined, color: Colors.red)
+            : item.status == 'publish_manual'
+                ? IconButton(
+                    onPressed: () {
+                      var screen = VideoPrimaryInfo(item: item);
+                      var route = MaterialPageRoute(builder: (c) => screen);
+                      Navigator.of(context).push(route);
+                    },
+                    icon: const Icon(
+                      Icons.rocket_launch,
+                      color: Colors.green,
+                    ),
+                  )
+                : const Icon(
+                    Icons.hourglass_top,
+                    color: Colors.blue,
+                  );
+  }
+
+  void _showBottomSheet(VideoDetails item) {
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('Options'),
+      androidBorderRadius: 30,
+      actions: <BottomSheetAction>[
+        BottomSheetAction(
+          title: const Text('Change Thumbnail'),
+          onPressed: (context) {
+            Navigator.of(context).pop();
+            var screen = UpdateThumbScreen(item: item);
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
+          },
+        ),
+      ],
+      cancelAction: CancelAction(
+        title: const Text('Cancel'),
+      ),
+    );
   }
 
   Widget _videoListItem(VideoDetails item, HiveUserData user) {
@@ -107,7 +134,16 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           ? item.description.substring(0, 30)
           : item.description),
       trailing: _trailingActionOnVideoListItem(item, user),
-      onTap: () {},
+      onTap: () {
+        if (item.status != 'publish_manual' &&
+            item.status != 'encoding_failed') {
+          _showBottomSheet(item);
+        } else if (item.status == 'publish_manual') {
+          var screen = VideoPrimaryInfo(item: item);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        }
+      },
     );
   }
 
@@ -129,6 +165,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   Widget _videosList(List<VideoDetails> items, HiveUserData user) {
     var published = items.where((item) => item.status == 'published').toList();
     var ready = items.where((item) => item.status == 'publish_manual').toList();
+    var failed =
+        items.where((item) => item.status == 'encoding_failed').toList();
     var process = items
         .where((item) =>
             item.status != 'published' && item.status != 'publish_manual')
@@ -143,6 +181,9 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         ),
         SafeArea(
           child: _listViewForItems(published, user),
+        ),
+        SafeArea(
+          child: _listViewForItems(failed, user),
         ),
       ],
     );
@@ -177,7 +218,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     }
     var username = user.username ?? 'Unknown';
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: _appBar(username),
         body: Container(

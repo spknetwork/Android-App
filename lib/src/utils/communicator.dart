@@ -337,6 +337,44 @@ class Communicator {
     }
   }
 
+  Future<VideoDetails> updateThumb({
+    required HiveUserData user,
+    required String videoId,
+    required String thumbnail,
+  }) async {
+    var request = http.Request(
+      'POST',
+      Uri.parse('${Communicator.tsServer}/mobile/api/update_thumbnail'),
+    );
+    request.body = VideoThumbUpdateRequest(
+      videoId: videoId,
+      thumbnail: thumbnail,
+    ).toJsonString();
+    Map<String, String> map = {
+      "cookie": user.cookie ?? "",
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    try {
+      http.StreamedResponse response = await request.send();
+      if (response.statusCode == 200) {
+        log("Successfully sent upload complete");
+        var string = await response.stream.bytesToString();
+        log('Video complete response is\n$string');
+        return VideoDetails.fromJsonString(string);
+      } else {
+        var string = await response.stream.bytesToString();
+        var error = ErrorResponse.fromJsonString(string).error ??
+            response.reasonPhrase.toString();
+        log('Error from server is $error');
+        throw error;
+      }
+    } catch (e) {
+      log('Error from server is ${e.toString()}');
+      rethrow;
+    }
+  }
+
   Future<List<VideoDetails>> loadVideos(HiveUserData user) async {
     log("Starting fetch videos ${DateTime.now().toIso8601String()}");
     var cookie = await getValidCookie(user);

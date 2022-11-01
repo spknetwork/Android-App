@@ -34,6 +34,22 @@ class VideoUploadCompleteRequest {
   String toJsonString() => json.encode(toJson());
 }
 
+class VideoThumbUpdateRequest {
+  final String videoId;
+  final String thumbnail;
+
+  VideoThumbUpdateRequest({
+    required this.videoId,
+    required this.thumbnail,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {'videoId': videoId, 'thumbnail': thumbnail};
+  }
+
+  String toJsonString() => json.encode(toJson());
+}
+
 class NewVideoUploadCompleteRequest {
   final String oFilename;
   final int duration;
