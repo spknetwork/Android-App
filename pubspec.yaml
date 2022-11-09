@@ -67,6 +67,7 @@ dependencies:
   permission_handler: ^10.0.0
   path_provider: ^2.0.11
   images_picker: ^1.2.11
+  carousel_slider: ^4.1.1
 
 dev_dependencies:
   flutter_test:

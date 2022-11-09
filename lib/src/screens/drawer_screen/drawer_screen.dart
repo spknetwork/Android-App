@@ -6,6 +6,7 @@ import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
+import 'package:acela/src/screens/stories/stories_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -88,6 +89,18 @@ class DrawerScreen extends StatelessWidget {
         Navigator.pop(context);
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (c) => const LeaderboardScreen()));
+      },
+    );
+  }
+
+  Widget _shorts(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.video_camera_front_outlined),
+      title: const Text("3Speak Shorts"),
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (c) => const StoriesScreen()));
       },
     );
   }
@@ -196,6 +209,8 @@ class DrawerScreen extends StatelessWidget {
         _communities(context),
         _divider(),
         _leaderBoard(context),
+        _divider(),
+        _shorts(context),
         _divider(),
         _settings(context),
         _divider(),
