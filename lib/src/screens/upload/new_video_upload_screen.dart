@@ -41,8 +41,10 @@ class NewVideoUploadScreen extends StatefulWidget {
   const NewVideoUploadScreen({
     Key? key,
     required this.camera,
+    required this.isReel,
   }) : super(key: key);
   final bool camera;
+  final bool isReel;
 
   @override
   State<NewVideoUploadScreen> createState() => _NewVideoUploadScreenState();
@@ -139,8 +141,18 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         didShowFilePicker = true;
       });
 
-      final XFile? file = await _picker.pickVideo(
-          source: widget.camera ? ImageSource.camera : ImageSource.gallery);
+      final XFile? file;
+      if (widget.isReel) {
+        file = await _picker.pickVideo(
+          source: widget.camera ? ImageSource.camera : ImageSource.gallery,
+          maxDuration: Duration(seconds: 90),
+          preferredCameraDevice: CameraDevice.front,
+        );
+      } else {
+        file = await _picker.pickVideo(
+          source: widget.camera ? ImageSource.camera : ImageSource.gallery,
+        );
+      }
       if (file != null) {
         setState(() {
           didPickFile = true;
@@ -153,7 +165,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         // log("size - ${file.size}");
         log("path - ${file.path}");
         var alreadyUploaded = list.items.contains((e) {
-          return e.fileName == originalFileName || e.filePath == file.path;
+          return e.fileName == originalFileName || e.filePath == file!.path;
         });
         if (alreadyUploaded) {
           throw 'This video is already uploaded by you';
@@ -264,6 +276,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           duration: duration,
           size: fileSize.toDouble(),
           tusFileName: name,
+          isReel: widget.isReel,
         );
         _addItem(originalFileName, file.path);
         log(videoUploadInfo.status);

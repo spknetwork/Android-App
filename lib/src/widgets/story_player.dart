@@ -1,6 +1,5 @@
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class StoryPlayer extends StatefulWidget {
   const StoryPlayer({
@@ -41,21 +40,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
         showControls: false,
         showControlsOnInitialize: false,
       ),
-      deviceOrientationsOnFullScreen: [DeviceOrientation.portraitUp],
-      // fullScreenByDefault: true,
-      // placeholder: FadeInImage.assetNetwork(
-      //   placeholder: 'assets/branding/three_speak_logo.png',
-      //   image: widget.thumbnail,
-      //   fit: BoxFit.fill,
-      //   placeholderErrorBuilder:
-      //       (BuildContext context, Object error, StackTrace? stackTrace) {
-      //     return Image.asset('assets/branding/three_speak_logo.png');
-      //   },
-      //   imageErrorBuilder:
-      //       (BuildContext context, Object error, StackTrace? stackTrace) {
-      //     return Image.asset('assets/branding/three_speak_logo.png');
-      //   },
-      // ),
+      fullScreenByDefault: false,
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,

@@ -57,6 +57,7 @@ class NewVideoUploadCompleteRequest {
   final String filename;
   final String thumbnail;
   final String owner;
+  final bool isReel;
 
   NewVideoUploadCompleteRequest({
     required this.oFilename,
@@ -65,6 +66,7 @@ class NewVideoUploadCompleteRequest {
     required this.filename,
     required this.thumbnail,
     required this.owner,
+    required this.isReel,
   });
 
   Map<String, dynamic> toJson() => {
@@ -74,6 +76,7 @@ class NewVideoUploadCompleteRequest {
         'duration': duration,
         'thumbnail': thumbnail,
         'owner': owner,
+        'isReel': isReel,
       };
 
   String toJsonString() => json.encode(toJson());

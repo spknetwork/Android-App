@@ -142,34 +142,72 @@ class _HomeScreenState extends State<HomeScreen> {
     }, payout);
   }
 
+  void showBottomSheetForVideoOptions(bool isReel) {
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('How do you want to upload?'),
+      androidBorderRadius: 30,
+      actions: <BottomSheetAction>[
+        BottomSheetAction(
+          title: const Text('Camera'),
+          leading: const Icon(Icons.camera_alt),
+          onPressed: (c) {
+            var screen = NewVideoUploadScreen(
+              camera: true,
+              isReel: isReel,
+            );
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).pop();
+            Navigator.of(context).push(route);
+          },
+        ),
+        BottomSheetAction(
+            title: const Text('Photo Gallery'),
+            leading: const Icon(Icons.photo_library),
+            onPressed: (c) {
+              var screen = NewVideoUploadScreen(
+                camera: false,
+                isReel: isReel,
+              );
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).pop();
+              Navigator.of(context).push(route);
+            }),
+      ],
+      cancelAction: CancelAction(
+        title: const Text('Cancel'),
+      ),
+    );
+  }
+
+  void showBottomSheetForRecordingTypes() {
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('What do you want to upload?'),
+      androidBorderRadius: 30,
+      actions: <BottomSheetAction>[
+        BottomSheetAction(
+          title: const Text('3Speak Short'),
+          leading: const Icon(Icons.camera_outlined),
+          onPressed: (c) {
+            showBottomSheetForVideoOptions(true);
+          },
+        ),
+        BottomSheetAction(
+            title: const Text('3Speak Video'),
+            leading: const Icon(Icons.video_collection),
+            onPressed: (c) {
+              showBottomSheetForVideoOptions(false);
+            }),
+      ],
+      cancelAction: CancelAction(title: const Text('Cancel')),
+    );
+  }
+
   Widget _fabNewUpload() {
     return FloatingActionButton(
       onPressed: () {
-        showAdaptiveActionSheet(
-          context: context,
-          title: const Text('Select record type'),
-          androidBorderRadius: 30,
-          actions: <BottomSheetAction>[
-            BottomSheetAction(
-              title: const Text('Camera'),
-              onPressed: (c) {
-                var screen = const NewVideoUploadScreen(camera: true);
-                var route = MaterialPageRoute(builder: (c) => screen);
-                Navigator.of(context).pop();
-                Navigator.of(context).push(route);
-              },
-            ),
-            BottomSheetAction(
-                title: const Text('Photo Gallery'),
-                onPressed: (c) {
-                  var screen = const NewVideoUploadScreen(camera: false);
-                  var route = MaterialPageRoute(builder: (c) => screen);
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(route);
-                }),
-          ],
-          cancelAction: CancelAction(title: const Text('Cancel')),
-        );
+        showBottomSheetForRecordingTypes();
       },
       child: const Icon(Icons.add),
     );
