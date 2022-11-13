@@ -190,6 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text('3Speak Short'),
           leading: const Icon(Icons.camera_outlined),
           onPressed: (c) {
+            Navigator.of(context).pop();
             showBottomSheetForVideoOptions(true);
           },
         ),
@@ -197,6 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title: const Text('3Speak Video'),
             leading: const Icon(Icons.video_collection),
             onPressed: (c) {
+              Navigator.of(context).pop();
               showBottomSheetForVideoOptions(false);
             }),
       ],

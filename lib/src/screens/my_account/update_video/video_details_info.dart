@@ -141,7 +141,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'bene': v.benes[0],
           'beneW': v.benes[1],
           'postingKey': user.postingKey,
-          'community': selectedCommunity,
+          'community': widget.item.isReel ? 'hive-151961' : selectedCommunity,
         });
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
@@ -295,6 +295,9 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   }
 
   Widget _communityPicker() {
+    if (widget.item.isReel) {
+      return Container();
+    }
     return Container(
       margin: EdgeInsets.all(10),
       child: Row(
