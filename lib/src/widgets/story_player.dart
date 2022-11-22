@@ -33,7 +33,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
     BetterPlayerConfiguration betterPlayerConfiguration =
         BetterPlayerConfiguration(
       aspectRatio: widget.width / widget.height,
-      fit: BoxFit.fill,
+      fit: BoxFit.fitHeight,
       autoPlay: true,
       // fullScreenByDefault: true,
       controlsConfiguration: BetterPlayerControlsConfiguration(
