@@ -71,6 +71,7 @@ class _MyAppState extends State<MyApp> {
             cookie: null,
             postingKey: null,
             username: null,
+            rpc: 'api.hive.blog',
           ),
           child: StreamProvider<bool>.value(
             value: server.theme,
@@ -138,12 +139,14 @@ class _MyAppState extends State<MyApp> {
     String? postingKey = await storage.read(key: 'postingKey');
     String? cookie = await storage.read(key: 'cookie');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
+    String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
     server.updateHiveUserData(
       HiveUserData(
         username: username,
         postingKey: postingKey,
         cookie: cookie,
         resolution: resolution,
+        rpc: rpc,
       ),
     );
   }

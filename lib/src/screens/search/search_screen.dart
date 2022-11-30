@@ -6,14 +6,15 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/search/search_response_models.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class SearchScreen extends StatefulWidget {
@@ -31,7 +32,7 @@ class _SearchScreenState extends State<SearchScreen> {
   var loading = false;
   Map<String, PayoutInfo?> payout = {};
 
-  Future<void> search(String term) async {
+  Future<void> search(String term, HiveUserData appData) async {
     var headers = {
       'Content-Type': 'application/json',
       'Authorization': dotenv.env['HIVE_SEARCHER_AUTH_KEY'] ?? ''
@@ -56,7 +57,7 @@ class _SearchScreenState extends State<SearchScreen> {
       });
       var i = 0;
       Timer.periodic(const Duration(seconds: 1), (timer) {
-        fetchHiveInfo(results[i].author, results[i].permlink);
+        fetchHiveInfo(results[i].author, results[i].permlink, appData.rpc);
         i += 1;
         if (i == results.length) {
           timer.cancel();
@@ -71,8 +72,8 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   // fetch hive info
-  void fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
+  void fetchHiveInfo(String user, String permlink, String hiveApiUrl) async {
+    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",
@@ -113,7 +114,7 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
-  PreferredSizeWidget _appBar() {
+  PreferredSizeWidget _appBar(HiveUserData appData) {
     return AppBar(
       title: TextField(
         controller: _controller,
@@ -121,7 +122,7 @@ class _SearchScreenState extends State<SearchScreen> {
           var timer = Timer(const Duration(seconds: 2), () {
             log('Text changed to $value');
             if (value.trim().length > 3) {
-              search(value.trim());
+              search(value.trim(), appData);
             }
           });
           setState(() {
@@ -137,9 +138,9 @@ class _SearchScreenState extends State<SearchScreen> {
     var created = DateTime.tryParse(item.createdAt);
     String timeInString =
         created != null ? "📆 ${timeago.format(created)}" : "";
-    double? payoutAmount = payout["${item.author}/${item.permlink}"]?.payout;
-    int? upVotes = payout["${item.author}/${item.permlink}"]?.upVotes;
-    int? downVotes = payout["${item.author}/${item.permlink}"]?.downVotes;
+    // double? payoutAmount = payout["${item.author}/${item.permlink}"]?.payout;
+    // int? upVotes = payout["${item.author}/${item.permlink}"]?.upVotes;
+    // int? downVotes = payout["${item.author}/${item.permlink}"]?.downVotes;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       minVerticalPadding: 0,
@@ -189,8 +190,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var appData = Provider.of<HiveUserData>(context);
     return Scaffold(
-      appBar: _appBar(),
+      appBar: _appBar(appData),
       body: _searchResultListView(),
     );
   }

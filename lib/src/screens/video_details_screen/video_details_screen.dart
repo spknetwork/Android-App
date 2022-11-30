@@ -12,7 +12,6 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
@@ -36,17 +35,15 @@ class VideoDetailsScreen extends StatefulWidget {
 
 class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   late Future<List<VideoRecommendationItem>> recommendedVideos;
-  late Future<List<HiveComment>> _loadComments;
+  Future<List<HiveComment>>? _loadComments;
 
-  late Future<HivePostInfoPostResultBody> _fetchHiveInfoForThisVideo;
+  Future<HivePostInfoPostResultBody>? _fetchHiveInfoForThisVideo;
 
   @override
   void initState() {
     super.initState();
-    _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo();
+    // _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo();
     recommendedVideos = widget.vm.getRecommendedVideos();
-    _loadComments =
-        widget.vm.loadFirstSetOfComments(widget.vm.author, widget.vm.permlink);
   }
 
   void onUserTap() {
@@ -76,8 +73,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   // fetch hive info
-  Future<HivePostInfoPostResultBody> fetchHiveInfoForThisVideo() async {
-    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
+  Future<HivePostInfoPostResultBody> fetchHiveInfoForThisVideo(
+      String hiveApiUrl) async {
+    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",
@@ -254,7 +252,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   // video comments
-  Widget commentsSection(List<HiveComment> comments) {
+  Widget commentsSection(List<HiveComment> comments, HiveUserData appData) {
     var filtered = comments.where((element) =>
         (element.netRshares ?? 0) >= 0 && (element.authorReputation ?? 0) >= 0);
     if (filtered.isEmpty) {
@@ -279,7 +277,10 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           MaterialPageRoute(
             builder: (context) {
               return VideoDetailsComments(
-                  author: widget.vm.author, permlink: widget.vm.permlink);
+                author: widget.vm.author,
+                permlink: widget.vm.permlink,
+                rpc: appData.rpc,
+              );
             },
           ),
         );
@@ -288,7 +289,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   // video comments
-  Widget videoComments() {
+  Widget videoComments(HiveUserData appData) {
     return FutureBuilder(
       future: _loadComments,
       builder: (builder, snapshot) {
@@ -299,7 +300,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data! as List<HiveComment>;
-          return commentsSection(data);
+          return commentsSection(data, appData);
         } else {
           return Container(
             margin: const EdgeInsets.all(10),
@@ -322,7 +323,10 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
 
   //endregion
 
-  Widget videoWithDetailsWithoutRecommendation(VideoDetails details) {
+  Widget videoWithDetailsWithoutRecommendation(
+    VideoDetails details,
+    HiveUserData appData,
+  ) {
     return Container(
       margin: const EdgeInsets.only(top: 230),
       child: ListView.separated(
@@ -330,7 +334,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           if (index == 0) {
             return titleAndSubtitle(details);
           } else if (index == 1) {
-            return videoComments();
+            return videoComments(appData);
           } else {
             return ListTile(
               contentPadding: EdgeInsets.zero,
@@ -347,12 +351,12 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   // container list view
-  Widget videoWithDetails(VideoDetails details) {
+  Widget videoWithDetails(VideoDetails details, HiveUserData appData) {
     return FutureBuilder(
         future: recommendedVideos,
         builder: (builder, snapshot) {
           if (snapshot.hasError) {
-            return videoWithDetailsWithoutRecommendation(details);
+            return videoWithDetailsWithoutRecommendation(details, appData);
           } else if (snapshot.hasData &&
               snapshot.connectionState == ConnectionState.done) {
             var recommendations =
@@ -364,7 +368,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                   if (index == 0) {
                     return titleAndSubtitle(details);
                   } else if (index == 1) {
-                    return videoComments();
+                    return videoComments(appData);
                   } else if (index == 2) {
                     return const ListTile(
                       title: Text('Recommended Videos'),
@@ -395,7 +399,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
               ),
             );
           } else {
-            return videoWithDetailsWithoutRecommendation(details);
+            return videoWithDetailsWithoutRecommendation(details, appData);
           }
         });
   }
@@ -422,6 +426,20 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     var userData = Provider.of<HiveUserData>(context);
+    if (_loadComments == null) {
+      setState(() {
+        _loadComments = widget.vm.loadFirstSetOfComments(
+          widget.vm.author,
+          widget.vm.permlink,
+          userData.rpc,
+        );
+      });
+    }
+    if (_fetchHiveInfoForThisVideo == null) {
+      setState(() {
+        _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo(userData.rpc);
+      });
+    }
     return FutureBuilder(
       future: widget.vm.getVideoDetails(),
       builder: (builder, snapshot) {
@@ -438,7 +456,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
               body: SafeArea(
                 child: Stack(
                   children: [
-                    videoWithDetails(data),
+                    videoWithDetails(data, userData),
                     SizedBox(
                       height: 230,
                       child: Platform.isAndroid

@@ -5,6 +5,7 @@ import 'package:acela/src/utils/crypto_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -22,17 +23,18 @@ class _LoginScreenState extends State<LoginScreen> {
   // Create storage
   static const storage = FlutterSecureStorage();
 
-  void onLoginTapped() async {
+  void onLoginTapped(HiveUserData appData) async {
     setState(() {
       isLoading = true;
     });
     try {
-      var publicKey = await Communicator().getPublicKey(username);
+      var publicKey = await Communicator().getPublicKey(username, appData.rpc);
       var resultingKey = CryptoManager().privToPub(postingKey);
       if (resultingKey == publicKey) {
         // it is valid key
         debugPrint("Successful login");
         String resolution = await storage.read(key: 'resolution') ?? '480p';
+        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
         await storage.write(key: 'username', value: username);
         await storage.write(key: 'postingKey', value: postingKey);
         await storage.delete(key: 'cookie');
@@ -42,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
             postingKey: postingKey,
             cookie: null,
             resolution: resolution,
+            rpc: rpc,
           ),
         );
         Navigator.of(context).pop();
@@ -68,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  Widget _loginForm() {
+  Widget _loginForm(HiveUserData appData) {
     return Container(
       margin: EdgeInsets.all(10),
       child: Column(
@@ -106,7 +109,9 @@ class _LoginScreenState extends State<LoginScreen> {
           isLoading
               ? CircularProgressIndicator()
               : ElevatedButton(
-                  onPressed: onLoginTapped,
+                  onPressed: () {
+                    onLoginTapped(appData);
+                  },
                   child: const Text('Log in'),
                 ),
         ],
@@ -121,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var data = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -134,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
           )
         ],
       ),
-      body: _loginForm(),
+      body: _loginForm(data),
     );
   }
 }

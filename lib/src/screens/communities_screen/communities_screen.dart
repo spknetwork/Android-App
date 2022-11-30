@@ -1,5 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/communities_models/response/communities_response_models.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/communities_screen/community_details/community_details_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
@@ -7,6 +8,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class CommunitiesScreen extends StatefulWidget {
   const CommunitiesScreen({
@@ -20,13 +22,7 @@ class CommunitiesScreen extends StatefulWidget {
 }
 
 class _CommunitiesScreenState extends State<CommunitiesScreen> {
-  late Future<List<CommunityItem>> _future;
-
-  @override
-  void initState() {
-    super.initState();
-    _future = getListOfCommunities();
-  }
+  Future<List<CommunityItem>>? _future;
 
   TextEditingController searchController = TextEditingController();
   Widget _listTile(CommunityItem item) {
@@ -80,7 +76,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
                 child: const Text('Search'),
                 onPressed: () {
                   setState(() {
-                    _future = getListOfCommunities();
+                    _future = null;
                   });
                 },
               ),
@@ -93,19 +89,22 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
     );
   }
 
-  Future<List<CommunityItem>> getListOfCommunities() {
+  Future<List<CommunityItem>> getListOfCommunities(String hiveApiUrl) {
     var value = searchController.value.text;
-    return Communicator().getListOfCommunities(value.isEmpty ? null : value);
+    return Communicator()
+        .getListOfCommunities(value.isEmpty ? null : value, hiveApiUrl);
   }
 
-  Widget _body() {
+  Widget _body(HiveUserData appData) {
     return FutureBuilder<List<CommunityItem>>(
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
             return RetryScreen(
               error: snapshot.error?.toString() ?? "Something went wrong",
-              onRetry: getListOfCommunities,
+              onRetry: () {
+                getListOfCommunities(appData.rpc);
+              },
             );
           } else if (snapshot.hasData) {
             return Container(
@@ -115,7 +114,9 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
           } else {
             return RetryScreen(
               error: "Something went wrong",
-              onRetry: getListOfCommunities,
+              onRetry: () {
+                getListOfCommunities(appData.rpc);
+              },
             );
           }
         } else {
@@ -131,11 +132,17 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var appData = Provider.of<HiveUserData>(context);
+    if (_future == null) {
+      setState(() {
+        _future = getListOfCommunities(appData.rpc);
+      });
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text("Communities"),
       ),
-      body: _body(),
+      body: _body(appData),
     );
   }
 }

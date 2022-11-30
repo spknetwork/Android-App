@@ -1,10 +1,11 @@
 import 'package:acela/src/models/user_profile/request/user_followers_request.dart';
 import 'package:acela/src/models/user_profile/response/followers_and_following.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/user_channel_screen/follower_list_tile.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class UserChannelFollowingWidget extends StatefulWidget {
   const UserChannelFollowingWidget(
@@ -23,13 +24,13 @@ class _UserChannelFollowingWidgetState extends State<UserChannelFollowingWidget>
   @override
   bool get wantKeepAlive => true;
 
-  Future<Followers> _loadFollowers(String author) async {
+  Future<Followers> _loadFollowers(String author, String hiveApiUrl) async {
     var client = http.Client();
     var body = widget.isFollowers
         ? UserFollowerRequest.followers(widget.owner).toJsonString()
         : UserFollowerRequest.following(widget.owner).toJsonString();
     var response =
-        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
+        await client.post(Uri.parse('https://$hiveApiUrl'), body: body);
     if (response.statusCode == 200) {
       return Followers.fromJsonString(response.body);
     } else {
@@ -43,9 +44,9 @@ class _UserChannelFollowingWidgetState extends State<UserChannelFollowingWidget>
     );
   }
 
-  Widget _futureFollowers() {
+  Widget _futureFollowers(HiveUserData appData) {
     return FutureBuilder(
-      future: _loadFollowers(widget.owner),
+      future: _loadFollowers(widget.owner, appData.rpc),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text('Error loading user followers');
@@ -79,6 +80,7 @@ class _UserChannelFollowingWidgetState extends State<UserChannelFollowingWidget>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return _futureFollowers();
+    var appData = Provider.of<HiveUserData>(context);
+    return _futureFollowers(appData);
   }
 }

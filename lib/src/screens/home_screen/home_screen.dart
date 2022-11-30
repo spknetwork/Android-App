@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -8,19 +10,20 @@ import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/widgets/loading_screen.dart';
+import 'package:acela/src/widgets/retry.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen(
-      {Key? key,
-      required this.path,
-      required this.showDrawer,
-      required this.title})
-      : super(key: key);
+  const HomeScreen({
+    Key? key,
+    required this.path,
+    required this.showDrawer,
+    required this.title,
+  }) : super(key: key);
   final String path;
   final bool showDrawer;
   final String title;
@@ -63,47 +66,23 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final widgets = HomeScreenWidgets();
-  List<HomeFeedItem> items = [];
-  var isLoading = false;
-  Map<String, PayoutInfo?> payout = {};
-  var isFabLoading = false;
+  Future<List<HomeFeedItem>>? _future;
 
   @override
   void initState() {
     super.initState();
-    loadData();
+    if (_future == null) {
+      updateFeed();
+    }
   }
 
-  void loadData() async {
-    setState(() {
-      isLoading = true;
-    });
+  Future<List<HomeFeedItem>> _loadFeed() async {
     var response = await get(Uri.parse(widget.path));
     if (response.statusCode == 200) {
       List<HomeFeedItem> list = homeFeedItemFromString(response.body);
-      setState(() {
-        isLoading = false;
-        items = list;
-      });
-      var i = 0;
-      while (i < list.length) {
-        if (mounted) {
-          var info = await Communicator()
-              .fetchHiveInfo(list[i].author, list[i].permlink);
-          setState(() {
-            payout["${list[i].author}/${list[i].permlink}"] = info;
-            i++;
-          });
-        } else {
-          break;
-        }
-      }
+      return list;
     } else {
-      showError('Status code ${response.statusCode}');
-      setState(() {
-        isLoading = false;
-        items = [];
-      });
+      throw 'Status code ${response.statusCode}';
     }
   }
 
@@ -131,15 +110,41 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  Widget _screen() {
-    if (isLoading) {
-      return widgets.loadingData();
-    }
-    return widgets.list(items, (item) {
-      onTap(item);
-    }, (item) {
-      onUserTap(item);
-    }, payout);
+  Widget _screen(HiveUserData appData) {
+    return FutureBuilder<List<HomeFeedItem>>(
+      builder: (c, s) {
+        if (s.connectionState == ConnectionState.done) {
+          if (s.hasError) {
+            return RetryScreen(
+              error: s.error?.toString() ?? "Something went wrong",
+              onRetry: () {
+                _future = null;
+              },
+            );
+          } else if (s.hasData) {
+            var list = s.data as List<HomeFeedItem>;
+            return widgets.list(list, (item) {
+              onTap(item);
+            }, (item) {
+              onUserTap(item);
+            }, {});
+          } else {
+            return RetryScreen(
+              error: "Something went wrong",
+              onRetry: () {
+                _future = null;
+              },
+            );
+          }
+        } else {
+          return const LoadingScreen(
+            title: 'Loading Data',
+            subtitle: 'Please wait',
+          );
+        }
+      },
+      future: _future,
+    );
   }
 
   void showBottomSheetForVideoOptions(bool isReel) {
@@ -215,26 +220,36 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void updateFeed() {
+    Timer.periodic(const Duration(milliseconds: 1000), (timer) {
+      timer.cancel();
+      setState(() {
+        _future = _loadFeed();
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    var user = Provider.of<HiveUserData>(context);
+    var appData = Provider.of<HiveUserData>(context);
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-          actions: [
-            IconButton(
-                onPressed: () {
-                  var route = MaterialPageRoute(
-                      builder: (context) => const SearchScreen());
-                  Navigator.of(context).push(route);
-                },
-                icon: const Icon(Icons.search))
-          ],
-        ),
-        body: _screen(),
-        drawer: widget.showDrawer ? const DrawerScreen() : null,
-        floatingActionButton:
-            user.username == null ? null : _fabNewUpload() //_fab(user),
-        );
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: [
+          IconButton(
+            onPressed: () {
+              var route = MaterialPageRoute(
+                builder: (context) => const SearchScreen(),
+              );
+              Navigator.of(context).push(route);
+            },
+            icon: const Icon(Icons.search),
+          )
+        ],
+      ),
+      body: _screen(appData),
+      drawer: widget.showDrawer ? const DrawerScreen() : null,
+      floatingActionButton: appData.username == null ? null : _fabNewUpload(),
+    );
   }
 }

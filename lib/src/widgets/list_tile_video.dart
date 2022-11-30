@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
-import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -39,13 +39,7 @@ class ListTileVideo extends StatefulWidget {
 }
 
 class _ListTileVideoState extends State<ListTileVideo> {
-  late Future<PayoutInfo> _fetchHiveInfo;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchHiveInfo = fetchHiveInfo(widget.user, widget.permlink);
-  }
+  Future<PayoutInfo>? _fetchHiveInfo;
 
   Widget _errorIndicator() {
     return Container(
@@ -59,8 +53,9 @@ class _ListTileVideoState extends State<ListTileVideo> {
     );
   }
 
-  Future<PayoutInfo> fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
+  Future<PayoutInfo> fetchHiveInfo(
+      String user, String permlink, String hiveApiUrl) async {
+    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",
@@ -187,6 +182,12 @@ class _ListTileVideoState extends State<ListTileVideo> {
 
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<HiveUserData>(context);
+    if (_fetchHiveInfo == null) {
+      setState(() {
+        _fetchHiveInfo = fetchHiveInfo(widget.user, widget.permlink, user.rpc);
+      });
+    }
     return _thumbnailType(context);
   }
 }

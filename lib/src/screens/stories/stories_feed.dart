@@ -12,11 +12,10 @@ import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
 class StoriesFeedScreen extends StatefulWidget {
-  const StoriesFeedScreen({
-    Key? key,
-    required this.type,
-  }) : super(key: key);
+  const StoriesFeedScreen({Key? key, required this.type, required this.height})
+      : super(key: key);
   final String type;
+  final double height;
 
   @override
   State<StoriesFeedScreen> createState() => _StoriesFeedScreenState();
@@ -42,7 +41,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
       List<HomeFeedItem> list = homeFeedItemFromString(response.body);
       setState(() {
         isLoading = false;
-        items = list.where((element) => element.duration < 300).toList();
+        items = list.where((element) => element.duration < 180).toList();
       });
     } else {
       showError('Status code ${response.statusCode}');
@@ -78,7 +77,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
                 playUrl: item.getVideoUrl(data),
                 thumbnail: item.images.thumbnail,
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
+                height: MediaQuery.of(context).size.height - widget.height,
               ),
               Container(
                 child: Row(
@@ -98,14 +97,16 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
                 playUrl: item.getVideoUrl(data),
                 thumbnail: item.images.thumbnail,
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
+                height: MediaQuery.of(context).size.height - widget.height,
               ),
               Container(
                 child: Row(
                   children: [
                     const Spacer(),
-                    Text('@${item.author}/${item.permlink}',
-                        style: Theme.of(context).textTheme.titleLarge),
+                    Text(
+                      '@${item.author}/${item.permlink}',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                     const Spacer(),
                   ],
                 ),

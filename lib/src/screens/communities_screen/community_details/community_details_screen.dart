@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/communities_models/request/community_details_request.dart';
 import 'package:acela/src/models/communities_models/response/community_details_response_models.dart';
-import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
@@ -19,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -43,12 +42,12 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
     Tab(text: 'Team')
   ];
 
-  late Future<List<HomeFeedItem>> _loadingFeed;
-  late Future<CommunityDetailsResponse> _details;
+  Future<List<HomeFeedItem>>? _loadingFeed;
+  Future<CommunityDetailsResponse>? _details;
 
   Future<List<HomeFeedItem>> _loadHomeFeed() async {
     var uri =
-        Uri.parse('https://3speak.tv/apiv2/feeds/community/${widget.name}/new');
+        Uri.parse('${server.domain}/apiv2/feeds/community/${widget.name}/new');
     var response = await get(uri);
     if (response.statusCode == 200) {
       List<HomeFeedItem> list = homeFeedItemFromString(response.body);
@@ -58,11 +57,11 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
     }
   }
 
-  Future<CommunityDetailsResponse> _loadDetails() async {
+  Future<CommunityDetailsResponse> _loadDetails(String hiveApiUrl) async {
     var client = http.Client();
     var body = CommunityDetailsRequest.forName(widget.name).toJsonString();
     var response =
-        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
+        await client.post(Uri.parse('https://$hiveApiUrl'), body: body);
     if (response.statusCode == 200) {
       return CommunityDetailsResponse.fromString(response.body);
     } else {
@@ -73,8 +72,6 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
   @override
   void initState() {
     super.initState();
-    _loadingFeed = _loadHomeFeed();
-    _details = _loadDetails();
     _tabController = TabController(length: tabs.length, vsync: this);
   }
 
@@ -102,9 +99,9 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
         item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
     String duration = "🕚 ${Utilities.formatTime(item.duration.toInt())}";
     String views = "▶ ${item.views}";
-    double? payoutAmount = payout["${item.author}/${item.permlink}"]?.payout;
-    int? upVotes = payout["${item.author}/${item.permlink}"]?.upVotes;
-    int? downVotes = payout["${item.author}/${item.permlink}"]?.downVotes;
+    // double? payoutAmount = payout["${item.author}/${item.permlink}"]?.payout;
+    // int? upVotes = payout["${item.author}/${item.permlink}"]?.upVotes;
+    // int? downVotes = payout["${item.author}/${item.permlink}"]?.downVotes;
     return ListTileVideo(
       placeholder: 'assets/branding/three_speak_logo.png',
       url: item.images.thumbnail,
@@ -120,35 +117,35 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
     );
   }
 
-  void fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
-    request.body = json.encode({
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "bridge.get_discussion",
-      "params": {"author": user, "permlink": permlink, "observer": ""}
-    });
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      var string = await response.stream.bytesToString();
-      var result = HivePostInfo.fromJsonString(string)
-          .result
-          .resultData
-          .where((element) => element.permlink == permlink)
-          .first;
-      setState(() {
-        var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
-        var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
-        payout["$user/$permlink"] = PayoutInfo(
-          payout: result.payout,
-          downVotes: downVotes,
-          upVotes: upVotes,
-        );
-      });
-    } else {
-      print(response.reasonPhrase);
-    }
-  }
+  // void fetchHiveInfo(String user, String permlink) async {
+  //   var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
+  //   request.body = json.encode({
+  //     "id": 1,
+  //     "jsonrpc": "2.0",
+  //     "method": "bridge.get_discussion",
+  //     "params": {"author": user, "permlink": permlink, "observer": ""}
+  //   });
+  //   http.StreamedResponse response = await request.send();
+  //   if (response.statusCode == 200) {
+  //     var string = await response.stream.bytesToString();
+  //     var result = HivePostInfo.fromJsonString(string)
+  //         .result
+  //         .resultData
+  //         .where((element) => element.permlink == permlink)
+  //         .first;
+  //     setState(() {
+  //       var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
+  //       var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
+  //       payout["$user/$permlink"] = PayoutInfo(
+  //         payout: result.payout,
+  //         downVotes: downVotes,
+  //         upVotes: upVotes,
+  //       );
+  //     });
+  //   } else {
+  //     print(response.reasonPhrase);
+  //   }
+  // }
 
   Widget _listTile(HomeFeedItem item, BuildContext context,
       Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
@@ -212,14 +209,18 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
     );
   }
 
-  Widget _about() {
+  Widget _about(HiveUserData appData) {
     return FutureBuilder(
       future: _details,
       builder: (builder, snapshot) {
         if (snapshot.hasError) {
           return RetryScreen(
               error: snapshot.error?.toString() ?? 'Something went wrong',
-              onRetry: _loadDetails);
+              onRetry: () {
+                setState(() {
+                  _details = null;
+                });
+              });
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
           CommunityDetailsResponse data =
@@ -235,14 +236,19 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
     );
   }
 
-  Widget _team() {
+  Widget _team(HiveUserData appData) {
     return FutureBuilder(
       future: _details,
       builder: (builder, snapshot) {
         if (snapshot.hasError) {
           return RetryScreen(
-              error: snapshot.error?.toString() ?? 'Something went wrong',
-              onRetry: _loadDetails);
+            error: snapshot.error?.toString() ?? 'Something went wrong',
+            onRetry: () {
+              setState(() {
+                _details = null;
+              });
+            },
+          );
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
           CommunityDetailsResponse data =
@@ -274,6 +280,17 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    var appData = Provider.of<HiveUserData>(context);
+    if (_loadingFeed == null) {
+      setState(() {
+        _loadingFeed = _loadHomeFeed();
+      });
+    }
+    if (_details == null) {
+      setState(() {
+        _details = _loadDetails(appData.rpc);
+      });
+    }
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -297,8 +314,8 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
         controller: _tabController,
         children: [
           _screen(),
-          _about(),
-          _team(),
+          _about(appData),
+          _team(appData),
         ],
       ),
     );

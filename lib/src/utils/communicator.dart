@@ -36,11 +36,15 @@ class Communicator {
   // static const tsServer = "http://192.168.1.8:13050";
   // static const fsServer = "http://192.168.1.8:1080/files";
 
-  static const hiveApiUrl = 'https://api.hive.blog/';
+  // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
 
-  Future<bool> doesPostNotExist(String user, String post) async {
-    var request = http.Request('POST', Uri.parse(hiveApiUrl));
+  Future<bool> doesPostNotExist(
+    String user,
+    String post,
+    String hiveApiUrl,
+  ) async {
+    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",
@@ -59,8 +63,8 @@ class Communicator {
     }
   }
 
-  Future<String> getPublicKey(String user) async {
-    var request = http.Request('POST', Uri.parse(hiveApiUrl));
+  Future<String> getPublicKey(String user, String hiveApiUrl) async {
+    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
     request.body = json.encode({
       "id": 8,
       "jsonrpc": "2.0",
@@ -80,13 +84,16 @@ class Communicator {
     }
   }
 
-  Future<List<CommunityItem>> getListOfCommunities(String? query) async {
+  Future<List<CommunityItem>> getListOfCommunities(
+    String? query,
+    String hiveApiUrl,
+  ) async {
     var client = http.Client();
     var body =
         CommunitiesRequestModel(params: CommunitiesRequestParams(query: query))
             .toJsonString();
     var response =
-        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
+        await client.post(Uri.parse('https://$hiveApiUrl'), body: body);
     if (response.statusCode == 200) {
       var communitiesResponse =
           communitiesResponseModelFromString(response.body);
@@ -96,8 +103,12 @@ class Communicator {
     }
   }
 
-  Future<PayoutInfo> fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
+  Future<PayoutInfo> fetchHiveInfo(
+    String user,
+    String permlink,
+    String hiveApiUrl,
+  ) async {
+    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",
@@ -203,11 +214,13 @@ class Communicator {
           const storage = FlutterSecureStorage();
           await storage.write(key: 'cookie', value: cookie);
           String resolution = await storage.read(key: 'resolution') ?? '480p';
+          String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
           var newData = HiveUserData(
             username: user.username,
             postingKey: user.postingKey,
             cookie: cookie,
             resolution: resolution,
+            rpc: rpc,
           );
           server.updateHiveUserData(newData);
           return cookie;
@@ -233,11 +246,13 @@ class Communicator {
         const storage = FlutterSecureStorage();
         await storage.delete(key: 'cookie');
         String resolution = await storage.read(key: 'resolution') ?? '480p';
+        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
         var newData = HiveUserData(
           username: user.username,
           postingKey: user.postingKey,
           cookie: null,
           resolution: resolution,
+          rpc: rpc,
         );
         server.updateHiveUserData(newData);
         return await getValidCookie(newData);

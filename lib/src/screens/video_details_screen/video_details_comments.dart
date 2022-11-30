@@ -1,16 +1,19 @@
 import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/screens/video_details_screen/hive_comment.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class VideoDetailsComments extends StatefulWidget {
-  const VideoDetailsComments(
-      {Key? key, required this.author, required this.permlink})
-      : super(key: key);
+  const VideoDetailsComments({
+    Key? key,
+    required this.author,
+    required this.permlink,
+    required this.rpc,
+  }) : super(key: key);
   final String author;
   final String permlink;
+  final String rpc;
 
   @override
   State<VideoDetailsComments> createState() => _VideoDetailsCommentsState();
@@ -24,7 +27,7 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
     var body =
         hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
     var response =
-        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
+        await client.post(Uri.parse('https://${widget.rpc}'), body: body);
     if (response.statusCode == 200) {
       var hiveCommentsResponse = hiveCommentsFromString(response.body);
       var comments = hiveCommentsResponse.result;

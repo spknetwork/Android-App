@@ -3,7 +3,6 @@ import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:http/http.dart' show get;
 import 'package:http/http.dart' as http;
 
@@ -35,12 +34,16 @@ class VideoDetailsViewModel {
     }
   }
 
-  Future<List<HiveComment>> loadComments(String author, String permlink) async {
+  Future<List<HiveComment>> loadComments(
+    String author,
+    String permlink,
+    String hiveApiUrl,
+  ) async {
     var client = http.Client();
     var body =
         hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
     var response =
-        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
+        await client.post(Uri.parse('https://$hiveApiUrl'), body: body);
     if (response.statusCode == 200) {
       var hiveCommentsResponse = hiveCommentsFromString(response.body);
       var comments = hiveCommentsResponse.result;
@@ -49,8 +52,11 @@ class VideoDetailsViewModel {
           if (comments
               .where((e) => e.parentPermlink == comments[i].permlink)
               .isEmpty) {
-            var newComments =
-                await loadComments(comments[i].author, comments[i].permlink);
+            var newComments = await loadComments(
+              comments[i].author,
+              comments[i].permlink,
+              hiveApiUrl,
+            );
             comments.insertAll(i + 1, newComments);
           }
         }
@@ -62,12 +68,15 @@ class VideoDetailsViewModel {
   }
 
   Future<List<HiveComment>> loadFirstSetOfComments(
-      String author, String permlink) async {
+    String author,
+    String permlink,
+    String hiveApiUrl,
+  ) async {
     var client = http.Client();
     var body =
         hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
     var response =
-        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
+        await client.post(Uri.parse('https://$hiveApiUrl'), body: body);
     if (response.statusCode == 200) {
       var hiveCommentsResponse = hiveCommentsFromString(response.body);
       var comments = hiveCommentsResponse.result;

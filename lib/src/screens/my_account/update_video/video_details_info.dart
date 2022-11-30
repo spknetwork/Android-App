@@ -104,7 +104,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     });
     try {
       var doesPostNotExist = await Communicator()
-          .doesPostNotExist(widget.item.owner, widget.item.permlink);
+          .doesPostNotExist(widget.item.owner, widget.item.permlink, user.rpc);
+      await Future.delayed(const Duration(seconds: 1), () {});
       if (doesPostNotExist != true) {
         await Communicator().updatePublishState(user, widget.item.id);
         setState(() {
@@ -123,6 +124,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           tags: tags,
           thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
         );
+        await Future.delayed(const Duration(seconds: 1), () {});
         const platform = MethodChannel('com.example.acela/auth');
         var title = base64.encode(utf8.encode(widget.title));
         var description = base64.encode(utf8.encode(widget.subtitle));
@@ -146,6 +148,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
         if (bridgeResponse.error == "success") {
+          await Future.delayed(const Duration(seconds: 3), () {});
           await Communicator().updatePublishState(user, v.id);
           setState(() {
             isCompleting = false;

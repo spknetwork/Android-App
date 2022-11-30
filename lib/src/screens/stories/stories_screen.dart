@@ -30,29 +30,31 @@ class _StoriesScreenState extends State<StoriesScreen> {
       length: tabs.length,
       child: Builder(
         builder: (context) {
-          return Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              title: Row(
-                children: [
-                  Image.asset(
-                    "assets/branding/three_shorts_icon.png",
-                    width: 40,
-                    height: 40,
-                  ),
-                  const SizedBox(width: 15),
-                  const Text('3Shorts')
-                ],
-              ),
-              bottom: TabBar(
-                tabs: tabs,
-              ),
+          var appBar = AppBar(
+            centerTitle: true,
+            title: Row(
+              children: [
+                Image.asset(
+                  "assets/branding/three_shorts_icon.png",
+                  width: 40,
+                  height: 40,
+                ),
+                const SizedBox(width: 15),
+                const Text('3Shorts')
+              ],
             ),
+            bottom: TabBar(
+              tabs: tabs,
+            ),
+          );
+          var height = appBar.preferredSize.height;
+          return Scaffold(
+            appBar: appBar,
             body: TabBarView(
               children: [
-                StoriesFeedScreen(type: 'trending'),
-                StoriesFeedScreen(type: 'new'),
-                StoriesFeedScreen(type: 'firstUploads'),
+                StoriesFeedScreen(type: 'trending', height: height),
+                StoriesFeedScreen(type: 'new', height: height),
+                StoriesFeedScreen(type: 'firstUploads', height: height),
               ],
             ),
           );

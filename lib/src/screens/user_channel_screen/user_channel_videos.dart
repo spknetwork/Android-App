@@ -7,7 +7,6 @@ import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -17,8 +16,13 @@ import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
 
 class UserChannelVideos extends StatefulWidget {
-  const UserChannelVideos({Key? key, required this.owner}) : super(key: key);
+  const UserChannelVideos({
+    Key? key,
+    required this.owner,
+    required this.rpc,
+  }) : super(key: key);
   final String owner;
+  final String rpc;
 
   @override
   State<UserChannelVideos> createState() => UserChannelVideosState();
@@ -74,7 +78,7 @@ class UserChannelVideosState extends State<UserChannelVideos>
       });
       var i = 0;
       Timer.periodic(const Duration(seconds: 1), (timer) {
-        fetchHiveInfo(list[i].author, list[i].permlink);
+        fetchHiveInfo(list[i].author, list[i].permlink, widget.rpc);
         i += 1;
         if (i == list.length) {
           timer.cancel();
@@ -90,8 +94,8 @@ class UserChannelVideosState extends State<UserChannelVideos>
   }
 
   // fetch hive info
-  void fetchHiveInfo(String user, String permlink) async {
-    var request = http.Request('POST', Uri.parse(Communicator.hiveApiUrl));
+  void fetchHiveInfo(String user, String permlink, String hiveApiUrl) async {
+    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
     request.body = json.encode({
       "id": 1,
       "jsonrpc": "2.0",

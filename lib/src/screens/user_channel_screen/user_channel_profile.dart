@@ -1,11 +1,12 @@
 import 'package:acela/src/models/user_profile/request/user_profile_request.dart';
 import 'package:acela/src/models/user_profile/response/user_profile.dart';
-import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserChannelProfileWidget extends StatefulWidget {
@@ -23,11 +24,11 @@ class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
   @override
   bool get wantKeepAlive => true;
 
-  Future<UserProfileResponse> _loadUserProfile() async {
+  Future<UserProfileResponse> _loadUserProfile(String hiveApiUrl) async {
     var client = http.Client();
     var body = UserProfileRequest.forOwner(widget.owner).toJsonString();
     var response =
-        await client.post(Uri.parse(Communicator.hiveApiUrl), body: body);
+        await client.post(Uri.parse('https://$hiveApiUrl'), body: body);
     if (response.statusCode == 200) {
       return UserProfileResponse.fromString(response.body);
     } else {
@@ -62,9 +63,9 @@ class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
     return "![cover image](${data.result.metadata.profile.coverImage})\n## Bio:\n${data.result.metadata.profile.about}\n\n\n## Created At:\n${Utilities.parseAndFormatDateTime(data.result.created)}\n\n## Last Seen At:\n${Utilities.parseAndFormatDateTime(data.result.active)}\n\n## Total Hive Posts:\n${data.result.postCount}\n\n## Hive Reputation:\n${data.result.reputation}\n\n## Location:\n${data.result.metadata.profile.location.isEmpty ? 'None' : data.result.metadata.profile.location}\n\n## Website:\n${data.result.metadata.profile.website.isEmpty ? 'None' : data.result.metadata.profile.website}";
   }
 
-  Widget _futureUserProfile() {
+  Widget _futureUserProfile(HiveUserData appData) {
     return FutureBuilder(
-      future: _loadUserProfile(),
+      future: _loadUserProfile(appData.rpc),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text('Error loading user profile');
@@ -85,6 +86,7 @@ class _UserChannelProfileWidgetState extends State<UserChannelProfileWidget>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return _futureUserProfile();
+    var appData = Provider.of<HiveUserData>(context);
+    return _futureUserProfile(appData);
   }
 }

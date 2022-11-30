@@ -46,12 +46,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         String? username = await storage.read(key: 'username');
         String? postingKey = await storage.read(key: 'postingKey');
         String? cookie = await storage.read(key: 'cookie');
+        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
         server.updateHiveUserData(
           HiveUserData(
             username: username,
             postingKey: postingKey,
             cookie: cookie,
             resolution: optionName,
+            rpc: rpc,
           ),
         );
         loadRes();
@@ -94,24 +96,86 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _drawerMenu(BuildContext context) {
+  BottomSheetAction getActionForRpc(String serverUrl, HiveUserData user) {
+    return BottomSheetAction(
+      title: Text(serverUrl),
+      onPressed: (context) async {
+        Navigator.of(context).pop();
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'rpc', value: serverUrl);
+        server.updateHiveUserData(
+          HiveUserData(
+            username: user.username,
+            postingKey: user.postingKey,
+            cookie: user.cookie,
+            resolution: user.resolution,
+            rpc: serverUrl,
+          ),
+        );
+      },
+    );
+  }
+
+  void showBottomSheetForServer(HiveUserData user) {
+    var list = [
+      'api.hive.blog',
+      'api.deathwing.me',
+      'hive-api.arcange.eu',
+      'hived.emre.sh',
+      'api.openhive.network',
+      'rpc.ausbit.dev',
+      'anyx.io',
+      'techcoderx.com',
+      'api.hive.blue',
+      'api.pharesim.me',
+      'hived.privex.io',
+      'hive.roelandp.nl',
+    ].map((e) => getActionForRpc(e, user)).toList();
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('Select Hive API Node (RPC)'),
+      androidBorderRadius: 30,
+      actions: list,
+      cancelAction: CancelAction(
+        title: const Text(
+          'Cancel',
+          style: TextStyle(color: Colors.deepOrange),
+        ),
+      ),
+    );
+  }
+
+  Widget _rpc(BuildContext context, HiveUserData user) {
+    return ListTile(
+      leading: const Icon(Icons.cloud),
+      title: const Text("Change Hive API Node (RPC)"),
+      subtitle: Text(user.rpc),
+      onTap: () {
+        showBottomSheetForServer(user);
+      },
+    );
+  }
+
+  Widget _drawerMenu(BuildContext context, HiveUserData user) {
     return ListView(
       children: [
         _changeTheme(context),
         _divider(),
         _video(context),
         _divider(),
+        _rpc(context, user)
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    var user = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
       ),
-      body: _drawerMenu(context),
+      body: _drawerMenu(context, user),
     );
   }
 }
