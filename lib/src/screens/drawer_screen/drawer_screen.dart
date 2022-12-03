@@ -9,6 +9,7 @@ import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/stories_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class DrawerScreen extends StatelessWidget {
   const DrawerScreen({Key? key}) : super(key: key);
@@ -170,6 +171,17 @@ class DrawerScreen extends StatelessWidget {
         Navigator.pop(context);
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (c) => const AboutHomeScreen()));
+      },
+    );
+  }
+
+
+  Widget _desktopApp() {
+    return ListTile(
+      leading: const Icon(Icons.download),
+      title: const Text("Desktop App"),
+      onTap: () {
+        Share.share('Download 3Speak on desktop at https://github.com/spknetwork/3Speak-app');
       },
     );
   }
