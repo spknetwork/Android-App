@@ -224,6 +224,7 @@ class DrawerScreen extends StatelessWidget {
         _divider(),
         _shorts(context),
         _divider(),
+        _desktopApp(),
         _settings(context),
         _divider(),
         user.username == null ? _login(context) : _myAccount(context),
