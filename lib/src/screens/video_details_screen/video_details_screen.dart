@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
@@ -17,7 +16,6 @@ import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
-import 'package:acela/src/widgets/video_player_android.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
@@ -459,9 +457,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     videoWithDetails(data, userData),
                     SizedBox(
                       height: 230,
-                      child: Platform.isAndroid
-                          ? SPKVideoPlayerForAndroid(playUrl: url)
-                          : SPKVideoPlayer(playUrl: url),
+                      child: SPKVideoPlayer(playUrl: url),
                     ),
                   ],
                 ),

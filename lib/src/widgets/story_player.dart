@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 
@@ -8,11 +10,13 @@ class StoryPlayer extends StatefulWidget {
     required this.thumbnail,
     required this.width,
     required this.height,
+    required this.didFinish,
   }) : super(key: key);
   final String playUrl;
   final String thumbnail;
   final double width;
   final double height;
+  final Function didFinish;
 
   @override
   _StoryPlayerState createState() => _StoryPlayerState();
@@ -20,7 +24,7 @@ class StoryPlayer extends StatefulWidget {
 
 class _StoryPlayerState extends State<StoryPlayer> {
   late BetterPlayerController _betterPlayerController;
-  GlobalKey _betterPlayerKey = GlobalKey();
+  late BetterPlayerConfiguration config;
 
   @override
   void dispose() {
@@ -30,8 +34,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
 
   @override
   void initState() {
-    BetterPlayerConfiguration betterPlayerConfiguration =
-        BetterPlayerConfiguration(
+    config = BetterPlayerConfiguration(
       aspectRatio: widget.width / widget.height,
       fit: BoxFit.fitHeight,
       autoPlay: true,
@@ -41,16 +44,24 @@ class _StoryPlayerState extends State<StoryPlayer> {
         showControlsOnInitialize: false,
       ),
       fullScreenByDefault: false,
+      autoDispose: true,
+      eventListener: (event) {
+        log('type - ${event.betterPlayerEventType.toString()}');
+        if (event.betterPlayerEventType == BetterPlayerEventType.finished) {
+          widget.didFinish();
+        }
+      },
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       widget.playUrl,
+      videoFormat: BetterPlayerVideoFormat.hls,
     );
-    _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
+    _betterPlayerController = BetterPlayerController(config);
     _betterPlayerController.setupDataSource(dataSource);
-    _betterPlayerController.setBetterPlayerGlobalKey(_betterPlayerKey);
     _betterPlayerController.setControlsEnabled(false);
     _betterPlayerController.setControlsAlwaysVisible(false);
+
     super.initState();
   }
 
@@ -58,7 +69,6 @@ class _StoryPlayerState extends State<StoryPlayer> {
   Widget build(BuildContext context) {
     return BetterPlayer(
       controller: _betterPlayerController,
-      key: _betterPlayerKey,
     );
   }
 }

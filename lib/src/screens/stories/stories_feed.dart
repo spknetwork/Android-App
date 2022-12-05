@@ -1,11 +1,8 @@
-import 'dart:io';
-
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/story_player.dart';
-import 'package:acela/src/widgets/story_player_android.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -24,6 +21,8 @@ class StoriesFeedScreen extends StatefulWidget {
 class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
   List<HomeFeedItem> items = [];
   var isLoading = false;
+  var initialPage = 0;
+  CarouselController controller = CarouselController();
 
   @override
   void initState() {
@@ -41,7 +40,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
       List<HomeFeedItem> list = homeFeedItemFromString(response.body);
       setState(() {
         isLoading = false;
-        items = list.where((element) => element.duration < 180).toList();
+        items = list.where((element) => element.duration <= 90).toList();
       });
     } else {
       showError('Status code ${response.statusCode}');
@@ -70,60 +69,44 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
   }
 
   Widget _fullPost(HomeFeedItem item, HiveUserData data) {
-    return Platform.isAndroid
-        ? Stack(
+    return Stack(
+      children: [
+        StoryPlayer(
+          playUrl: item.getVideoUrl(data),
+          thumbnail: item.images.thumbnail,
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height - widget.height,
+          didFinish: () {
+            setState(() {
+              controller.nextPage();
+            });
+          },
+        ),
+        Container(
+          child: Row(
             children: [
-              StoryPlayerAndroid(
-                playUrl: item.getVideoUrl(data),
-                thumbnail: item.images.thumbnail,
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height - widget.height,
+              const Spacer(),
+              Text(
+                '@${item.author}/${item.permlink}',
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              Container(
-                child: Row(
-                  children: [
-                    const Spacer(),
-                    Text('@${item.author}/${item.permlink}',
-                        style: Theme.of(context).textTheme.titleLarge),
-                    const Spacer(),
-                  ],
-                ),
-              )
+              const Spacer(),
             ],
-          )
-        : Stack(
-            children: [
-              StoryPlayer(
-                playUrl: item.getVideoUrl(data),
-                thumbnail: item.images.thumbnail,
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height - widget.height,
-              ),
-              Container(
-                child: Row(
-                  children: [
-                    const Spacer(),
-                    Text(
-                      '@${item.author}/${item.permlink}',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-              )
-            ],
-          );
+          ),
+        )
+      ],
+    );
   }
 
   Widget carousel(HiveUserData data) {
     return Container(
       child: CarouselSlider(
+        carouselController: controller,
         options: CarouselOptions(
           height: MediaQuery.of(context).size.height,
           enableInfiniteScroll: false,
           viewportFraction: 1,
           scrollDirection: Axis.vertical,
-          // enlargeCenterPage: true,
         ),
         items: items.map((item) {
           return Builder(

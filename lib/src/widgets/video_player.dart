@@ -13,40 +13,7 @@ class SPKVideoPlayer extends StatefulWidget {
 }
 
 class _SPKVideoPlayerState extends State<SPKVideoPlayer> {
-  // late VideoPlayerController videoPlayerController;
-  // ChewieController? chewieController;
   late BetterPlayerController _betterPlayerController;
-  GlobalKey _betterPlayerKey = GlobalKey();
-
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   videoPlayerController.dispose();
-  // }
-
-  // @override
-  // void initState() {
-  //   videoPlayerController = VideoPlayerController.network(widget.playUrl,
-  //       videoPlayerOptions: VideoPlayerOptions(allowBackgroundPlayback: true))
-  //     ..initialize().then((_) {
-  //       setState(() {
-  //         chewieController = ChewieController(
-  //           videoPlayerController: videoPlayerController,
-  //           autoPlay: true,
-  //           looping: false,
-  //         );
-  //       });
-  //     });
-  //   super.initState();
-  // }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return chewieController == null
-  //       ? const LoadingScreen()
-  //       : Chewie(controller: chewieController!);
-  // }
-
   @override
   void initState() {
     BetterPlayerConfiguration betterPlayerConfiguration =
@@ -57,10 +24,10 @@ class _SPKVideoPlayerState extends State<SPKVideoPlayer> {
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       widget.playUrl,
+      videoFormat: BetterPlayerVideoFormat.hls,
     );
     _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
     _betterPlayerController.setupDataSource(dataSource);
-    _betterPlayerController.setBetterPlayerGlobalKey(_betterPlayerKey);
     super.initState();
   }
 
@@ -68,7 +35,6 @@ class _SPKVideoPlayerState extends State<SPKVideoPlayer> {
   Widget build(BuildContext context) {
     return BetterPlayer(
       controller: _betterPlayerController,
-      key: _betterPlayerKey,
     );
   }
 }
