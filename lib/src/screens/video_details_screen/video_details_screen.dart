@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
@@ -19,9 +20,11 @@ import 'package:acela/src/widgets/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 class VideoDetailsScreen extends StatefulWidget {
   const VideoDetailsScreen({Key? key, required this.vm}) : super(key: key);
@@ -195,6 +198,16 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                 child: AppBar(
                   title: Text(details.title),
                   actions: [
+                    IconButton(
+                      onPressed: () {
+                        Share.share(
+                            'Watch it on 3Speak https://3speak.tv/watch?v=' +
+                                details.owner +
+                                "/" +
+                                details.permlink);
+                      },
+                      icon: const Icon(Icons.share),
+                    ),
                     IconButton(
                       onPressed: () {
                         var route = MaterialPageRoute(builder: (context) {
