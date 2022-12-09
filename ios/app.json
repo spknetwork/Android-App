@@ -1,7 +1,7 @@
 {
   "name": "3Speak - Acela Source",
   "identifier": "com.example.acela",
-  "sourceURL": "https://github.com/noah978/AltStore-Docs/raw/master/apps.json",
+  "sourceURL": "https://github.com/spknetwork/Android-App/raw/development/ios/app.json",
   "apps": [
     {
       "name": "3Speak.tv - Acela",
@@ -14,7 +14,7 @@
       "downloadURL": "https://github.com/spknetwork/Android-App/releases/download/v1.0.3_48/Runner.ipa",
       "localizedDescription": "The build which was also submitted to the Apple for TestFlight review",
       "iconURL": "https://github.com/spknetwork/Android-App/releases/download/v1.0.3_48/AppIcon-512.png",
-      "tintColor": "afeeee",
+      "tintColor": "AFEEEE",
       "size": 857669,
       "permissions": [
       ],
