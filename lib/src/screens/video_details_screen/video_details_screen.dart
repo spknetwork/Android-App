@@ -118,6 +118,41 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           var downVotes = data.activeVotes.where((e) => e.rshares < 0).length;
           String priceAndVotes =
               "\$ ${data.payout.toStringAsFixed(3)} · 👍 $upVotes · 👎 $downVotes";
+          String priceOnly = "\$ ${data.payout.toStringAsFixed(3)}";
+          GestureDetector gestureDetectorUpvotes = GestureDetector(
+            onTap: () {},
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.thumb_up_outlined),
+                const SizedBox(height: 6.0),
+                Text(
+                  "$upVotes",
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption!
+                      .copyWith(color: Colors.white),
+                ),
+              ],
+            ),
+          );
+          GestureDetector gestureDetectorDownvotes = GestureDetector(
+            onTap: () {},
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.thumb_down_outlined),
+                const SizedBox(height: 6.0),
+                Text(
+                  "$downVotes",
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption!
+                      .copyWith(color: Colors.white),
+                ),
+              ],
+            ),
+          );
           return Container(
             margin: const EdgeInsets.all(10),
             child: Column(
@@ -136,7 +171,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                             Text(string,
                                 style: Theme.of(context).textTheme.bodySmall),
                             const SizedBox(height: 3),
-                            Text(priceAndVotes,
+                            Text(priceOnly,
                                 style: Theme.of(context).textTheme.bodySmall),
                           ],
                         ),
@@ -147,6 +182,36 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                   onTap: () {
                     showModalForDescription(details);
                   },
+                ),
+                Container(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            gestureDetectorUpvotes,
+                            const SizedBox(
+                              width: 60.0,
+                            ),
+                            gestureDetectorDownvotes,
+                            Spacer(),
+                            IconButton(
+                              onPressed: () {
+                                Share.share(
+                                    'Watch it on 3Speak https://3speak.tv/watch?v=' +
+                                        details.owner +
+                                        "/" +
+                                        details.permlink);
+                              },
+                              icon: const Icon(Icons.share),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
                 SizedBox(height: 10),
                 InkWell(
