@@ -1,12 +1,15 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/stories/stories_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/widgets/fab_custom.dart';
+import 'package:acela/src/widgets/fab_overlay.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/story_player.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class StoriesFeedScreen extends StatefulWidget {
   const StoriesFeedScreen({
@@ -28,6 +31,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
   var isLoading = false;
   var initialPage = 0;
   CarouselController controller = CarouselController();
+  bool isFilterMenuOn = false;
 
   @override
   void initState() {
@@ -83,6 +87,57 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
     );
   }
 
+  List<FabOverItemData> _fabItems(
+      StoriesFeedResponseItem item, HiveUserData data) {
+    List<FabOverItemData> fabItems = [];
+    fabItems.add(
+      FabOverItemData(
+        displayName: 'Share',
+        icon: Icons.share,
+        onTap: () {
+          setState(() {
+            isFilterMenuOn = false;
+            Share.share(
+                'https://3speak.tv/watch?v=${item.owner}/${item.permlink}');
+          });
+        },
+      ),
+    );
+    fabItems.add(
+      FabOverItemData(
+        displayName: 'Close',
+        icon: Icons.close,
+        onTap: () {
+          setState(() {
+            isFilterMenuOn = false;
+          });
+        },
+      ),
+    );
+    return fabItems;
+  }
+
+  Widget _fabContainer(StoriesFeedResponseItem item, HiveUserData data) {
+    if (!isFilterMenuOn) {
+      return FabCustom(
+        icon: Icons.bolt,
+        onTap: () {
+          setState(() {
+            isFilterMenuOn = true;
+          });
+        },
+      );
+    }
+    return FabOverlay(
+      items: _fabItems(item, data),
+      onBackgroundTap: () {
+        setState(() {
+          isFilterMenuOn = false;
+        });
+      },
+    );
+  }
+
   Widget _fullPost(StoriesFeedResponseItem item, HiveUserData data) {
     return Stack(
       children: [
@@ -108,28 +163,31 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
               const Spacer(),
             ],
           ),
-        )
+        ),
+        _fabContainer(item, data),
       ],
     );
   }
 
   Widget carousel(HiveUserData data) {
-    return Container(
-      child: CarouselSlider(
-        carouselController: controller,
-        options: CarouselOptions(
-          height: MediaQuery.of(context).size.height,
-          enableInfiniteScroll: true,
-          viewportFraction: 1,
-          scrollDirection: Axis.vertical,
+    return SafeArea(
+      child: Container(
+        child: CarouselSlider(
+          carouselController: controller,
+          options: CarouselOptions(
+            height: MediaQuery.of(context).size.height,
+            enableInfiniteScroll: true,
+            viewportFraction: 1,
+            scrollDirection: Axis.vertical,
+          ),
+          items: items.map((item) {
+            return Builder(
+              builder: (BuildContext context) {
+                return _fullPost(item, data);
+              },
+            );
+          }).toList(),
         ),
-        items: items.map((item) {
-          return Builder(
-            builder: (BuildContext context) {
-              return _fullPost(item, data);
-            },
-          );
-        }).toList(),
       ),
     );
   }
