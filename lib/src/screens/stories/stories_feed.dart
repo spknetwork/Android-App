@@ -1,5 +1,5 @@
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
+import 'package:acela/src/models/stories/stories_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/story_player.dart';
@@ -9,17 +9,22 @@ import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 
 class StoriesFeedScreen extends StatefulWidget {
-  const StoriesFeedScreen({Key? key, required this.type, required this.height})
-      : super(key: key);
+  const StoriesFeedScreen({
+    Key? key,
+    required this.type,
+    required this.height,
+    required this.fitWidth,
+  }) : super(key: key);
   final String type;
   final double height;
+  final bool fitWidth;
 
   @override
   State<StoriesFeedScreen> createState() => _StoriesFeedScreenState();
 }
 
 class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
-  List<HomeFeedItem> items = [];
+  List<StoriesFeedResponseItem> items = [];
   var isLoading = false;
   var initialPage = 0;
   CarouselController controller = CarouselController();
@@ -27,20 +32,30 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
   @override
   void initState() {
     super.initState();
-    loadData();
+    loadData(0);
   }
 
-  void loadData() async {
+  void loadData(int length) async {
     setState(() {
       isLoading = true;
     });
-    var response = await get(
-        Uri.parse('${server.domain}/apiv2/feeds/${widget.type}?isReel=true'));
+    var string = '${server.domain}/api/${widget.type}/more?skip=$length';
+    var response = await get(Uri.parse(string));
     if (response.statusCode == 200) {
-      List<HomeFeedItem> list = homeFeedItemFromString(response.body);
+      List<StoriesFeedResponseItem> list =
+          StoriesFeedResponseItem().fromJsonString(response.body, widget.type);
       setState(() {
         isLoading = false;
-        items = list.where((element) => element.duration <= 90).toList();
+        items = items +
+            list
+                .where((element) =>
+                    element.duration <= 90 || element.isReel == true)
+                .toList();
+        var permlinks = Set<String>();
+        items.retainWhere((x) => permlinks.add(x.permlink));
+        if (items.length < 10) {
+          loadData(length + list.length);
+        }
       });
     } else {
       showError('Status code ${response.statusCode}');
@@ -68,14 +83,14 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
     );
   }
 
-  Widget _fullPost(HomeFeedItem item, HiveUserData data) {
+  Widget _fullPost(StoriesFeedResponseItem item, HiveUserData data) {
     return Stack(
       children: [
         StoryPlayer(
-          playUrl: item.getVideoUrl(data),
-          thumbnail: item.images.thumbnail,
+          playUrl: item.playUrl,
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height - widget.height,
+          fitWidth: widget.fitWidth,
           didFinish: () {
             setState(() {
               controller.nextPage();
@@ -87,7 +102,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
             children: [
               const Spacer(),
               Text(
-                '@${item.author}/${item.permlink}',
+                '@${item.owner}/${item.permlink}',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const Spacer(),
@@ -104,7 +119,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
         carouselController: controller,
         options: CarouselOptions(
           height: MediaQuery.of(context).size.height,
-          enableInfiniteScroll: false,
+          enableInfiniteScroll: true,
           viewportFraction: 1,
           scrollDirection: Axis.vertical,
         ),

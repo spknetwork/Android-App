@@ -10,19 +10,11 @@ class StoriesScreen extends StatefulWidget {
 
 class _StoriesScreenState extends State<StoriesScreen> {
   static const List<Tab> tabs = [
-    Tab(
-      // text: 'Trending',
-      icon: const Icon(Icons.local_fire_department),
-    ),
-    Tab(
-      // text: 'New',
-      icon: const Icon(Icons.play_arrow),
-    ),
-    Tab(
-      // text: 'First Time',
-      icon: const Icon(Icons.emoji_emotions_outlined),
-    ),
+    Tab(icon: const Icon(Icons.home)),
+    Tab(icon: const Icon(Icons.trending_up)),
+    Tab(icon: const Icon(Icons.new_label)),
   ];
+  var fitWidth = true;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +35,24 @@ class _StoriesScreenState extends State<StoriesScreen> {
                 const Text('3Shorts')
               ],
             ),
+            actions: [
+              fitWidth
+                  ? IconButton(
+                      onPressed: () {
+                        setState(() {
+                          fitWidth = false;
+                        });
+                      },
+                      icon: Icon(Icons.screenshot))
+                  : IconButton(
+                      onPressed: () {
+                        setState(() {
+                          fitWidth = true;
+                        });
+                      },
+                      icon: Icon(Icons.smart_screen),
+                    )
+            ],
             bottom: TabBar(
               tabs: tabs,
             ),
@@ -52,9 +62,21 @@ class _StoriesScreenState extends State<StoriesScreen> {
             appBar: appBar,
             body: TabBarView(
               children: [
-                StoriesFeedScreen(type: 'trending', height: height),
-                StoriesFeedScreen(type: 'new', height: height),
-                StoriesFeedScreen(type: 'firstUploads', height: height),
+                StoriesFeedScreen(
+                  type: 'feed',
+                  height: height,
+                  fitWidth: fitWidth,
+                ),
+                StoriesFeedScreen(
+                  type: 'trends',
+                  height: height,
+                  fitWidth: fitWidth,
+                ),
+                StoriesFeedScreen(
+                  type: 'new',
+                  height: height,
+                  fitWidth: fitWidth,
+                ),
               ],
             ),
           );

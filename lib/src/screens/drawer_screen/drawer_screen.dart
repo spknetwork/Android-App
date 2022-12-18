@@ -175,13 +175,13 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-
   Widget _desktopApp() {
     return ListTile(
       leading: const Icon(Icons.download),
       title: const Text("Desktop App"),
       onTap: () {
-        Share.share('Download 3Speak on desktop at https://github.com/spknetwork/3Speak-app');
+        Share.share(
+            'Download 3Speak on desktop at https://github.com/spknetwork/3Speak-app');
       },
     );
   }
@@ -224,12 +224,13 @@ class DrawerScreen extends StatelessWidget {
         _divider(),
         _shorts(context),
         _divider(),
-        _desktopApp(),
         _settings(context),
         _divider(),
         user.username == null ? _login(context) : _myAccount(context),
         _divider(),
         _importantLinks(context),
+        _divider(),
+        _desktopApp(),
         _divider(),
       ],
     );
