@@ -26,8 +26,8 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
     var client = http.Client();
     var body =
         hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
-    var response =
-        await client.post(Uri.parse('https://${widget.rpc}'), body: body);
+    var rpc = 'https://${widget.rpc}';
+    var response = await client.post(Uri.parse(rpc), body: body);
     if (response.statusCode == 200) {
       var hiveCommentsResponse = hiveCommentsFromString(response.body);
       var comments = hiveCommentsResponse.result;

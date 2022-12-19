@@ -24,6 +24,8 @@ class StoriesFeedResponseItem {
   final String publishData;
   final String localFilename;
   final String jobId;
+  final String created;
+  final int views;
 
   StoriesFeedResponseItem({
     this.fromMobile = false,
@@ -47,6 +49,8 @@ class StoriesFeedResponseItem {
     this.publishData = "",
     this.localFilename = "",
     this.jobId = "",
+    this.created = "",
+    this.views = 0,
   });
 
   List<StoriesFeedResponseItem> fromJsonString(String jsonString, String type) {
@@ -87,5 +91,7 @@ class StoriesFeedResponseItem {
         publishData: asString(json, 'publish_data'),
         localFilename: asString(json, 'local_filename'),
         jobId: asString(json, 'job_id'),
+        created: asString(json, 'created'),
+        views: asInt(json, 'views'),
       );
 }

@@ -198,7 +198,10 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     IconButton(
                       onPressed: () {
                         var route = MaterialPageRoute(builder: (context) {
-                          return VideoDetailsInfoWidget(details: details);
+                          return VideoDetailsInfoWidget(
+                            details: details,
+                            item: null,
+                          );
                         });
                         Navigator.of(context).push(route);
                       },
