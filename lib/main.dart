@@ -68,6 +68,8 @@ class _MyAppState extends State<MyApp> {
           value: server.hiveUserData,
           initialData: HiveUserData(
             resolution: '480p',
+            hasExpiry: null,
+            hasId: null,
             cookie: null,
             postingKey: null,
             username: null,
@@ -138,12 +140,16 @@ class _MyAppState extends State<MyApp> {
     String? username = await storage.read(key: 'username');
     String? postingKey = await storage.read(key: 'postingKey');
     String? cookie = await storage.read(key: 'cookie');
+    String? hasId = await storage.read(key: 'hasId');
+    String? hasExpiry = await storage.read(key: 'hasExpiry');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
     server.updateHiveUserData(
       HiveUserData(
         username: username,
         postingKey: postingKey,
+        hasId: hasId,
+        hasExpiry: hasExpiry,
         cookie: cookie,
         resolution: resolution,
         rpc: rpc,

@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/crypto_manager.dart';
@@ -6,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -42,6 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
           HiveUserData(
             username: username,
             postingKey: postingKey,
+            hasId: null,
+            hasExpiry: null,
             cookie: null,
             resolution: resolution,
             rpc: rpc,
@@ -71,40 +77,102 @@ class _LoginScreenState extends State<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  Widget _hiveUserName() {
+    return TextField(
+      decoration: InputDecoration(
+        icon: const Icon(Icons.person),
+        label: const Text('Hive Username'),
+        hintText: 'Enter Hive username here',
+      ),
+      autocorrect: false,
+      onChanged: (value) {
+        setState(() {
+          username = value;
+        });
+      },
+      enabled: isLoading ? false : true,
+    );
+  }
+
+  Widget _hivePostingKey() {
+    return TextField(
+      decoration: InputDecoration(
+        icon: const Icon(Icons.key),
+        label: const Text('Hive Posting Key'),
+        hintText: 'Copy & paste posting key here',
+      ),
+      obscureText: true,
+      onChanged: (value) {
+        setState(() {
+          postingKey = value;
+        });
+      },
+      enabled: isLoading ? false : true,
+    );
+  }
+
+  Widget _hasButton() {
+    return ElevatedButton(
+      onPressed: () async {
+        if (username.isNotEmpty) {
+          var platform = const MethodChannel('blog.hive.auth/bridge');
+          var values = await platform.invokeMethod('getUserInfo');
+          var valuesResponse = LoginBridgeResponse.fromJsonString(values);
+          if (valuesResponse.data == "undefined,undefined") {
+            final String authStr =
+                await platform.invokeMethod('getRedirectUri', {
+              'username': username,
+            });
+            log('Hive auth string is $authStr');
+            var bridgeResponse = LoginBridgeResponse.fromJsonString(authStr);
+            if (bridgeResponse.data != null) {
+              var url = Uri.parse(bridgeResponse.data!);
+              launchUrl(url);
+            }
+          } else {
+            debugPrint("Successful login");
+            String resolution = await storage.read(key: 'resolution') ?? '480p';
+            String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+            var hasId = valuesResponse.data!.split(",")[0];
+            var hasExpiry = valuesResponse.data!.split(",")[1];
+            await storage.write(key: 'hasId', value: hasId);
+            await storage.write(key: 'hasExpiry', value: hasExpiry);
+            await storage.delete(key: 'cookie');
+            server.updateHiveUserData(
+              HiveUserData(
+                username: username,
+                postingKey: null,
+                hasId: hasId,
+                hasExpiry: hasExpiry,
+                cookie: null,
+                resolution: resolution,
+                rpc: rpc,
+              ),
+            );
+            Navigator.of(context).pop();
+            setState(() {
+              isLoading = false;
+            });
+          }
+        } else {
+          showError('Please enter hive username');
+        }
+      },
+      child: Image.asset('assets/hive-keychain-image.png'),
+    );
+  }
+
   Widget _loginForm(HiveUserData appData) {
     return Container(
       margin: EdgeInsets.all(10),
       child: Column(
         children: [
-          TextField(
-            decoration: InputDecoration(
-              icon: const Icon(Icons.person),
-              label: const Text('Hive Username'),
-              hintText: 'Enter Hive username here',
-            ),
-            autocorrect: false,
-            onChanged: (value) {
-              setState(() {
-                username = value;
-              });
-            },
-            enabled: isLoading ? false : true,
-          ),
+          _hiveUserName(),
           SizedBox(height: 20),
-          TextField(
-            decoration: InputDecoration(
-              icon: const Icon(Icons.key),
-              label: const Text('Hive Posting Key'),
-              hintText: 'Copy & paste posting key here',
-            ),
-            obscureText: true,
-            onChanged: (value) {
-              setState(() {
-                postingKey = value;
-              });
-            },
-            enabled: isLoading ? false : true,
-          ),
+          _hasButton(),
+          SizedBox(height: 50),
+          const Text('- OR -'),
+          _hivePostingKey(),
           SizedBox(height: 20),
           isLoading
               ? CircularProgressIndicator()

@@ -218,6 +218,8 @@ class Communicator {
           var newData = HiveUserData(
             username: user.username,
             postingKey: user.postingKey,
+            hasId: user.hasId,
+            hasExpiry: user.hasExpiry,
             cookie: cookie,
             resolution: resolution,
             rpc: rpc,
@@ -250,6 +252,8 @@ class Communicator {
         var newData = HiveUserData(
           username: user.username,
           postingKey: user.postingKey,
+          hasId: user.hasId,
+          hasExpiry: user.hasExpiry,
           cookie: null,
           resolution: resolution,
           rpc: rpc,

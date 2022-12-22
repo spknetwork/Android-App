@@ -18,6 +18,9 @@ class AcelaWebViewController: UIViewController {
 	var decryptTokenHandler: ((String) -> Void)?
 	var postVideoHandler: ((String) -> Void)?
 
+	var getRedirectUriHandler: ((String) -> Void)? = nil
+	var hiveUserInfoHandler: ((String) -> Void)? = nil
+
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		config.userContentController.add(self, name: acela)
@@ -76,6 +79,16 @@ class AcelaWebViewController: UIViewController {
 			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', 'en', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)', '\(community)');")
 		}
 	}
+
+	func getRedirectUri(_ username: String, handler: @escaping (String) -> Void) {
+		getRedirectUriHandler = handler
+		webView?.evaluateJavaScript("getRedirectUri('\(username)');")
+	}
+
+	func getUserInfo(_ handler: @escaping (String) -> Void) {
+		hiveUserInfoHandler = handler
+		webView?.evaluateJavaScript("getUserInfo();")
+	}
 }
 
 extension AcelaWebViewController: WKNavigationDelegate {
@@ -124,6 +137,16 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 				debugPrint("Is it valid? \(isValid ? "TRUE" : "FALSE")")
 				debugPrint("Error is \(error)")
 				postVideoHandler?(response)
+			case "hiveAuthUserInfo":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				hiveUserInfoHandler?(response)
+			case "getRedirectUri":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				getRedirectUriHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}

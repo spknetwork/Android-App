@@ -11,6 +11,7 @@ struct ValidateHiveKeyResponse: Codable {
 	let valid: Bool
 	let accountName: String?
 	let error: String
+	let data: String?
 
 	static func jsonStringFrom(dict: [String: AnyObject]) -> String? {
 		guard
@@ -20,10 +21,15 @@ struct ValidateHiveKeyResponse: Codable {
 		let response = ValidateHiveKeyResponse(
 			valid: isValid,
 			accountName: dict["accountName"] as? String,
-			error: error
+			error: error,
+			data: dict["data"] as? String
 		)
-		guard let data = try? JSONEncoder().encode(response) else { return nil }
-		guard let dataString = String(data: data, encoding: .utf8) else { return nil }
+		guard
+			let data = try? JSONEncoder().encode(response)
+			else { return nil }
+		guard
+			let dataString = String(data: data, encoding: .utf8)
+			else { return nil }
 		return dataString
 	}
 }
