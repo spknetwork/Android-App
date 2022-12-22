@@ -135,6 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
             String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
             var hasId = valuesResponse.data!.split(",")[0];
             var hasExpiry = valuesResponse.data!.split(",")[1];
+            await storage.write(key: 'username', value: username);
             await storage.write(key: 'hasId', value: hasId);
             await storage.write(key: 'hasExpiry', value: hasExpiry);
             await storage.delete(key: 'cookie');
