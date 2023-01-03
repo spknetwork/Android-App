@@ -70,6 +70,7 @@ class MainActivity: FlutterActivity() {
             val bene = call.argument<String?>("bene")
             val beneW = call.argument<String?>("beneW")
             val community = call.argument<String?>("community")
+            val ipfsHash = call.argument<String?>("ipfsHash")
 
             val data = call.argument<String?>("data")
             if (call.method == "validate" && username != null && postingKey != null) {
@@ -82,8 +83,8 @@ class MainActivity: FlutterActivity() {
             } else if (call.method == "newPostVideo" && thumbnail != null && video_v2 != null
                 && description != null && title != null && tags != null && username != null
                 && permlink != null && duration != null && size != null && originalFilename != null
-                && firstUpload != null && bene != null && beneW != null && community != null) {
-                webView?.evaluateJavascript("newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey', '$community');", null)
+                && firstUpload != null && bene != null && beneW != null && community != null && ipfsHash != null) {
+                webView?.evaluateJavascript("newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash');", null)
             }
         }
     }

@@ -145,6 +145,7 @@ class UserChannelVideosState extends State<UserChannelVideos>
       user: item.author,
       permlink: item.permlink,
       shouldResize: true,
+      isIpfs: item.playUrl.contains('ipfs'),
     );
   }
 

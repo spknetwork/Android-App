@@ -72,11 +72,12 @@ class AcelaWebViewController: UIViewController {
 		beneW: String,
 		postingKey: String,
 		community: String,
+		ipfsHash: String,
 		handler: @escaping (String) -> Void
 	) {
 		postVideoHandler = handler
 		OperationQueue.main.addOperation {
-			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', 'en', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)', '\(community)');")
+			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', 'en', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)', '\(community)', '\(ipfsHash)');")
 		}
 	}
 

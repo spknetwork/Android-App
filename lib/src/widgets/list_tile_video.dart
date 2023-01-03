@@ -22,6 +22,7 @@ class ListTileVideo extends StatefulWidget {
     required this.user,
     required this.permlink,
     required this.shouldResize,
+    required this.isIpfs,
   }) : super(key: key);
 
   final String placeholder;
@@ -33,6 +34,7 @@ class ListTileVideo extends StatefulWidget {
   final String user;
   final String permlink;
   final bool shouldResize;
+  final bool isIpfs;
 
   @override
   State<ListTileVideo> createState() => _ListTileVideoState();
@@ -117,24 +119,35 @@ class _ListTileVideoState extends State<ListTileVideo> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 220,
-            width: MediaQuery.of(context).size.width,
-            child: FadeInImage.assetNetwork(
-              placeholder: widget.placeholder,
-              image: widget.shouldResize
-                  ? server.resizedImage(widget.url)
-                  : widget.url,
-              fit: BoxFit.fitWidth,
-              placeholderErrorBuilder:
-                  (BuildContext context, Object error, StackTrace? stackTrace) {
-                return _errorIndicator();
-              },
-              imageErrorBuilder:
-                  (BuildContext context, Object error, StackTrace? stackTrace) {
-                return _errorIndicator();
-              },
-            ),
+          Stack(
+            children: [
+              SizedBox(
+                height: 220,
+                width: MediaQuery.of(context).size.width,
+                child: FadeInImage.assetNetwork(
+                  placeholder: widget.placeholder,
+                  image: widget.shouldResize
+                      ? server.resizedImage(widget.url)
+                      : widget.url,
+                  fit: BoxFit.fitWidth,
+                  placeholderErrorBuilder: (BuildContext context, Object error,
+                      StackTrace? stackTrace) {
+                    return _errorIndicator();
+                  },
+                  imageErrorBuilder: (BuildContext context, Object error,
+                      StackTrace? stackTrace) {
+                    return _errorIndicator();
+                  },
+                ),
+              ),
+              widget.isIpfs
+                  ? Container(
+                      margin: EdgeInsets.all(10),
+                      child: Image.asset('assets/ipfs-logo.png',
+                          width: 30, height: 30),
+                    )
+                  : Container(),
+            ],
           ),
           Container(
             padding: const EdgeInsets.all(3),

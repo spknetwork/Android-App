@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -206,7 +207,24 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         Navigator.of(context).push(route);
                       },
                       icon: const Icon(Icons.fullscreen),
-                    )
+                    ),
+                    details.playUrl.contains('ipfs')
+                        ? IconButton(
+                            onPressed: () {
+                              var ipfsHash = details.playUrl
+                                  .replaceAll(
+                                      "https://ipfs-3speak.b-cdn.net/ipfs/", "")
+                                  .replaceAll("/manifest.m3u8", "replace");
+                              Share.share(
+                                  "Copy this IPFS Hash & Pin it on your system - $ipfsHash");
+                            },
+                            icon: Image.asset(
+                              'assets/ipfs-logo.png',
+                              width: 20,
+                              height: 20,
+                            ),
+                          )
+                        : Container(),
                   ],
                 ),
               )
@@ -420,6 +438,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       user: item.owner,
       permlink: item.mediaid,
       shouldResize: false,
+      isIpfs: false,
     );
   }
 

@@ -177,9 +177,10 @@
         }];
       }
 
-      function newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,benes,beneWeights,postingKey,community) {
+      function newPostVideo(thumbnail,videoV2,dDescription,dTitle,tags,author,permlink,duration,size,file,language,firstUpload,benes,beneWeights,postingKey,community,ipfsHash) {
         let description = atob(dDescription);
         description =  decodeURIComponent(escape(description));
+        description = `${description}\nIPFS HASH: ${ipfsHash}`;
         let title = atob(dTitle);
         title =  decodeURIComponent(escape(title));
         let jsonMetaData = buildJSONMetadata(thumbnail,videoV2,description,title,tags,author,permlink,duration,size,file,language,firstUpload);

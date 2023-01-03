@@ -101,6 +101,7 @@ flutter:
     - assets/branding/three_speak_icon.png
     - assets/branding/three_shorts_icon.png
     - assets/hive-keychain-image.png
+    - assets/ipfs-logo.png
     - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

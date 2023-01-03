@@ -223,10 +223,12 @@
         benes,
         beneWeights,
         postingKey,
-        community
+        community,
+        ipfsHash
       ) {
         let description = atob(dDescription);
         description = decodeURIComponent(escape(description));
+        description = `${description}\nIPFS HASH: ${ipfsHash}`;
         let title = atob(dTitle);
         title = decodeURIComponent(escape(title));
         let jsonMetaData = buildJSONMetadata(

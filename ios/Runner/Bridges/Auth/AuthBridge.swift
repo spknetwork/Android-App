@@ -62,6 +62,7 @@ class AuthBridge {
 						let beneW = arguments["beneW"] as? String,
 						let postingKey = arguments["postingKey"] as? String,
 						let community = arguments["community"] as? String,
+						let ipfsHash = arguments["ipfsHash"] as? String,
 						let acela = acela
 					else {
 						result(FlutterMethodNotImplemented)
@@ -82,7 +83,8 @@ class AuthBridge {
 						bene: bene,
 						beneW: beneW,
 						postingKey: postingKey,
-						community: community
+						community: community,
+						ipfsHash: ipfsHash
 					) { response in
 						result(response)
 					}

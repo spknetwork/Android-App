@@ -128,6 +128,12 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         const platform = MethodChannel('com.example.acela/auth');
         var title = base64.encode(utf8.encode(widget.title));
         var description = base64.encode(utf8.encode(widget.subtitle));
+        var ipfsHash = "";
+        if (widget.item.playUrl.contains('ipfs')) {
+          ipfsHash = widget.item.playUrl
+              .replaceAll("https://ipfs-3speak.b-cdn.net/ipfs/", "")
+              .replaceAll("/manifest.m3u8", "replace");
+        }
         final String response = await platform.invokeMethod('newPostVideo', {
           'thumbnail': v.thumbnailValue,
           'video_v2': v.videoValue,
@@ -144,11 +150,12 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'beneW': v.benes[1],
           'postingKey': user.postingKey,
           'community': widget.item.isReel ? 'hive-151961' : selectedCommunity,
+          'ipfsHash': ipfsHash,
         });
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
         if (bridgeResponse.error == "success") {
-          await Future.delayed(const Duration(seconds: 3), () {});
+          await Future.delayed(const Duration(seconds: 5), () {});
           await Communicator().updatePublishState(user, v.id);
           setState(() {
             isCompleting = false;
