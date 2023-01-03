@@ -214,7 +214,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                               var ipfsHash = details.playUrl
                                   .replaceAll(
                                       "https://ipfs-3speak.b-cdn.net/ipfs/", "")
-                                  .replaceAll("/manifest.m3u8", "replace");
+                                  .replaceAll("/manifest.m3u8", "");
                               Share.share(
                                   "Copy this IPFS Hash & Pin it on your system - $ipfsHash");
                             },
