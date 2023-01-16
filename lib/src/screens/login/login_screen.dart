@@ -170,9 +170,9 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           _hiveUserName(),
           SizedBox(height: 20),
-          // _hasButton(),
-          // SizedBox(height: 50),
-          // const Text('- OR -'),
+          _hasButton(),
+          SizedBox(height: 50),
+          const Text('- OR -'),
           _hivePostingKey(),
           SizedBox(height: 20),
           isLoading

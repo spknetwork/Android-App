@@ -16,13 +16,14 @@ import 'package:acela/src/models/video_upload/video_upload_complete_request.dart
 import 'package:acela/src/models/video_upload/video_upload_login_response.dart';
 import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class Communicator {
   // Production
-  static const tsServer = "https://studio.3speak.tv";
-  static const fsServer = "https://uploads.3speak.tv/files";
+  // static const tsServer = "https://studio.3speak.tv";
+  // static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
   // static const fsServer = "http://10.0.2.2:1080/files";
@@ -33,8 +34,8 @@ class Communicator {
   // static const fsServer = "http://localhost:1080/files";
 
   // iOS Device
-  // static const tsServer = "http://192.168.1.8:13050";
-  // static const fsServer = "http://192.168.1.8:1080/files";
+  static const tsServer = "http://192.168.29.239:13050";
+  static const fsServer = "http://192.168.29.239:1080/files";
 
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
@@ -142,9 +143,13 @@ class Communicator {
   Future<String> _getAccessToken(
       HiveUserData user, String encryptedToken) async {
     const platform = MethodChannel('com.example.acela/auth');
+    var key =
+        user.postingKey == null && user.hasExpiry != null && user.hasId != null
+            ? dotenv.env['MOBILE_CLIENT_PRIVATE_KEY']
+            : user.postingKey ?? "";
     final String result = await platform.invokeMethod('encryptedToken', {
       'username': user.username,
-      'postingKey': user.postingKey,
+      'postingKey': key,
       'encryptedToken': encryptedToken,
     });
     var memo = MemoResponse.fromJsonString(result);
@@ -181,10 +186,14 @@ class Communicator {
   }
 
   Future<String> getValidCookie(HiveUserData user) async {
-    var request = http.Request(
-        'GET',
-        Uri.parse(
-            '${Communicator.tsServer}/mobile/login?username=${user.username}'));
+    var uri = '${Communicator.tsServer}/mobile/login?username=${user.username}';
+    if (user.hasId != null &&
+        user.hasExpiry != null &&
+        user.postingKey == null) {
+      uri =
+          '${Communicator.tsServer}/mobile/login?username=${user.username}&client=mobile';
+    }
+    var request = http.Request('GET', Uri.parse(uri));
     if (user.cookie != null) {
       Map<String, String> map = {"cookie": user.cookie!};
       request.headers.addAll(map);
