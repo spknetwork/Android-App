@@ -133,7 +133,7 @@
         let escapedVideoTitle = customStringEscaping(title);
         return {
           tags: processTags(tags.split(",")),
-          app: "3speak/0.3.0",
+          app: "3speakMobileiOS/1.0.4-48",
           type: "3speak/video",
           image: [thumbnail],
           video: {
@@ -224,7 +224,9 @@
         beneWeights,
         postingKey,
         community,
-        ipfsHash
+        ipfsHash,
+        hasKey,
+        hasAuthKey,
       ) {
         let description = atob(dDescription);
         description = decodeURIComponent(escape(description));
@@ -338,36 +340,45 @@
             operations.push(comment_options);
             operations.push(customJson);
             console.log(`operations are ${JSON.stringify(operations)}`);
-            async function tryPublish(operations, key) {
-              try {
-                return hive.broadcast.sendAsync(
-                  { operations },
-                  { posting: key }
-                );
-              } catch (e) {
-                return e;
-              }
+            if (hasKey !== null && hasToken !== null && hasKey.length > 0 && hasToken.length > 0) {
+              const sign_data = {
+                key_type: "posting",
+                ops: operations,
+                broadcast: true,
+              };
+              const data = CryptoJS.AES.encrypt(
+                JSON.stringify(sign_data),
+                hasAuthKey
+              ).toString();
+              const payload = {
+                cmd: "sign_req",
+                account: author,
+                token: hasKey,
+                data: data,
+              };
+              ws.send(JSON.stringify(payload));
+            } else {
+              tryPublish(operations, postingKey)
+                .then((result) => {
+                  var newResult = {
+                    type: "postVideo",
+                    valid: true,
+                    error: "success",
+                  };
+                  window.webkit.messageHandlers.acela.postMessage(newResult);
+                  //Android.postMessage(JSON.stringify(newResult));
+                })
+                .catch((error) => {
+                  console.error(error);
+                  var result = {
+                    type: "postVideo",
+                    valid: false,
+                    error: error.message,
+                  };
+                  window.webkit.messageHandlers.acela.postMessage(result);
+                  //Android.postMessage(JSON.stringify(result));
+                });
             }
-            tryPublish(operations, postingKey)
-              .then((result) => {
-                var newResult = {
-                  type: "postVideo",
-                  valid: true,
-                  error: "success",
-                };
-                window.webkit.messageHandlers.acela.postMessage(newResult);
-                //Android.postMessage(JSON.stringify(newResult));
-              })
-              .catch((error) => {
-                console.error(error);
-                var result = {
-                  type: "postVideo",
-                  valid: false,
-                  error: error.message,
-                };
-                window.webkit.messageHandlers.acela.postMessage(result);
-                //Android.postMessage(JSON.stringify(result));
-              });
           })
           .catch(function (err) {
             console.error(err);
@@ -400,6 +411,7 @@
       if ("WebSocket" in window) {
         // The browser support Websocket
         ws = new WebSocket(HAS_SERVER);
+        console.log(`Starting WebSocket with ${HAS_SERVER}`);
         ws.onopen = function () {
           // Web Socket is connected
           console.log("WebSocket connected");
@@ -456,7 +468,12 @@
                 alert(`transaction ${message.uuid} is waiting for approval`);
                 break;
               case "sign_ack":
-                alert(`transaction ${message.uuid} approved`);
+                console.log(`transaction ${message.uuid} approved`);
+                replyToNative({
+                  type: "postVideo",
+                  valid: true,
+                  error: "success",
+                });
                 break;
               case "sign_nack":
                 alert(`transaction ${message.uuid} has been declined`);
@@ -471,6 +488,9 @@
         ws.onclose = function () {
           console.log("WebSocket closed. Please reload the page...");
         };
+        ws.onerror = function (e) {
+          console.log(`WebSocket error. ${e}\nPlease reload the page...`);
+        };
       } else {
         console.log("The browser doesn't support WebSocket");
       }
@@ -481,7 +501,7 @@
           valid: true,
           username: username,
           error: "",
-          data: `${token},${expire}`,
+          data: `${token},${expire},${auth_key}`,
         });
       }
 

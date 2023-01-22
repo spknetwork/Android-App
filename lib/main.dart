@@ -1,6 +1,7 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
+
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ class PushNotification {
     this.title,
     this.body,
   });
+
   String? title;
   String? body;
 }
@@ -33,6 +35,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final Future<void> _futureToLoadData;
+
   // late final FirebaseMessaging _messaging;
   // Create storage
 
@@ -68,8 +71,7 @@ class _MyAppState extends State<MyApp> {
           value: server.hiveUserData,
           initialData: HiveUserData(
             resolution: '480p',
-            hasExpiry: null,
-            hasId: null,
+            keychainData: null,
             cookie: null,
             postingKey: null,
             username: null,
@@ -142,14 +144,25 @@ class _MyAppState extends State<MyApp> {
     String? cookie = await storage.read(key: 'cookie');
     String? hasId = await storage.read(key: 'hasId');
     String? hasExpiry = await storage.read(key: 'hasExpiry');
+    String? hasAuthKey = await storage.read(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
     server.updateHiveUserData(
       HiveUserData(
         username: username,
         postingKey: postingKey,
-        hasId: hasId,
-        hasExpiry: hasExpiry,
+        keychainData: hasId != null &&
+                hasId.isNotEmpty &&
+                hasExpiry != null &&
+                hasExpiry.isNotEmpty &&
+                hasAuthKey != null &&
+                hasAuthKey.isNotEmpty
+            ? HiveKeychainData(
+                hasAuthKey: hasAuthKey,
+                hasExpiry: hasExpiry,
+                hasId: hasId,
+              )
+            : null,
         cookie: cookie,
         resolution: resolution,
         rpc: rpc,

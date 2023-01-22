@@ -41,13 +41,15 @@ class _LoginScreenState extends State<LoginScreen> {
         String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
         await storage.write(key: 'username', value: username);
         await storage.write(key: 'postingKey', value: postingKey);
+        await storage.delete(key: 'hasId');
+        await storage.delete(key: 'hasExpiry');
+        await storage.delete(key: 'hasAuthKey');
         await storage.delete(key: 'cookie');
         server.updateHiveUserData(
           HiveUserData(
             username: username,
             postingKey: postingKey,
-            hasId: null,
-            hasExpiry: null,
+            keychainData: null,
             cookie: null,
             resolution: resolution,
             rpc: rpc,
@@ -118,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
           var platform = const MethodChannel('blog.hive.auth/bridge');
           var values = await platform.invokeMethod('getUserInfo');
           var valuesResponse = LoginBridgeResponse.fromJsonString(values);
-          if (valuesResponse.data == "undefined,undefined") {
+          if (valuesResponse.data?.startsWith("undefined,undefined") == true) {
             final String authStr =
                 await platform.invokeMethod('getRedirectUri', {
               'username': username,
@@ -135,16 +137,21 @@ class _LoginScreenState extends State<LoginScreen> {
             String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
             var hasId = valuesResponse.data!.split(",")[0];
             var hasExpiry = valuesResponse.data!.split(",")[1];
+            var hasAuthKey = valuesResponse.data!.split(",")[2];
             await storage.write(key: 'username', value: username);
             await storage.write(key: 'hasId', value: hasId);
             await storage.write(key: 'hasExpiry', value: hasExpiry);
+            await storage.write(key: 'hasAuthKey', value: hasAuthKey);
             await storage.delete(key: 'cookie');
             server.updateHiveUserData(
               HiveUserData(
                 username: username,
                 postingKey: null,
-                hasId: hasId,
-                hasExpiry: hasExpiry,
+                keychainData: HiveKeychainData(
+                  hasId: hasId,
+                  hasExpiry: hasExpiry,
+                  hasAuthKey: hasAuthKey,
+                ),
                 cookie: null,
                 resolution: resolution,
                 rpc: rpc,

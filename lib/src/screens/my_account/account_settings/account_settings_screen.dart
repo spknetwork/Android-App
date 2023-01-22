@@ -19,14 +19,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     await storage.delete(key: 'cookie');
     await storage.delete(key: 'hasId');
     await storage.delete(key: 'hasExpiry');
+    await storage.delete(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
     server.updateHiveUserData(
       HiveUserData(
         username: null,
         postingKey: null,
-        hasId: null,
-        hasExpiry: null,
+        keychainData: null,
         cookie: null,
         resolution: resolution,
         rpc: rpc,

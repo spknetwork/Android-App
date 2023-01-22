@@ -143,10 +143,9 @@ class Communicator {
   Future<String> _getAccessToken(
       HiveUserData user, String encryptedToken) async {
     const platform = MethodChannel('com.example.acela/auth');
-    var key =
-        user.postingKey == null && user.hasExpiry != null && user.hasId != null
-            ? dotenv.env['MOBILE_CLIENT_PRIVATE_KEY']
-            : user.postingKey ?? "";
+    var key = user.postingKey == null && user.keychainData != null
+        ? dotenv.env['MOBILE_CLIENT_PRIVATE_KEY']
+        : user.postingKey ?? "";
     final String result = await platform.invokeMethod('encryptedToken', {
       'username': user.username,
       'postingKey': key,
@@ -161,35 +160,9 @@ class Communicator {
     return memo.decrypted.replaceFirst("#", '');
   }
 
-  Future<VideoUploadPrepareResponse> prepareVideo(
-      HiveUserData user, String videoInfo, String cookie) async {
-    var request = http.Request('POST',
-        Uri.parse('${Communicator.tsServer}/mobile/api/upload/prepare'));
-    request.body = videoInfo;
-    Map<String, String> map = {
-      "cookie": cookie,
-      "Content-Type": "application/json"
-    };
-    request.headers.addAll(map);
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      var string = await response.stream.bytesToString();
-      log('Video upload prepare response is\n$string');
-      return VideoUploadPrepareResponse.fromJsonString(string);
-    } else {
-      var string = await response.stream.bytesToString();
-      var error = ErrorResponse.fromJsonString(string).error ??
-          response.reasonPhrase.toString();
-      log('Error from server is $error');
-      throw error;
-    }
-  }
-
   Future<String> getValidCookie(HiveUserData user) async {
     var uri = '${Communicator.tsServer}/mobile/login?username=${user.username}';
-    if (user.hasId != null &&
-        user.hasExpiry != null &&
-        user.postingKey == null) {
+    if (user.keychainData != null && user.postingKey == null) {
       uri =
           '${Communicator.tsServer}/mobile/login?username=${user.username}&client=mobile';
     }
@@ -198,82 +171,84 @@ class Communicator {
       Map<String, String> map = {"cookie": user.cookie!};
       request.headers.addAll(map);
     }
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      var string = await response.stream.bytesToString();
-      var loginResponse = VideoUploadLoginResponse.fromJsonString(string);
-      if (loginResponse.error != null && loginResponse.error!.isNotEmpty) {
-        throw 'Error - ${loginResponse.error}';
-      } else if (loginResponse.memo != null && loginResponse.memo!.isNotEmpty) {
-        var token = await _getAccessToken(user, loginResponse.memo!);
-        var url =
-            '${Communicator.tsServer}/mobile/login?username=${user.username}&access_token=$token';
-        var request = http.Request('GET', Uri.parse(url));
-        http.StreamedResponse response = await request.send();
+    try {
+      http.StreamedResponse response = await request.send();
+      if (response.statusCode == 200) {
         var string = await response.stream.bytesToString();
-        var tokenResponse = VideoUploadLoginResponse.fromJsonString(string);
-        var cookie = response.headers['set-cookie'];
-        if (tokenResponse.error != null && tokenResponse.error!.isNotEmpty) {
-          throw 'Error - ${tokenResponse.error}';
-        } else if (tokenResponse.network == "hive" &&
-            tokenResponse.banned != true &&
-            tokenResponse.userId != null &&
-            cookie != null &&
-            cookie.isNotEmpty) {
+        var loginResponse = VideoUploadLoginResponse.fromJsonString(string);
+        if (loginResponse.error != null && loginResponse.error!.isNotEmpty) {
+          throw 'Error - ${loginResponse.error}';
+        } else if (loginResponse.memo != null && loginResponse.memo!.isNotEmpty) {
+          var token = await _getAccessToken(user, loginResponse.memo!);
+          var url =
+              '${Communicator.tsServer}/mobile/login?username=${user.username}&access_token=$token';
+          var request = http.Request('GET', Uri.parse(url));
+          http.StreamedResponse response = await request.send();
+          var string = await response.stream.bytesToString();
+          var tokenResponse = VideoUploadLoginResponse.fromJsonString(string);
+          var cookie = response.headers['set-cookie'];
+          if (tokenResponse.error != null && tokenResponse.error!.isNotEmpty) {
+            throw 'Error - ${tokenResponse.error}';
+          } else if (tokenResponse.network == "hive" &&
+              tokenResponse.banned != true &&
+              tokenResponse.userId != null &&
+              cookie != null &&
+              cookie.isNotEmpty) {
+            const storage = FlutterSecureStorage();
+            await storage.write(key: 'cookie', value: cookie);
+            String resolution = await storage.read(key: 'resolution') ?? '480p';
+            String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+            var newData = HiveUserData(
+              username: user.username,
+              postingKey: user.postingKey,
+              keychainData: user.keychainData,
+              cookie: cookie,
+              resolution: resolution,
+              rpc: rpc,
+            );
+            server.updateHiveUserData(newData);
+            return cookie;
+          } else {
+            log('This should never happen. No error, no user info. How?');
+            throw 'Something went wrong.';
+          }
+        } else if (loginResponse.network == "hive" &&
+            loginResponse.banned != true &&
+            loginResponse.userId != null &&
+            user.cookie != null) {
+          return user.cookie!;
+        } else {
+          log('This should never happen. No error, no memo, no user info. How?');
+          throw 'Something went wrong.';
+        }
+      } else if (response.statusCode == 500) {
+        var string = await response.stream.bytesToString();
+        var errorResponse = VideoUploadLoginResponse.fromJsonString(string);
+        if (errorResponse.error != null &&
+            errorResponse.error!.isNotEmpty &&
+            errorResponse.error == 'session expired') {
           const storage = FlutterSecureStorage();
-          await storage.write(key: 'cookie', value: cookie);
+          await storage.delete(key: 'cookie');
           String resolution = await storage.read(key: 'resolution') ?? '480p';
           String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
           var newData = HiveUserData(
             username: user.username,
             postingKey: user.postingKey,
-            hasId: user.hasId,
-            hasExpiry: user.hasExpiry,
-            cookie: cookie,
+            keychainData: user.keychainData,
+            cookie: null,
             resolution: resolution,
             rpc: rpc,
           );
           server.updateHiveUserData(newData);
-          return cookie;
+          return await getValidCookie(newData);
         } else {
-          log('This should never happen. No error, no user info. How?');
-          throw 'Something went wrong.';
+          throw 'Status code ${response.statusCode}';
         }
-      } else if (loginResponse.network == "hive" &&
-          loginResponse.banned != true &&
-          loginResponse.userId != null &&
-          user.cookie != null) {
-        return user.cookie!;
-      } else {
-        log('This should never happen. No error, no memo, no user info. How?');
-        throw 'Something went wrong.';
-      }
-    } else if (response.statusCode == 500) {
-      var string = await response.stream.bytesToString();
-      var errorResponse = VideoUploadLoginResponse.fromJsonString(string);
-      if (errorResponse.error != null &&
-          errorResponse.error!.isNotEmpty &&
-          errorResponse.error == 'session expired') {
-        const storage = FlutterSecureStorage();
-        await storage.delete(key: 'cookie');
-        String resolution = await storage.read(key: 'resolution') ?? '480p';
-        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-        var newData = HiveUserData(
-          username: user.username,
-          postingKey: user.postingKey,
-          hasId: user.hasId,
-          hasExpiry: user.hasExpiry,
-          cookie: null,
-          resolution: resolution,
-          rpc: rpc,
-        );
-        server.updateHiveUserData(newData);
-        return await getValidCookie(newData);
       } else {
         throw 'Status code ${response.statusCode}';
       }
-    } else {
-      throw 'Status code ${response.statusCode}';
+    } catch (e){
+      throw e;
     }
   }
 

@@ -47,6 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         String? postingKey = await storage.read(key: 'postingKey');
         String? hasId = await storage.read(key: 'hasId');
         String? hasExpiry = await storage.read(key: 'hasExpiry');
+        String? hasAuthKey = await storage.read(key: 'hasAuthKey');
         String? cookie = await storage.read(key: 'cookie');
         String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
         server.updateHiveUserData(
@@ -55,9 +56,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             postingKey: postingKey,
             cookie: cookie,
             resolution: optionName,
-            hasId: hasId,
-            hasExpiry: hasExpiry,
             rpc: rpc,
+            keychainData: hasId != null &&
+                    hasId.isNotEmpty &&
+                    hasExpiry != null &&
+                    hasExpiry.isNotEmpty &&
+                    hasAuthKey != null &&
+                    hasAuthKey.isNotEmpty
+                ? HiveKeychainData(
+                    hasAuthKey: hasAuthKey,
+                    hasExpiry: hasExpiry,
+                    hasId: hasId,
+                  )
+                : null,
           ),
         );
         loadRes();
@@ -111,8 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           HiveUserData(
             username: user.username,
             postingKey: user.postingKey,
-            hasId: user.hasId,
-            hasExpiry: user.hasExpiry,
+            keychainData: user.keychainData,
             cookie: user.cookie,
             resolution: user.resolution,
             rpc: serverUrl,

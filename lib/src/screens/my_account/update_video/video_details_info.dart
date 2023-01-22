@@ -129,10 +129,11 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         var title = base64.encode(utf8.encode(widget.title));
         var description = base64.encode(utf8.encode(widget.subtitle));
         var ipfsHash = "";
-        if (widget.item.playUrl.contains('ipfs')) {
-          ipfsHash = widget.item.playUrl
+        if (widget.item.video_v2.isNotEmpty) {
+          ipfsHash = widget.item.video_v2
               .replaceAll("https://ipfs-3speak.b-cdn.net/ipfs/", "")
-              .replaceAll("/manifest.m3u8", "replace");
+              .replaceAll("ipfs://", "")
+              .replaceAll("/manifest.m3u8", "");
         }
         final String response = await platform.invokeMethod('newPostVideo', {
           'thumbnail': v.thumbnailValue,
@@ -148,9 +149,11 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'firstUpload': v.firstUpload,
           'bene': v.benes[0],
           'beneW': v.benes[1],
-          'postingKey': user.postingKey,
+          'postingKey': user.postingKey ?? '',
           'community': widget.item.isReel ? 'hive-151961' : selectedCommunity,
           'ipfsHash': ipfsHash,
+          'hasKey': user.keychainData?.hasId ?? '',
+          'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
         });
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
