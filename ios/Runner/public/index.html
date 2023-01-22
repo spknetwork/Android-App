@@ -226,7 +226,7 @@
         community,
         ipfsHash,
         hasKey,
-        hasAuthKey,
+        hasAuthKey
       ) {
         let description = atob(dDescription);
         description = decodeURIComponent(escape(description));
@@ -298,6 +298,13 @@
               const value = parseInt(beneWeights.split(",")[index]);
               newBen.push({ account: string, weight: value });
             });
+            newBen.sort((a, b) => {
+              let fa = a.account.toLowerCase(),
+                fb = b.account.toLowerCase();
+              if (fa < fb) return -1;
+              if (fa > fb) return 1;
+              return 0;
+            });
             let benefactor_global = [[0, { beneficiaries: newBen }]];
             let comment_options = [
               "comment_options",
@@ -340,7 +347,12 @@
             operations.push(comment_options);
             operations.push(customJson);
             console.log(`operations are ${JSON.stringify(operations)}`);
-            if (hasKey !== null && hasToken !== null && hasKey.length > 0 && hasToken.length > 0) {
+            if (
+              hasKey !== null &&
+              hasAuthKey !== null &&
+              hasKey.length > 0 &&
+              hasAuthKey.length > 0
+            ) {
               const sign_data = {
                 key_type: "posting",
                 ops: operations,
@@ -459,13 +471,17 @@
                   console.error("decryption failed", e.message);
                   click_logout();
                 }
-
                 break;
               case "auth_nack":
                 click_logout();
                 break;
               case "sign_wait":
                 alert(`transaction ${message.uuid} is waiting for approval`);
+                replyToNative({
+                  type: "postVideo",
+                  valid: true,
+                  error: `Transaction ${message.uuid} is waiting for approval. Open HiveKeychain app, approve, come back here & hit Save button again.`,
+                });
                 break;
               case "sign_ack":
                 console.log(`transaction ${message.uuid} approved`);

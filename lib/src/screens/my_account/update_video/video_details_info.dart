@@ -45,6 +45,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   final ImagePicker _picker = ImagePicker();
   var selectedCommunity = 'hive-181335';
   var selectedCommunityVisibleName = 'Threespeak';
+  String? hiveKeychainTransactionId;
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -103,9 +104,11 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       processText = 'Updating video info';
     });
     try {
+      // we wait for 15 seconds to wait for RPC node to have latest blocks
+      // if video is already published, we want to avoid.
+      await Future.delayed(const Duration(seconds: 15), () {});
       var doesPostNotExist = await Communicator()
           .doesPostNotExist(widget.item.owner, widget.item.permlink, user.rpc);
-      await Future.delayed(const Duration(seconds: 1), () {});
       if (doesPostNotExist != true) {
         await Communicator().updatePublishState(user, widget.item.id);
         setState(() {
@@ -158,7 +161,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
         if (bridgeResponse.error == "success") {
-          await Future.delayed(const Duration(seconds: 5), () {});
+          await Future.delayed(const Duration(seconds: 15), () {});
           await Communicator().updatePublishState(user, v.id);
           setState(() {
             isCompleting = false;
@@ -166,6 +169,13 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             showMessage('Congratulations. Your video is published.');
             showMyDialog();
           });
+        } else if (bridgeResponse.error.startsWith("Transaction ")) {
+          setState(() {
+            isCompleting = false;
+            processText = '';
+            hiveKeychainTransactionId = bridgeResponse.error.split(" ")[1];
+          });
+          showMessage(bridgeResponse.error);
         } else {
           throw bridgeResponse.error;
         }
