@@ -8,7 +8,7 @@ import Foundation
 import device_info_plus_macos
 import ffmpeg_kit_flutter
 import flutter_secure_storage_macos
-import path_provider_macos
+import path_provider_foundation
 import share_plus_macos
 import url_launcher_macos
 import video_compress

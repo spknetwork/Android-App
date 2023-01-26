@@ -2,6 +2,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({Key? key}) : super(key: key);
@@ -11,7 +12,7 @@ class AccountSettingsScreen extends StatefulWidget {
 }
 
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
-  void logout() async {
+  void logout(HiveUserData data) async {
     // Create storage
     const storage = FlutterSecureStorage();
     await storage.delete(key: 'username');
@@ -30,6 +31,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         cookie: null,
         resolution: resolution,
         rpc: rpc,
+        socket: data.socket,
       ),
     );
     Navigator.of(context).pop();
@@ -38,6 +40,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var data = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -49,7 +52,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               leading: const Icon(Icons.logout),
               title: const Text('Log Out'),
               onTap: () {
-                logout();
+                logout(data);
               },
             ),
           ],

@@ -1,3 +1,5 @@
+import 'package:web_socket_channel/web_socket_channel.dart';
+
 class HiveKeychainData {
   String hasId;
   String hasExpiry;
@@ -15,6 +17,7 @@ class HiveUserData {
   HiveKeychainData? keychainData;
   String resolution;
   String rpc;
+  WebSocketChannel? socket;
 
   HiveUserData({
     required this.username,
@@ -23,5 +26,6 @@ class HiveUserData {
     required this.cookie,
     required this.resolution,
     required this.rpc,
+    required this.socket,
   });
 }

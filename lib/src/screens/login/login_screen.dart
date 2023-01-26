@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/crypto_manager.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
             cookie: null,
             resolution: resolution,
             rpc: rpc,
+            socket: appData.socket,
           ),
         );
         Navigator.of(context).pop();
@@ -113,63 +115,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _hasButton() {
-    return ElevatedButton(
-      onPressed: () async {
-        if (username.isNotEmpty) {
-          var platform = const MethodChannel('blog.hive.auth/bridge');
-          var values = await platform.invokeMethod('getUserInfo');
-          var valuesResponse = LoginBridgeResponse.fromJsonString(values);
-          if (valuesResponse.data?.startsWith("undefined,undefined") == true) {
-            final String authStr =
-                await platform.invokeMethod('getRedirectUri', {
-              'username': username,
-            });
-            log('Hive auth string is $authStr');
-            var bridgeResponse = LoginBridgeResponse.fromJsonString(authStr);
-            if (bridgeResponse.data != null) {
-              var url = Uri.parse(bridgeResponse.data!);
-              launchUrl(url);
-            }
-          } else {
-            debugPrint("Successful login");
-            String resolution = await storage.read(key: 'resolution') ?? '480p';
-            String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-            var hasId = valuesResponse.data!.split(",")[0];
-            var hasExpiry = valuesResponse.data!.split(",")[1];
-            var hasAuthKey = valuesResponse.data!.split(",")[2];
-            await storage.write(key: 'username', value: username);
-            await storage.write(key: 'hasId', value: hasId);
-            await storage.write(key: 'hasExpiry', value: hasExpiry);
-            await storage.write(key: 'hasAuthKey', value: hasAuthKey);
-            await storage.delete(key: 'cookie');
-            server.updateHiveUserData(
-              HiveUserData(
-                username: username,
-                postingKey: null,
-                keychainData: HiveKeychainData(
-                  hasId: hasId,
-                  hasExpiry: hasExpiry,
-                  hasAuthKey: hasAuthKey,
-                ),
-                cookie: null,
-                resolution: resolution,
-                rpc: rpc,
-              ),
-            );
-            Navigator.of(context).pop();
-            setState(() {
-              isLoading = false;
-            });
-          }
-        } else {
-          showError('Please enter hive username');
-        }
-      },
-      child: Image.asset('assets/hive-keychain-image.png'),
-    );
-  }
-
   Widget _loginForm(HiveUserData appData) {
     return Container(
       margin: EdgeInsets.all(10),
@@ -177,9 +122,6 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           _hiveUserName(),
           SizedBox(height: 20),
-          _hasButton(),
-          SizedBox(height: 50),
-          const Text('- OR -'),
           _hivePostingKey(),
           SizedBox(height: 20),
           isLoading
@@ -213,6 +155,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   'Concerned about security? Rest assured.\nYour posting key never leaves this app.\nIt is securely stored on your device ONLY.\nNo one, including us, will have it.');
             },
             icon: Icon(Icons.help),
+          ),
+          IconButton(
+            onPressed: () {
+              const screen = HiveAuthLoginScreen();
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).push(route);
+            },
+            icon: Image.asset('assets/hiveauth_icon.png'),
           )
         ],
       ),

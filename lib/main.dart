@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
+import 'package:acela/src/utils/communicator.dart';
 
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
@@ -9,16 +12,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
-
-class PushNotification {
-  PushNotification({
-    this.title,
-    this.body,
-  });
-
-  String? title;
-  String? body;
-}
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
@@ -35,6 +29,9 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final Future<void> _futureToLoadData;
+  WebSocketChannel socket = WebSocketChannel.connect(
+    Uri.parse(Communicator.hiveAuthServer),
+  );
 
   // late final FirebaseMessaging _messaging;
   // Create storage
@@ -76,6 +73,7 @@ class _MyAppState extends State<MyApp> {
             postingKey: null,
             username: null,
             rpc: 'api.hive.blog',
+            socket: socket,
           ),
           child: StreamProvider<bool>.value(
             value: server.theme,
@@ -93,51 +91,7 @@ class _MyAppState extends State<MyApp> {
     _futureToLoadData = loadData();
   }
 
-  // Future<void> handlingNotification() async {
-  //   try {
-  //     // 3. On iOS, this helps to take the user permissions
-  //     NotificationSettings settings = await _messaging.requestPermission(
-  //       alert: true,
-  //       badge: false,
-  //       provisional: false,
-  //       sound: true,
-  //     );
-  //     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-  //       print('User granted permission');
-  //       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //         // Parse the message received
-  //         PushNotification notification = PushNotification(
-  //           title: message.notification?.title,
-  //           body: message.notification?.body,
-  //         );
-  //
-  //         setState(() {
-  //           showSimpleNotification(
-  //             Text(notification.title ?? "No title for notification"),
-  //             // leading: NotificationBadge(totalNotifications: _totalNotifications),
-  //             subtitle: Text(notification.body ??
-  //                 "No text provided for info of notification"),
-  //             background: Colors.cyan.shade700,
-  //             duration: Duration(seconds: 2),
-  //           );
-  //         });
-  //       });
-  //     } else {
-  //       print('User declined or has not accepted permission');
-  //     }
-  //   } catch (e) {
-  //     print("Something went wrong in setting up fcm ${e.toString()}");
-  //   }
-  // }
-
   Future<void> loadData() async {
-    // setup firebase
-    // await Firebase.initializeApp(
-    //     options: DefaultFirebaseOptions.currentPlatform);
-    // _messaging = FirebaseMessaging.instance;
-    // handle notifications
-    // await handlingNotification();
-    // load storage
     const storage = FlutterSecureStorage();
     String? username = await storage.read(key: 'username');
     String? postingKey = await storage.read(key: 'postingKey');
@@ -166,6 +120,7 @@ class _MyAppState extends State<MyApp> {
         cookie: cookie,
         resolution: resolution,
         rpc: rpc,
+        socket: socket,
       ),
     );
   }

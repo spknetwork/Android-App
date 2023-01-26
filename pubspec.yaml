@@ -70,6 +70,10 @@ dependencies:
   path_provider: ^2.0.11
   images_picker: ^1.2.11
   carousel_slider: ^4.1.1
+  uuid: ^3.0.7
+  web_socket_channel: ^2.3.0
+  encryptor: ^0.0.1
+  qr_flutter: ^4.0.0
 
 dev_dependencies:
   flutter_test:
@@ -102,6 +106,7 @@ flutter:
     - assets/branding/three_shorts_icon.png
     - assets/hive-keychain-image.png
     - assets/ipfs-logo.png
+    - assets/hiveauth_icon.png
     - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

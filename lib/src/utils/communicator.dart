@@ -39,6 +39,7 @@ class Communicator {
 
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
+  static const hiveAuthServer = 'wss://hive-auth.arcange.eu';
 
   Future<bool> doesPostNotExist(
     String user,
@@ -205,6 +206,7 @@ class Communicator {
               cookie: cookie,
               resolution: resolution,
               rpc: rpc,
+              socket: user.socket
             );
             server.updateHiveUserData(newData);
             return cookie;
@@ -238,6 +240,7 @@ class Communicator {
             cookie: null,
             resolution: resolution,
             rpc: rpc,
+            socket: user.socket,
           );
           server.updateHiveUserData(newData);
           return await getValidCookie(newData);

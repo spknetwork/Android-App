@@ -36,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  BottomSheetAction getAction(String optionName) {
+  BottomSheetAction getAction(String optionName, HiveUserData appData) {
     return BottomSheetAction(
       title: Text(optionName),
       onPressed: (context) async {
@@ -69,6 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     hasId: hasId,
                   )
                 : null,
+            socket: appData.socket,
           ),
         );
         loadRes();
@@ -76,12 +77,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void tappedVideoRes() {
+  void tappedVideoRes(HiveUserData appData) {
     showAdaptiveActionSheet(
       context: context,
       title: const Text('Set Default video resolution to'),
       androidBorderRadius: 30,
-      actions: [getAction('480p'), getAction('720p'), getAction('1080p')],
+      actions: [
+        getAction('480p', appData),
+        getAction('720p', appData),
+        getAction('1080p', appData),
+      ],
       cancelAction: CancelAction(title: const Text('Cancel')),
     );
   }
@@ -100,13 +105,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _video(BuildContext context) {
+    var data = Provider.of<HiveUserData>(context);
     return ListTile(
       leading: const Icon(Icons.video_collection),
       title: const Text("Video Resolution"),
       subtitle: const Text("Change Default resolution"),
       trailing: Text(res),
       onTap: () async {
-        tappedVideoRes();
+        tappedVideoRes(data);
       },
     );
   }
@@ -126,6 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             cookie: user.cookie,
             resolution: user.resolution,
             rpc: serverUrl,
+            socket: user.socket,
           ),
         );
       },
