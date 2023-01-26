@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 import 'package:encryptor/encryptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -31,7 +33,6 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
   String? token;
   String? expire;
   static const platform = MethodChannel('com.example.acela/auth');
-  String? qrString;
 
   @override
   void initState() {
@@ -65,7 +66,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
       onPressed: () async {
         if (username.isEmpty) return;
         setState(() {
-          isLoading = true;
+          // isLoading = true;
           authKey = Uuid().v4();
           if (authKey == null) return;
           var authData = {
@@ -95,11 +96,16 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
         children: [
           _hiveUserName(),
           SizedBox(height: 20),
-          isLoading ? CircularProgressIndicator() : qrString == null ? _hasButton(appData) : QrImage(
-            data: qrString!,
-            version: QrVersions.auto,
-            size: 200.0,
-          ),
+          isLoading
+              ? CircularProgressIndicator()
+              : appData.hiveAuthLoginQR == null
+                  ? _hasButton(appData)
+                  : QrImage(
+                      data: appData.hiveAuthLoginQR!,
+                      // version: QrVersions.auto,
+                      size: 200.0,
+                      gapless: true,
+                    ),
           StreamBuilder(
             stream: appData.socket?.stream,
             builder: (context, snapshot) {
@@ -111,15 +117,25 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
                   switch (cmd) {
                     case "auth_wait":
                       var uuid = asString(map, 'uuid');
-                      var qr = json.encode({
+                      var qr = base64.encode(utf8.encode(json.encode({
                         "account": username,
                         "uuid": uuid,
                         "key": authKey,
                         "host": Communicator.hiveAuthServer
-                      });
-                      setState(() {
-                        this.qrString = qr;
-                      });
+                      })));
+                      qr = "has://auth_req/$qr";
+                      server.updateHiveUserData(
+                        HiveUserData(
+                          username: username,
+                          postingKey: appData.postingKey,
+                          keychainData: appData.keychainData,
+                          cookie: appData.cookie,
+                          resolution: appData.resolution,
+                          rpc: appData.rpc,
+                          socket: appData.socket,
+                          hiveAuthLoginQR: qr,
+                        ),
+                      );
                       break;
                     default:
                       log('Default case here');

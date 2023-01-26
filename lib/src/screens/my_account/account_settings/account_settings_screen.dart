@@ -32,6 +32,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         resolution: resolution,
         rpc: rpc,
         socket: data.socket,
+        hiveAuthLoginQR: data.hiveAuthLoginQR,
       ),
     );
     Navigator.of(context).pop();

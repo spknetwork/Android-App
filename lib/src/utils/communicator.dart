@@ -206,7 +206,8 @@ class Communicator {
               cookie: cookie,
               resolution: resolution,
               rpc: rpc,
-              socket: user.socket
+              socket: user.socket,
+              hiveAuthLoginQR: user.hiveAuthLoginQR,
             );
             server.updateHiveUserData(newData);
             return cookie;
@@ -241,6 +242,7 @@ class Communicator {
             resolution: resolution,
             rpc: rpc,
             socket: user.socket,
+            hiveAuthLoginQR: user.hiveAuthLoginQR,
           );
           server.updateHiveUserData(newData);
           return await getValidCookie(newData);

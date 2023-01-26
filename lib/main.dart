@@ -74,6 +74,7 @@ class _MyAppState extends State<MyApp> {
             username: null,
             rpc: 'api.hive.blog',
             socket: socket,
+            hiveAuthLoginQR: null,
           ),
           child: StreamProvider<bool>.value(
             value: server.theme,
@@ -121,6 +122,7 @@ class _MyAppState extends State<MyApp> {
         resolution: resolution,
         rpc: rpc,
         socket: socket,
+        hiveAuthLoginQR: null,
       ),
     );
   }

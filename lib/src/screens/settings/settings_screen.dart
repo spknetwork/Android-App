@@ -70,6 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   )
                 : null,
             socket: appData.socket,
+            hiveAuthLoginQR: appData.hiveAuthLoginQR,
           ),
         );
         loadRes();
@@ -133,6 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             resolution: user.resolution,
             rpc: serverUrl,
             socket: user.socket,
+            hiveAuthLoginQR: user.hiveAuthLoginQR,
           ),
         );
       },

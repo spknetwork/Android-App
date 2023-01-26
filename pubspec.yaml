@@ -74,6 +74,7 @@ dependencies:
   web_socket_channel: ^2.3.0
   encryptor: ^0.0.1
   qr_flutter: ^4.0.0
+  pretty_qr_code: ^2.0.2
 
 dev_dependencies:
   flutter_test:

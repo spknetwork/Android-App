@@ -18,6 +18,7 @@ class HiveUserData {
   String resolution;
   String rpc;
   WebSocketChannel? socket;
+  String? hiveAuthLoginQR;
 
   HiveUserData({
     required this.username,
@@ -27,5 +28,6 @@ class HiveUserData {
     required this.resolution,
     required this.rpc,
     required this.socket,
+    required this.hiveAuthLoginQR,
   });
 }

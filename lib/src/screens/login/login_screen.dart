@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -10,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -21,7 +19,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   var isLoading = false;
-  static const platform = MethodChannel('com.example.acela/auth');
   var username = '';
   var postingKey = '';
 
@@ -55,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
             resolution: resolution,
             rpc: rpc,
             socket: appData.socket,
+            hiveAuthLoginQR: appData.hiveAuthLoginQR,
           ),
         );
         Navigator.of(context).pop();
