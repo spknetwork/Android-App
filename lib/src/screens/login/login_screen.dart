@@ -1,12 +1,9 @@
-import 'dart:developer';
-
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/crypto_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
@@ -51,8 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
             cookie: null,
             resolution: resolution,
             rpc: rpc,
-            socket: appData.socket,
-            hiveAuthLoginQR: appData.hiveAuthLoginQR,
+            socketData: appData.socketData,
           ),
         );
         Navigator.of(context).pop();
@@ -156,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           IconButton(
             onPressed: () {
-              const screen = HiveAuthLoginScreen();
+              var screen = HiveAuthLoginScreen(appData: data);
               var route = MaterialPageRoute(builder: (c) => screen);
               Navigator.of(context).push(route);
             },

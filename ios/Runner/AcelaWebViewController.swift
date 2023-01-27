@@ -19,6 +19,7 @@ class AcelaWebViewController: UIViewController {
 	var postVideoHandler: ((String) -> Void)?
 
 	var getRedirectUriHandler: ((String) -> Void)? = nil
+	var getRedirectUriDataHandler: ((String) -> Void)? = nil
 	var hiveUserInfoHandler: ((String) -> Void)? = nil
 
 	override func viewDidLoad() {
@@ -88,6 +89,11 @@ class AcelaWebViewController: UIViewController {
 		webView?.evaluateJavaScript("getRedirectUri('\(username)');")
 	}
 
+	func getRedirectUriData(_ username: String, handler: @escaping (String) -> Void) {
+		getRedirectUriDataHandler = handler
+		webView?.evaluateJavaScript("getRedirectUriData('\(username)');")
+	}
+
 	func getUserInfo(_ handler: @escaping (String) -> Void) {
 		hiveUserInfoHandler = handler
 		webView?.evaluateJavaScript("getUserInfo();")
@@ -150,6 +156,11 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
 				getRedirectUriHandler?(response)
+			case "getRedirectUriData":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				getRedirectUriDataHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}

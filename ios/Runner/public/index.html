@@ -537,6 +537,30 @@
         const payload = { cmd: "auth_req", account: username, data: data };
         ws.send(JSON.stringify(payload));
       }
+
+      function getRedirectUriData(uname) {
+        username = uname.toLowerCase();
+        const auth_data = {
+          app: HAS_APP_DATA,
+          token: undefined,
+          challenge: undefined,
+        };
+        auth_key = uuidv4();
+        const data = CryptoJS.AES.encrypt(
+          JSON.stringify(auth_data),
+          auth_key
+        ).toString();
+        const payload = { data: data, authKey: auth_key };
+        const payloadData = JSON.stringify(payload);
+        replyToNative({
+          type: "getRedirectUriData",
+          valid: true,
+          username: uname,
+          error: "",
+          data: payloadData,
+        });
+      }
+
       function click_logout() {
         username = undefined;
         token = undefined;
