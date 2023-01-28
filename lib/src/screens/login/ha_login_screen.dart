@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -6,9 +7,9 @@ import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
-import 'package:encryptor/encryptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -30,7 +31,10 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
   static const platform = MethodChannel('blog.hive.auth/bridge');
   var usernameController = TextEditingController();
   late WebSocketChannel socket;
-  String authKey = "";
+  String authKey = '';
+  String username = '';
+  String? qrCode;
+  var loadingQR = false;
 
   @override
   void initState() {
@@ -38,10 +42,66 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
     socket = WebSocketChannel.connect(
       Uri.parse(Communicator.hiveAuthServer),
     );
+    socket.stream.listen((message) {
+      var map = json.decode(message) as Map<String, dynamic>;
+      var cmd = asString(map, 'cmd');
+      if (cmd.isNotEmpty) {
+        switch (cmd) {
+          case "auth_wait":
+            var uuid = asString(map, 'uuid');
+            var jsonData = {
+              "account": usernameController.text,
+              "uuid": uuid,
+              "key": authKey,
+              "host": Communicator.hiveAuthServer
+            };
+            var jsonString = json.encode(jsonData);
+            var utf8Data = utf8.encode(jsonString);
+            var qr = base64.encode(utf8Data);
+            qr = "has://auth_req/$qr";
+            setState(() {
+              qrCode = qr;
+              loadingQR = false;
+            });
+            break;
+          case "auth_ack":
+            var messageData = asString(map, 'data');
+            decryptData(widget.appData, messageData);
+            break;
+          case "auth_nack":
+            showError("Auth was not acknowledged");
+            setState(() {
+              qrCode = null;
+              loadingQR = false;
+            });
+            break;
+          // case "sign_wait":
+          //   var uuid = asString(map, 'uuid');
+          //   return Text(
+          //       "Transaction - $uuid is waiting for approval.");
+          // case "sign_ack":
+          //   var uuid = asString(map, 'uuid');
+          //   return Text("Transaction - $uuid is was approved.");
+          // case "sign_nack":
+          //   var uuid = asString(map, 'uuid');
+          //   return Text("Transaction - $uuid is was declined.");
+          // case "sign_err":
+          //   var uuid = asString(map, 'uuid');
+          //   return Text("Transaction - $uuid failed.");
+          default:
+            log('Default case here');
+        }
+      }
+    });
   }
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void showMessage(String string) {
+    var snackBar = SnackBar(content: Text(string));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
@@ -79,6 +139,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
           socket.sink.add(jsonEncodedData);
           setState(() {
             authKey = key;
+            username = usernameController.text;
           });
         }
       },
@@ -86,102 +147,106 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
     );
   }
 
-  Widget _loginForm(HiveUserData appData) {
-    return Container(
-      margin: EdgeInsets.all(10),
-      child: Column(
-        children: [
-          _hiveUserName(),
-          SizedBox(height: 20),
-          StreamBuilder(
-            stream: socket.stream,
-            builder: (context, snapshot) {
-              var data = snapshot.data as String?;
-              if (snapshot.hasData && data != null && data.isNotEmpty == true) {
-                var map = json.decode(data) as Map<String, dynamic>;
-                var cmd = asString(map, 'cmd');
-                if (cmd.isNotEmpty) {
-                  switch (cmd) {
-                    case "auth_wait":
-                      var uuid = asString(map, 'uuid');
-                      var jsonData = {
-                        "account": usernameController.text,
-                        "uuid": uuid,
-                        "key": authKey,
-                        "host": Communicator.hiveAuthServer
-                      };
-                      var jsonString = json.encode(jsonData);
-                      var utf8Data = utf8.encode(jsonString);
-                      var qr = base64.encode(utf8Data);
-                      qr = "has://auth_req/$qr";
-                      return Column(
-                        children: [
-                          Text('Scan QR Code'),
-                          SizedBox(height: 10),
-                          Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            child: QrImage(
-                              data: qr,
-                              size: 200.0,
-                              gapless: true,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Text('- OR -'),
-                          SizedBox(height: 10),
-                          Text('Launch HiveKeychain App'),
-                          SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: () {
-                              var url = Uri.parse(qr);
-                              launchUrl(url);
-                            },
-                            child:
-                                Image.asset('assets/hive-keychain-image.png'),
-                          ),
-                        ],
-                      );
-                    case "auth_ack":
-                      var messageData = asString(map, 'data');
-                      var decrypted = Encryptor.encrypt(authKey, messageData);
-                      var decodedData =
-                          json.decode(decrypted) as Map<String, dynamic>;
-                      var token = asString(decodedData, 'token');
-                      var expire = asString(decodedData, 'expire');
-                      return Text('Token: $token\nExpire: $expire');
-                    case "auth_nack":
-                      return Text("Auth was not acknowledged");
-                    case "sign_wait":
-                      var uuid = asString(map, 'uuid');
-                      return Text(
-                          "Transaction - $uuid is waiting for approval.");
-                    case "sign_ack":
-                      var uuid = asString(map, 'uuid');
-                      return Text("Transaction - $uuid is was approved.");
-                    case "sign_nack":
-                      var uuid = asString(map, 'uuid');
-                      return Text("Transaction - $uuid is was declined.");
-                    case "sign_err":
-                      var uuid = asString(map, 'uuid');
-                      return Text("Transaction - $uuid failed.");
-                    default:
-                      log('Default case here');
-                      return _hasButton(appData);
-                  }
-                }
-              }
-              return Container();
-            },
-          )
-        ],
-      ),
+  Widget _showQRCodeAndKeychainButton(String qr) {
+    return Column(
+      children: [
+        Text('Scan QR Code'),
+        SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(color: Colors.white),
+          child: QrImage(
+            data: qr,
+            size: 200.0,
+            gapless: true,
+          ),
+        ),
+        SizedBox(height: 10),
+        Text('- OR -'),
+        SizedBox(height: 10),
+        Text('Launch HiveKeychain App'),
+        SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            var url = Uri.parse(qr);
+            launchUrl(url);
+          },
+          child: Image.asset('assets/hive-keychain-image.png'),
+        ),
+      ],
     );
+  }
+
+  Widget _loginForm(HiveUserData appData) {
+    return loadingQR
+        ? const Center(child: CircularProgressIndicator())
+        : qrCode == null
+            ? Container(
+                margin: EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    _hiveUserName(),
+                    SizedBox(height: 20),
+                    _hasButton(appData)
+                  ],
+                ),
+              )
+            : _showQRCodeAndKeychainButton(qrCode!);
   }
 
   @override
   void dispose() {
     super.dispose();
     socket.sink.close();
+  }
+
+  void decryptData(HiveUserData data, String encryptedData) async {
+    final String response =
+    await platform.invokeMethod('getDecryptedHASToken', {
+      'username': username,
+      'authKey': authKey,
+      'data': encryptedData,
+    });
+    var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
+    if (bridgeResponse.valid &&
+        bridgeResponse.data != null &&
+        bridgeResponse.data!.isNotEmpty) {
+      var tokenData = bridgeResponse.data!.split(",");
+      if (tokenData.isEmpty || tokenData.length != 2) {
+        showMessage(
+            'Did not find token & expiry details from HiveAuth. Please go back & try again.');
+      } else {
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'username', value: username);
+        await storage.delete(key: 'postingKey');
+        await storage.delete(key: 'cookie');
+        await storage.write(key: 'hasId', value: tokenData[0]);
+        await storage.write(key: 'hasExpiry', value: tokenData[1]);
+        await storage.write(key: 'hasAuthKey', value: authKey);
+        server.updateHiveUserData(
+          HiveUserData(
+            username: username,
+            postingKey: null,
+            keychainData: HiveKeychainData(
+              hasAuthKey: authKey,
+              hasExpiry: tokenData[1],
+              hasId: tokenData[0],
+            ),
+            cookie: null,
+            resolution: data.resolution,
+            rpc: data.rpc,
+          ),
+        );
+        showMessage('You have successfully logged in with Hive Auth with user - $username');
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      }
+    } else {
+      showMessage(
+          'Something went wrong - ${bridgeResponse.error}. Please go back & try again.');
+    }
+    // Timer(Duration(seconds: 2), () async {
+    //
+    // });
   }
 
   @override

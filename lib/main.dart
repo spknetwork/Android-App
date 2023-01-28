@@ -63,7 +63,6 @@ class _MyAppState extends State<MyApp> {
             postingKey: null,
             username: null,
             rpc: 'api.hive.blog',
-            socketData: null,
           ),
           child: StreamProvider<bool>.value(
             value: server.theme,
@@ -110,7 +109,6 @@ class _MyAppState extends State<MyApp> {
         cookie: cookie,
         resolution: resolution,
         rpc: rpc,
-        socketData: null,
       ),
     );
   }

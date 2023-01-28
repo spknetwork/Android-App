@@ -28,8 +28,6 @@ class HASBridge {
 		authChannel.setMethodCallHandler({
 			[weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
 			// Note: this method is invoked on the UI thread.
-			debugPrint("In here - setMethodCallHandler")
-			debugPrint("Method - \(call.method)")
 			switch (call.method) {
 				case "getRedirectUri":
 					guard
@@ -41,7 +39,6 @@ class HASBridge {
 					}
 					self?.getRedirectUri(username: username, result: result)
 				case "getRedirectUriData":
-					debugPrint("In case - getRedirectUriData")
 					guard
 						let arguments = call.arguments as? NSDictionary,
 						let username = arguments ["username"] as? String
@@ -50,12 +47,35 @@ class HASBridge {
 						return
 					}
 					self?.getRedirectUriData(username: username, result: result)
+				case "getDecryptedHASToken":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let username = arguments ["username"] as? String,
+						let authKey = arguments ["authKey"] as? String,
+						let data = arguments ["data"] as? String
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					self?.getDecryptedHASToken(username: username, authKey: authKey, data: data, result: result)
 				case "getUserInfo":
 					self?.getUserInfo(result: result)
 				default:
 					result(FlutterMethodNotImplemented)
 			}
 		})
+	}
+
+	private func getDecryptedHASToken(username: String, authKey: String, data: String, result: @escaping FlutterResult) {
+		guard let acela = acela else {
+			result(FlutterError(code: "ERROR",
+													message: "Error setting up Hive",
+													details: nil))
+			return
+		}
+		acela.getDecryptedHASToken(username: username, authKey: authKey, data: data) { string in
+			result(string)
+		}
 	}
 
 	private func getUserInfo(result: @escaping FlutterResult) {

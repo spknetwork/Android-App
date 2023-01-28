@@ -206,7 +206,6 @@ class Communicator {
               cookie: cookie,
               resolution: resolution,
               rpc: rpc,
-              socketData: user.socketData,
             );
             server.updateHiveUserData(newData);
             return cookie;
@@ -240,7 +239,6 @@ class Communicator {
             cookie: null,
             resolution: resolution,
             rpc: rpc,
-            socketData: user.socketData,
           );
           server.updateHiveUserData(newData);
           return await getValidCookie(newData);

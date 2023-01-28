@@ -21,6 +21,7 @@ class AcelaWebViewController: UIViewController {
 	var getRedirectUriHandler: ((String) -> Void)? = nil
 	var getRedirectUriDataHandler: ((String) -> Void)? = nil
 	var hiveUserInfoHandler: ((String) -> Void)? = nil
+	var getDecryptedHASTokenHandler: ((String) -> Void)? = nil
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -94,6 +95,16 @@ class AcelaWebViewController: UIViewController {
 		webView?.evaluateJavaScript("getRedirectUriData('\(username)');")
 	}
 
+	func getDecryptedHASToken(
+		username: String,
+		authKey: String,
+		data: String,
+		handler: @escaping (String) -> Void
+	) {
+		getDecryptedHASTokenHandler = handler
+		webView?.evaluateJavaScript("getDecryptedHASToken('\(username)','\(authKey)','\(data)');")
+	}
+
 	func getUserInfo(_ handler: @escaping (String) -> Void) {
 		hiveUserInfoHandler = handler
 		webView?.evaluateJavaScript("getUserInfo();")
@@ -161,6 +172,11 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
 				getRedirectUriDataHandler?(response)
+			case "getDecryptedHASToken":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				getDecryptedHASTokenHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}

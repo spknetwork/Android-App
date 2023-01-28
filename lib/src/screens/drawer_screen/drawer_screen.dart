@@ -207,32 +207,34 @@ class DrawerScreen extends StatelessWidget {
 
   Widget _drawerMenu(BuildContext context) {
     var user = Provider.of<HiveUserData>(context);
-    return ListView(
-      children: [
-        _drawerHeader(context),
-        _homeMenu(context),
-        _divider(),
-        _firstUploads(context),
-        _divider(),
-        _trendingContent(context),
-        _divider(),
-        _newContent(context),
-        _divider(),
-        _communities(context),
-        _divider(),
-        _leaderBoard(context),
-        _divider(),
-        _shorts(context),
-        _divider(),
-        _settings(context),
-        _divider(),
-        user.username == null ? _login(context) : _myAccount(context),
-        _divider(),
-        _importantLinks(context),
-        _divider(),
-        _desktopApp(),
-        _divider(),
-      ],
+    return SafeArea(
+      child: ListView(
+        children: [
+          _drawerHeader(context),
+          _homeMenu(context),
+          _divider(),
+          _firstUploads(context),
+          _divider(),
+          _trendingContent(context),
+          _divider(),
+          _newContent(context),
+          _divider(),
+          _communities(context),
+          _divider(),
+          _leaderBoard(context),
+          _divider(),
+          _shorts(context),
+          _divider(),
+          _settings(context),
+          _divider(),
+          user.username == null ? _login(context) : _myAccount(context),
+          _divider(),
+          _importantLinks(context),
+          _divider(),
+          _desktopApp(),
+          _divider(),
+        ],
+      ),
     );
   }
 

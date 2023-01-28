@@ -69,7 +69,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     hasId: hasId,
                   )
                 : null,
-            socketData: appData.socketData,
           ),
         );
         loadRes();
@@ -132,7 +131,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             cookie: user.cookie,
             resolution: user.resolution,
             rpc: serverUrl,
-            socketData: user.socketData,
           ),
         );
       },

@@ -48,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
             cookie: null,
             resolution: resolution,
             rpc: rpc,
-            socketData: appData.socketData,
           ),
         );
         Navigator.of(context).pop();
