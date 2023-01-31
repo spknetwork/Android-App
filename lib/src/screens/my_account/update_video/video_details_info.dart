@@ -91,10 +91,18 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                 "Transaction - $uuid was approved. Please hit save button again after 10 seconds to mark video as published.");
             break;
           case "sign_nack":
+            setState(() {
+              isCompleting = false;
+              processText = '';
+            });
             var uuid = asString(map, 'uuid');
             showError("Transaction - $uuid was declined. Please hit save button again to try again.");
             break;
           case "sign_err":
+            setState(() {
+              isCompleting = false;
+              processText = '';
+            });
             var uuid = asString(map, 'uuid');
             showError("Transaction - $uuid failed.");
             break;
@@ -203,7 +211,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
         if (bridgeResponse.error == "success") {
-          await Future.delayed(const Duration(seconds: 15), () {});
           await Communicator().updatePublishState(user, v.id);
           setState(() {
             isCompleting = false;
@@ -211,6 +218,16 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             showMessage('Congratulations. Your video is published.');
             showMyDialog();
           });
+        } else if (bridgeResponse.error == "" && bridgeResponse.data != null &&
+            user.keychainData?.hasAuthKey != null) {
+          var socketData = {
+            "cmd": "sign_req",
+            "account": user.username!,
+            "token": user.keychainData!.hasId,
+            "data": bridgeResponse.data!,
+          };
+          var jsonData = json.encode(socketData);
+          socket.sink.add(jsonData);
         } else if (bridgeResponse.error.startsWith("Transaction ")) {
           setState(() {
             isCompleting = false;

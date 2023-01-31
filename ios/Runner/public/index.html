@@ -19,6 +19,13 @@
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
     <script>
+      const HAS_SERVER = "wss://hive-auth.arcange.eu";
+      const HAS_APP_DATA = {
+        name: "3Speak Mobile iOS App",
+        description: "3Speak Mobile iOS App with HAS Integration",
+      };
+      const app_key = uuidv4();
+
       function validateHiveKey(accountName, postingKey) {
         console.log("In here before async");
         hive.api
@@ -390,7 +397,7 @@
                     type: "postVideo",
                     valid: false,
                     username: author,
-                    error: error.message
+                    error: error.message,
                   });
                 });
             }

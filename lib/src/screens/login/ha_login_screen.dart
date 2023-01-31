@@ -80,6 +80,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             showError("Auth was not acknowledged");
             setState(() {
               qrCode = null;
+              controller?.stop(canceled: true);
               controller = null;
               loadingQR = false;
             });
@@ -159,6 +160,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   Widget _showQRCodeAndKeychainButton(String qr) {
     return Column(
       children: [
+        const SizedBox(height: 10),
         Text('Scan QR Code'),
         SizedBox(height: 10),
         Container(
