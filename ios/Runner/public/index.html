@@ -362,33 +362,36 @@
                 JSON.stringify(sign_data),
                 hasAuthKey
               ).toString();
-              const payload = {
-                cmd: "sign_req",
-                account: author,
-                token: hasKey,
+              // const payload = {
+              //   cmd: "sign_req",
+              //   account: author,
+              //   token: hasKey,
+              //   data: data,
+              // };
+              replyToNative({
+                type: "postVideo",
+                valid: true,
+                username: author,
+                error: "",
                 data: data,
-              };
-              ws.send(JSON.stringify(payload));
+              });
             } else {
               tryPublish(operations, postingKey)
                 .then((result) => {
-                  var newResult = {
+                  replyToNative({
                     type: "postVideo",
                     valid: true,
-                    error: "success",
-                  };
-                  window.webkit.messageHandlers.acela.postMessage(newResult);
-                  //Android.postMessage(JSON.stringify(newResult));
+                    username: author,
+                  });
                 })
                 .catch((error) => {
                   console.error(error);
-                  var result = {
+                  replyToNative({
                     type: "postVideo",
                     valid: false,
-                    error: error.message,
-                  };
-                  window.webkit.messageHandlers.acela.postMessage(result);
-                  //Android.postMessage(JSON.stringify(result));
+                    username: author,
+                    error: error.message
+                  });
                 });
             }
           })
@@ -402,140 +405,6 @@
             window.webkit.messageHandlers.acela.postMessage(result);
             //Android.postMessage(JSON.stringify(result));
           });
-      }
-    </script>
-
-    <script>
-      // HAS variables
-      const HAS_SERVER = "wss://hive-auth.arcange.eu";
-      const HAS_APP_DATA = {
-        name: "3Speak Mobile iOS App",
-        description: "3Speak Mobile iOS App with HAS Integration",
-      };
-      const app_key = uuidv4();
-      let username;
-      let token;
-      let expire;
-      let auth_key;
-      let auth_uuid;
-      // Initialize WebSocket
-      let ws = undefined;
-      if ("WebSocket" in window) {
-        // The browser support Websocket
-        ws = new WebSocket(HAS_SERVER);
-        console.log(`Starting WebSocket with ${HAS_SERVER}`);
-        ws.onopen = function () {
-          // Web Socket is connected
-          console.log("WebSocket connected");
-        };
-        ws.onmessage = function (event) {
-          console.log(`event - ${JSON.parse(event.data)}`);
-          //const msg = JSON.parse(evt.data)
-          console.log(event.data);
-          const message =
-            typeof event.data == "string" ? JSON.parse(event.data) : event.data;
-          // Process HAS <-> PKSA protocol
-          if (message.cmd) {
-            switch (message.cmd) {
-              case "auth_wait":
-                // Update QRCode
-                const json = JSON.stringify({
-                  account: username,
-                  uuid: message.uuid,
-                  key: auth_key,
-                  host: HAS_SERVER,
-                });
-                const URI = `has://auth_req/${btoa(json)}`;
-                console.log("done");
-                console.log(`has auth is - ${URI}`);
-                replyToNative({
-                  type: "getRedirectUri",
-                  valid: true,
-                  username: username,
-                  error: "",
-                  data: URI,
-                });
-                break;
-              case "auth_ack":
-                try {
-                  // Try to decrypt and parse payload data
-                  message.data = JSON.parse(
-                    CryptoJS.AES.decrypt(message.data, auth_key).toString(
-                      CryptoJS.enc.Utf8
-                    )
-                  );
-                  token = message.data.token;
-                  expire = message.data.expire;
-                } catch (e) {
-                  // Decryption failed - ignore message
-                  console.error("decryption failed", e.message);
-                  click_logout();
-                }
-                break;
-              case "auth_nack":
-                click_logout();
-                break;
-              case "sign_wait":
-                alert(`transaction ${message.uuid} is waiting for approval`);
-                replyToNative({
-                  type: "postVideo",
-                  valid: true,
-                  error: `Transaction ${message.uuid} is waiting for approval. Open HiveKeychain app, approve, come back here & hit Save button again.`,
-                });
-                break;
-              case "sign_ack":
-                console.log(`transaction ${message.uuid} approved`);
-                replyToNative({
-                  type: "postVideo",
-                  valid: true,
-                  error: "success",
-                });
-                break;
-              case "sign_nack":
-                alert(`transaction ${message.uuid} has been declined`);
-                break;
-              case "sign_err":
-                alert(`transaction ${message.uuid} failed: ${message.error}`);
-                break;
-            }
-          }
-        };
-        // websocket is closed.
-        ws.onclose = function () {
-          console.log("WebSocket closed. Please reload the page...");
-        };
-        ws.onerror = function (e) {
-          console.log(`WebSocket error. ${e}\nPlease reload the page...`);
-        };
-      } else {
-        console.log("The browser doesn't support WebSocket");
-      }
-
-      function getUserInfo() {
-        replyToNative({
-          type: "hiveAuthUserInfo",
-          valid: true,
-          username: username,
-          error: "",
-          data: `${token},${expire},${auth_key}`,
-        });
-      }
-
-      function getRedirectUri(uname) {
-        username = uname.toLowerCase();
-        const auth_data = {
-          app: HAS_APP_DATA,
-          token: undefined,
-          challenge: undefined,
-        };
-
-        auth_key = uuidv4();
-        const data = CryptoJS.AES.encrypt(
-          JSON.stringify(auth_data),
-          auth_key
-        ).toString();
-        const payload = { cmd: "auth_req", account: username, data: data };
-        ws.send(JSON.stringify(payload));
       }
 
       function getRedirectUriData(uname) {
@@ -584,67 +453,6 @@
             error: e.message,
           });
         }
-      }
-
-      function click_logout() {
-        username = undefined;
-        token = undefined;
-        expire = undefined;
-      }
-
-      function click_posting() {
-        const op = [
-          "custom_json",
-          {
-            id: "test",
-            json: '{"action":"test HAS posting"}',
-            required_auths: [],
-            required_posting_auths: [username],
-          },
-        ];
-        const sign_data = {
-          key_type: "posting",
-          ops: [op],
-          broadcast: true,
-        };
-        const data = CryptoJS.AES.encrypt(
-          JSON.stringify(sign_data),
-          auth_key
-        ).toString();
-        const payload = {
-          cmd: "sign_req",
-          account: username,
-          token: token,
-          data: data,
-        };
-        ws.send(JSON.stringify(payload));
-      }
-      function click_active() {
-        const op = [
-          "transfer",
-          {
-            from: username,
-            to: "arcange",
-            amount: "0.001 HIVE",
-            memo: "test HAS active",
-          },
-        ];
-        const sign_data = {
-          key_type: "active",
-          ops: [op],
-          broadcast: true,
-        };
-        const data = CryptoJS.AES.encrypt(
-          JSON.stringify(sign_data),
-          auth_key
-        ).toString();
-        const payload = {
-          cmd: "sign_req",
-          account: username,
-          token: token,
-          data: data,
-        };
-        ws.send(JSON.stringify(payload));
       }
 
       function replyToNative(result) {

@@ -13,7 +13,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class HiveAuthLoginScreen extends StatefulWidget {
@@ -27,7 +26,8 @@ class HiveAuthLoginScreen extends StatefulWidget {
   State<HiveAuthLoginScreen> createState() => _HiveAuthLoginScreenState();
 }
 
-class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
+class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
+    with TickerProviderStateMixin {
   static const platform = MethodChannel('blog.hive.auth/bridge');
   var usernameController = TextEditingController();
   late WebSocketChannel socket;
@@ -35,6 +35,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
   String username = '';
   String? qrCode;
   var loadingQR = false;
+  AnimationController? controller;
 
   @override
   void initState() {
@@ -61,6 +62,13 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
             qr = "has://auth_req/$qr";
             setState(() {
               qrCode = qr;
+              controller = AnimationController(
+                vsync: this,
+                duration: const Duration(seconds: 30),
+              )..addListener(() {
+                setState(() {});
+              });
+              controller?.repeat(reverse: false);
               loadingQR = false;
             });
             break;
@@ -72,6 +80,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
             showError("Auth was not acknowledged");
             setState(() {
               qrCode = null;
+              controller = null;
               loadingQR = false;
             });
             break;
@@ -161,6 +170,14 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
           ),
         ),
         SizedBox(height: 10),
+        SizedBox(
+          width: 200,
+          child: LinearProgressIndicator(
+            value: controller!.value,
+            semanticsLabel: 'Timeout Timer for HiveAuth QR',
+          ),
+        ),
+        SizedBox(height: 10),
         Text('- OR -'),
         SizedBox(height: 10),
         Text('Launch HiveKeychain App'),
@@ -201,7 +218,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
 
   void decryptData(HiveUserData data, String encryptedData) async {
     final String response =
-    await platform.invokeMethod('getDecryptedHASToken', {
+        await platform.invokeMethod('getDecryptedHASToken', {
       'username': username,
       'authKey': authKey,
       'data': encryptedData,
@@ -236,7 +253,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> {
             rpc: data.rpc,
           ),
         );
-        showMessage('You have successfully logged in with Hive Auth with user - $username');
+        showMessage(
+            'You have successfully logged in with Hive Auth with user - $username');
         Navigator.of(context).pop();
         Navigator.of(context).pop();
       }

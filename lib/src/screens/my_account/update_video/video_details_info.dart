@@ -7,6 +7,7 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/utils/safe_convert.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tus_client/tus_client.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class VideoDetailsInfo extends StatefulWidget {
   const VideoDetailsInfo({
@@ -46,6 +48,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var selectedCommunity = 'hive-181335';
   var selectedCommunityVisibleName = 'Threespeak';
   String? hiveKeychainTransactionId;
+  late WebSocketChannel socket;
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -61,6 +64,45 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   void initState() {
     super.initState();
     tagsController.text = "threespeak,mobile";
+    socket = WebSocketChannel.connect(
+      Uri.parse(Communicator.hiveAuthServer),
+    );
+    socket.stream.listen((message) {
+      var map = json.decode(message) as Map<String, dynamic>;
+      var cmd = asString(map, 'cmd');
+      if (cmd.isNotEmpty) {
+        switch (cmd) {
+          case "auth_wait":
+            log('You are not logged in.');
+            break;
+          case "auth_ack":
+            log('You are not logged in.');
+            break;
+          case "auth_nack":
+            log('You are not logged in.');
+            break;
+          case "sign_wait":
+            var uuid = asString(map, 'uuid');
+            showMessage("Transaction - $uuid is waiting for approval.");
+            break;
+          case "sign_ack":
+            var uuid = asString(map, 'uuid');
+            showMessage(
+                "Transaction - $uuid was approved. Please hit save button again after 10 seconds to mark video as published.");
+            break;
+          case "sign_nack":
+            var uuid = asString(map, 'uuid');
+            showError("Transaction - $uuid was declined. Please hit save button again to try again.");
+            break;
+          case "sign_err":
+            var uuid = asString(map, 'uuid');
+            showError("Transaction - $uuid failed.");
+            break;
+          default:
+            log('Default case here');
+        }
+      }
+    });
   }
 
   void initiateUpload(
@@ -106,7 +148,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     try {
       // we wait for 15 seconds to wait for RPC node to have latest blocks
       // if video is already published, we want to avoid.
-      await Future.delayed(const Duration(seconds: 15), () {});
+      // await Future.delayed(const Duration(seconds: 15), () {});
       var doesPostNotExist = await Communicator()
           .doesPostNotExist(widget.item.owner, widget.item.permlink, user.rpc);
       if (doesPostNotExist != true) {
