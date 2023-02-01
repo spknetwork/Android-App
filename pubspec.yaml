@@ -105,6 +105,7 @@ flutter:
     - assets/branding/three_speak_logo.png
     - assets/branding/three_speak_icon.png
     - assets/branding/three_shorts_icon.png
+    - assets/hive_auth_button.png
     - assets/hive-keychain-image.png
     - assets/ipfs-logo.png
     - assets/hiveauth_icon.png

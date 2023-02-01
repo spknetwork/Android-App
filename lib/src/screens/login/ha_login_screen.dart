@@ -35,7 +35,9 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   String username = '';
   String? qrCode;
   var loadingQR = false;
-  AnimationController? controller;
+  var timer = 0;
+  var timeoutValue = 0;
+  Timer? ticker;
 
   @override
   void initState() {
@@ -48,6 +50,11 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       var cmd = asString(map, 'cmd');
       if (cmd.isNotEmpty) {
         switch (cmd) {
+          case "connected":
+            setState(() {
+              timeoutValue = asInt(map, 'timeout');
+            });
+            break;
           case "auth_wait":
             var uuid = asString(map, 'uuid');
             var jsonData = {
@@ -62,13 +69,19 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             qr = "has://auth_req/$qr";
             setState(() {
               qrCode = qr;
-              controller = AnimationController(
-                vsync: this,
-                duration: const Duration(seconds: 30),
-              )..addListener(() {
-                setState(() {});
+              timer = timeoutValue;
+              ticker = Timer.periodic(Duration(seconds: 1), (tickrr) {
+                if (timer == 0) {
+                  setState(() {
+                    tickrr.cancel();
+                    qrCode = null;
+                  });
+                } else {
+                  setState(() {
+                    timer--;
+                  });
+                }
               });
-              controller?.repeat(reverse: false);
               loadingQR = false;
             });
             break;
@@ -80,24 +93,10 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             showError("Auth was not acknowledged");
             setState(() {
               qrCode = null;
-              controller?.stop(canceled: true);
-              controller = null;
+              timer = 0;
               loadingQR = false;
             });
             break;
-          // case "sign_wait":
-          //   var uuid = asString(map, 'uuid');
-          //   return Text(
-          //       "Transaction - $uuid is waiting for approval.");
-          // case "sign_ack":
-          //   var uuid = asString(map, 'uuid');
-          //   return Text("Transaction - $uuid is was approved.");
-          // case "sign_nack":
-          //   var uuid = asString(map, 'uuid');
-          //   return Text("Transaction - $uuid is was declined.");
-          // case "sign_err":
-          //   var uuid = asString(map, 'uuid');
-          //   return Text("Transaction - $uuid failed.");
           default:
             log('Default case here');
         }
@@ -158,40 +157,47 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   }
 
   Widget _showQRCodeAndKeychainButton(String qr) {
-    return Column(
-      children: [
-        const SizedBox(height: 10),
-        Text('Scan QR Code'),
-        SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(color: Colors.white),
-          child: QrImage(
-            data: qr,
-            size: 200.0,
-            gapless: true,
+    return Center(
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          Image.asset('assets/hive_auth_button.png'),
+          const SizedBox(height: 10),
+          Text('Scan QR Code'),
+          SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(color: Colors.white),
+            child: QrImage(
+              data: qr,
+              size: 200.0,
+              gapless: true,
+            ),
           ),
-        ),
-        SizedBox(height: 10),
-        SizedBox(
-          width: 200,
-          child: LinearProgressIndicator(
-            value: controller!.value,
-            semanticsLabel: 'Timeout Timer for HiveAuth QR',
+          SizedBox(height: 10),
+          SizedBox(
+            width: 200,
+            child: LinearProgressIndicator(
+              value: timer.toDouble() / timeoutValue.toDouble(),
+              semanticsLabel: 'Timeout Timer for HiveAuth QR',
+            ),
           ),
-        ),
-        SizedBox(height: 10),
-        Text('- OR -'),
-        SizedBox(height: 10),
-        Text('Launch HiveKeychain App'),
-        SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            var url = Uri.parse(qr);
-            launchUrl(url);
-          },
-          child: Image.asset('assets/hive-keychain-image.png'),
-        ),
-      ],
+          SizedBox(height: 20),
+          Text('- OR -'),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              var url = Uri.parse(qr);
+              launchUrl(url);
+            },
+            child: Image.asset('assets/hive-keychain-image.png'),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Launch "Keychain For Hive" app & authorize.\n\nNOTE: Launching "Keychain for Hive" app, only works on mobile devices.',
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -264,9 +270,6 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       showMessage(
           'Something went wrong - ${bridgeResponse.error}. Please go back & try again.');
     }
-    // Timer(Duration(seconds: 2), () async {
-    //
-    // });
   }
 
   @override

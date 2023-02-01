@@ -83,10 +83,14 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             break;
           case "sign_wait":
             var uuid = asString(map, 'uuid');
-            showMessage("Transaction - $uuid is waiting for approval.");
+            showMessage("Transaction - $uuid is waiting for approval. Please launch \"Keychain for Hive\" and approve to publish on Hive.");
             break;
           case "sign_ack":
             var uuid = asString(map, 'uuid');
+            setState(() {
+              isCompleting = false;
+              processText = '';
+            });
             showMessage(
                 "Transaction - $uuid was approved. Please hit save button again after 10 seconds to mark video as published.");
             break;
