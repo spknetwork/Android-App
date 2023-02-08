@@ -49,6 +49,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var selectedCommunityVisibleName = 'Threespeak';
   String? hiveKeychainTransactionId;
   late WebSocketChannel socket;
+  var socketClosed = true;
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -83,7 +84,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             break;
           case "sign_wait":
             var uuid = asString(map, 'uuid');
-            showMessage("Transaction - $uuid is waiting for approval. Please launch \"Keychain for Hive\" and approve to publish on Hive.");
+            showDialogForHASTransaction(uuid);
             break;
           case "sign_ack":
             var uuid = asString(map, 'uuid');
@@ -91,8 +92,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               isCompleting = false;
               processText = '';
             });
-            showMessage(
-                "Transaction - $uuid was approved. Please hit save button again after 10 seconds to mark video as published.");
+            showDialogForAfter10Seconds("Transaction - $uuid was approved. Please hit save button again after 10 seconds to mark video as published.");
             break;
           case "sign_nack":
             setState(() {
@@ -100,7 +100,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               processText = '';
             });
             var uuid = asString(map, 'uuid');
-            showError("Transaction - $uuid was declined. Please hit save button again to try again.");
+            showError(
+                "Transaction - $uuid was declined. Please hit save button again to try again.");
             break;
           case "sign_err":
             setState(() {
@@ -114,7 +115,17 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             log('Default case here');
         }
       }
-    });
+    }, onError: (e) async {
+      await Future.delayed(Duration(seconds: 2));
+      socket = WebSocketChannel.connect(
+        Uri.parse(Communicator.hiveAuthServer),
+      );
+    }, onDone: () async {
+      await Future.delayed(Duration(seconds: 2));
+      socket = WebSocketChannel.connect(
+        Uri.parse(Communicator.hiveAuthServer),
+      );
+    }, cancelOnError: true);
   }
 
   void initiateUpload(
@@ -222,7 +233,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             showMessage('Congratulations. Your video is published.');
             showMyDialog();
           });
-        } else if (bridgeResponse.error == "" && bridgeResponse.data != null &&
+        } else if (bridgeResponse.error == "" &&
+            bridgeResponse.data != null &&
             user.keychainData?.hasAuthKey != null) {
           var socketData = {
             "cmd": "sign_req",
@@ -252,6 +264,40 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     }
   }
 
+  void showDialogForAfter10Seconds(String message) {
+    Widget okButton = TextButton(
+      child: Text("Okay"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    AlertDialog alert = AlertDialog(
+      title: Text("🎉 Congratulations 🎉"),
+      content: Text(message),
+      actions: [
+        okButton,
+      ],
+    );
+    showDialog(context: context, builder: (c) => alert);
+  }
+
+  void showDialogForHASTransaction(String uuid) {
+    Widget okButton = TextButton(
+      child: Text("Okay"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    AlertDialog alert = AlertDialog(
+      title: Text("Launch HiveAuth / HiveKeychain"),
+      content: Text("Transaction - $uuid is waiting for approval. Please launch \"Keychain for Hive\" and approve to publish on Hive."),
+      actions: [
+        okButton,
+      ],
+    );
+    showDialog(context: context, builder: (c) => alert);
+  }
+
   void showMyDialog() {
     Widget okButton = TextButton(
       child: Text("Okay"),
@@ -264,7 +310,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     );
     AlertDialog alert = AlertDialog(
       title: Text("🎉 Congratulations 🎉"),
-      content: Text("Your Video is published on Hive."),
+      content: Text("Your Video is published on Hive & video is marked as published."),
       actions: [
         okButton,
       ],

@@ -181,21 +181,6 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
               semanticsLabel: 'Timeout Timer for HiveAuth QR',
             ),
           ),
-          SizedBox(height: 20),
-          Text('- OR -'),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              var url = Uri.parse(qr);
-              launchUrl(url);
-            },
-            child: Image.asset('assets/hive-keychain-image.png'),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Launch "Keychain For Hive" app & authorize.\n\nNOTE: Launching "Keychain for Hive" app, only works on mobile devices.',
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );
