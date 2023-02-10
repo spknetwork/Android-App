@@ -149,14 +149,14 @@ class _LoginScreenState extends State<LoginScreen> {
             },
             icon: Icon(Icons.help),
           ),
-          // IconButton(
-          //   onPressed: () {
-          //     var screen = HiveAuthLoginScreen(appData: data);
-          //     var route = MaterialPageRoute(builder: (c) => screen);
-          //     Navigator.of(context).push(route);
-          //   },
-          //   icon: Image.asset('assets/hiveauth_icon.png'),
-          // )
+          IconButton(
+            onPressed: () {
+              var screen = HiveAuthLoginScreen(appData: data);
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).push(route);
+            },
+            icon: Image.asset('assets/hiveauth_icon.png'),
+          )
         ],
       ),
       body: _loginForm(data),

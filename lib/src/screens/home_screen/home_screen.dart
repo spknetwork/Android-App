@@ -212,11 +212,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _fabNewUpload() {
-    return FloatingActionButton(
+    return FloatingActionButton.extended(
       onPressed: () {
         showBottomSheetForRecordingTypes();
       },
-      child: const Icon(Icons.add),
+      label: const Text('Upload Video'),
+      icon: const Icon(Icons.upload),
     );
   }
 

@@ -309,9 +309,9 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
       },
     );
     AlertDialog alert = AlertDialog(
-      title: Text("🎉 Congratulations 🎉"),
+      title: Text("🎉 Upload Complete 🎉"),
       content: Text(
-          "✅ Your Video is uploaded.\n✅It is also moved to encoding queue.\n- Don't forget to check your video status from My Account section."),
+          "✅ Your Video is in process.\n✅Video has be added to the encoding queue.\n- Don't forget to check your video status from My Account section."),
       actions: [
         okButton,
       ],
@@ -396,22 +396,22 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
       ),
       body: ListView(
         children: [
-          ListTile(
-            title: const Text('Launching Video Picker'),
-            trailing: didShowFilePicker
-                ? const Icon(Icons.check, color: Colors.lightGreen)
-                : const Icon(Icons.pending),
-            subtitle: didShowFilePicker ? Text(timeShowFilePicker) : null,
-          ),
-          ListTile(
-            title: const Text('Getting/Compressing the Video'),
-            trailing: !didPickFile
-                ? !didStartPickFile
-                    ? const Icon(Icons.pending)
-                    : const CircularProgressIndicator()
-                : const Icon(Icons.check, color: Colors.lightGreen),
-            subtitle: didPickFile ? Text(timePickFile) : null,
-          ),
+          // ListTile(
+          //   title: const Text('Launching Video Picker'),
+          //   trailing: didShowFilePicker
+          //       ? const Icon(Icons.check, color: Colors.lightGreen)
+          //       : const Icon(Icons.pending),
+          //   subtitle: didShowFilePicker ? Text(timeShowFilePicker) : null,
+          // ),
+          // ListTile(
+          //   title: const Text('Getting/Compressing the Video'),
+          //   trailing: !didPickFile
+          //       ? !didStartPickFile
+          //           ? const Icon(Icons.pending)
+          //           : const CircularProgressIndicator()
+          //       : const Icon(Icons.check, color: Colors.lightGreen),
+          //   subtitle: didPickFile ? Text(timePickFile) : null,
+          // ),
           ListTile(
             title: Text(
                 'Uploading video (${didUpload ? 100.0 : (progress * 100).toStringAsFixed(2)}%)'),
