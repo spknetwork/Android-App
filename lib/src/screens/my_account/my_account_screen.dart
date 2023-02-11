@@ -42,10 +42,31 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       ),
       bottom: const TabBar(
         tabs: [
-          Tab(icon: Icon(Icons.hourglass_top)),
-          Tab(icon: Icon(Icons.rocket_launch)),
-          Tab(icon: Icon(Icons.check)),
-          Tab(icon: Icon(Icons.cancel_rounded)),
+          Tab(
+            child: Text(
+              'Encoding',
+              style: TextStyle(color: Colors.yellowAccent),
+            ),
+          ),
+          Tab(
+            child: Text(
+              'Ready',
+              style: TextStyle(color: Colors.green),
+            ),
+          ),
+          Tab(
+            child: Text(
+              'Done',
+              style: TextStyle(color: Colors.blueAccent),
+            ),
+          ),
+          Tab(
+            child: Text(
+              'Failed',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+          //(icon: Icon(Icons.cancel_rounded)),
         ],
       ),
       actions: [
@@ -69,7 +90,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             : item.status == 'publish_manual'
                 ? IconButton(
                     onPressed: () {
-                      var screen = VideoPrimaryInfo(item: item);
+                      var screen = VideoPrimaryInfo(
+                        item: item,
+                        justForEditing: false,
+                      );
                       var route = MaterialPageRoute(builder: (c) => screen);
                       Navigator.of(context).push(route);
                     },
@@ -121,7 +145,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             item.status != 'encoding_failed') {
           _showBottomSheet(item);
         } else if (item.status == 'publish_manual') {
-          var screen = VideoPrimaryInfo(item: item);
+          var screen = VideoPrimaryInfo(item: item, justForEditing: false);
           var route = MaterialPageRoute(builder: (c) => screen);
           Navigator.of(context).push(route);
         }
@@ -151,7 +175,9 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         items.where((item) => item.status == 'encoding_failed').toList();
     var process = items
         .where((item) =>
-            item.status != 'published' && item.status != 'publish_manual')
+            item.status != 'published' &&
+            item.status != 'publish_manual' &&
+            item.status != 'encoding_failed')
         .toList();
     return TabBarView(
       children: [

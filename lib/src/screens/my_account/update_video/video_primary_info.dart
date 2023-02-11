@@ -6,8 +6,10 @@ class VideoPrimaryInfo extends StatefulWidget {
   const VideoPrimaryInfo({
     Key? key,
     required this.item,
+    required this.justForEditing,
   }) : super(key: key);
   final VideoDetails item;
+  final bool justForEditing;
 
   @override
   State<VideoPrimaryInfo> createState() => _VideoPrimaryInfoState();
@@ -82,6 +84,7 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
                   item: widget.item,
                   title: titleController.text,
                   subtitle: descriptionController.text,
+                  justForEditing: widget.justForEditing,
                 );
                 var route = MaterialPageRoute(builder: (c) => screen);
                 Navigator.of(context).push(route);

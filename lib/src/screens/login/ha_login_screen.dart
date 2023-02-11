@@ -33,7 +33,6 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   var usernameController = TextEditingController();
   late WebSocketChannel socket;
   String authKey = '';
-  String username = '';
   String? qrCode;
   var loadingQR = false;
   var timer = 0;
@@ -139,7 +138,10 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   }
 
   void _hasButtonTapped(bool keychainTapped) async {
-    if (usernameController.text.isEmpty) return;
+    if (usernameController.text.isEmpty) {
+      showError('Please enter hive username');
+      return;
+    }
     setState(() {
       loadingQR = true;
     });
@@ -161,7 +163,6 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       setState(() {
         didTapKeychainButton = keychainTapped;
         authKey = key;
-        username = usernameController.text;
       });
     }
   }
@@ -303,18 +304,21 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   }
 
   void onLoginTapped(HiveUserData appData) async {
+    if (usernameController.text.isEmpty) {
+      showError('Please enter hive username');
+      return;
+    }
     setState(() {
       isLoading = true;
     });
     try {
-      var publicKey = await Communicator().getPublicKey(username, appData.rpc);
+      var publicKey = await Communicator().getPublicKey(usernameController.text, appData.rpc);
       var resultingKey = CryptoManager().privToPub(postingKey);
       if (resultingKey == publicKey) {
-        // it is valid key
         debugPrint("Successful login");
         String resolution = await storage.read(key: 'resolution') ?? '480p';
         String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-        await storage.write(key: 'username', value: username);
+        await storage.write(key: 'username', value: usernameController.text);
         await storage.write(key: 'postingKey', value: postingKey);
         await storage.delete(key: 'hasId');
         await storage.delete(key: 'hasExpiry');
@@ -322,7 +326,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         await storage.delete(key: 'cookie');
         server.updateHiveUserData(
           HiveUserData(
-            username: username,
+            username: usernameController.text,
             postingKey: postingKey,
             keychainData: null,
             cookie: null,
@@ -331,6 +335,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           ),
         );
         Navigator.of(context).pop();
+        showMessage('You have successfully logged in as - ${usernameController.text}');
         setState(() {
           isLoading = false;
         });
@@ -358,7 +363,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   void decryptData(HiveUserData data, String encryptedData) async {
     final String response =
         await platform.invokeMethod('getDecryptedHASToken', {
-      'username': username,
+      'username': usernameController.text,
       'authKey': authKey,
       'data': encryptedData,
     });
@@ -372,7 +377,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             'Did not find token & expiry details from HiveAuth. Please go back & try again.');
       } else {
         const storage = FlutterSecureStorage();
-        await storage.write(key: 'username', value: username);
+        await storage.write(key: 'username', value: usernameController.text);
         await storage.delete(key: 'postingKey');
         await storage.delete(key: 'cookie');
         await storage.write(key: 'hasId', value: tokenData[0]);
@@ -380,7 +385,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         await storage.write(key: 'hasAuthKey', value: authKey);
         server.updateHiveUserData(
           HiveUserData(
-            username: username,
+            username: usernameController.text,
             postingKey: null,
             keychainData: HiveKeychainData(
               hasAuthKey: authKey,
@@ -393,8 +398,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           ),
         );
         showMessage(
-            'You have successfully logged in with Hive Auth with user - $username');
-        Navigator.of(context).pop();
+            'You have successfully logged in with Hive Auth with user - ${usernameController.text}');
         Navigator.of(context).pop();
       }
     } else {

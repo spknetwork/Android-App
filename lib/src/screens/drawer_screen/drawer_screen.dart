@@ -3,7 +3,7 @@ import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
-import 'package:acela/src/screens/login/login_screen.dart';
+import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/stories_screen.dart';
@@ -137,7 +137,7 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-  Widget _login(BuildContext context) {
+  Widget _login(BuildContext context, HiveUserData data) {
     return ListTile(
       leading: const Icon(Icons.login),
       title: const Text("Log in"),
@@ -146,7 +146,7 @@ class DrawerScreen extends StatelessWidget {
         // Navigator.of(context)
         //     .push(MaterialPageRoute(builder: (c) => const NewLoginScreen()));
         Navigator.of(context)
-            .push(MaterialPageRoute(builder: (c) => const LoginScreen()));
+            .push(MaterialPageRoute(builder: (c) => HiveAuthLoginScreen(appData: data)));
       },
     );
   }
@@ -227,7 +227,7 @@ class DrawerScreen extends StatelessWidget {
           _divider(),
           _settings(context),
           _divider(),
-          user.username == null ? _login(context) : _myAccount(context),
+          user.username == null ? _login(context, user) : _myAccount(context),
           _divider(),
           _importantLinks(context),
           _divider(),

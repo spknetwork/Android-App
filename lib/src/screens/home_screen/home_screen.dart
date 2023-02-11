@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void showBottomSheetForVideoOptions(bool isReel) {
+  void showBottomSheetForVideoOptions(bool isReel, HiveUserData data) {
     showAdaptiveActionSheet(
       context: context,
       title: const Text('How do you want to upload?'),
@@ -160,6 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
             var screen = NewVideoUploadScreen(
               camera: true,
               isReel: isReel,
+              data: data,
             );
             var route = MaterialPageRoute(builder: (c) => screen);
             Navigator.of(context).pop();
@@ -173,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
               var screen = NewVideoUploadScreen(
                 camera: false,
                 isReel: isReel,
+                data: data,
               );
               var route = MaterialPageRoute(builder: (c) => screen);
               Navigator.of(context).pop();
@@ -185,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void showBottomSheetForRecordingTypes() {
+  void showBottomSheetForRecordingTypes(HiveUserData data) {
     showAdaptiveActionSheet(
       context: context,
       title: const Text('What do you want to upload?'),
@@ -196,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
           leading: const Icon(Icons.camera_outlined),
           onPressed: (c) {
             Navigator.of(context).pop();
-            showBottomSheetForVideoOptions(true);
+            showBottomSheetForVideoOptions(true, data);
           },
         ),
         BottomSheetAction(
@@ -204,17 +206,17 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: const Icon(Icons.video_collection),
             onPressed: (c) {
               Navigator.of(context).pop();
-              showBottomSheetForVideoOptions(false);
+              showBottomSheetForVideoOptions(false, data);
             }),
       ],
       cancelAction: CancelAction(title: const Text('Cancel')),
     );
   }
 
-  Widget _fabNewUpload() {
+  Widget _fabNewUpload(HiveUserData data) {
     return FloatingActionButton.extended(
       onPressed: () {
-        showBottomSheetForRecordingTypes();
+        showBottomSheetForRecordingTypes(data);
       },
       label: const Text('Upload Video'),
       icon: const Icon(Icons.upload),
@@ -250,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _screen(appData),
       drawer: widget.showDrawer ? const DrawerScreen() : null,
-      floatingActionButton: appData.username == null ? null : _fabNewUpload(),
+      floatingActionButton: appData.username == null ? null : _fabNewUpload(appData),
     );
   }
 }

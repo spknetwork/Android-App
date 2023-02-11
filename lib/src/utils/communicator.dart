@@ -34,8 +34,12 @@ class Communicator {
   // static const fsServer = "http://localhost:1080/files";
 
   // iOS Devices - Local Server Testing
-  static const tsServer = "http://192.168.29.239:13050";
-  static const fsServer = "http://192.168.29.239:1080/files";
+  // static const tsServer = "http://192.168.29.239:13050";
+  // static const fsServer = "http://192.168.29.239:1080/files";
+
+  // iOS Devices - Local server testing different router
+  static const tsServer = "http://192.168.1.2:13050";
+  static const fsServer = "http://192.168.1.2:1080/files";
 
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';

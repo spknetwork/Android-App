@@ -23,10 +23,12 @@ class VideoDetailsInfo extends StatefulWidget {
     required this.item,
     required this.title,
     required this.subtitle,
+    required this.justForEditing,
   }) : super(key: key);
   final VideoDetails item;
   final String title;
   final String subtitle;
+  final bool justForEditing;
 
   @override
   State<VideoDetailsInfo> createState() => _VideoDetailsInfoState();
@@ -192,6 +194,14 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           tags: tags,
           thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
         );
+        if (widget.justForEditing) {
+          setState(() {
+            showMessage('Video details are saved.');
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            return;
+          });
+        }
         await Future.delayed(const Duration(seconds: 1), () {});
         const platform = MethodChannel('com.example.acela/auth');
         var title = base64.encode(utf8.encode(widget.title));

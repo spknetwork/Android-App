@@ -3,6 +3,9 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/models/video_details_model/video_details.dart';
+import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
+import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
@@ -18,7 +21,9 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 class UploadedItem {
   String fileName;
   String filePath;
+
   UploadedItem({required this.fileName, required this.filePath});
+
   toJSONEncodable() {
     Map<String, dynamic> m = new Map();
     m['fileName'] = fileName;
@@ -42,9 +47,11 @@ class NewVideoUploadScreen extends StatefulWidget {
     Key? key,
     required this.camera,
     required this.isReel,
+    required this.data,
   }) : super(key: key);
   final bool camera;
   final bool isReel;
+  final HiveUserData data;
 
   @override
   State<NewVideoUploadScreen> createState() => _NewVideoUploadScreenState();
@@ -53,6 +60,7 @@ class NewVideoUploadScreen extends StatefulWidget {
 class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
   var didShowFilePicker = false;
   var didPickFile = false;
+
   // var didCompress = false;
   var didUpload = false;
   var didTakeDefaultThumbnail = false;
@@ -61,6 +69,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
 
   var timeShowFilePicker = '0.5 seconds';
   var timePickFile = '';
+
   // var timeCompress = '';
   var timeUpload = '';
   var timeTakeDefaultThumbnail = '';
@@ -68,6 +77,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
   var timeMoveToQueue = '';
 
   var didStartPickFile = false;
+
   // var didStartCompress = false;
   var didStartUpload = false;
   var didStartTakeDefaultThumbnail = false;
@@ -161,8 +171,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         var originalFileName = file.name;
         var fileToSave = File(file.path);
         log(originalFileName);
-        // log("bytes - ${videoFile.bytes ?? 0}");
-        // log("size - ${file.size}");
         log("path - ${file.path}");
         var alreadyUploaded = list.items.contains((e) {
           return e.fileName == originalFileName || e.filePath == file!.path;
@@ -171,32 +179,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           throw 'This video is already uploaded by you';
         }
         var size = await file.length();
-        // var size = file.size;
-        // ---- Step 1. Select Video
 
-        /*
-        var status = await Permission.storage.status;
-        if (!status.isGranted) {
-          await Permission.storage.request();
-        }
-
-        List<Directory>? storage = await getExternalStorageDirectories();
-        if (storage == null) {
-          throw 'Storage null';
-        }
-
-        var externalDirPath = storage.first.path;
-
-        var pathOfDir = file.path.replaceAll(file.name, "");
-        var resultOfFfmpeg = await FFmpegKit.execute(
-            "-i ${file.path} -codec: copy -bsf:v h264_mp4toannexb -start_number 0 -hls_time 10 -hls_list_size 0 -f hls $externalDirPath/index.m3u8");
-        log('Result is ${resultOfFfmpeg.toString()}');
-        var code = await resultOfFfmpeg.getReturnCode();
-        final output = await resultOfFfmpeg.getOutput();
-        log('code is ${(code?.isValueSuccess() ?? false) ? 'Success' : 'Failure'}');
-        log('output is ${output.toString()}');
-        throw 'Throwing error now';
-*/
         if (widget.camera) {
           await ImagesPicker.saveVideoToAlbum(fileToSave);
         }
@@ -280,13 +263,17 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         );
         _addItem(originalFileName, file.path);
         log(videoUploadInfo.status);
+        var videosInfo = await Communicator().loadVideos(widget.data);
+        var item = videosInfo.firstWhere((element) =>
+            element.permlink == videoUploadInfo.permlink &&
+            element.owner == videoUploadInfo.owner);
         var dateEndMoveToQueue = DateTime.now();
         diff = dateEndMoveToQueue.difference(dateStartMoveToQueue);
         setState(() {
           timeMoveToQueue = '${diff.inSeconds} seconds';
           didMoveToQueue = true;
           showMessage('Video is uploaded & moved to encoding queue');
-          showMyDialog();
+          showMyDialog(item);
         });
         // Step 6. Move Video to Queue
       } else {
@@ -300,20 +287,30 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
     }
   }
 
-  void showMyDialog() {
-    Widget okButton = TextButton(
-      child: Text("Okay"),
+  void showMyDialog(VideoDetails item) {
+    Widget laterButton = TextButton(
+      child: Text("Later"),
       onPressed: () {
         Navigator.of(context).pop();
         Navigator.of(context).pop();
       },
     );
+    Widget nowButton = TextButton(
+        onPressed: () async {
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+          var screen = VideoPrimaryInfo(item: item, justForEditing: true);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        },
+        child: const Text('Edit'));
     AlertDialog alert = AlertDialog(
       title: Text("🎉 Upload Complete 🎉"),
       content: Text(
-          "✅ Your Video is in process.\n✅Video has be added to the encoding queue.\n- Don't forget to check your video status from My Account section."),
+          "✅ Your Video is in-process\n\n✅ Video has be added to encoding queue\n\n👀 Check status from My Account\n\n📝 Would you like to Edit your video now?"),
       actions: [
-        okButton,
+        laterButton,
+        nowButton,
       ],
     );
     showDialog(context: context, builder: (c) => alert);

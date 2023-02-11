@@ -59,7 +59,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
                 .toList();
         var permlinks = Set<String>();
         items.retainWhere((x) => permlinks.add(x.permlink));
-        if (items.length < 10) {
+        if (items.length < 15) {
           loadData(length + list.length);
         }
       });
