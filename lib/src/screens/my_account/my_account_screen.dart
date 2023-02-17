@@ -19,8 +19,28 @@ class MyAccountScreen extends StatefulWidget {
   State<MyAccountScreen> createState() => _MyAccountScreenState();
 }
 
-class _MyAccountScreenState extends State<MyAccountScreen> {
+class _MyAccountScreenState extends State<MyAccountScreen>
+    with SingleTickerProviderStateMixin {
   Future<List<VideoDetails>>? loadVideos;
+  late TabController _tabController;
+  var currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        currentIndex = _tabController.index;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _tabController.dispose();
+  }
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -28,43 +48,50 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   }
 
   AppBar _appBar(String username) {
+    var text = currentIndex == 0
+        ? 'Videos - in Encoding Process'
+        : currentIndex == 1 ? 'Videos - Ready to post' : currentIndex ==
+        2 ? 'Videos - Already posted' : 'Videos - failed to encode';
     return AppBar(
-      title: Row(
-        children: [
-          CustomCircleAvatar(
-            height: 36,
-            width: 36,
-            url: 'https://images.hive.blog/u/$username/avatar',
-          ),
-          const SizedBox(width: 5),
-          Text(username),
-        ],
+      title: ListTile(
+        leading: CustomCircleAvatar(
+          height: 36,
+          width: 36,
+          url: 'https://images.hive.blog/u/$username/avatar',
+        ),
+        title: Text(username),
+        subtitle: Text(text),
       ),
-      bottom: const TabBar(
+      bottom: TabBar(
+        controller: _tabController,
         tabs: [
           Tab(
-            child: Text(
-              'Encoding',
-              style: TextStyle(color: Colors.yellowAccent),
-            ),
+            icon: Icon(Icons.hourglass_top, color: Colors.yellowAccent),
+            // child: Text(
+            //   'Encoding',
+            //   style: TextStyle(color: Colors.yellowAccent),
+            // ),
           ),
           Tab(
-            child: Text(
-              'Ready',
-              style: TextStyle(color: Colors.green),
-            ),
+            icon: Icon(Icons.rocket_launch, color: Colors.green),
+            // child: Text(
+            //   'Ready',
+            //   style: TextStyle(color: Colors.green),
+            // ),
           ),
           Tab(
-            child: Text(
-              'Done',
-              style: TextStyle(color: Colors.blueAccent),
-            ),
+            icon: Icon(Icons.check, color: Colors.blueAccent),
+            // child: Text(
+            //   'Done',
+            //   style: TextStyle(color: Colors.blueAccent),
+            // ),
           ),
           Tab(
-            child: Text(
-              'Failed',
-              style: TextStyle(color: Colors.red),
-            ),
+            icon: Icon(Icons.cancel_rounded, color: Colors.red),
+            // child: Text(
+            //   'Failed',
+            //   style: TextStyle(color: Colors.red),
+            // ),
           ),
           //(icon: Icon(Icons.cancel_rounded)),
         ],
@@ -84,28 +111,28 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
   Widget _trailingActionOnVideoListItem(VideoDetails item, HiveUserData user) {
     return item.status == 'published'
-        ? const Icon(Icons.check, color: Colors.green)
+        ? const Icon(Icons.check, color: Colors.blueAccent)
         : item.status == "encoding_failed"
-            ? const Icon(Icons.cancel_outlined, color: Colors.red)
-            : item.status == 'publish_manual'
-                ? IconButton(
-                    onPressed: () {
-                      var screen = VideoPrimaryInfo(
-                        item: item,
-                        justForEditing: false,
-                      );
-                      var route = MaterialPageRoute(builder: (c) => screen);
-                      Navigator.of(context).push(route);
-                    },
-                    icon: const Icon(
-                      Icons.rocket_launch,
-                      color: Colors.green,
-                    ),
-                  )
-                : const Icon(
-                    Icons.hourglass_top,
-                    color: Colors.blue,
-                  );
+        ? const Icon(Icons.cancel_outlined, color: Colors.red)
+        : item.status == 'publish_manual'
+        ? IconButton(
+      onPressed: () {
+        var screen = VideoPrimaryInfo(
+          item: item,
+          justForEditing: false,
+        );
+        var route = MaterialPageRoute(builder: (c) => screen);
+        Navigator.of(context).push(route);
+      },
+      icon: const Icon(
+        Icons.rocket_launch,
+        color: Colors.green,
+      ),
+    )
+        : const Icon(
+      Icons.hourglass_top,
+      color: Colors.yellowAccent,
+    );
   }
 
   void _showBottomSheet(VideoDetails item) {
@@ -172,14 +199,15 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     var published = items.where((item) => item.status == 'published').toList();
     var ready = items.where((item) => item.status == 'publish_manual').toList();
     var failed =
-        items.where((item) => item.status == 'encoding_failed').toList();
+    items.where((item) => item.status == 'encoding_failed').toList();
     var process = items
         .where((item) =>
-            item.status != 'published' &&
-            item.status != 'publish_manual' &&
-            item.status != 'encoding_failed')
+    item.status != 'published' &&
+        item.status != 'publish_manual' &&
+        item.status != 'encoding_failed')
         .toList();
     return TabBarView(
+      controller: _tabController,
       children: [
         SafeArea(
           child: _listViewForItems(process, user),

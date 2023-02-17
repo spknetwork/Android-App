@@ -195,8 +195,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
     return TextField(
       decoration: InputDecoration(
         icon: const Icon(Icons.key),
-        label: const Text('Hive Posting Key'),
-        hintText: 'Copy & paste posting key here',
+        label: const Text('Hive Private Posting Key'),
+        hintText: 'Copy & paste Private posting key here',
       ),
       obscureText: true,
       onChanged: (value) {
