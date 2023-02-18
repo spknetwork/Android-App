@@ -109,6 +109,8 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
                 String timeInString =
                     created != null ? "📆 ${timeago.format(created)}" : "";
                 return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  minVerticalPadding: 0,
                   title: ListTileVideo(
                     placeholder: 'assets/branding/three_speak_logo.png',
                     url: imageUrl,
