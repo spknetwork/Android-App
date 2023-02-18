@@ -1,7 +1,13 @@
 import 'dart:developer';
 
+import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class GQLHomeScreen extends StatefulWidget {
   const GQLHomeScreen({Key? key}) : super(key: key);
@@ -18,17 +24,16 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
   firstUploadsFeeds {
     items {
       ... on HivePost {
-        image
-        body
-        author
         title
-        three_video
+        author
+        body
+        image
         permlink
-        author_profile {
-          id
-          username
-          name
-        }
+        three_video
+        lang
+        created_at
+        app
+        app_metadata
       }
     }
   }
@@ -73,11 +78,10 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
               return const Text('No items');
             }
             final opts = FetchMoreOptions(
-              variables: {'skip': items.length},
+              variables: {
+                'skip': items.length,
+              },
               updateQuery: (previousResultData, fetchMoreResultData) {
-                // this is where you combine your previous data and response
-                // in this case, we want to display previous repos plus next repos
-                // so, we combine data in both into a single list of repos
                 final newItems = [
                   ...previousResultData!['firstUploadsFeeds']['items']
                       as List<dynamic>,
@@ -100,8 +104,37 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
                   );
                 }
                 final item = items[index];
+                String? imageUrl = item['image']?[0] as String;
+                var created = DateTime.tryParse(item['created_at'] ?? '');
+                String timeInString =
+                    created != null ? "📆 ${timeago.format(created)}" : "";
                 return ListTile(
-                  title: Text('$index - ${item['title'] ?? ''}'),
+                  title: ListTileVideo(
+                    placeholder: 'assets/branding/three_speak_logo.png',
+                    url: imageUrl,
+                    title: item['title'] ?? '',
+                    subtitle: "$timeInString ",
+                    isIpfs: false,
+                    permlink: item['permlink'] ?? '',
+                    shouldResize: false,
+                    userThumbUrl: server.userOwnerThumb(item['author'] ?? ''),
+                    user: item['author'] ?? '',
+                    onUserTap: () {
+                      var channel = UserChannelScreen(
+                          owner: item['author'] ?? 'sagarkothari88');
+                      var route = MaterialPageRoute(builder: (_) => channel);
+                      Navigator.of(context).push(route);
+                    },
+                  ),
+                  onTap: () {
+                    var vm = VideoDetailsViewModel(
+                        author: item['author'] ?? 'sagarkothari88',
+                        permlink: item['permlink'] ??
+                            '3speak-development-updates-sagarkothari88');
+                    var details = VideoDetailsScreen(vm: vm);
+                    var route = MaterialPageRoute(builder: (_) => details);
+                    Navigator.of(context).push(route);
+                  },
                 );
               },
             );

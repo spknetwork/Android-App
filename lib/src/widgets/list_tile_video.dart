@@ -140,13 +140,13 @@ class _ListTileVideoState extends State<ListTileVideo> {
                   },
                 ),
               ),
-              widget.isIpfs
-                  ? Container(
-                      margin: EdgeInsets.all(10),
-                      child: Image.asset('assets/ipfs-logo.png',
-                          width: 30, height: 30),
-                    )
-                  : Container(),
+              // widget.isIpfs
+              //     ? Container(
+              //         margin: EdgeInsets.all(10),
+              //         child: Image.asset('assets/ipfs-logo.png',
+              //             width: 30, height: 30),
+              //       )
+              //     : Container(),
             ],
           ),
           Container(
