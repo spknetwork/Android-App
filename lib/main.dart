@@ -1,5 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/graphQL/home_screen/gql_home_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 
 import 'package:flutter/material.dart';
@@ -122,7 +123,8 @@ class AcelaApp extends StatelessWidget {
     var isDarkMode = Provider.of<bool>(context);
     return MaterialApp(
       title: 'Acela - 3Speak App',
-      home: HomeScreen.home(),
+      home: GQLHomeScreen(),
+      // HomeScreen.home(),
       theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
       debugShowCheckedModeBanner: false,
     );
