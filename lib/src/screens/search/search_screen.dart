@@ -150,6 +150,7 @@ class _SearchScreenState extends State<SearchScreen> {
         userThumbUrl: server.userOwnerThumb(item.author),
         title: item.title,
         subtitle: "$timeInString ",
+        isAlternate: false,
         onUserTap: () {
           var channel = UserChannelScreen(owner: item.author);
           var route = MaterialPageRoute(builder: (_) => channel);

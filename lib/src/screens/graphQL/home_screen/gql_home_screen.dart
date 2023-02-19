@@ -1,25 +1,45 @@
 import 'dart:developer';
-
-import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/widgets/list_tile_video.dart';
+import 'package:acela/src/widgets/new_gql_list_title_video.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:provider/provider.dart';
 
-class GQLHomeScreen extends StatefulWidget {
-  const GQLHomeScreen({Key? key}) : super(key: key);
+class GQLScreenParams {
+  String query;
+  String title;
+  bool shouldShowDrawer;
 
-  @override
-  State<GQLHomeScreen> createState() => _GQLHomeScreenState();
+  GQLScreenParams({
+    required this.query,
+    required this.title,
+    required this.shouldShowDrawer,
+  });
+
+  static String trending = """
+{
+  trendingFeed {
+    items {
+      ... on HivePost {
+        title
+        author
+        body
+        image
+        permlink
+        three_video
+        lang
+        created_at
+        app
+        app_metadata
+        community
+      }
+    }
+  }
 }
+  """;
 
-class _GQLHomeScreenState extends State<GQLHomeScreen> {
-  @override
-  Widget build(BuildContext context) {
-    var query = """
+  static String firstUploads = """
 {
   firstUploadsFeeds {
     items {
@@ -34,11 +54,170 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
         created_at
         app
         app_metadata
+        community
       }
     }
   }
 }
-    """;
+  """;
+
+  static String latestFeed = """
+{
+  latestFeed {
+    items {
+      ... on HivePost {
+        title
+        author
+        body
+        image
+        permlink
+        three_video
+        lang
+        created_at
+        app
+        app_metadata
+        community
+      }
+    }
+  }
+}
+  """;
+
+  static String publicFeed = """
+{
+  publicFeed {
+    items {
+      ... on HivePost {
+        title
+        author
+        body
+        image
+        permlink
+        three_video
+        lang
+        created_at
+        app
+        app_metadata
+        community
+      }
+    }
+  }
+}
+  """;
+
+  static String followingFeed(String follower) {
+    return """
+{
+  followingFeed(follower: "$follower") {
+    items {
+      ... on HivePost {
+        title
+        author
+        body
+        image
+        permlink
+        three_video
+        lang
+        created_at
+        app
+        app_metadata
+        community
+      }
+    }
+  }
+}
+  """;
+  }
+
+}
+class GQLHomeScreen extends StatefulWidget {
+  const GQLHomeScreen({
+    Key? key,
+    required this.params,
+  }) : super(key: key);
+  final GQLScreenParams params;
+
+  factory GQLHomeScreen.trending() {
+    return GQLHomeScreen(
+      params: GQLScreenParams(
+        title: 'Trending Content',
+        shouldShowDrawer: true,
+        query: GQLScreenParams.trending,
+      ),
+    );
+  }
+
+  factory GQLHomeScreen.firstUploads() {
+    return GQLHomeScreen(
+      params: GQLScreenParams(
+        title: 'First Uploads',
+        shouldShowDrawer: true,
+        query: GQLScreenParams.firstUploads,
+      ),
+    );
+  }
+
+  factory GQLHomeScreen.publicFeed() {
+    return GQLHomeScreen(
+      params: GQLScreenParams(
+        title: 'Home',
+        shouldShowDrawer: true,
+        query: GQLScreenParams.publicFeed,
+      ),
+    );
+  }
+
+  factory GQLHomeScreen.newContent() {
+    return GQLHomeScreen(
+      params: GQLScreenParams(
+        title: 'New Content',
+        shouldShowDrawer: true,
+        query: GQLScreenParams.latestFeed,
+      ),
+    );
+  }
+
+  @override
+  State<GQLHomeScreen> createState() => _GQLHomeScreenState();
+}
+
+class _GQLHomeScreenState extends State<GQLHomeScreen> {
+  ListTile _newItem(
+    dynamic item,
+    bool isAlternate,
+    HiveUserData data,
+  ) {
+    String? imageUrl = item['image']?[0] as String;
+    var value = item['three_video']?['duration'] as double? ?? 0.0;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      minVerticalPadding: 0,
+      title: NewGQLListTitleVideo(
+        isAlternate: isAlternate,
+        title: item['title'] ?? '',
+        permlink: item['permlink'] ?? '',
+        user: item['author'] ?? '',
+        placeholder: 'assets/branding/three_speak_logo.png',
+        url: imageUrl ?? '',
+        community: item['community']?['title'] ?? 'Hive',
+        created: item['created_at'] ?? '',
+        data: data,
+        duration: value.toInt(),
+        onUserTap: () {
+          var channel =
+              UserChannelScreen(owner: item['author'] ?? 'sagarkothari88');
+          var route = MaterialPageRoute(builder: (_) => channel);
+          Navigator.of(context).push(route);
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var appData = Provider.of<HiveUserData>(context);
+    var query = widget.params.query;
     final httpLink =
         HttpLink('https://spk-union.us-west.web3telekom.xyz/api/v1/graphql');
     final client = ValueNotifier<GraphQLClient>(
@@ -104,40 +283,7 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
                   );
                 }
                 final item = items[index];
-                String? imageUrl = item['image']?[0] as String;
-                var created = DateTime.tryParse(item['created_at'] ?? '');
-                String timeInString =
-                    created != null ? "📆 ${timeago.format(created)}" : "";
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  minVerticalPadding: 0,
-                  title: ListTileVideo(
-                    placeholder: 'assets/branding/three_speak_logo.png',
-                    url: imageUrl,
-                    title: item['title'] ?? '',
-                    subtitle: "$timeInString ",
-                    isIpfs: false,
-                    permlink: item['permlink'] ?? '',
-                    shouldResize: false,
-                    userThumbUrl: server.userOwnerThumb(item['author'] ?? ''),
-                    user: item['author'] ?? '',
-                    onUserTap: () {
-                      var channel = UserChannelScreen(
-                          owner: item['author'] ?? 'sagarkothari88');
-                      var route = MaterialPageRoute(builder: (_) => channel);
-                      Navigator.of(context).push(route);
-                    },
-                  ),
-                  onTap: () {
-                    var vm = VideoDetailsViewModel(
-                        author: item['author'] ?? 'sagarkothari88',
-                        permlink: item['permlink'] ??
-                            '3speak-development-updates-sagarkothari88');
-                    var details = VideoDetailsScreen(vm: vm);
-                    var route = MaterialPageRoute(builder: (_) => details);
-                    Navigator.of(context).push(route);
-                  },
-                );
+                return _newItem(item, index % 2 == 0, appData);
               },
             );
           },

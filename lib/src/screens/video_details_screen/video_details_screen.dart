@@ -439,6 +439,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       permlink: item.mediaid,
       shouldResize: false,
       isIpfs: false,
+      isAlternate: false,
     );
   }
 

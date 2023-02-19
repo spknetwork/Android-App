@@ -37,6 +37,7 @@ class HomeScreenWidgets {
       permlink: item.permlink,
       shouldResize: true,
       isIpfs: item.playUrl.contains('ipfs'),
+      isAlternate: false,
     );
   }
 

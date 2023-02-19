@@ -115,6 +115,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
       permlink: item.permlink,
       shouldResize: true,
       isIpfs: item.isIpfs,
+      isAlternate: false,
     );
   }
 

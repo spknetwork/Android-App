@@ -23,6 +23,7 @@ class ListTileVideo extends StatefulWidget {
     required this.permlink,
     required this.shouldResize,
     required this.isIpfs,
+    required this.isAlternate,
   }) : super(key: key);
 
   final String placeholder;
@@ -35,6 +36,7 @@ class ListTileVideo extends StatefulWidget {
   final String permlink;
   final bool shouldResize;
   final bool isIpfs;
+  final bool isAlternate;
 
   @override
   State<ListTileVideo> createState() => _ListTileVideoState();
@@ -42,6 +44,7 @@ class ListTileVideo extends StatefulWidget {
 
 class _ListTileVideoState extends State<ListTileVideo> {
   Future<PayoutInfo>? _fetchHiveInfo;
+  var payoutInfoText = "";
 
   Widget _errorIndicator() {
     return Container(
@@ -74,6 +77,12 @@ class _ListTileVideoState extends State<ListTileVideo> {
           .first;
       var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
       var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
+      var upVotesText = "${upVotes > 0 ? " · 👍 $upVotes" : ""}";
+      var downVotesText = "${downVotes > 0 ? " · 👎 $downVotes" : ""}";
+      setState(() {
+        payoutInfoText =
+            "\$ ${result.payout.toStringAsFixed(3)}$upVotesText$downVotesText";
+      });
       return PayoutInfo(
         payout: result.payout,
         downVotes: downVotes,
@@ -107,15 +116,24 @@ class _ListTileVideoState extends State<ListTileVideo> {
 
   Widget _thumbnailType(BuildContext context) {
     var isDarkMode = Provider.of<bool>(context);
+    var color = isDarkMode
+        ? widget.isAlternate
+            ? Colors.white60
+            : Colors.white70
+        : widget.isAlternate
+            ? Colors.black87
+            : Colors.black87;
     return Container(
       margin: EdgeInsets.all(3),
-      decoration: BoxDecoration(boxShadow: [
-        BoxShadow(
-          color: isDarkMode ? Colors.black26 : Colors.black12,
-          spreadRadius: 3,
-          blurRadius: 3,
-        )
-      ]),
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: color,
+            spreadRadius: 3,
+            blurRadius: 3,
+          )
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -193,6 +211,70 @@ class _ListTileVideoState extends State<ListTileVideo> {
     );
   }
 
+  Widget _newListTileItem(BuildContext context) {
+    var isDarkMode = Provider.of<bool>(context);
+    var color = isDarkMode
+        ? widget.isAlternate
+        ? Colors.white24
+        : Colors.white12
+        : widget.isAlternate
+        ? Colors.black12
+        : Colors.black38;
+    return Container(
+      margin: EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: color,
+            spreadRadius: 3,
+            blurRadius: 3,
+          )
+        ],
+      ),
+      child: Column(
+        children: [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            minVerticalPadding: 0,
+            leading: CustomCircleAvatar(
+              height: 45,
+              width: 45,
+              url: server.userOwnerThumb(widget.user),
+            ),
+            title: Text(widget.user),
+          ),
+          Container(
+            constraints: BoxConstraints(maxHeight: 220),
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              minVerticalPadding: 0,
+              title: FadeInImage.assetNetwork(
+                placeholder: widget.placeholder,
+                image: widget.shouldResize
+                    ? server.resizedImage(widget.url)
+                    : widget.url,
+                fit: BoxFit.fitWidth,
+                placeholderErrorBuilder: (BuildContext context, Object error,
+                    StackTrace? stackTrace) {
+                  return _errorIndicator();
+                },
+                imageErrorBuilder: (BuildContext context, Object error,
+                    StackTrace? stackTrace) {
+                  return _errorIndicator();
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 3),
+          ListTile(
+            title: Text(widget.title),
+            subtitle: Text('${widget.subtitle} · $payoutInfoText'),
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData>(context);
@@ -201,6 +283,7 @@ class _ListTileVideoState extends State<ListTileVideo> {
         _fetchHiveInfo = fetchHiveInfo(widget.user, widget.permlink, user.rpc);
       });
     }
-    return _thumbnailType(context);
+    return _newListTileItem(context);
+    // return _thumbnailType(context);
   }
 }
