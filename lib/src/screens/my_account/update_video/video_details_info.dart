@@ -6,6 +6,7 @@ import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
+import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
@@ -197,8 +198,11 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         if (widget.justForEditing) {
           setState(() {
             showMessage('Video details are saved.');
+            var screen = MyAccountScreen();
             Navigator.of(context).pop();
             Navigator.of(context).pop();
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
             return;
           });
         }

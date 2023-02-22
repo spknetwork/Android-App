@@ -37,25 +37,21 @@
             console.log("PubWif: ", pubWif);
             const Valid = hive.auth.wifIsValid(postingKey, pubWif);
             console.log(`is valid ${Valid}`);
-            var result = {
+            replyToNative({
               type: "validateHiveKey",
               valid: Valid,
               accountName: accountName,
               error: "",
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
+            });
           })
           .catch(function (err) {
             console.log("Error: ", err);
-            var result = {
+            replyToNative({
               type: "validateHiveKey",
               valid: false,
               accountName: accountName,
               error: err.message,
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
+            });
           });
       }
 
@@ -71,25 +67,21 @@
             const Valid = hive.auth.wifIsValid(postingKey, pubWif);
             console.log(`is valid ${Valid}`);
             let decrypted = hive.memo.decode(postingKey, encrypted);
-            let result = {
+            replyToNative({
               type: "decryptedMemo",
               accountName: accountName,
               decrypted: decrypted,
               error: "",
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
+            });
           })
           .catch(function (err) {
             console.log("Error: ", err);
-            let result = {
+            replyToNative({
               type: "decryptedMemo",
               accountName: accountName,
               decrypted: "",
               error: err.message,
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
+            });
           });
       }
 
@@ -404,13 +396,11 @@
           })
           .catch(function (err) {
             console.error(err);
-            var result = {
+            replyToNative({
               type: "postVideo",
               valid: false,
               error: err.message,
-            };
-            // window.webkit.messageHandlers.acela.postMessage(result);
-            Android.postMessage(JSON.stringify(result));
+            });
           });
       }
 
