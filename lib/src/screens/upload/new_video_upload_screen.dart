@@ -289,7 +289,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
 
   void showMyDialog(VideoDetails item) {
     Widget laterButton = TextButton(
-      child: Text("Later"),
+      child: Text("Skip"),
       onPressed: () {
         Navigator.of(context).pop();
         Navigator.of(context).pop();
@@ -303,11 +303,11 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           var route = MaterialPageRoute(builder: (c) => screen);
           Navigator.of(context).push(route);
         },
-        child: const Text('Edit'));
+        child: const Text('Next'));
     AlertDialog alert = AlertDialog(
       title: Text("🎉 Upload Complete 🎉"),
       content: Text(
-          "✅ Your Video is in-process\n\n✅ Video has be added to encoding queue\n\n👀 Check status from My Account\n\n📝 Would you like to Edit your video now?"),
+          "✅ Your Video is in-process\n\n✅ Video has be added to encoding queue\n\n👀 Check status from My Account\n\n📝 Let's edit video details now."),
       actions: [
         laterButton,
         nowButton,
