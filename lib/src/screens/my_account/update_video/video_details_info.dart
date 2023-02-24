@@ -48,8 +48,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var processText = '';
   TextEditingController tagsController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  var selectedCommunity = 'hive-181335';
-  var selectedCommunityVisibleName = 'Threespeak';
+  String? selectedCommunity; //= 'hive-181335';
+  String? selectedCommunityVisibleName; //= 'Threespeak';
   String? hiveKeychainTransactionId;
   late WebSocketChannel socket;
   var socketClosed = true;
@@ -217,6 +217,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               .replaceAll("ipfs://", "")
               .replaceAll("/manifest.m3u8", "");
         }
+        var community = selectedCommunity ?? (widget.item.isReel ? 'hive-181335' : 'hive-151961');
         final String response = await platform.invokeMethod('newPostVideo', {
           'thumbnail': v.thumbnailValue,
           'video_v2': v.videoValue,
@@ -232,7 +233,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'bene': v.benes[0],
           'beneW': v.benes[1],
           'postingKey': user.postingKey ?? '',
-          'community': widget.item.isReel ? 'hive-151961' : selectedCommunity,
+          'community': community,
           'ipfsHash': ipfsHash,
           'hasKey': user.keychainData?.hasId ?? '',
           'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
@@ -470,10 +471,10 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                 CustomCircleAvatar(
                   width: 44,
                   height: 44,
-                  url: server.communityIcon(selectedCommunity),
+                  url: server.communityIcon(selectedCommunity ?? 'hive-181335'),
                 ),
                 SizedBox(width: 10),
-                Text(selectedCommunityVisibleName),
+                Text(selectedCommunityVisibleName ?? 'Threespeak'),
               ],
             ),
           ),
