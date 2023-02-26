@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
@@ -14,6 +15,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
 
@@ -213,10 +215,57 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void logout(HiveUserData data) async {
+    const storage = FlutterSecureStorage();
+    await storage.delete(key: 'username');
+    await storage.delete(key: 'postingKey');
+    await storage.delete(key: 'cookie');
+    await storage.delete(key: 'hasId');
+    await storage.delete(key: 'hasExpiry');
+    await storage.delete(key: 'hasAuthKey');
+    String resolution = await storage.read(key: 'resolution') ?? '480p';
+    String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+    server.updateHiveUserData(
+      HiveUserData(
+        username: null,
+        postingKey: null,
+        keychainData: null,
+        cookie: null,
+        resolution: resolution,
+        rpc: rpc,
+      ),
+    );
+  }
+
   Widget _fabNewUpload(HiveUserData data) {
     return FloatingActionButton.extended(
       onPressed: () {
-        showBottomSheetForRecordingTypes(data);
+        if (data.username != null && data.postingKey != null) {
+          showBottomSheetForRecordingTypes(data);
+        } else if (data.keychainData != null) {
+          var expiry = data.keychainData!.hasExpiry;
+          log('Expiry is $expiry');
+          try {
+            var longValue = int.tryParse(expiry) ?? 0;
+            var expiryDate = DateTime.fromMillisecondsSinceEpoch(longValue);
+            var nowDate = DateTime.now();
+            log('Expiry Date is $expiryDate, now date is $nowDate');
+            var compareResult = nowDate.compareTo(expiryDate);
+            log('compare result - $compareResult');
+            if (compareResult == -1) {
+              showBottomSheetForRecordingTypes(data);
+            } else {
+              showError('Invalid Session. Please login again.');
+              logout(data);
+            }
+          } catch (e) {
+            showError('Invalid Session. Please login again.');
+            logout(data);
+          }
+        } else {
+          showError('Invalid Session. Please login again.');
+          logout(data);
+        }
       },
       label: const Text('Upload Video'),
       icon: const Icon(Icons.upload),

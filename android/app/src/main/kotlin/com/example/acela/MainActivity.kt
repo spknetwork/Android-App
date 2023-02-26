@@ -38,9 +38,7 @@ import androidx.webkit.WebViewAssetLoader
 import android.webkit.WebChromeClient
 
 
-
-
-class MainActivity: FlutterActivity() {
+class MainActivity : FlutterActivity() {
     var webView: WebView? = null
     var result: MethodChannel.Result? = null
 
@@ -49,8 +47,23 @@ class MainActivity: FlutterActivity() {
         if (webView == null) {
             setupView()
         }
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.acela/auth").setMethodCallHandler {
-                call, result ->
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger, "blog.hive.auth/bridge"
+        ).setMethodCallHandler { call, result ->
+            this.result = result
+            val username = call.argument<String>("username")
+            val authKey = call.argument<String>("authKey")
+            val data = call.argument<String>("data")
+            if (call.method == "getRedirectUriData" && username != null) {
+                webView?.evaluateJavascript("getRedirectUriData('$username');", null)
+            } else if (call.method == "getDecryptedHASToken" && username != null && authKey != null && data != null) {
+                webView?.evaluateJavascript("getDecryptedHASToken('$username','$authKey','$data');", null)
+            }
+        }
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "com.example.acela/auth"
+        ).setMethodCallHandler { call, result ->
             this.result = result
             val username = call.argument<String>("username")
             val postingKey = call.argument<String>("postingKey")
@@ -76,15 +89,23 @@ class MainActivity: FlutterActivity() {
             if (call.method == "validate" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
             } else if (call.method == "encryptedToken" && username != null
-                && postingKey != null && encryptedToken != null) {
-                webView?.evaluateJavascript("decryptMemo('$username','$postingKey', '$encryptedToken');", null)
-            } else if (call.method == "postVideo" && data != null && postingKey != null ) {
+                && postingKey != null && encryptedToken != null
+            ) {
+                webView?.evaluateJavascript(
+                    "decryptMemo('$username','$postingKey', '$encryptedToken');",
+                    null
+                )
+            } else if (call.method == "postVideo" && data != null && postingKey != null) {
                 webView?.evaluateJavascript("postVideo('$data','$postingKey');", null)
             } else if (call.method == "newPostVideo" && thumbnail != null && video_v2 != null
                 && description != null && title != null && tags != null && username != null
                 && permlink != null && duration != null && size != null && originalFilename != null
-                && firstUpload != null && bene != null && beneW != null && community != null && ipfsHash != null) {
-                webView?.evaluateJavascript("newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash');", null)
+                && firstUpload != null && bene != null && beneW != null && community != null && ipfsHash != null
+            ) {
+                webView?.evaluateJavascript(
+                    "newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash');",
+                    null
+                )
             }
         }
     }
@@ -103,7 +124,7 @@ class MainActivity: FlutterActivity() {
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
-        val client: WebViewClient = object: WebViewClient() {
+        val client: WebViewClient = object : WebViewClient() {
             @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
             override fun shouldInterceptRequest(
                 view: WebView,
@@ -133,10 +154,15 @@ class WebAppInterface(private val mContext: Context) {
         val dataObject = gson.fromJson(message, JSEvent::class.java)
         when (dataObject.type) {
             JSBridgeAction.VALIDATE_HIVE_KEY.value -> {
-                // now respond back to flutter
+                main.result?.success(message)
+            }
+            JSBridgeAction.GET_REDIRECT_URI_DATA.value -> {
                 main.result?.success(message)
             }
             JSBridgeAction.DECRYPTED_MEMO.value -> {
+                main.result?.success(message)
+            }
+            JSBridgeAction.GET_DECRYPTED_HAS_TOKEN.value -> {
                 main.result?.success(message)
             }
             JSBridgeAction.POST_VIDEO.value -> {
@@ -146,12 +172,14 @@ class WebAppInterface(private val mContext: Context) {
     }
 }
 
-data class JSEvent (
+data class JSEvent(
     val type: String,
 )
 
 enum class JSBridgeAction(val value: String) {
     VALIDATE_HIVE_KEY("validateHiveKey"),
     DECRYPTED_MEMO("decryptedMemo"),
-    POST_VIDEO("postVideo")
+    POST_VIDEO("postVideo"),
+    GET_REDIRECT_URI_DATA("getRedirectUriData"),
+    GET_DECRYPTED_HAS_TOKEN("getDecryptedHASToken"),
 }
