@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/widgets/new_gql_list_title_video.dart';
 import 'package:flutter/material.dart';
@@ -9,17 +10,19 @@ import 'package:provider/provider.dart';
 class GQLScreenParams {
   String query;
   String title;
+  String value;
   bool shouldShowDrawer;
 
   GQLScreenParams({
     required this.query,
     required this.title,
     required this.shouldShowDrawer,
+    required this.value,
   });
 
   static String trending = """
 {
-  trendingFeed {
+  trendingFeed(apps: "3speak/0.3.0") {
     items {
       ... on HivePost {
         title
@@ -37,7 +40,7 @@ class GQLScreenParams {
     }
   }
 }
-  """;
+""";
 
   static String firstUploads = """
 {
@@ -59,11 +62,11 @@ class GQLScreenParams {
     }
   }
 }
-  """;
+""";
 
   static String latestFeed = """
 {
-  latestFeed {
+  latestFeed(apps: "3speak/0.3.0") {
     items {
       ... on HivePost {
         title
@@ -81,11 +84,11 @@ class GQLScreenParams {
     }
   }
 }
-  """;
+""";
 
   static String publicFeed = """
 {
-  publicFeed {
+  publicFeed(apps: "3speak/0.3.0") {
     items {
       ... on HivePost {
         title
@@ -103,7 +106,7 @@ class GQLScreenParams {
     }
   }
 }
-  """;
+""";
 
   static String followingFeed(String follower) {
     return """
@@ -126,7 +129,7 @@ class GQLScreenParams {
     }
   }
 }
-  """;
+""";
   }
 
 }
@@ -143,6 +146,7 @@ class GQLHomeScreen extends StatefulWidget {
         title: 'Trending Content',
         shouldShowDrawer: true,
         query: GQLScreenParams.trending,
+        value: "trendingFeed",
       ),
     );
   }
@@ -153,6 +157,7 @@ class GQLHomeScreen extends StatefulWidget {
         title: 'First Uploads',
         shouldShowDrawer: true,
         query: GQLScreenParams.firstUploads,
+        value: "firstUploadsFeeds",
       ),
     );
   }
@@ -163,6 +168,7 @@ class GQLHomeScreen extends StatefulWidget {
         title: 'Home',
         shouldShowDrawer: true,
         query: GQLScreenParams.publicFeed,
+        value: "publicFeed",
       ),
     );
   }
@@ -173,6 +179,7 @@ class GQLHomeScreen extends StatefulWidget {
         title: 'New Content',
         shouldShowDrawer: true,
         query: GQLScreenParams.latestFeed,
+        value: "latestFeed",
       ),
     );
   }
@@ -187,7 +194,7 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
     bool isAlternate,
     HiveUserData data,
   ) {
-    String? imageUrl = item['image']?[0] as String;
+    String? imageUrl = item['image']?[0] as String?;
     var value = item['three_video']?['duration'] as double? ?? 0.0;
 
     return ListTile(
@@ -230,8 +237,9 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
       client: client,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('New Home Screen'),
+          title: Text(widget.params.title),
         ),
+        drawer: DrawerScreen(),
         body: Query(
           options: QueryOptions(
             document: gql(query), // this is the query string you just created
@@ -252,7 +260,7 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
             if (result.isLoading) {
               return const Text('Loading');
             }
-            List? items = result.data?['firstUploadsFeeds']?['items'];
+            List? items = result.data?[widget.params.value]?['items'];
             if (items == null) {
               return const Text('No items');
             }

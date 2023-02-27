@@ -1,6 +1,7 @@
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
+import 'package:acela/src/screens/graphQL/home_screen/gql_home_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
@@ -33,7 +34,7 @@ class DrawerScreen extends StatelessWidget {
       onTap: () {
         Navigator.pop(context);
         var route =
-            MaterialPageRoute(builder: (context) => HomeScreen.firstUploads());
+            MaterialPageRoute(builder: (context) => GQLHomeScreen.firstUploads());
         Navigator.of(context).pushReplacement(route);
       },
     );
@@ -46,7 +47,7 @@ class DrawerScreen extends StatelessWidget {
       onTap: () {
         Navigator.pop(context);
         var route =
-            MaterialPageRoute(builder: (context) => HomeScreen.trending());
+            MaterialPageRoute(builder: (context) => GQLHomeScreen.trending());
         Navigator.of(context).pushReplacement(route);
       },
     );
@@ -59,7 +60,7 @@ class DrawerScreen extends StatelessWidget {
       onTap: () {
         Navigator.pop(context);
         var route =
-            MaterialPageRoute(builder: (context) => HomeScreen.newContent());
+            MaterialPageRoute(builder: (context) => GQLHomeScreen.newContent());
         Navigator.of(context).pushReplacement(route);
       },
     );
