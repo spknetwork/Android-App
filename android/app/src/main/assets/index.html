@@ -347,8 +347,8 @@
             operations.push(customJson);
             console.log(`operations are ${JSON.stringify(operations)}`);
             if (
-              hasKey !== null &&
-              hasAuthKey !== null &&
+              hasKey !== undefined &&
+              hasAuthKey !== undefined &&
               hasKey.length > 0 &&
               hasAuthKey.length > 0
             ) {
