@@ -84,6 +84,8 @@ class MainActivity : FlutterActivity() {
             val beneW = call.argument<String?>("beneW")
             val community = call.argument<String?>("community")
             val ipfsHash = call.argument<String?>("ipfsHash")
+            val hasKey = call.argument<String?>("hasKey")
+            val hasAuthkey = call.argument<String?>("hasAuthkey")
 
             val data = call.argument<String?>("data")
             if (call.method == "validate" && username != null && postingKey != null) {
@@ -103,7 +105,7 @@ class MainActivity : FlutterActivity() {
                 && firstUpload != null && bene != null && beneW != null && community != null && ipfsHash != null
             ) {
                 webView?.evaluateJavascript(
-                    "newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash');",
+                    "newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash', '$hasKey', '$hasAuthkey');",
                     null
                 )
             }

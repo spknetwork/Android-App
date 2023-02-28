@@ -361,12 +361,6 @@
                 JSON.stringify(sign_data),
                 hasAuthKey
               ).toString();
-              // const payload = {
-              //   cmd: "sign_req",
-              //   account: author,
-              //   token: hasKey,
-              //   data: data,
-              // };
               replyToNative({
                 type: "postVideo",
                 valid: true,
@@ -375,6 +369,16 @@
                 data: data,
               });
             } else {
+              async function tryPublish(operations, key) {
+                try {
+                  return hive.broadcast.sendAsync(
+                    { operations },
+                    { posting: key }
+                  );
+                } catch (e) {
+                  return e;
+                }
+              }
               tryPublish(operations, postingKey)
                 .then((result) => {
                   replyToNative({
