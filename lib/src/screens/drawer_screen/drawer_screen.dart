@@ -8,6 +8,7 @@ import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/stories_screen.dart';
+import 'package:acela/src/screens/threads/threads_container.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -103,6 +104,18 @@ class DrawerScreen extends StatelessWidget {
         Navigator.pop(context);
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (c) => const StoriesScreen()));
+      },
+    );
+  }
+
+  Widget _threads(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.forum),
+      title: const Text("Threads"),
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (c) => const ThreadsContainer()));
       },
     );
   }
@@ -225,6 +238,8 @@ class DrawerScreen extends StatelessWidget {
           _leaderBoard(context),
           _divider(),
           _shorts(context),
+          _divider(),
+          _threads(context),
           _divider(),
           _settings(context),
           _divider(),

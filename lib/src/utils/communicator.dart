@@ -24,6 +24,7 @@ class Communicator {
   // Production
   static const tsServer = "https://studio.3speak.tv";
   static const fsServer = "https://uploads.3speak.tv/files";
+  static const leoThreadServer = "https://alpha.leofinance.io";
 
   // Android
   // static const fsServer = "http://10.0.2.2:1080/files";
@@ -44,6 +45,30 @@ class Communicator {
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
   static const hiveAuthServer = 'wss://hive-auth.arcange.eu';
+
+  http.Request getThreadSubjects() {
+    return http.Request(
+      'GET',
+      Uri.parse('$leoThreadServer/threads?_data=routes%2Fthreads'),
+    );
+  }
+
+  http.Request getThreadDetails(String details) {
+    return http.Request(
+      'GET',
+      Uri.parse('$leoThreadServer/$details'),
+    );
+  }
+
+  Future<String> getResponseString(http.Request request) async {
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      return string;
+    } else {
+      throw response.reasonPhrase.toString();
+    }
+  }
 
   Future<bool> doesPostNotExist(
     String user,
@@ -183,7 +208,8 @@ class Communicator {
         var loginResponse = VideoUploadLoginResponse.fromJsonString(string);
         if (loginResponse.error != null && loginResponse.error!.isNotEmpty) {
           throw 'Error - ${loginResponse.error}';
-        } else if (loginResponse.memo != null && loginResponse.memo!.isNotEmpty) {
+        } else if (loginResponse.memo != null &&
+            loginResponse.memo!.isNotEmpty) {
           var token = await _getAccessToken(user, loginResponse.memo!);
           var url =
               '${Communicator.tsServer}/mobile/login?username=${user.username}&access_token=$token';
@@ -252,7 +278,7 @@ class Communicator {
       } else {
         throw 'Status code ${response.statusCode}';
       }
-    } catch (e){
+    } catch (e) {
       throw e;
     }
   }
