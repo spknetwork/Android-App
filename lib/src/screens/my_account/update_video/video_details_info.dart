@@ -241,13 +241,22 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
         if (bridgeResponse.error == "success") {
-          await Communicator().updatePublishState(user, v.id);
-          setState(() {
-            isCompleting = false;
-            processText = '';
-            showMessage('Congratulations. Your video is published.');
-            showMyDialog();
-          });
+          showMessage('Please wait. Video is posted on Hive but needs to be marked as published.');
+          try {
+            await Communicator().updatePublishState(user, v.id);
+            setState(() {
+              isCompleting = false;
+              processText = '';
+              showMessage('Congratulations. Your video is published.');
+              showMyDialog();
+            });
+          } catch(e) {
+            setState(() {
+              isCompleting = false;
+              processText = '';
+              showMessage('Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+            });
+          }
         } else if (bridgeResponse.error == "" &&
             bridgeResponse.data != null &&
             user.keychainData?.hasAuthKey != null) {

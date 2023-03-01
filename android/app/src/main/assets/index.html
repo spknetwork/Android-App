@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="description" content="3Speak Acela" />
-  <title>3Speak Acela</title>
-</head>
-<body>
-<noscript>You need to enable JavaScript to run this app.</noscript>
-<!-- <script src="./hive.min.js"></script> -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
-<script
-        src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
-        integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
-></script>
-<script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
-<script>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="3Speak Acela" />
+    <title>3Speak Acela</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <!-- <script src="./hive.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
+      integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+    <script>
       const HAS_SERVER = "wss://hive-auth.arcange.eu";
       const HAS_APP_DATA = {
         name: "3Speak Mobile iOS App",
@@ -347,8 +347,8 @@
             operations.push(customJson);
             console.log(`operations are ${JSON.stringify(operations)}`);
             if (
-              hasKey !== null &&
-              hasAuthKey !== null &&
+              hasKey !== undefined &&
+              hasAuthKey !== undefined &&
               hasKey.length > 0 &&
               hasAuthKey.length > 0
             ) {
@@ -361,12 +361,6 @@
                 JSON.stringify(sign_data),
                 hasAuthKey
               ).toString();
-              // const payload = {
-              //   cmd: "sign_req",
-              //   account: author,
-              //   token: hasKey,
-              //   data: data,
-              // };
               replyToNative({
                 type: "postVideo",
                 valid: true,
@@ -375,6 +369,16 @@
                 data: data,
               });
             } else {
+              async function tryPublish(operations, key) {
+                try {
+                  return hive.broadcast.sendAsync(
+                    { operations },
+                    { posting: key }
+                  );
+                } catch (e) {
+                  return e;
+                }
+              }
               tryPublish(operations, postingKey)
                 .then((result) => {
                   replyToNative({
@@ -458,5 +462,5 @@
         Android.postMessage(JSON.stringify(result));
       }
     </script>
-</body>
+  </body>
 </html>
