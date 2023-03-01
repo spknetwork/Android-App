@@ -237,6 +237,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'ipfsHash': ipfsHash,
           'hasKey': user.keychainData?.hasId ?? '',
           'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
+          'parent_author': v.parent_author,
+          'parent_permlink': v.parent_permlink,
         });
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);

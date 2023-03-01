@@ -77,11 +77,13 @@ class AcelaWebViewController: UIViewController {
 		ipfsHash: String,
 		hasKey: String,
 		hasAuthkey: String,
+		parent_author: String?,
+		parent_permlink: String?,
 		handler: @escaping (String) -> Void
 	) {
 		postVideoHandler = handler
 		OperationQueue.main.addOperation {
-			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', 'en', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)', '\(community)', '\(ipfsHash)', '\(hasKey)', '\(hasAuthkey)');")
+			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', 'en', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)', '\(community)', '\(ipfsHash)', '\(hasKey)', '\(hasAuthkey)', '\(parent_author ?? "")', '\(parent_permlink ?? "")');")
 		}
 	}
 

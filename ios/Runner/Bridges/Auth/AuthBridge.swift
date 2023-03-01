@@ -70,6 +70,8 @@ class AuthBridge {
 						result(FlutterMethodNotImplemented)
 						return
 					}
+					let parent_author = arguments["parent_author"] as? String
+					let parent_permlink = arguments["parent_permlink"] as? String
 					acela.postVideo(
 						thumbnail: thumbnail,
 						video_v2: video_v2,
@@ -88,7 +90,9 @@ class AuthBridge {
 						community: community,
 						ipfsHash: ipfsHash,
 						hasKey: hasKey,
-						hasAuthkey: hasAuthKey
+						hasAuthkey: hasAuthKey,
+						parent_author: parent_author,
+						parent_permlink: parent_permlink
 					) { response in
 						result(response)
 					}

@@ -28,6 +28,8 @@ class VideoDetails {
 
   final String thumbUrl;
   final String video_v2;
+  final String? parent_author;
+  final String? parent_permlink;
   final String description;
   final String title;
   final String tags;
@@ -91,6 +93,8 @@ class VideoDetails {
     required this.originalFilename,
     required this.firstUpload,
     required this.beneficiaries,
+    required this.parent_author,
+    required this.parent_permlink,
   });
 
   factory VideoDetails.fromJsonString(String jsonString) =>
@@ -140,6 +144,8 @@ class VideoDetails {
         firstUpload: asBool(json, 'firstUpload'),
         beneficiaries: asString(json, 'beneficiaries'),
         isReel: asBool(json, 'isReel'),
+        parent_permlink: asString(json, 'parent_permlink'),
+        parent_author: asString(json, 'parent_author'),
       );
 
   String toJsonString() => json.encode(toJson());
@@ -164,5 +170,7 @@ class VideoDetails {
         'steemPosted': steemPosted,
         'status': status,
         'isReel': isReel,
+        'parent_permlink': parent_permlink,
+        'parent_author': parent_author,
       };
 }

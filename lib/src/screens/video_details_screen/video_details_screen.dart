@@ -112,7 +112,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     }
   }
 
-  void showBottomSheetForVideoOptions(bool isReel, HiveUserData data) {
+  void showBottomSheetForVideoOptions(HiveUserData data) {
     showAdaptiveActionSheet(
       context: context,
       title: const Text('How do you want to upload?'),
@@ -157,7 +157,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   // video description
-  Widget titleAndSubtitle(VideoDetails details) {
+  Widget titleAndSubtitle(VideoDetails details, HiveUserData appData) {
     return FutureBuilder(
       future: _fetchHiveInfoForThisVideo,
       builder: (builder, snapshot) {
@@ -215,7 +215,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     TextButton.icon(
                       label: Text("Reply with Video"),
                       icon: const Icon(Icons.video_camera_front),
-                      onPressed: () {},
+                      onPressed: () {
+                        showBottomSheetForVideoOptions(appData);
+                      },
                     ),
                   ],
                 ),
@@ -404,7 +406,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       child: ListView.separated(
         itemBuilder: (context, index) {
           if (index == 0) {
-            return titleAndSubtitle(details);
+            return titleAndSubtitle(details, appData);
           } else if (index == 1) {
             return videoComments(appData);
           } else {
@@ -438,7 +440,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
               child: ListView.separated(
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return titleAndSubtitle(details);
+                    return titleAndSubtitle(details, appData);
                   } else if (index == 1) {
                     return videoComments(appData);
                   } else if (index == 2) {
