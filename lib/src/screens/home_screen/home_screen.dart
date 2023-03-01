@@ -88,11 +88,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void onTap(HomeFeedItem item) {
+  void onTap(HomeFeedItem item, HiveUserData data) {
     var viewModel =
         VideoDetailsViewModel(author: item.author, permlink: item.permlink);
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => VideoDetailsScreen(vm: viewModel)));
+        builder: (context) => VideoDetailsScreen(vm: viewModel, data: data)));
   }
 
   void onUserTap(HomeFeedItem item) {
@@ -126,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
           } else if (s.hasData) {
             var list = s.data as List<HomeFeedItem>;
             return widgets.list(list, (item) {
-              onTap(item);
+              onTap(item, appData);
             }, (item) {
               onUserTap(item);
             }, {});
@@ -163,6 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
               camera: true,
               isReel: isReel,
               data: data,
+              parentPermlink: null,
+              parentAuthor: null,
             );
             var route = MaterialPageRoute(builder: (c) => screen);
             Navigator.of(context).pop();
@@ -177,6 +179,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 camera: false,
                 isReel: isReel,
                 data: data,
+                parentPermlink: null,
+                parentAuthor: null,
               );
               var route = MaterialPageRoute(builder: (c) => screen);
               Navigator.of(context).pop();

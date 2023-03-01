@@ -81,11 +81,11 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
     _tabController.dispose();
   }
 
-  void onTap(HomeFeedItem item) {
+  void onTap(HomeFeedItem item, HiveUserData data) {
     var viewModel =
         VideoDetailsViewModel(author: item.author, permlink: item.permlink);
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => VideoDetailsScreen(vm: viewModel)));
+        builder: (context) => VideoDetailsScreen(vm: viewModel, data: data)));
   }
 
   void onUserTap(HomeFeedItem item) {
@@ -148,26 +148,36 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
   //   }
   // }
 
-  Widget _listTile(HomeFeedItem item, BuildContext context,
-      Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
+  Widget _listTile(
+    HomeFeedItem item,
+    BuildContext context,
+    Function(HomeFeedItem, HiveUserData) onTap,
+    Function(HomeFeedItem) onUserTap,
+      HiveUserData data,
+  ) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       minVerticalPadding: 0,
       title: _tileTitle(item, context, onUserTap),
       onTap: () {
-        onTap(item);
+        onTap(item, data);
       },
     );
   }
 
-  Widget list(List<HomeFeedItem> list, Future<void> Function() onRefresh,
-      Function(HomeFeedItem) onTap, Function(HomeFeedItem) onUserTap) {
+  Widget list(
+    List<HomeFeedItem> list,
+    Future<void> Function() onRefresh,
+    Function(HomeFeedItem, HiveUserData) onItemTap,
+    Function(HomeFeedItem) onUserTap,
+      HiveUserData data,
+  ) {
     return RefreshIndicator(
         onRefresh: onRefresh,
         child: ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
           itemBuilder: (context, index) {
-            return _listTile(list[index], context, onTap, onUserTap);
+            return _listTile(list[index], context, onItemTap, onUserTap, data);
           },
           separatorBuilder: (context, index) =>
               const Divider(thickness: 0, height: 1, color: Colors.transparent),
@@ -175,7 +185,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
         ));
   }
 
-  Widget _screen() {
+  Widget _screen(HiveUserData data) {
     return FutureBuilder(
       future: _loadingFeed,
       builder: (builder, snapshot) {
@@ -186,7 +196,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
           List<HomeFeedItem> items = snapshot.data! as List<HomeFeedItem>;
-          return list(items, _loadHomeFeed, onTap, onUserTap);
+          return list(items, _loadHomeFeed, onTap, onUserTap, data);
         } else {
           return const LoadingScreen(
             title: 'Loading Data',
@@ -314,7 +324,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _screen(),
+          _screen(appData),
           _about(appData),
           _team(appData),
         ],

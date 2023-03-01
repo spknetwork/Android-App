@@ -48,10 +48,14 @@ class NewVideoUploadScreen extends StatefulWidget {
     required this.camera,
     required this.isReel,
     required this.data,
+    required this.parentPermlink,
+    required this.parentAuthor,
   }) : super(key: key);
   final bool camera;
   final bool isReel;
   final HiveUserData data;
+  final String? parentAuthor;
+  final String? parentPermlink;
 
   @override
   State<NewVideoUploadScreen> createState() => _NewVideoUploadScreenState();
@@ -199,7 +203,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         var sizeInMb = fileSize / 1000 / 1000;
         log("Compressed video file size in mb is - $sizeInMb");
         if (sizeInMb > 1024) {
-          throw 'Video is too big to be uploaded from mobile (exceeding 500 mb)';
+          throw 'Video is too big to be uploaded from mobile (exceeding 1 GB)';
         }
         var path = file.path;
         MediaInformationSession session =
@@ -260,6 +264,8 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           size: fileSize.toDouble(),
           tusFileName: name,
           isReel: widget.isReel,
+          parentAuthor: widget.parentAuthor,
+          parentPermlink: widget.parentPermlink,
         );
         _addItem(originalFileName, file.path);
         log(videoUploadInfo.status);

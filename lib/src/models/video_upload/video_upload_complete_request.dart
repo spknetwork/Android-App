@@ -58,6 +58,8 @@ class NewVideoUploadCompleteRequest {
   final String thumbnail;
   final String owner;
   final bool isReel;
+  final String? parent_author;
+  final String? parent_permlink;
 
   NewVideoUploadCompleteRequest({
     required this.oFilename,
@@ -67,6 +69,8 @@ class NewVideoUploadCompleteRequest {
     required this.thumbnail,
     required this.owner,
     required this.isReel,
+    required this.parent_author,
+    required this.parent_permlink,
   });
 
   Map<String, dynamic> toJson() => {
@@ -77,6 +81,8 @@ class NewVideoUploadCompleteRequest {
         'thumbnail': thumbnail,
         'owner': owner,
         'isReel': isReel,
+        'parent_author': parent_author,
+        'parent_permlink': parent_permlink,
       };
 
   String toJsonString() => json.encode(toJson());

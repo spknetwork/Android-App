@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
@@ -13,6 +14,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' show get;
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class UserChannelVideos extends StatefulWidget {
@@ -166,7 +168,7 @@ class UserChannelVideosState extends State<UserChannelVideos>
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  Widget _futureVideos() {
+  Widget _futureVideos(HiveUserData data) {
     if (isLoading) {
       return const LoadingScreen(
         title: 'Loading Data',
@@ -182,7 +184,7 @@ class UserChannelVideosState extends State<UserChannelVideos>
           var viewModel = VideoDetailsViewModel(
               author: item.author, permlink: item.permlink);
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => VideoDetailsScreen(vm: viewModel)));
+              builder: (context) => VideoDetailsScreen(vm: viewModel, data: data)));
         }, (owner) {
           log("tapped on user ${owner.author}");
         });
@@ -196,6 +198,7 @@ class UserChannelVideosState extends State<UserChannelVideos>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return _futureVideos();
+    var appData = Provider.of<HiveUserData>(context);
+    return _futureVideos(appData);
   }
 }

@@ -134,7 +134,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _searchResultListItem(SearchResponseResultsItem item) {
+  Widget _searchResultListItem(SearchResponseResultsItem item, HiveUserData data) {
     var created = DateTime.tryParse(item.createdAt);
     String timeInString =
         created != null ? "📆 ${timeago.format(created)}" : "";
@@ -163,14 +163,14 @@ class _SearchScreenState extends State<SearchScreen> {
       onTap: () {
         var vm =
             VideoDetailsViewModel(author: item.author, permlink: item.permlink);
-        var details = VideoDetailsScreen(vm: vm);
+        var details = VideoDetailsScreen(vm: vm, data: data);
         var route = MaterialPageRoute(builder: (_) => details);
         Navigator.of(context).push(route);
       },
     );
   }
 
-  Widget _searchResultListView() {
+  Widget _searchResultListView(HiveUserData data) {
     if (results.isEmpty && !loading) {
       return const Center(
         child: Text('No search result found'),
@@ -182,7 +182,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
     return ListView.separated(
         itemBuilder: (context, index) {
-          return _searchResultListItem(results[index]);
+          return _searchResultListItem(results[index], data);
         },
         separatorBuilder: (_, index) =>
             const Divider(thickness: 0, height: 15, color: Colors.transparent),
@@ -194,7 +194,7 @@ class _SearchScreenState extends State<SearchScreen> {
     var appData = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: _appBar(appData),
-      body: _searchResultListView(),
+      body: _searchResultListView(appData),
     );
   }
 }

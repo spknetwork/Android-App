@@ -7,6 +7,7 @@ import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
+import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
@@ -16,6 +17,7 @@ import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
+import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
@@ -25,7 +27,12 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
 class VideoDetailsScreen extends StatefulWidget {
-  const VideoDetailsScreen({Key? key, required this.vm}) : super(key: key);
+  const VideoDetailsScreen({
+    Key? key,
+    required this.vm,
+    required this.data,
+  }) : super(key: key);
+  final HiveUserData data;
   final VideoDetailsViewModel vm;
 
   @override
@@ -41,8 +48,13 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    // _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo();
     recommendedVideos = widget.vm.getRecommendedVideos();
+    _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo(widget.data.rpc);
+    _loadComments = widget.vm.loadFirstSetOfComments(
+      widget.vm.author,
+      widget.vm.permlink,
+      widget.data.rpc,
+    );
   }
 
   void onUserTap() {
@@ -100,6 +112,50 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     }
   }
 
+  void showBottomSheetForVideoOptions(bool isReel, HiveUserData data) {
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('How do you want to upload?'),
+      androidBorderRadius: 30,
+      actions: <BottomSheetAction>[
+        BottomSheetAction(
+          title: const Text('Camera'),
+          leading: const Icon(Icons.camera_alt),
+          onPressed: (c) {
+            var screen = NewVideoUploadScreen(
+              camera: true,
+              isReel: false,
+              data: data,
+              parentPermlink: widget.vm.author,
+              parentAuthor: widget.vm.permlink,
+            );
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).pop();
+            Navigator.of(context).push(route);
+          },
+        ),
+        BottomSheetAction(
+            title: const Text('Photo Gallery'),
+            leading: const Icon(Icons.photo_library),
+            onPressed: (c) {
+              var screen = NewVideoUploadScreen(
+                camera: false,
+                isReel: false,
+                data: data,
+                parentPermlink: widget.vm.author,
+                parentAuthor: widget.vm.permlink,
+              );
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).pop();
+              Navigator.of(context).push(route);
+            }),
+      ],
+      cancelAction: CancelAction(
+        title: const Text('Cancel'),
+      ),
+    );
+  }
+
   // video description
   Widget titleAndSubtitle(VideoDetails details) {
     return FutureBuilder(
@@ -116,58 +172,55 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           var downVotes = data.activeVotes.where((e) => e.rshares < 0).length;
           String priceAndVotes =
               "\$ ${data.payout.toStringAsFixed(3)} · 👍 $upVotes · 👎 $downVotes";
-          return Container(
-            margin: const EdgeInsets.all(10),
-            child: Column(
-              children: [
-                InkWell(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(details.title,
-                                style: Theme.of(context).textTheme.bodyLarge),
-                            const SizedBox(height: 3),
-                            Text(string,
-                                style: Theme.of(context).textTheme.bodySmall),
-                            const SizedBox(height: 3),
-                            Text(priceAndVotes,
-                                style: Theme.of(context).textTheme.bodySmall),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_drop_down_outlined),
-                    ],
-                  ),
-                  onTap: () {
-                    showModalForDescription(details);
-                  },
-                ),
-                SizedBox(height: 10),
-                InkWell(
-                  child: Row(
-                    children: [
-                      CustomCircleAvatar(
+          return Column(
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.only(left: 5, right: 10),
+                title: Text(details.title),
+                subtitle: Text("$string\n$priceAndVotes"),
+                onTap: () {
+                  showModalForDescription(details);
+                },
+              ),
+              Container(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    InkWell(
+                      child: CustomCircleAvatar(
                         height: 40,
                         width: 40,
                         url: server.userOwnerThumb(details.owner),
                       ),
-                      SizedBox(width: 10),
-                      Text(details.owner,
-                          style: Theme.of(context).textTheme.bodyLarge),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (c) =>
-                            UserChannelScreen(owner: details.owner)));
-                  },
-                )
-              ],
-            ),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (c) =>
+                                UserChannelScreen(owner: details.owner)));
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.thumb_up_sharp,
+                        color: Colors.green,
+                      ),
+                      onPressed: () {},
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.thumb_down_sharp,
+                        color: Colors.red,
+                      ),
+                      onPressed: () {},
+                    ),
+                    TextButton.icon(
+                      label: Text("Reply with Video"),
+                      icon: const Icon(Icons.video_camera_front),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+              )
+            ],
           );
         } else {
           return const Text('Loading hive payout info');
@@ -404,7 +457,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                           author: recommendations[index - 3].owner,
                           permlink: recommendations[index - 3].mediaid,
                         );
-                        var screen = VideoDetailsScreen(vm: viewModel);
+                        var screen =
+                            VideoDetailsScreen(vm: viewModel, data: appData);
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (c) => screen),
                         );
@@ -446,20 +500,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     var userData = Provider.of<HiveUserData>(context);
-    if (_loadComments == null) {
-      setState(() {
-        _loadComments = widget.vm.loadFirstSetOfComments(
-          widget.vm.author,
-          widget.vm.permlink,
-          userData.rpc,
-        );
-      });
-    }
-    if (_fetchHiveInfoForThisVideo == null) {
-      setState(() {
-        _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo(userData.rpc);
-      });
-    }
     return FutureBuilder(
       future: widget.vm.getVideoDetails(),
       builder: (builder, snapshot) {
