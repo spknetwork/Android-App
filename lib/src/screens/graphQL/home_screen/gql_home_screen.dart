@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
+import 'package:acela/src/widgets/loading_state_widget.dart';
 import 'package:acela/src/widgets/new_gql_list_title_video.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -195,7 +196,13 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
     HiveUserData data,
   ) {
     String? imageUrl = item['image']?[0] as String?;
-    var value = item['three_video']?['duration'] as double? ?? 0.0;
+    var durationValue = 0.0;
+    try {
+      durationValue = item['three_video']?['duration'] as double? ?? 0.0;
+    } catch (e) {
+      var intValue = item['three_video']?['duration'] as int? ?? 0;
+      durationValue = intValue.toDouble();
+    }
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -210,7 +217,7 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
         community: item['community']?['title'] ?? 'Hive',
         created: item['created_at'] ?? '',
         data: data,
-        duration: value.toInt(),
+        duration: durationValue.toInt(),
         onUserTap: () {
           var channel =
               UserChannelScreen(owner: item['author'] ?? 'sagarkothari88');
@@ -258,7 +265,7 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
               return Text(result.exception.toString());
             }
             if (result.isLoading) {
-              return const Text('Loading');
+              return LoadingStateWidget();
             }
             List? items = result.data?[widget.params.value]?['items'];
             if (items == null) {
