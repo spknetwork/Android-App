@@ -171,6 +171,61 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
               ticker?.cancel();
             });
             break;
+          case "sign_wait":
+            var uuid = asString(map, 'uuid');
+            var jsonData = {
+              "account": usernameController.text,
+              "uuid": uuid,
+              "key": authKey,
+              "host": Communicator.hiveAuthServer
+            };
+            var jsonString = json.encode(jsonData);
+            var utf8Data = utf8.encode(jsonString);
+            var qr = base64.encode(utf8Data);
+            qr = "has://sign_req/$qr";
+            setState(() {
+              qrCode = qr;
+              if (didTapKeychainButton) {
+                var uri = Uri.tryParse(qr);
+                if (uri != null) {
+                  launchUrl(uri);
+                }
+              }
+              timer = timeoutValue;
+              ticker = Timer.periodic(Duration(seconds: 1), (tickrr) {
+                if (timer == 0) {
+                  setState(() {
+                    tickrr.cancel();
+                    qrCode = null;
+                  });
+                } else {
+                  setState(() {
+                    timer--;
+                  });
+                }
+              });
+              loadingQR = false;
+            });
+            break;
+          case "sign_ack":
+            saveAndExit(widget.appData);
+            break;
+          case "sign_nack":
+            showError("Posting Authorisation to threespeak was rejected");
+            break;
+          case "sign_err":
+            setState(() {
+              showError("Posting Authorisation to threespeak got error.");
+              qrCode = null;
+              timer = 0;
+              loadingQR = false;
+              hasId = '';
+              hasExpiry = '';
+              challenge = '';
+              authKey = '';
+              ticker?.cancel();
+            });
+            break;
           default:
             log('Default case here');
         }
