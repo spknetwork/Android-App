@@ -433,6 +433,31 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
     socket.sink.close();
   }
 
+  void saveAndExit(HiveUserData data) async {
+    const storage = FlutterSecureStorage();
+    await storage.write(key: 'username', value: usernameController.text);
+    await storage.delete(key: 'postingKey');
+    await storage.delete(key: 'cookie');
+    await storage.write(key: 'hasId', value: hasId);
+    await storage.write(key: 'hasExpiry', value: hasExpiry);
+    await storage.write(key: 'hasAuthKey', value: authKey);
+    server.updateHiveUserData(
+      HiveUserData(
+        username: usernameController.text,
+        postingKey: null,
+        keychainData: HiveKeychainData(
+          hasAuthKey: authKey,
+          hasExpiry: hasExpiry,
+          hasId: hasId,
+        ),
+        cookie: null,
+        resolution: data.resolution,
+        rpc: data.rpc,
+      ),
+    );
+    Navigator.of(context).pop();
+  }
+
   void decryptChallengeData(HiveUserData data, String encryptedData) async {
     final String response =
         await platform.invokeMethod('getDecryptedChallenge', {
@@ -447,33 +472,37 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         hasId.isNotEmpty &&
         hasExpiry.isNotEmpty &&
         authKey.isNotEmpty) {
-
+      final String postingAuthResponse =
+      await platform.invokeMethod('getPostingAuthOps', {
+        'username': usernameController.text,
+        'authKey': authKey,
+      });
+      var postingAuthData = LoginBridgeResponse.fromJsonString(postingAuthResponse);
+      if (postingAuthData.valid) {
+        if (postingAuthData.data != null && postingAuthData.data!.isNotEmpty) {
+          var socketData = {
+            "cmd": "sign_req",
+            "account": usernameController.text,
+            "token": hasId,
+            "data": postingAuthData.data!,
+          };
+          var jsonData = json.encode(socketData);
+          socket.sink.add(jsonData);
+        } else {
+          saveAndExit(data);
+        }
+      } else {
+        showMessage(
+            'Something went wrong - ${postingAuthData.error}. Please go back & try again.');
+      }
       // TO-DO: get the posting authority for 3speak.
       // TO-DO: bridgeResponse.data is challenge
       // with it, we need to generate access_token
       // call the API for it.
-      // const storage = FlutterSecureStorage();
-      // await storage.write(key: 'username', value: usernameController.text);
-      // await storage.delete(key: 'postingKey');
-      // await storage.delete(key: 'cookie');
-      // await storage.write(key: 'hasId', value: hasId);
-      // await storage.write(key: 'hasExpiry', value: hasExpiry);
-      // await storage.write(key: 'hasAuthKey', value: authKey);
-      // server.updateHiveUserData(
-      //   HiveUserData(
-      //     username: usernameController.text,
-      //     postingKey: null,
-      //     keychainData: HiveKeychainData(
-      //       hasAuthKey: authKey,
-      //       hasExpiry: hasExpiry,
-      //       hasId: hasId,
-      //     ),
-      //     cookie: null,
-      //     resolution: data.resolution,
-      //     rpc: data.rpc,
-      //   ),
-      // );
-      // Navigator.of(context).pop();
+
+    } else {
+      showMessage(
+          'Something went wrong - ${bridgeResponse.error}. Please go back & try again.');
     }
   }
 

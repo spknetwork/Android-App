@@ -457,15 +457,40 @@
                   account_auths: posting.account_auths,
                   key_auths: posting.key_auths,
                 };
-                const op = [
-                  "account_update2",
-                  {
-                    account: account,
-                    posting: newPostingAuth,
-                    extensions: [],
-                  },
+                const ops = [
+                  [
+                    "account_update2",
+                    {
+                      account: account,
+                      posting: newPostingAuth,
+                      extensions: [],
+                    },
+                  ],
                 ];
+                const sign_data = {
+                  key_type: "active",
+                  ops: operations,
+                  broadcast: true,
+                };
+                const data = CryptoJS.AES.encrypt(
+                  JSON.stringify(sign_data),
+                  authKey
+                ).toString();
+                replyToNative({
+                  type: "getPostingAuthOps",
+                  valid: true,
+                  username: username,
+                  error: "",
+                  data: data,
+                });
               } else {
+                replyToNative({
+                  type: "getPostingAuthOps",
+                  valid: true,
+                  username: username,
+                  error: "",
+                  data: "",
+                });
               }
             } else {
               replyToNative({
