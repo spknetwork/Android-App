@@ -79,12 +79,34 @@ class HASBridge {
 						return
 					}
 					self?.getDecryptedChallenge(username: username, authKey: authKey, data: data, result: result)
+				case "getPostingAuthOps":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let username = arguments ["username"] as? String,
+						let authKey = arguments ["authKey"] as? String
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					self?.getPostingAuthOps(username: username, authKey: authKey, result: result)
 				case "getUserInfo":
 					self?.getUserInfo(result: result)
 				default:
 					result(FlutterMethodNotImplemented)
 			}
 		})
+	}
+
+	private func getPostingAuthOps(username: String, authKey: String, result: @escaping FlutterResult) {
+		guard let acela = acela else {
+			result(FlutterError(code: "ERROR",
+													message: "Error setting up Hive",
+													details: nil))
+			return
+		}
+		acela.getPostingAuthOps(username: username, authKey: authKey) { string in
+			result(string)
+		}
 	}
 
 	private func getDecryptedChallenge(username: String, authKey: String, data: String, result: @escaping FlutterResult) {

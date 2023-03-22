@@ -46,6 +46,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   String hasId = '';
   String hasExpiry = '';
   var challenge = '';
+  var signature = '';
 
   @override
   void initState() {
@@ -173,10 +174,12 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             break;
           case "sign_wait":
             var uuid = asString(map, 'uuid');
+            var expire = asInt(map, 'expire');
             var jsonData = {
               "account": usernameController.text,
               "uuid": uuid,
               "key": authKey,
+              "expire": expire,
               "host": Communicator.hiveAuthServer
             };
             var jsonString = json.encode(jsonData);
@@ -339,7 +342,10 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
                     const SizedBox(height: 10),
                     Image.asset('assets/hive_auth_button.png'),
                     const SizedBox(height: 10),
-                    Text('Scan QR Code\n\nOR\n\nTap on QR Code', textAlign: TextAlign.center,),
+                    Text(
+                      'Scan QR Code\n\nOR\n\nTap on QR Code',
+                      textAlign: TextAlign.center,
+                    ),
                     SizedBox(height: 10),
                     InkWell(
                       child: Container(
@@ -409,10 +415,16 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
                   children: [
                     _hiveUserName(),
                     const SizedBox(height: 10),
-                    _hasButton(appData),
-                    const SizedBox(height: 10),
-                    const Text('- OR -'),
-                    const SizedBox(height: 10),
+                    timeoutValue == 0
+                        ? Container()
+                        : Column(
+                            children: [
+                              _hasButton(appData),
+                              const SizedBox(height: 10),
+                              const Text('- OR -'),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
                     _hivePostingKey(),
                     const SizedBox(height: 10),
                     ElevatedButton(
@@ -489,6 +501,9 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   }
 
   void saveAndExit(HiveUserData data) async {
+    // TO-DO: use challenge
+    // with it, we need to generate access_token
+    // call the API for it.
     const storage = FlutterSecureStorage();
     await storage.write(key: 'username', value: usernameController.text);
     await storage.delete(key: 'postingKey');
@@ -527,12 +542,17 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         hasId.isNotEmpty &&
         hasExpiry.isNotEmpty &&
         authKey.isNotEmpty) {
+      setState(() {
+        loadingQR = true;
+        signature = bridgeResponse.data!;
+      });
       final String postingAuthResponse =
-      await platform.invokeMethod('getPostingAuthOps', {
+          await platform.invokeMethod('getPostingAuthOps', {
         'username': usernameController.text,
         'authKey': authKey,
       });
-      var postingAuthData = LoginBridgeResponse.fromJsonString(postingAuthResponse);
+      var postingAuthData =
+          LoginBridgeResponse.fromJsonString(postingAuthResponse);
       if (postingAuthData.valid) {
         if (postingAuthData.data != null && postingAuthData.data!.isNotEmpty) {
           var socketData = {
@@ -550,11 +570,6 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         showMessage(
             'Something went wrong - ${postingAuthData.error}. Please go back & try again.');
       }
-      // TO-DO: get the posting authority for 3speak.
-      // TO-DO: bridgeResponse.data is challenge
-      // with it, we need to generate access_token
-      // call the API for it.
-
     } else {
       showMessage(
           'Something went wrong - ${bridgeResponse.error}. Please go back & try again.');

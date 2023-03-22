@@ -441,34 +441,32 @@
             Array.isArray(result) &&
             result.length === 1
           ) {
-            const account = result[0];
-            let posting = account.posting;
+            let account = result[0];
             let doWeHavePostingAuth = false;
-            if (Array.isArray(posting.account_auths)) {
-              posting.account_auths.forEach(function (item) {
+            if (Array.isArray(account.posting.account_auths)) {
+              account.posting.account_auths.forEach(function (item) {
                 if (item[0] === "threespeak") {
                   doWeHavePostingAuth = true;
                 }
               });
               if (!doWeHavePostingAuth) {
-                posting.account_auths.push(["threespeak", 1]);
+                account.posting.account_auths.push(["threespeak", 1]);
                 const newPostingAuth = {
-                  weight_threshold: posting.weight_threshold,
-                  account_auths: posting.account_auths,
-                  key_auths: posting.key_auths,
+                  weight_threshold: account.posting.weight_threshold,
+                  account_auths: account.posting.account_auths,
+                  key_auths: account.posting.key_auths,
                 };
-                const ops = [
-                  [
-                    "account_update2",
-                    {
-                      account: account,
-                      posting: newPostingAuth,
-                      extensions: [],
-                    },
-                  ],
-                ];
+                const operations = [];
+                operations.push([
+                  "account_update2",
+                  {
+                    account: username,
+                    posting: newPostingAuth,
+                    extensions: [],
+                  },
+                ]);
                 const sign_data = {
-                  key_type: "active",
+                  key_type: "posting",
                   ops: operations,
                   broadcast: true,
                 };
