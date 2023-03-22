@@ -56,6 +56,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
     socket.stream.listen((message) {
       var map = json.decode(message) as Map<String, dynamic>;
       var cmd = asString(map, 'cmd');
+      log('Data from socket - $message');
       if (cmd.isNotEmpty) {
         switch (cmd) {
           case "connected":
@@ -277,19 +278,27 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           didTapKeychainButton
               ? Container()
               : Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 10),
                     Image.asset('assets/hive_auth_button.png'),
                     const SizedBox(height: 10),
-                    Text('Scan QR Code'),
+                    Text('Scan QR Code\n\nOR\n\nTap on QR Code', textAlign: TextAlign.center,),
                     SizedBox(height: 10),
-                    Container(
-                      decoration: BoxDecoration(color: Colors.white),
-                      child: QrImage(
-                        data: qr,
-                        size: 200.0,
-                        gapless: true,
+                    InkWell(
+                      child: Container(
+                        decoration: BoxDecoration(color: Colors.white),
+                        child: QrImage(
+                          data: qr,
+                          size: 200.0,
+                          gapless: true,
+                        ),
                       ),
+                      onTap: () {
+                        var url = Uri.parse(qr);
+                        launchUrl(url);
+                      },
                     ),
                     SizedBox(height: 10),
                     SizedBox(
@@ -434,34 +443,37 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
     var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
     if (bridgeResponse.valid &&
         bridgeResponse.data != null &&
-        bridgeResponse.data!.isNotEmpty
-    && hasId.isNotEmpty
-    && hasExpiry.isNotEmpty
-    && authKey.isNotEmpty) {
+        bridgeResponse.data!.isNotEmpty &&
+        hasId.isNotEmpty &&
+        hasExpiry.isNotEmpty &&
+        authKey.isNotEmpty) {
+
+      // TO-DO: get the posting authority for 3speak.
       // TO-DO: bridgeResponse.data is challenge
       // with it, we need to generate access_token
       // call the API for it.
-      const storage = FlutterSecureStorage();
-      await storage.write(key: 'username', value: usernameController.text);
-      await storage.delete(key: 'postingKey');
-      await storage.delete(key: 'cookie');
-      await storage.write(key: 'hasId', value: hasId);
-      await storage.write(key: 'hasExpiry', value: hasExpiry);
-      await storage.write(key: 'hasAuthKey', value: authKey);
-      server.updateHiveUserData(
-        HiveUserData(
-          username: usernameController.text,
-          postingKey: null,
-          keychainData: HiveKeychainData(
-            hasAuthKey: authKey,
-            hasExpiry: hasExpiry,
-            hasId: hasId,
-          ),
-          cookie: null,
-          resolution: data.resolution,
-          rpc: data.rpc,
-        ),
-      );
+      // const storage = FlutterSecureStorage();
+      // await storage.write(key: 'username', value: usernameController.text);
+      // await storage.delete(key: 'postingKey');
+      // await storage.delete(key: 'cookie');
+      // await storage.write(key: 'hasId', value: hasId);
+      // await storage.write(key: 'hasExpiry', value: hasExpiry);
+      // await storage.write(key: 'hasAuthKey', value: authKey);
+      // server.updateHiveUserData(
+      //   HiveUserData(
+      //     username: usernameController.text,
+      //     postingKey: null,
+      //     keychainData: HiveKeychainData(
+      //       hasAuthKey: authKey,
+      //       hasExpiry: hasExpiry,
+      //       hasId: hasId,
+      //     ),
+      //     cookie: null,
+      //     resolution: data.resolution,
+      //     rpc: data.rpc,
+      //   ),
+      // );
+      // Navigator.of(context).pop();
     }
   }
 
@@ -496,20 +508,25 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         if (resultData.valid &&
             resultData.data != null &&
             resultData.data!.isNotEmpty) {
-          var socketData = {
-            "cmd": "challenge_req",
-            "account": usernameController.text,
-            "data": resultData.data,
-          };
-          var challengeData =
-              ChallengeResponse.fromJsonString(resultData.data!);
-          var jsonEncodedData = json.encode(socketData);
-          log('Data which is going to socket - $jsonEncodedData');
-          socket.sink.add(jsonEncodedData);
-          setState(() {
-            loadingQR = true;
-            challenge = challengeData.challenge;
-          });
+          var challengeData = resultData.data!.split("|");
+          if (challengeData.isEmpty || challengeData.length != 2) {
+            showMessage(
+                'Did not find challenge & payload from HiveAuth. Please go back & try again.');
+          } else {
+            var socketData = {
+              "cmd": "challenge_req",
+              "account": usernameController.text,
+              "data": challengeData[0],
+              "token": hasId,
+            };
+            var jsonEncodedData = json.encode(socketData);
+            log('Data which is going to socket - $jsonEncodedData');
+            socket.sink.add(jsonEncodedData);
+            setState(() {
+              loadingQR = true;
+              challenge = challengeData[1];
+            });
+          }
         }
       }
     } else {

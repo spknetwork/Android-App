@@ -431,6 +431,63 @@
         });
       }
 
+      function getPostingAuthOps(username, authKey) {
+        hive.api.getAccounts([username], function (err, result) {
+          console.log(err, result);
+          if (
+            (err === null || err === undefined) &&
+            result != null &&
+            result != undefined &&
+            Array.isArray(result) &&
+            result.length === 1
+          ) {
+            const account = result[0];
+            let posting = account.posting;
+            let doWeHavePostingAuth = false;
+            if (Array.isArray(posting.account_auths)) {
+              posting.account_auths.forEach(function (item) {
+                if (item[0] === "threespeak") {
+                  doWeHavePostingAuth = true;
+                }
+              });
+              if (!doWeHavePostingAuth) {
+                posting.account_auths.push(["threespeak", 1]);
+                const newPostingAuth = {
+                  weight_threshold: posting.weight_threshold,
+                  account_auths: posting.account_auths,
+                  key_auths: posting.key_auths,
+                };
+                const op = [
+                  "account_update2",
+                  {
+                    account: account,
+                    posting: newPostingAuth,
+                    extensions: [],
+                  },
+                ];
+              } else {
+              }
+            } else {
+              replyToNative({
+                type: "getPostingAuthOps",
+                valid: false,
+                username: username,
+                error: "failed getting account information",
+                data: "",
+              });
+            }
+          } else {
+            replyToNative({
+              type: "getPostingAuthOps",
+              valid: false,
+              username: username,
+              error: "failed getting account information",
+              data: "",
+            });
+          }
+        });
+      }
+
       function getDecryptedChallenge(username, authKey, data) {
         try {
           // Try to decrypt and parse payload data
@@ -487,6 +544,7 @@
             challenge: JSON.stringify({
               account: username,
               type: "hive_auth",
+              client: "3speak_mobile_app",
               ts: Date.now(),
             }),
           };
@@ -499,7 +557,7 @@
             valid: true,
             username: username,
             error: "",
-            data: data,
+            data: `${data}|${challenge_data.challenge}`,
           });
         } catch (e) {
           replyToNative({
