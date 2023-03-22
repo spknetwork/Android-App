@@ -33,3 +33,22 @@ class LoginBridgeResponse {
         'data': data,
       };
 }
+
+class ChallengeResponse {
+  final String key_type;
+  final String challenge;
+
+  ChallengeResponse({
+    required this.key_type,
+    required this.challenge,
+  });
+
+  factory ChallengeResponse.fromJson(Map<String, dynamic>? json) =>
+      ChallengeResponse(
+        key_type: asString(json, 'key_type'),
+        challenge: asString(json, 'challenge'),
+      );
+
+  factory ChallengeResponse.fromJsonString(String jsonString) =>
+      ChallengeResponse.fromJson(json.decode(jsonString));
+}

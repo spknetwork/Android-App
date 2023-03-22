@@ -43,6 +43,9 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   var isLoading = false;
   var postingKey = '';
   static const storage = FlutterSecureStorage();
+  String hasId = '';
+  String hasExpiry = '';
+  var challenge = '';
 
   @override
   void initState() {
@@ -106,6 +109,65 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
               qrCode = null;
               timer = 0;
               loadingQR = false;
+              hasId = '';
+              hasExpiry = '';
+              challenge = '';
+              authKey = '';
+              ticker?.cancel();
+            });
+            break;
+          case "challenge_wait":
+            // {"cmd":"challenge_wait","uuid":"010b379d-d950-4acb-9859-64fe924fb844","expire":1679500192902}
+            var uuid = asString(map, 'uuid');
+            var jsonData = {
+              "account": usernameController.text,
+              "uuid": uuid,
+              "key": authKey,
+              "host": Communicator.hiveAuthServer
+            };
+            var jsonString = json.encode(jsonData);
+            var utf8Data = utf8.encode(jsonString);
+            var qr = base64.encode(utf8Data);
+            qr = "has://challenge_req/$qr";
+            setState(() {
+              qrCode = qr;
+              if (didTapKeychainButton) {
+                var uri = Uri.tryParse(qr);
+                if (uri != null) {
+                  launchUrl(uri);
+                }
+              }
+              timer = timeoutValue;
+              ticker = Timer.periodic(Duration(seconds: 1), (tickrr) {
+                if (timer == 0) {
+                  setState(() {
+                    tickrr.cancel();
+                    qrCode = null;
+                  });
+                } else {
+                  setState(() {
+                    timer--;
+                  });
+                }
+              });
+              loadingQR = false;
+            });
+            break;
+          case "challenge_ack":
+            var messageData = asString(map, 'data');
+            decryptChallengeData(widget.appData, messageData);
+            break;
+          case "challenge_nack":
+            setState(() {
+              showError("Posting Key validation was rejected");
+              qrCode = null;
+              timer = 0;
+              loadingQR = false;
+              hasId = '';
+              hasExpiry = '';
+              challenge = '';
+              authKey = '';
+              ticker?.cancel();
             });
             break;
           default:
@@ -312,7 +374,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       isLoading = true;
     });
     try {
-      var publicKey = await Communicator().getPublicKey(usernameController.text, appData.rpc);
+      var publicKey = await Communicator()
+          .getPublicKey(usernameController.text, appData.rpc);
       var resultingKey = CryptoManager().privToPub(postingKey);
       if (resultingKey == publicKey) {
         debugPrint("Successful login");
@@ -335,7 +398,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           ),
         );
         Navigator.of(context).pop();
-        showMessage('You have successfully logged in as - ${usernameController.text}');
+        showMessage(
+            'You have successfully logged in as - ${usernameController.text}');
         setState(() {
           isLoading = false;
         });
@@ -360,6 +424,47 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
     socket.sink.close();
   }
 
+  void decryptChallengeData(HiveUserData data, String encryptedData) async {
+    final String response =
+        await platform.invokeMethod('getDecryptedChallenge', {
+      'username': usernameController.text,
+      'authKey': authKey,
+      'data': encryptedData,
+    });
+    var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
+    if (bridgeResponse.valid &&
+        bridgeResponse.data != null &&
+        bridgeResponse.data!.isNotEmpty
+    && hasId.isNotEmpty
+    && hasExpiry.isNotEmpty
+    && authKey.isNotEmpty) {
+      // TO-DO: bridgeResponse.data is challenge
+      // with it, we need to generate access_token
+      // call the API for it.
+      const storage = FlutterSecureStorage();
+      await storage.write(key: 'username', value: usernameController.text);
+      await storage.delete(key: 'postingKey');
+      await storage.delete(key: 'cookie');
+      await storage.write(key: 'hasId', value: hasId);
+      await storage.write(key: 'hasExpiry', value: hasExpiry);
+      await storage.write(key: 'hasAuthKey', value: authKey);
+      server.updateHiveUserData(
+        HiveUserData(
+          username: usernameController.text,
+          postingKey: null,
+          keychainData: HiveKeychainData(
+            hasAuthKey: authKey,
+            hasExpiry: hasExpiry,
+            hasId: hasId,
+          ),
+          cookie: null,
+          resolution: data.resolution,
+          rpc: data.rpc,
+        ),
+      );
+    }
+  }
+
   void decryptData(HiveUserData data, String encryptedData) async {
     final String response =
         await platform.invokeMethod('getDecryptedHASToken', {
@@ -376,30 +481,36 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         showMessage(
             'Did not find token & expiry details from HiveAuth. Please go back & try again.');
       } else {
-        const storage = FlutterSecureStorage();
-        await storage.write(key: 'username', value: usernameController.text);
-        await storage.delete(key: 'postingKey');
-        await storage.delete(key: 'cookie');
-        await storage.write(key: 'hasId', value: tokenData[0]);
-        await storage.write(key: 'hasExpiry', value: tokenData[1]);
-        await storage.write(key: 'hasAuthKey', value: authKey);
-        server.updateHiveUserData(
-          HiveUserData(
-            username: usernameController.text,
-            postingKey: null,
-            keychainData: HiveKeychainData(
-              hasAuthKey: authKey,
-              hasExpiry: tokenData[1],
-              hasId: tokenData[0],
-            ),
-            cookie: null,
-            resolution: data.resolution,
-            rpc: data.rpc,
-          ),
-        );
-        showMessage(
-            'You have successfully logged in with Hive Auth with user - ${usernameController.text}');
-        Navigator.of(context).pop();
+        setState(() {
+          showMessage(
+              'You have successfully logged in with Hive Auth with user - ${usernameController.text}. Now let\'s validate posting authority.');
+          hasId = tokenData[0];
+          hasExpiry = tokenData[1];
+        });
+        final String result =
+            await platform.invokeMethod('getEncryptedChallenge', {
+          'username': usernameController.text,
+          'authKey': authKey,
+        });
+        var resultData = LoginBridgeResponse.fromJsonString(result);
+        if (resultData.valid &&
+            resultData.data != null &&
+            resultData.data!.isNotEmpty) {
+          var socketData = {
+            "cmd": "challenge_req",
+            "account": usernameController.text,
+            "data": resultData.data,
+          };
+          var challengeData =
+              ChallengeResponse.fromJsonString(resultData.data!);
+          var jsonEncodedData = json.encode(socketData);
+          log('Data which is going to socket - $jsonEncodedData');
+          socket.sink.add(jsonEncodedData);
+          setState(() {
+            loadingQR = true;
+            challenge = challengeData.challenge;
+          });
+        }
       }
     } else {
       showMessage(

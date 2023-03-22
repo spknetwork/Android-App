@@ -58,12 +58,57 @@ class HASBridge {
 						return
 					}
 					self?.getDecryptedHASToken(username: username, authKey: authKey, data: data, result: result)
+				case "getEncryptedChallenge":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let username = arguments ["username"] as? String,
+						let authKey = arguments ["authKey"] as? String
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					self?.getEncryptedChallenge(username: username, authKey: authKey, result: result)
+				case "getDecryptedChallenge":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let username = arguments ["username"] as? String,
+						let authKey = arguments ["authKey"] as? String,
+						let data = arguments ["data"] as? String
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					self?.getDecryptedChallenge(username: username, authKey: authKey, data: data, result: result)
 				case "getUserInfo":
 					self?.getUserInfo(result: result)
 				default:
 					result(FlutterMethodNotImplemented)
 			}
 		})
+	}
+
+	private func getDecryptedChallenge(username: String, authKey: String, data: String, result: @escaping FlutterResult) {
+		guard let acela = acela else {
+			result(FlutterError(code: "ERROR",
+													message: "Error setting up Hive",
+													details: nil))
+			return
+		}
+		acela.getDecryptedChallenge(username: username, authKey: authKey, data: data) { string in
+			result(string)
+		}
+	}
+
+	private func getEncryptedChallenge(username: String, authKey: String, result: @escaping FlutterResult) {
+		guard let acela = acela else {
+			result(FlutterError(code: "ERROR",
+													message: "Error setting up Hive",
+													details: nil))
+			return
+		}
+		acela.getEncryptedChallenge(username: username, authKey: authKey) { string in
+			result(string)
+		}
 	}
 
 	private func getDecryptedHASToken(username: String, authKey: String, data: String, result: @escaping FlutterResult) {

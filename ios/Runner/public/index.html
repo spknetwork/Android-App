@@ -431,6 +431,30 @@
         });
       }
 
+      function getDecryptedChallenge(username, authKey, data) {
+        try {
+          // Try to decrypt and parse payload data
+          const decryptedData = JSON.parse(
+            CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
+          );
+          const challenge = decryptedData.challenge;
+          replyToNative({
+            type: "getDecryptedChallenge",
+            valid: true,
+            username: username,
+            error: "",
+            data: challenge,
+          });
+        } catch (e) {
+          replyToNative({
+            type: "getDecryptedChallenge",
+            valid: false,
+            accountName: username,
+            error: e.message,
+          });
+        }
+      }
+
       function getDecryptedHASToken(username, authKey, data) {
         try {
           // Try to decrypt and parse payload data
@@ -449,6 +473,37 @@
         } catch (e) {
           replyToNative({
             type: "getDecryptedHASToken",
+            valid: false,
+            accountName: username,
+            error: e.message,
+          });
+        }
+      }
+
+      function getEncryptedChallenge(username, authKey) {
+        try {
+          const challenge_data = {
+            key_type: "posting",
+            challenge: JSON.stringify({
+              account: username,
+              type: "hive_auth",
+              ts: Date.now(),
+            }),
+          };
+          const data = CryptoJS.AES.encrypt(
+            JSON.stringify(challenge_data),
+            auth_key
+          ).toString();
+          replyToNative({
+            type: "getEncryptedChallenge",
+            valid: true,
+            username: username,
+            error: "",
+            data: data,
+          });
+        } catch (e) {
+          replyToNative({
+            type: "getEncryptedChallenge",
             valid: false,
             accountName: username,
             error: e.message,

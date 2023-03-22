@@ -22,6 +22,8 @@ class AcelaWebViewController: UIViewController {
 	var getRedirectUriDataHandler: ((String) -> Void)? = nil
 	var hiveUserInfoHandler: ((String) -> Void)? = nil
 	var getDecryptedHASTokenHandler: ((String) -> Void)? = nil
+	var getEncryptedChallengeHandler: ((String) -> Void)? = nil
+	var getDecryptedChallengeHandler: ((String) -> Void)? = nil
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -105,6 +107,25 @@ class AcelaWebViewController: UIViewController {
 		webView?.evaluateJavaScript("getDecryptedHASToken('\(username)','\(authKey)','\(data)');")
 	}
 
+	func getEncryptedChallenge(
+		username: String,
+		authKey: String,
+		handler: @escaping (String) -> Void
+	) {
+		getEncryptedChallengeHandler = handler
+		webView?.evaluateJavaScript("getEncryptedChallenge('\(username)','\(authKey)');")
+	}
+
+	func getDecryptedChallenge(
+		username: String,
+		authKey: String,
+		data: String,
+		handler: @escaping (String) -> Void
+	) {
+		getDecryptedChallengeHandler = handler
+		webView?.evaluateJavaScript("getDecryptedChallenge('\(username)','\(authKey)','\(data)');")
+	}
+
 	func getUserInfo(_ handler: @escaping (String) -> Void) {
 		hiveUserInfoHandler = handler
 		webView?.evaluateJavaScript("getUserInfo();")
@@ -177,6 +198,16 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
 				getDecryptedHASTokenHandler?(response)
+			case "getEncryptedChallenge":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				getEncryptedChallengeHandler?(response)
+			case "getDecryptedChallenge":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				getDecryptedChallengeHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}
