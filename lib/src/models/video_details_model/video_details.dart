@@ -61,7 +61,7 @@ class VideoDetails {
 
   String get videoValue {
     if (video_v2.startsWith("http")) {
-      return thumbnail;
+      return video_v2;
     }
     return '${Communicator.threeSpeakCDN}/ipfs/${video_v2.replaceAll("ipfs://", '')}';
   }
