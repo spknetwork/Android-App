@@ -174,12 +174,12 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             break;
           case "sign_wait":
             var uuid = asString(map, 'uuid');
-            var expire = asInt(map, 'expire');
+            // var expire = asInt(map, 'expire');
             var jsonData = {
               "account": usernameController.text,
               "uuid": uuid,
               "key": authKey,
-              "expire": expire,
+              // "expire": expire,
               "host": Communicator.hiveAuthServer
             };
             var jsonString = json.encode(jsonData);
@@ -563,6 +563,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           };
           var jsonData = json.encode(socketData);
           socket.sink.add(jsonData);
+          showMessage(
+              'You have successfully logged in with Hive - ${usernameController.text}. Now let\'s grant posting authority to threespeak');
         } else {
           saveAndExit(data);
         }
