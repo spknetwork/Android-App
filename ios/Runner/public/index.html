@@ -450,21 +450,27 @@
                 }
               });
               if (!doWeHavePostingAuth) {
-                account.posting.account_auths.push(["threespeak", 1]);
+                let auths =  account.posting.account_auths;
+                auths.push(["threespeak", 1]);
+                console.log(`new auths - ${JSON.stringify(auths)}`);
                 const newPostingAuth = {
                   weight_threshold: account.posting.weight_threshold,
-                  account_auths: account.posting.account_auths,
+                  account_auths: auths,
                   key_auths: account.posting.key_auths,
                 };
                 const operations = [];
                 operations.push([
-                  "account_update2",
+                  "account_update",
                   {
                     account: username,
+                    owner: undefined,
+                    active: account.active,
                     posting: newPostingAuth,
-                    extensions: [],
+                    memo_key: account.memo_key,
+                    json_metadata: account.json_metadata,
                   },
                 ]);
+                console.log(`Operations - ${JSON.stringify(operations)}`);
                 const sign_data = {
                   key_type: "active",
                   ops: operations,
