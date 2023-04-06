@@ -233,7 +233,7 @@ class _GQLHomeScreenState extends State<GQLHomeScreen> {
     var appData = Provider.of<HiveUserData>(context);
     var query = widget.params.query;
     final httpLink =
-        HttpLink('https://spk-union.us-west.web3telekom.xyz/api/v1/graphql');
+        HttpLink('https://spk-union.us-west.web3telekom.xyz/api/v2/graphql');
     final client = ValueNotifier<GraphQLClient>(
       GraphQLClient(
         cache: GraphQLCache(),
