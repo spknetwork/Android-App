@@ -24,6 +24,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
+import 'hive_upvote_dialog.dart';
+
 class VideoDetailsScreen extends StatefulWidget {
   const VideoDetailsScreen({Key? key, required this.vm}) : super(key: key);
   final VideoDetailsViewModel vm;
@@ -101,7 +103,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   // video description
-  Widget titleAndSubtitle(VideoDetails details) {
+  Widget titleAndSubtitle(VideoDetails details, HiveUserData appData) {
     return FutureBuilder(
       future: _fetchHiveInfoForThisVideo,
       builder: (builder, snapshot) {
@@ -147,25 +149,77 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                   },
                 ),
                 SizedBox(height: 10),
-                InkWell(
-                  child: Row(
-                    children: [
-                      CustomCircleAvatar(
-                        height: 40,
-                        width: 40,
-                        url: server.userOwnerThumb(details.owner),
+                Row(
+                  children: [
+                    InkWell(
+                      child: CustomCircleAvatar(
+                          height: 40,
+                          width: 40,
+                          url: server.userOwnerThumb(details.owner)),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (c) =>
+                                UserChannelScreen(owner: details.owner),
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(width: 10),
+                    InkWell(
+                        child: Text(details.owner,
+                            style: Theme.of(context).textTheme.bodyLarge),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (c) =>
+                                  UserChannelScreen(owner: details.owner),
+                            ),
+                          );
+                        }),
+                    SizedBox(width: 10),
+                    Spacer(),
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(
+                        Icons.message_outlined,
+                        color: Colors.blue,
                       ),
-                      SizedBox(width: 10),
-                      Text(details.owner,
-                          style: Theme.of(context).textTheme.bodyLarge),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (c) =>
-                            UserChannelScreen(owner: details.owner)));
-                  },
-                )
+                    ),
+                    if (data.activeVotes.where((element) => element.voter == appData.username).length == 0) IconButton(
+                      onPressed: () {
+                        showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            clipBehavior: Clip.hardEdge,
+                            builder: (context) {
+                              return SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.4,
+                                child: HiveUpvoteDialog(
+                                  author: widget.vm.author,
+                                  permlink: widget.vm.permlink,
+                                  username: appData.username ?? "",
+                                  hasKey: appData.keychainData?.hasId ?? "",
+                                  hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
+                                  activeVotes: data.activeVotes,
+                                  onClose: () {},
+                                  onDone: () {
+                                    setState(() {
+                                      _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo(appData.rpc);
+                                    });
+                                  },
+                                ),
+                              );
+                            });
+                      },
+                      icon: Icon(
+                        Icons.thumbs_up_down,
+                        color: Colors.blue,
+                      ),
+                    ) else Container(),
+                  ],
+                ),
               ],
             ),
           );
@@ -176,7 +230,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
-  // video description
+// video description
   void showModalForDescription(VideoDetails details) {
     showModalBottomSheet(
       context: context,
@@ -235,10 +289,10 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
-  //endregion
+//endregion
 
-  //region Video Comments
-  // video comments
+//region Video Comments
+// video comments
   Widget listTile(HiveComment comment) {
     var item = comment;
     var userThumb = server.userOwnerThumb(item.author);
@@ -270,7 +324,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
-  // video comments
+// video comments
   Widget commentsSection(List<HiveComment> comments, HiveUserData appData) {
     var filtered = comments.where((element) =>
         (element.netRshares ?? 0) >= 0 && (element.authorReputation ?? 0) >= 0);
@@ -307,7 +361,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
-  // video comments
+// video comments
   Widget videoComments(HiveUserData appData) {
     return FutureBuilder(
       future: _loadComments,
@@ -340,7 +394,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
-  //endregion
+//endregion
 
   Widget videoWithDetailsWithoutRecommendation(
     VideoDetails details,
@@ -351,7 +405,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       child: ListView.separated(
         itemBuilder: (context, index) {
           if (index == 0) {
-            return titleAndSubtitle(details);
+            return titleAndSubtitle(details, appData);
           } else if (index == 1) {
             return videoComments(appData);
           } else {
@@ -369,7 +423,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
-  // container list view
+// container list view
   Widget videoWithDetails(VideoDetails details, HiveUserData appData) {
     return FutureBuilder(
         future: recommendedVideos,
@@ -385,7 +439,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
               child: ListView.separated(
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return titleAndSubtitle(details);
+                    return titleAndSubtitle(details, appData);
                   } else if (index == 1) {
                     return videoComments(appData);
                   } else if (index == 2) {
@@ -423,7 +477,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         });
   }
 
-  // container list view - recommendations
+// container list view - recommendations
   Widget videoRecommendationListItem(VideoRecommendationItem item) {
     return ListTileVideo(
       placeholder: 'assets/branding/three_speak_logo.png',
@@ -442,7 +496,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
-  // main container
+// main container
   @override
   Widget build(BuildContext context) {
     var userData = Provider.of<HiveUserData>(context);

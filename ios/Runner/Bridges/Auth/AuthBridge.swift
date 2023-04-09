@@ -92,6 +92,24 @@ class AuthBridge {
 					) { response in
 						result(response)
 					}
+				case "voteContent":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let user = arguments["user"] as? String,
+						let author = arguments["author"] as? String,
+						let permlink = arguments["permlink"] as? String,
+						let weight = arguments["weight"] as? Double,
+						let postingKey = arguments["postingKey"] as? String,
+						let hasKey = arguments["hasKey"] as? String,
+						let hasAuthKey = arguments["hasAuthKey"] as? String,
+						let acela = acela
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					acela.voteContent(user: user, author: author, permlink: permlink, weight: weight, postingKey: postingKey, hasKey: hasKey, hasAuthKey: hasAuthKey)  { response in
+						result(response)
+					}
 				default: debugPrint("do nothing")
 			}
 		})

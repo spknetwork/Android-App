@@ -346,57 +346,7 @@
             operations.push(comment_options);
             operations.push(customJson);
             console.log(`operations are ${JSON.stringify(operations)}`);
-            if (
-              hasKey !== undefined &&
-              hasAuthKey !== undefined &&
-              hasKey.length > 0 &&
-              hasAuthKey.length > 0
-            ) {
-              const sign_data = {
-                key_type: "posting",
-                ops: operations,
-                broadcast: true,
-              };
-              const data = CryptoJS.AES.encrypt(
-                JSON.stringify(sign_data),
-                hasAuthKey
-              ).toString();
-              replyToNative({
-                type: "postVideo",
-                valid: true,
-                username: author,
-                error: "",
-                data: data,
-              });
-            } else {
-              async function tryPublish(operations, key) {
-                try {
-                  return hive.broadcast.sendAsync(
-                    { operations },
-                    { posting: key }
-                  );
-                } catch (e) {
-                  return e;
-                }
-              }
-              tryPublish(operations, postingKey)
-                .then((result) => {
-                  replyToNative({
-                    type: "postVideo",
-                    valid: true,
-                    username: author,
-                  });
-                })
-                .catch((error) => {
-                  console.error(error);
-                  replyToNative({
-                    type: "postVideo",
-                    valid: false,
-                    username: author,
-                    error: error.message,
-                  });
-                });
-            }
+            performOperations(operations, "postVideo",  author, postingKey, hasKey, hasAuthKey);
           })
           .catch(function (err) {
             console.error(err);
@@ -406,6 +356,86 @@
               error: err.message,
             });
           });
+      }
+
+      function performOperations(
+        operations,
+        operationName,
+        username,
+        postingKey,
+        hasKey,
+        hasAuthKey
+      ) {
+        if (
+          hasKey !== undefined &&
+          hasAuthKey !== undefined &&
+          hasKey.length > 0 &&
+          hasAuthKey.length > 0
+        ) {
+          const sign_data = {
+            key_type: "posting",
+            ops: operations,
+            broadcast: true,
+          };
+          console.log(`Data is ${sign_data}`);
+          const data = CryptoJS.AES.encrypt(
+            JSON.stringify(sign_data),
+            hasAuthKey
+          ).toString();
+          replyToNative({
+            type: operationName,
+            valid: true,
+            username: username,
+            error: "",
+            data: data,
+          });
+        } else {
+          async function tryPublish(operations, key) {
+            try {
+              return hive.broadcast.sendAsync({ operations }, { posting: key });
+            } catch (e) {
+              return e;
+            }
+          }
+          tryPublish(operations, postingKey)
+            .then((result) => {
+              replyToNative({
+                type: operationName,
+                valid: true,
+                username: username,
+              });
+            })
+            .catch((error) => {
+              console.error(error);
+              replyToNative({
+                type: operationName,
+                valid: false,
+                username: username,
+                error: error.message,
+              });
+            });
+        }
+      }
+
+      function voteContent(
+        user,
+        author,
+        permlink,
+        weight,
+        postingKey,
+        hasKey,
+        hasAuthKey
+      ) {
+        let op = [
+          "vote",
+          {
+            voter: user,
+            author: author,
+            permlink: permlink,
+            weight: weight,
+          },
+        ];
+        performOperations([op], "voteContent", user, postingKey, hasKey, hasAuthKey);
       }
 
       function getRedirectUriData(uname) {
