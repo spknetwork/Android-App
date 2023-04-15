@@ -23,6 +23,7 @@ class AcelaWebViewController: UIViewController {
 	var hiveUserInfoHandler: ((String) -> Void)? = nil
 	var getDecryptedHASTokenHandler: ((String) -> Void)? = nil
 	var voteContentHandler: ((String) -> Void)? = nil
+	var commentOnContentHandler: ((String) -> Void)? = nil
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -72,6 +73,22 @@ class AcelaWebViewController: UIViewController {
 		voteContentHandler = handler
 		OperationQueue.main.addOperation {
 			self.webView?.evaluateJavaScript("voteContent('\(user)', '\(author)', '\(permlink)', \(weight), '\(postingKey)', '\(hasKey)', '\(hasAuthKey)');")
+		}
+	}
+
+	func commentOnContent(
+		user: String,
+		author: String,
+		permlink: String,
+		comment: String,
+		postingKey: String,
+		hasKey: String,
+		hasAuthKey: String,
+		handler: @escaping (String) -> Void
+	) {
+		commentOnContentHandler = handler
+		OperationQueue.main.addOperation {
+			self.webView?.evaluateJavaScript("commentOnContent('\(user)', '\(author)', '\(permlink)', \(comment), '\(postingKey)', '\(hasKey)', '\(hasAuthKey)');")
 		}
 	}
 
@@ -199,6 +216,11 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
 				voteContentHandler?(response)
+			case "commentOnContent":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				commentOnContentHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}

@@ -182,42 +182,43 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
       isCommenting = true;
     });
     try {
-      // var user = data.username;
-      // if (user == null) return;
-      // const platform = MethodChannel('com.example.acela/auth');
-      // final String result = await platform.invokeMethod('voteContent', {
-      //   'user': user,
-      //   'author': widget.author,
-      //   'permlink': widget.permlink,
-      //   'weight': voteValue,
-      //   'postingKey': data.postingKey ?? '',
-      //   'hasKey': data.keychainData?.hasId ?? '',
-      //   'hasAuthKey': data.keychainData?.hasAuthKey ?? '',
-      // });
-      // var response = LoginBridgeResponse.fromJsonString(result);
-      // if (response.valid && response.error.isEmpty) {
-      //   log("Successful upvote and bridge communication");
-      //   if (response.error == "" &&
-      //       response.data != null &&
-      //       response.data!.isNotEmpty &&
-      //       data.keychainData?.hasAuthKey != null) {
-      //     var socketData = {
-      //       "cmd": "sign_req",
-      //       "account": data.username!,
-      //       "token": data.keychainData!.hasId,
-      //       "data": response.data!,
-      //     };
-      //     log('Socket message is - ${json.encode(socketData)}');
-      //     loadingQR = true;
-      //     var jsonData = json.encode(socketData);
-      //     socket.sink.add(jsonData);
-      //   } else {
-      //     setState(() {
-      //       widget.onDone();
-      //       Navigator.of(context).pop();
-      //     });
-      //   }
-      // }
+      var user = data.username;
+      if (user == null) return;
+      const platform = MethodChannel('com.example.acela/auth');
+      var description = base64.encode(utf8.encode(text));
+      final String result = await platform.invokeMethod('commentOnContent', {
+        'user': user,
+        'author': widget.author,
+        'permlink': widget.permlink,
+        'comment': description,
+        'postingKey': data.postingKey ?? '',
+        'hasKey': data.keychainData?.hasId ?? '',
+        'hasAuthKey': data.keychainData?.hasAuthKey ?? '',
+      });
+      var response = LoginBridgeResponse.fromJsonString(result);
+      if (response.valid && response.error.isEmpty) {
+        log("Successful upvote and bridge communication");
+        if (response.error == "" &&
+            response.data != null &&
+            response.data!.isNotEmpty &&
+            data.keychainData?.hasAuthKey != null) {
+          var socketData = {
+            "cmd": "sign_req",
+            "account": data.username!,
+            "token": data.keychainData!.hasId,
+            "data": response.data!,
+          };
+          log('Socket message is - ${json.encode(socketData)}');
+          loadingQR = true;
+          var jsonData = json.encode(socketData);
+          socket.sink.add(jsonData);
+        } else {
+          setState(() {
+            widget.onDone();
+            Navigator.of(context).pop();
+          });
+        }
+      }
     } catch (e) {
       showError('Something went wrong.\n${e.toString()}');
     } finally {

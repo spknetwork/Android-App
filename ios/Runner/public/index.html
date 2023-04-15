@@ -346,7 +346,14 @@
             operations.push(comment_options);
             operations.push(customJson);
             console.log(`operations are ${JSON.stringify(operations)}`);
-            performOperations(operations, "postVideo",  author, postingKey, hasKey, hasAuthKey);
+            performOperations(
+              operations,
+              "postVideo",
+              author,
+              postingKey,
+              hasKey,
+              hasAuthKey
+            );
           })
           .catch(function (err) {
             console.error(err);
@@ -435,7 +442,66 @@
             weight: weight,
           },
         ];
-        performOperations([op], "voteContent", user, postingKey, hasKey, hasAuthKey);
+        performOperations(
+          [op],
+          "voteContent",
+          user,
+          postingKey,
+          hasKey,
+          hasAuthKey
+        );
+      }
+
+      function commentOnContent(
+        user,
+        author,
+        permlink,
+        comment,
+        postingKey,
+        hasKey,
+        hasAuthKey
+      ) {
+        let description = atob(comment);
+        description = decodeURIComponent(escape(description));
+        let permlink2 = new Date()
+          .toISOString()
+          .replace(/[^a-zA-Z0-9]+/g, "")
+          .toLowerCase();
+        permlink2 = `re-${user}-${permlink2}`;
+        let op = [
+          "comment",
+          {
+            parent_author: author,
+            parent_permlink: permlink,
+            author: user,
+            permlink: permlink2,
+            title: "",
+            body: escapedcomment,
+            json_metadata: {
+              tags: [
+                "threespeak",
+                "ios",
+                "android",
+                "mobile",
+                "app",
+                "spknetwork",
+                "sagarkothari88",
+                "comment",
+                "reply",
+              ],
+              app: "3speakMobileiOS/1.0.4-48",
+              format: "markdown+html",
+            },
+          },
+        ];
+        performOperations(
+          [op],
+          "commentOnContent",
+          user,
+          postingKey,
+          hasKey,
+          hasAuthKey
+        );
       }
 
       function getRedirectUriData(uname) {
