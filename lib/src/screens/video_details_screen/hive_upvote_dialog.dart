@@ -140,6 +140,10 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
               // showDialogForAfter10Seconds("Transaction - $uuid was approved. Please hit save button again after 10 seconds to mark video as published.");
               break;
             case "sign_nack":
+              setState(() {
+                ticker?.cancel();
+                qrCode = null;
+              });
               // setState(() {
               //   isCompleting = false;
               //   processText = '';
@@ -262,15 +266,40 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
       child: Column(
         children: [
           Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(height: 10),
-              Container(
-                decoration: BoxDecoration(color: Colors.white),
-                child: QrImage(
-                  data: qr,
-                  size: 175.0,
-                  gapless: true,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    child: Container(
+                      decoration: BoxDecoration(color: Colors.white),
+                      child: QrImage(
+                        data: qr,
+                        size: 150.0,
+                        gapless: true,
+                      ),
+                    ),
+                    onTap: () {
+                      var uri = Uri.tryParse(qr);
+                      if (uri != null) {
+                        launchUrl(uri);
+                      }
+                    },
+                  ),
+                  SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      var uri = Uri.tryParse(qr);
+                      if (uri != null) {
+                        launchUrl(uri);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                    child: Image.asset('assets/hive-keychain-image.png', width: 100),
+                  ),
+                ],
               ),
               SizedBox(height: 10),
               SizedBox(
