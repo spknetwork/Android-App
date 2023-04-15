@@ -8,6 +8,7 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
+import 'package:acela/src/screens/video_details_screen/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
@@ -180,7 +181,22 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     SizedBox(width: 10),
                     Spacer(),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        var screen = HiveCommentDialog(
+                          author: widget.vm.author,
+                          permlink: widget.vm.permlink,
+                          username: appData.username ?? "",
+                          hasKey: appData.keychainData?.hasId ?? "",
+                          hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
+                          onClose: () {},
+                          onDone: () {
+                            setState(() {
+                              _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo(appData.rpc);
+                            });
+                          },
+                        );
+                        Navigator.of(context).push(MaterialPageRoute(builder: (c) => screen));
+                      },
                       icon: Icon(
                         Icons.message_outlined,
                         color: Colors.blue,

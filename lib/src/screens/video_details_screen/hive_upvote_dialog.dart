@@ -144,21 +144,14 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
                 ticker?.cancel();
                 qrCode = null;
               });
-              // setState(() {
-              //   isCompleting = false;
-              //   processText = '';
-              // });
-              // var uuid = asString(map, 'uuid');
-              // showError(
-              //     "Transaction - $uuid was declined. Please hit save button again to try again.");
+              showError("Upvote was declined. Please try again.");
               break;
             case "sign_err":
-              // setState(() {
-              //   isCompleting = false;
-              //   processText = '';
-              // });
-              // var uuid = asString(map, 'uuid');
-              // showError("Transaction - $uuid failed.");
+              setState(() {
+                ticker?.cancel();
+                qrCode = null;
+              });
+              showError("Upvote action failed.");
               break;
             default:
               log('Default case here');
