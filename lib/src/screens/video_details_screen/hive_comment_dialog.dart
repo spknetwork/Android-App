@@ -47,6 +47,7 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
   var loadingQR = false;
   var textController = TextEditingController();
   var text = '';
+  var shouldShowHiveAuth = false;
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -122,11 +123,19 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
             });
             break;
           case "sign_ack":
-            widget.onDone();
-            Navigator.of(context).pop();
+            Future.delayed(const Duration(seconds: 6), () {
+              if (mounted) {
+                setState(() {
+                  isCommenting = false;
+                  widget.onDone();
+                  Navigator.of(context).pop();
+                });
+              }
+            });
             break;
           case "sign_nack":
             setState(() {
+              isCommenting = false;
               ticker?.cancel();
               qrCode = null;
             });
@@ -198,7 +207,7 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
       var response = LoginBridgeResponse.fromJsonString(result);
       if (response.valid && response.error.isEmpty) {
         log("Successful upvote and bridge communication");
-        if (response.error == "" &&
+        if (response.error.isEmpty &&
             response.data != null &&
             response.data!.isNotEmpty &&
             data.keychainData?.hasAuthKey != null) {
@@ -212,23 +221,82 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
           loadingQR = true;
           var jsonData = json.encode(socketData);
           socket.sink.add(jsonData);
-        } else {
-          setState(() {
-            widget.onDone();
-            Navigator.of(context).pop();
+        } else if (response.error.isEmpty){
+          Future.delayed(const Duration(seconds: 6), () {
+            if (mounted) {
+              setState(() {
+                isCommenting = false;
+                widget.onDone();
+                Navigator.of(context).pop();
+              });
+            }
           });
         }
       }
     } catch (e) {
       showError('Something went wrong.\n${e.toString()}');
-    } finally {
-      setState(() {
-        isCommenting = false;
-      });
     }
   }
 
   Widget _showQRCodeAndKeychainButton(String qr) {
+    Widget hkButton = ElevatedButton(
+      onPressed: () {
+        var uri = Uri.tryParse(qr);
+        if (uri != null) {
+          launchUrl(uri);
+        }
+      },
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+      child: Image.asset('assets/hive-keychain-image.png', width: 100),
+    );
+    Widget haButton = ElevatedButton(
+      onPressed: () {
+        setState(() {
+          shouldShowHiveAuth = true;
+        });
+      },
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+      child: Image.asset('assets/hive_auth_button.png', width: 120),
+    );
+    Widget qrCode = InkWell(
+      child: Container(
+        decoration: BoxDecoration(color: Colors.white),
+        child: QrImage(
+          data: qr,
+          size: 150.0,
+          gapless: true,
+        ),
+      ),
+      onTap: () {
+        var uri = Uri.tryParse(qr);
+        if (uri != null) {
+          launchUrl(uri);
+        }
+      },
+    );
+    var backButton = ElevatedButton.icon(
+      onPressed: () {
+        setState(() {
+          shouldShowHiveAuth = false;
+        });
+      },
+      icon: Icon(Icons.arrow_back),
+      label: Text("Back"),
+    );
+    List<Widget> array = [];
+    if (shouldShowHiveAuth) {
+      array = [
+        backButton,
+        const SizedBox(width: 10),
+        qrCode,
+      ];
+    } else {
+      array = [
+        haButton,
+        const SizedBox(width: 10),
+        hkButton,
+      ];
+    }
     return Center(
       child: Column(
         children: [
@@ -238,35 +306,7 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
               SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  InkWell(
-                    child: Container(
-                      decoration: BoxDecoration(color: Colors.white),
-                      child: QrImage(
-                        data: qr,
-                        size: 150.0,
-                        gapless: true,
-                      ),
-                    ),
-                    onTap: () {
-                      var uri = Uri.tryParse(qr);
-                      if (uri != null) {
-                        launchUrl(uri);
-                      }
-                    },
-                  ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      var uri = Uri.tryParse(qr);
-                      if (uri != null) {
-                        launchUrl(uri);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                    child: Image.asset('assets/hive-keychain-image.png', width: 100),
-                  ),
-                ],
+                children: array,
               ),
               SizedBox(height: 10),
               SizedBox(
@@ -292,26 +332,25 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
           title: Text("Add Comment"),
           subtitle: Text("@${widget.author}/${widget.permlink}"),
         ),
-        actions: isCommenting || text.length == 0
+        actions: isCommenting || text.length == 0 || qrCode != null
             ? []
             : [
-          IconButton(
-            onPressed: () {
-              saveButtonTapped(data);
-            },
-            icon: Icon(Icons.comment),
-          ),
-        ],
+                IconButton(
+                  onPressed: () {
+                    saveButtonTapped(data);
+                  },
+                  icon: Icon(Icons.comment),
+                ),
+              ],
       ),
       body: SafeArea(
-        child:
-        isCommenting
+        child: isCommenting
             ? qrCode != null
-            ? _showQRCodeAndKeychainButton(qrCode!)
-            : const Center(child: CircularProgressIndicator())
+                ? _showQRCodeAndKeychainButton(qrCode!)
+                : const Center(child: CircularProgressIndicator())
             : qrCode != null
-            ? _showQRCodeAndKeychainButton(qrCode!)
-            : _comment(),
+                ? _showQRCodeAndKeychainButton(qrCode!)
+                : _comment(),
       ),
     );
   }

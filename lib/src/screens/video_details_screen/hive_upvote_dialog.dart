@@ -49,6 +49,7 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
   var timeoutValue = 0;
   Timer? ticker;
   var loadingQR = false;
+  var shouldShowHiveAuth = false;
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -130,14 +131,15 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
               });
               break;
             case "sign_ack":
-              widget.onDone();
-              Navigator.of(context).pop();
-              // var uuid = asString(map, 'uuid');
-              // setState(() {
-              //   isCompleting = false;
-              //   processText = '';
-              // });
-              // showDialogForAfter10Seconds("Transaction - $uuid was approved. Please hit save button again after 10 seconds to mark video as published.");
+              Future.delayed(const Duration(seconds: 6), () {
+                if (mounted) {
+                  setState(() {
+                    isUpVoting = false;
+                    widget.onDone();
+                    Navigator.of(context).pop();
+                  });
+                }
+              });
               break;
             case "sign_nack":
               setState(() {
@@ -208,7 +210,7 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
       isUpVoting = true;
     });
     try {
-      var voteValue = sliderValue * 100;
+      var voteValue = sliderValue * 10000;
       var user = data.username;
       if (user == null) return;
       const platform = MethodChannel('com.example.acela/auth');
@@ -223,7 +225,6 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
       });
       var response = LoginBridgeResponse.fromJsonString(result);
       if (response.valid && response.error.isEmpty) {
-        log("Successful upvote and bridge communication");
         if (response.error == "" &&
             response.data != null &&
             response.data!.isNotEmpty &&
@@ -234,27 +235,87 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
             "token": data.keychainData!.hasId,
             "data": response.data!,
           };
-          log('Socket message is - ${json.encode(socketData)}');
           loadingQR = true;
           var jsonData = json.encode(socketData);
           socket.sink.add(jsonData);
         } else {
-          setState(() {
-            widget.onDone();
-            Navigator.of(context).pop();
+          Future.delayed(const Duration(seconds: 6), () {
+            if (mounted) {
+              setState(() {
+                isUpVoting = false;
+                widget.onDone();
+                Navigator.of(context).pop();
+              });
+            }
           });
         }
+      } else {
+        showError('Something went wrong.\n${response.error}');
       }
     } catch (e) {
       showError('Something went wrong.\n${e.toString()}');
-    } finally {
-      setState(() {
-        isUpVoting = false;
-      });
     }
   }
 
   Widget _showQRCodeAndKeychainButton(String qr) {
+    Widget hkButton = ElevatedButton(
+      onPressed: () {
+        var uri = Uri.tryParse(qr);
+        if (uri != null) {
+          launchUrl(uri);
+        }
+      },
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+      child: Image.asset('assets/hive-keychain-image.png', width: 100),
+    );
+    Widget haButton = ElevatedButton(
+      onPressed: () {
+        setState(() {
+          shouldShowHiveAuth = true;
+        });
+      },
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+      child: Image.asset('assets/hive_auth_button.png', width: 120),
+    );
+    Widget qrCode = InkWell(
+      child: Container(
+        decoration: BoxDecoration(color: Colors.white),
+        child: QrImage(
+          data: qr,
+          size: 150.0,
+          gapless: true,
+        ),
+      ),
+      onTap: () {
+        var uri = Uri.tryParse(qr);
+        if (uri != null) {
+          launchUrl(uri);
+        }
+      },
+    );
+    var backButton = ElevatedButton.icon(
+      onPressed: () {
+        setState(() {
+          shouldShowHiveAuth = false;
+        });
+      },
+      icon: Icon(Icons.arrow_back),
+      label: Text("Back"),
+    );
+    List<Widget> array = [];
+    if (shouldShowHiveAuth) {
+      array = [
+        backButton,
+        const SizedBox(width: 10),
+        qrCode,
+      ];
+    } else {
+      array = [
+        haButton,
+        const SizedBox(width: 10),
+        hkButton,
+      ];
+    }
     return Center(
       child: Column(
         children: [
@@ -264,35 +325,7 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
               SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  InkWell(
-                    child: Container(
-                      decoration: BoxDecoration(color: Colors.white),
-                      child: QrImage(
-                        data: qr,
-                        size: 150.0,
-                        gapless: true,
-                      ),
-                    ),
-                    onTap: () {
-                      var uri = Uri.tryParse(qr);
-                      if (uri != null) {
-                        launchUrl(uri);
-                      }
-                    },
-                  ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      var uri = Uri.tryParse(qr);
-                      if (uri != null) {
-                        launchUrl(uri);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                    child: Image.asset('assets/hive-keychain-image.png', width: 100),
-                  ),
-                ],
+                children: array,
               ),
               SizedBox(height: 10),
               SizedBox(
@@ -334,7 +367,7 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
             Navigator.of(context).pop();
           },
         ),
-        actions: isUpVoting || sliderValue == 0.0
+        actions: isUpVoting || sliderValue == 0.0 || qrCode != null
             ? []
             : [
                 IconButton(
@@ -352,12 +385,6 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
       ),
       body: SafeArea(
         child:
-        // (widget.activeVotes
-        //             .where((element) => element.voter == widget.username)
-        //             .length >
-        //         0)
-        //     ? _listOfVoters()
-        //     :
         isUpVoting
                 ? qrCode != null
                     ? _showQRCodeAndKeychainButton(qrCode!)

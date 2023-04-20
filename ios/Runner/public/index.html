@@ -42,6 +42,7 @@
               valid: Valid,
               accountName: accountName,
               error: "",
+              data: "",
             });
           })
           .catch(function (err) {
@@ -51,6 +52,7 @@
               valid: false,
               accountName: accountName,
               error: err.message,
+              data: "",
             });
           });
       }
@@ -72,6 +74,7 @@
               accountName: accountName,
               decrypted: decrypted,
               error: "",
+              data: "",
             });
           })
           .catch(function (err) {
@@ -360,7 +363,9 @@
             replyToNative({
               type: "postVideo",
               valid: false,
+              username: author,
               error: err.message,
+              data: "",
             });
           });
       }
@@ -384,7 +389,6 @@
             ops: operations,
             broadcast: true,
           };
-          console.log(`Data is ${sign_data}`);
           const data = CryptoJS.AES.encrypt(
             JSON.stringify(sign_data),
             hasAuthKey
@@ -410,6 +414,8 @@
                 type: operationName,
                 valid: true,
                 username: username,
+                error: "",
+                data: "",
               });
             })
             .catch((error) => {
@@ -419,6 +425,7 @@
                 valid: false,
                 username: username,
                 error: error.message,
+                data: "",
               });
             });
         }
@@ -439,7 +446,7 @@
             voter: user,
             author: author,
             permlink: permlink,
-            weight: weight,
+            weight: parseInt(weight),
           },
         ];
         performOperations(
@@ -462,12 +469,15 @@
         hasAuthKey
       ) {
         let description = atob(comment);
+        console.log(description);
         description = decodeURIComponent(escape(description));
+        console.log(description);
         let permlink2 = new Date()
           .toISOString()
           .replace(/[^a-zA-Z0-9]+/g, "")
           .toLowerCase();
         permlink2 = `re-${user}-${permlink2}`;
+        console.log(permlink2);
         let op = [
           "comment",
           {
@@ -476,8 +486,8 @@
             author: user,
             permlink: permlink2,
             title: "",
-            body: escapedcomment,
-            json_metadata: {
+            body: description,
+            json_metadata: JSON.stringify({
               tags: [
                 "threespeak",
                 "ios",
@@ -491,7 +501,7 @@
               ],
               app: "3speakMobileiOS/1.0.4-48",
               format: "markdown+html",
-            },
+            }),
           },
         ];
         performOperations(

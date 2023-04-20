@@ -88,7 +88,7 @@ class AcelaWebViewController: UIViewController {
 	) {
 		commentOnContentHandler = handler
 		OperationQueue.main.addOperation {
-			self.webView?.evaluateJavaScript("commentOnContent('\(user)', '\(author)', '\(permlink)', \(comment), '\(postingKey)', '\(hasKey)', '\(hasAuthKey)');")
+			self.webView?.evaluateJavaScript("commentOnContent('\(user)', '\(author)', '\(permlink)', '\(comment)', '\(postingKey)', '\(hasKey)', '\(hasAuthKey)');")
 		}
 	}
 
