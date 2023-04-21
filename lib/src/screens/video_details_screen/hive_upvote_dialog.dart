@@ -342,15 +342,6 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
     );
   }
 
-  // Widget _listOfVoters() {
-  //   return ListView.separated(itemBuilder: (c, i){
-  //     return ListTile(
-  //       title: Text(widget.activeVotes[i].voter),
-  //       subtitle: Text(widget.activeVotes[i].),
-  //     );
-  //   }, separatorBuilder: (c, i){}, itemCount: widget.activeVotes.length,);
-  // }
-
   @override
   Widget build(BuildContext context) {
     var data = Provider.of<HiveUserData>(context);

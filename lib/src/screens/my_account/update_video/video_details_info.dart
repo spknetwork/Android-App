@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -15,7 +16,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:tus_client/tus_client.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class VideoDetailsInfo extends StatefulWidget {
@@ -25,11 +28,17 @@ class VideoDetailsInfo extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.justForEditing,
+    required this.hasKey,
+    required this.hasAuthKey,
+    required this.appData,
   }) : super(key: key);
+  final String hasKey;
+  final String hasAuthKey;
   final VideoDetails item;
   final String title;
   final String subtitle;
   final bool justForEditing;
+  final HiveUserData appData;
 
   @override
   State<VideoDetailsInfo> createState() => _VideoDetailsInfoState();
@@ -53,6 +62,12 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   String? hiveKeychainTransactionId;
   late WebSocketChannel socket;
   var socketClosed = true;
+  String? qrCode;
+  var timer = 0;
+  var timeoutValue = 0;
+  Timer? ticker;
+  var loadingQR = false;
+  var shouldShowHiveAuth = false;
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -87,20 +102,71 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             break;
           case "sign_wait":
             var uuid = asString(map, 'uuid');
-            showDialogForHASTransaction(uuid);
+            var jsonData = {
+              "account": widget.item.owner,
+              "uuid": uuid,
+              "key": widget.hasKey,
+              "host": Communicator.hiveAuthServer
+            };
+            var jsonString = json.encode(jsonData);
+            var utf8Data = utf8.encode(jsonString);
+            var qr = base64.encode(utf8Data);
+            qr = "has://sign_req/$qr";
+            var uri = Uri.tryParse(qr);
+            if (uri != null) {
+              launchUrl(uri);
+            }
+            setState(() {
+              loadingQR = false;
+              qrCode = qr;
+              var uri = Uri.tryParse(qr);
+              if (uri != null) {
+                launchUrl(uri);
+              }
+              timer = timeoutValue;
+              ticker = Timer.periodic(Duration(seconds: 1), (tickrr) {
+                if (timer == 0) {
+                  setState(() {
+                    tickrr.cancel();
+                    qrCode = null;
+                  });
+                } else {
+                  setState(() {
+                    timer--;
+                  });
+                }
+              });
+            });
             break;
           case "sign_ack":
-            var uuid = asString(map, 'uuid');
-            setState(() {
-              isCompleting = false;
-              processText = '';
+            showMessage('Please wait. Video is posted on Hive but needs to be marked as published.');
+            Future.delayed(const Duration(seconds: 6), () async {
+              if (mounted) {
+                try {
+                  await Communicator().updatePublishState(widget.appData, widget.item.id);
+                  setState(() {
+                    isCompleting = false;
+                    processText = '';
+                    qrCode = null;
+                    showMessage('Congratulations. Your video is published.');
+                    showMyDialog();
+                  });
+                } catch(e) {
+                  setState(() {
+                    qrCode = null;
+                    isCompleting = false;
+                    processText = '';
+                    showMessage('Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+                  });
+                }
+              }
             });
-            showDialogForAfter10Seconds("Transaction - $uuid was approved. Please hit save button again after 10 seconds to mark video as published.");
             break;
           case "sign_nack":
             setState(() {
               isCompleting = false;
               processText = '';
+              qrCode = null;
             });
             var uuid = asString(map, 'uuid');
             showError(
@@ -108,6 +174,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             break;
           case "sign_err":
             setState(() {
+              qrCode = null;
               isCompleting = false;
               processText = '';
             });
@@ -203,8 +270,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             Navigator.of(context).pop();
             var route = MaterialPageRoute(builder: (c) => screen);
             Navigator.of(context).push(route);
-            return;
           });
+          return;
         }
         await Future.delayed(const Duration(seconds: 1), () {});
         const platform = MethodChannel('com.example.acela/auth');
@@ -242,21 +309,25 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
         if (bridgeResponse.error == "success") {
           showMessage('Please wait. Video is posted on Hive but needs to be marked as published.');
-          try {
-            await Communicator().updatePublishState(user, v.id);
-            setState(() {
-              isCompleting = false;
-              processText = '';
-              showMessage('Congratulations. Your video is published.');
-              showMyDialog();
-            });
-          } catch(e) {
-            setState(() {
-              isCompleting = false;
-              processText = '';
-              showMessage('Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
-            });
-          }
+          Future.delayed(const Duration(seconds: 6), () async {
+            if (mounted) {
+              try {
+                await Communicator().updatePublishState(user, v.id);
+                setState(() {
+                  isCompleting = false;
+                  processText = '';
+                  showMessage('Congratulations. Your video is published.');
+                  showMyDialog();
+                });
+              } catch(e) {
+                setState(() {
+                  isCompleting = false;
+                  processText = '';
+                  showMessage('Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+                });
+              }
+            }
+          });
         } else if (bridgeResponse.error == "" &&
             bridgeResponse.data != null &&
             user.keychainData?.hasAuthKey != null) {
@@ -268,13 +339,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           };
           var jsonData = json.encode(socketData);
           socket.sink.add(jsonData);
-        } else if (bridgeResponse.error.startsWith("Transaction ")) {
-          setState(() {
-            isCompleting = false;
-            processText = '';
-            hiveKeychainTransactionId = bridgeResponse.error.split(" ")[1];
-          });
-          showMessage(bridgeResponse.error);
         } else {
           throw bridgeResponse.error;
         }
@@ -305,22 +369,22 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     showDialog(context: context, builder: (c) => alert);
   }
 
-  void showDialogForHASTransaction(String uuid) {
-    Widget okButton = TextButton(
-      child: Text("Okay"),
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-    );
-    AlertDialog alert = AlertDialog(
-      title: Text("Launch HiveAuth / HiveKeychain"),
-      content: Text("Transaction - $uuid is waiting for approval. Please launch \"Keychain for Hive\" and approve to publish on Hive."),
-      actions: [
-        okButton,
-      ],
-    );
-    showDialog(context: context, builder: (c) => alert);
-  }
+  // void showDialogForHASTransaction(String uuid) {
+  //   Widget okButton = TextButton(
+  //     child: Text("Okay"),
+  //     onPressed: () {
+  //       Navigator.of(context).pop();
+  //     },
+  //   );
+  //   AlertDialog alert = AlertDialog(
+  //     title: Text("Launch HiveAuth / HiveKeychain"),
+  //     content: Text("Transaction - $uuid is waiting for approval. Please launch \"Keychain for Hive\" and approve to publish on Hive."),
+  //     actions: [
+  //       okButton,
+  //     ],
+  //   );
+  //   showDialog(context: context, builder: (c) => alert);
+  // }
 
   void showMyDialog() {
     Widget okButton = TextButton(
@@ -492,6 +556,91 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     );
   }
 
+  Widget _showQRCodeAndKeychainButton(String qr) {
+    Widget hkButton = ElevatedButton(
+      onPressed: () {
+        var uri = Uri.tryParse(qr);
+        if (uri != null) {
+          launchUrl(uri);
+        }
+      },
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+      child: Image.asset('assets/hive-keychain-image.png', width: 100),
+    );
+    Widget haButton = ElevatedButton(
+      onPressed: () {
+        setState(() {
+          shouldShowHiveAuth = true;
+        });
+      },
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+      child: Image.asset('assets/hive_auth_button.png', width: 120),
+    );
+    Widget qrCode = InkWell(
+      child: Container(
+        decoration: BoxDecoration(color: Colors.white),
+        child: QrImage(
+          data: qr,
+          size: 150.0,
+          gapless: true,
+        ),
+      ),
+      onTap: () {
+        var uri = Uri.tryParse(qr);
+        if (uri != null) {
+          launchUrl(uri);
+        }
+      },
+    );
+    var backButton = ElevatedButton.icon(
+      onPressed: () {
+        setState(() {
+          shouldShowHiveAuth = false;
+        });
+      },
+      icon: Icon(Icons.arrow_back),
+      label: Text("Back"),
+    );
+    List<Widget> array = [];
+    if (shouldShowHiveAuth) {
+      array = [
+        backButton,
+        const SizedBox(width: 10),
+        qrCode,
+      ];
+    } else {
+      array = [
+        haButton,
+        const SizedBox(width: 10),
+        hkButton,
+      ];
+    }
+    return Center(
+      child: Column(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: array,
+              ),
+              SizedBox(height: 10),
+              SizedBox(
+                width: 200,
+                child: LinearProgressIndicator(
+                  value: timer.toDouble() / timeoutValue.toDouble(),
+                  semanticsLabel: 'Timeout Timer for HiveAuth QR',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData>(context);
@@ -506,7 +655,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                 subtitle: processText,
               ),
             )
-          : Column(
+          : (qrCode == null) ? Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _tagField(),
@@ -515,7 +664,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                 _thumbnailPicker(user),
                 const Text('Tap to change video thumbnail'),
               ],
-            ),
+            ) : _showQRCodeAndKeychainButton(qrCode!),
       floatingActionButton: isCompleting
           ? null
           : thumbIpfs.isNotEmpty || widget.item.thumbUrl.isNotEmpty

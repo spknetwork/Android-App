@@ -1,6 +1,8 @@
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/my_account/update_video/video_details_info.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class VideoPrimaryInfo extends StatefulWidget {
   const VideoPrimaryInfo({
@@ -71,6 +73,7 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
 
   @override
   Widget build(BuildContext context) {
+    var appData = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Video Info'),
@@ -85,6 +88,9 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
                   title: titleController.text,
                   subtitle: descriptionController.text,
                   justForEditing: widget.justForEditing,
+                  hasKey: appData.keychainData?.hasId ?? "",
+                  hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
+                  appData: appData,
                 );
                 var route = MaterialPageRoute(builder: (c) => screen);
                 Navigator.of(context).push(route);
