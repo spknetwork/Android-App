@@ -65,8 +65,8 @@ class MainActivity : FlutterActivity() {
             "com.example.acela/auth"
         ).setMethodCallHandler { call, result ->
             this.result = result
-            val username = call.argument<String>("username")
-            val postingKey = call.argument<String>("postingKey")
+            val username = call.argument<String?>("username")
+            val postingKey = call.argument<String?>("postingKey")
             val params = call.argument<String>("params")
             val encryptedToken = call.argument<String?>("encryptedToken")
 
@@ -85,7 +85,11 @@ class MainActivity : FlutterActivity() {
             val community = call.argument<String?>("community")
             val ipfsHash = call.argument<String?>("ipfsHash")
             val hasKey = call.argument<String?>("hasKey")
-            val hasAuthkey = call.argument<String?>("hasAuthkey")
+            val hasAuthkey = call.argument<String?>("hasAuthkey") ?: call.argument<String?>("hasAuthKey")
+            val user = call.argument<String?>("user")
+            val author = call.argument<String?>("author")
+            val weight = call.argument<Double?>("weight")
+            val comment = call.argument<String?>("comment")
 
             val data = call.argument<String?>("data")
             if (call.method == "validate" && username != null && postingKey != null) {
@@ -108,6 +112,16 @@ class MainActivity : FlutterActivity() {
                     "newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash', '$hasKey', '$hasAuthkey');",
                     null
                 )
+            } else if (call.method == "voteContent" && user != null && author != null
+                && permlink != null && weight != null && postingKey != null && hasKey != null
+                && hasAuthkey != null
+            ) {
+                webView?.evaluateJavascript("voteContent('$user', '$author', '$permlink', $weight, '$postingKey', '$hasKey', '$hasAuthkey');", null)
+            } else if (call.method == "commentOnContent" && user != null && author != null
+                && permlink != null && comment != null && postingKey != null && hasKey != null
+                && hasAuthkey != null
+            ) {
+                webView?.evaluateJavascript("commentOnContent('$user', '$author', '$permlink', '$comment', '$postingKey', '$hasKey', '$hasAuthkey');", null)
             }
         }
     }
@@ -170,6 +184,12 @@ class WebAppInterface(private val mContext: Context) {
             JSBridgeAction.POST_VIDEO.value -> {
                 main.result?.success(message)
             }
+            JSBridgeAction.COMMENT_ON_CONTENT.value -> {
+                main.result?.success(message)
+            }
+            JSBridgeAction.VOTE_CONTENT.value -> {
+                main.result?.success(message)
+            }
         }
     }
 }
@@ -184,4 +204,6 @@ enum class JSBridgeAction(val value: String) {
     POST_VIDEO("postVideo"),
     GET_REDIRECT_URI_DATA("getRedirectUriData"),
     GET_DECRYPTED_HAS_TOKEN("getDecryptedHASToken"),
+    COMMENT_ON_CONTENT("commentOnContent"),
+    VOTE_CONTENT("voteContent"),
 }

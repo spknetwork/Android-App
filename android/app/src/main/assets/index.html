@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="3Speak Acela" />
-    <title>3Speak Acela</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <!-- <script src="./hive.min.js"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
-      integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
-    <script>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="3Speak Acela" />
+  <title>3Speak Acela</title>
+</head>
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<!-- <script src="./hive.min.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
+        integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+<script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+<script>
       const HAS_SERVER = "wss://hive-auth.arcange.eu";
       const HAS_APP_DATA = {
         name: "3Speak Mobile iOS App",
@@ -42,6 +42,7 @@
               valid: Valid,
               accountName: accountName,
               error: "",
+              data: "",
             });
           })
           .catch(function (err) {
@@ -51,6 +52,7 @@
               valid: false,
               accountName: accountName,
               error: err.message,
+              data: "",
             });
           });
       }
@@ -72,6 +74,7 @@
               accountName: accountName,
               decrypted: decrypted,
               error: "",
+              data: "",
             });
           })
           .catch(function (err) {
@@ -346,66 +349,169 @@
             operations.push(comment_options);
             operations.push(customJson);
             console.log(`operations are ${JSON.stringify(operations)}`);
-            if (
-              hasKey !== undefined &&
-              hasAuthKey !== undefined &&
-              hasKey.length > 0 &&
-              hasAuthKey.length > 0
-            ) {
-              const sign_data = {
-                key_type: "posting",
-                ops: operations,
-                broadcast: true,
-              };
-              const data = CryptoJS.AES.encrypt(
-                JSON.stringify(sign_data),
-                hasAuthKey
-              ).toString();
-              replyToNative({
-                type: "postVideo",
-                valid: true,
-                username: author,
-                error: "",
-                data: data,
-              });
-            } else {
-              async function tryPublish(operations, key) {
-                try {
-                  return hive.broadcast.sendAsync(
-                    { operations },
-                    { posting: key }
-                  );
-                } catch (e) {
-                  return e;
-                }
-              }
-              tryPublish(operations, postingKey)
-                .then((result) => {
-                  replyToNative({
-                    type: "postVideo",
-                    valid: true,
-                    username: author,
-                  });
-                })
-                .catch((error) => {
-                  console.error(error);
-                  replyToNative({
-                    type: "postVideo",
-                    valid: false,
-                    username: author,
-                    error: error.message,
-                  });
-                });
-            }
+            performOperations(
+              operations,
+              "postVideo",
+              author,
+              postingKey,
+              hasKey,
+              hasAuthKey
+            );
           })
           .catch(function (err) {
             console.error(err);
             replyToNative({
               type: "postVideo",
               valid: false,
+              username: author,
               error: err.message,
+              data: "",
             });
           });
+      }
+
+      function performOperations(
+        operations,
+        operationName,
+        username,
+        postingKey,
+        hasKey,
+        hasAuthKey
+      ) {
+        if (
+          hasKey !== undefined &&
+          hasAuthKey !== undefined &&
+          hasKey.length > 0 &&
+          hasAuthKey.length > 0
+        ) {
+          const sign_data = {
+            key_type: "posting",
+            ops: operations,
+            broadcast: true,
+          };
+          const data = CryptoJS.AES.encrypt(
+            JSON.stringify(sign_data),
+            hasAuthKey
+          ).toString();
+          replyToNative({
+            type: operationName,
+            valid: true,
+            username: username,
+            error: "",
+            data: data,
+          });
+        } else {
+          async function tryPublish(operations, key) {
+            try {
+              return hive.broadcast.sendAsync({ operations }, { posting: key });
+            } catch (e) {
+              return e;
+            }
+          }
+          tryPublish(operations, postingKey)
+            .then((result) => {
+              replyToNative({
+                type: operationName,
+                valid: true,
+                username: username,
+                error: "",
+                data: "",
+              });
+            })
+            .catch((error) => {
+              console.error(error);
+              replyToNative({
+                type: operationName,
+                valid: false,
+                username: username,
+                error: error.message,
+                data: "",
+              });
+            });
+        }
+      }
+
+      function voteContent(
+        user,
+        author,
+        permlink,
+        weight,
+        postingKey,
+        hasKey,
+        hasAuthKey
+      ) {
+        let op = [
+          "vote",
+          {
+            voter: user,
+            author: author,
+            permlink: permlink,
+            weight: parseInt(weight),
+          },
+        ];
+        performOperations(
+          [op],
+          "voteContent",
+          user,
+          postingKey,
+          hasKey,
+          hasAuthKey
+        );
+      }
+
+      function commentOnContent(
+        user,
+        author,
+        permlink,
+        comment,
+        postingKey,
+        hasKey,
+        hasAuthKey
+      ) {
+        let description = atob(comment);
+        console.log(description);
+        description = decodeURIComponent(escape(description));
+        console.log(description);
+        let permlink2 = new Date()
+          .toISOString()
+          .replace(/[^a-zA-Z0-9]+/g, "")
+          .toLowerCase();
+        permlink2 = `re-${user}-${permlink2}`;
+        console.log(permlink2);
+        let op = [
+          "comment",
+          {
+            parent_author: author,
+            parent_permlink: permlink,
+            author: user,
+            permlink: permlink2,
+            title: "",
+            body: description,
+            json_metadata: JSON.stringify({
+              tags: [
+                "threespeak",
+                "ios",
+                "android",
+                "mobile",
+                "app",
+                "spknetwork",
+                "sagarkothari88",
+                "comment",
+                "reply",
+              ],
+              app: "3speakMobileiOS/1.0.4-48",
+              format: "markdown+html",
+            }),
+          },
+        ];
+        performOperations(
+          [op],
+          "commentOnContent",
+          user,
+          postingKey,
+          hasKey,
+          hasAuthKey
+        );
       }
 
       function getRedirectUriData(uname) {
@@ -462,5 +568,5 @@
         Android.postMessage(JSON.stringify(result));
       }
     </script>
-  </body>
+</body>
 </html>

@@ -142,7 +142,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           case "sign_ack":
             setState(() {
               qrCode = null;
-
             });
             showMessage(
                 'Please wait. Video is posted on Hive but needs to be marked as published.');
