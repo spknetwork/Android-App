@@ -82,7 +82,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   @override
   void initState() {
     super.initState();
-    tagsController.text = "threespeak,mobile";
+    tagsController.text = widget.item.tags.isEmpty ? "threespeak,mobile" : widget.item.tags;
     socket = WebSocketChannel.connect(
       Uri.parse(Communicator.hiveAuthServer),
     );
@@ -91,6 +91,11 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       var cmd = asString(map, 'cmd');
       if (cmd.isNotEmpty) {
         switch (cmd) {
+          case "connected":
+            setState(() {
+              timeoutValue = asInt(map, 'timeout');
+            });
+            break;
           case "auth_wait":
             log('You are not logged in.');
             break;
@@ -112,10 +117,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             var utf8Data = utf8.encode(jsonString);
             var qr = base64.encode(utf8Data);
             qr = "has://sign_req/$qr";
-            var uri = Uri.tryParse(qr);
-            if (uri != null) {
-              launchUrl(uri);
-            }
             setState(() {
               loadingQR = false;
               qrCode = qr;
@@ -139,11 +140,17 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             });
             break;
           case "sign_ack":
-            showMessage('Please wait. Video is posted on Hive but needs to be marked as published.');
+            setState(() {
+              qrCode = null;
+
+            });
+            showMessage(
+                'Please wait. Video is posted on Hive but needs to be marked as published.');
             Future.delayed(const Duration(seconds: 6), () async {
               if (mounted) {
                 try {
-                  await Communicator().updatePublishState(widget.appData, widget.item.id);
+                  await Communicator()
+                      .updatePublishState(widget.appData, widget.item.id);
                   setState(() {
                     isCompleting = false;
                     processText = '';
@@ -151,12 +158,13 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                     showMessage('Congratulations. Your video is published.');
                     showMyDialog();
                   });
-                } catch(e) {
+                } catch (e) {
                   setState(() {
                     qrCode = null;
                     isCompleting = false;
                     processText = '';
-                    showMessage('Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+                    showMessage(
+                        'Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
                   });
                 }
               }
@@ -284,7 +292,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               .replaceAll("ipfs://", "")
               .replaceAll("/manifest.m3u8", "");
         }
-        var community = selectedCommunity ?? (widget.item.isReel ? 'hive-181335' : 'hive-151961');
+        var community = selectedCommunity ??
+            (widget.item.isReel ? 'hive-181335' : 'hive-151961');
         final String response = await platform.invokeMethod('newPostVideo', {
           'thumbnail': v.thumbnailValue,
           'video_v2': v.videoValue,
@@ -308,7 +317,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
         if (bridgeResponse.error == "success") {
-          showMessage('Please wait. Video is posted on Hive but needs to be marked as published.');
+          showMessage(
+              'Please wait. Video is posted on Hive but needs to be marked as published.');
           Future.delayed(const Duration(seconds: 6), () async {
             if (mounted) {
               try {
@@ -319,11 +329,12 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                   showMessage('Congratulations. Your video is published.');
                   showMyDialog();
                 });
-              } catch(e) {
+              } catch (e) {
                 setState(() {
                   isCompleting = false;
                   processText = '';
-                  showMessage('Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+                  showMessage(
+                      'Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
                 });
               }
             }
@@ -398,7 +409,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     );
     AlertDialog alert = AlertDialog(
       title: Text("🎉 Congratulations 🎉"),
-      content: Text("Your Video is published on Hive & video is marked as published."),
+      content: Text(
+          "Your Video is published on Hive & video is marked as published."),
       actions: [
         okButton,
       ],
@@ -649,13 +661,15 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         title: const Text('Provide more info'),
       ),
       body: isCompleting
-          ? Center(
-              child: LoadingScreen(
-                title: 'Please wait',
-                subtitle: processText,
-              ),
-            )
-          : (qrCode == null) ? Column(
+          ? (qrCode == null)
+              ? Center(
+                  child: LoadingScreen(
+                    title: 'Please wait',
+                    subtitle: processText,
+                  ),
+                )
+              : _showQRCodeAndKeychainButton(qrCode!)
+          : Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _tagField(),
@@ -664,7 +678,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                 _thumbnailPicker(user),
                 const Text('Tap to change video thumbnail'),
               ],
-            ) : _showQRCodeAndKeychainButton(qrCode!),
+            ),
       floatingActionButton: isCompleting
           ? null
           : thumbIpfs.isNotEmpty || widget.item.thumbUrl.isNotEmpty
