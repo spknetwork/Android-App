@@ -288,13 +288,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
   }
 
   void showMyDialog(VideoDetails item) {
-    Widget laterButton = TextButton(
-      child: Text("Skip"),
-      onPressed: () {
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
-      },
-    );
     Widget nowButton = TextButton(
         onPressed: () async {
           Navigator.of(context).pop();
@@ -309,11 +302,10 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
       content: Text(
           "✅ Your Video is in-process\n\n✅ Video has be added to encoding queue\n\n👀 Check status from My Account\n\n📝 Let's edit video details now."),
       actions: [
-        laterButton,
         nowButton,
       ],
     );
-    showDialog(context: context, builder: (c) => alert);
+    showDialog(context: context, builder: (c) => alert, barrierDismissible: false);
   }
 
   void showMessage(String string) {

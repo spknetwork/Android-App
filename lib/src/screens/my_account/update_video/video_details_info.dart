@@ -292,7 +292,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               .replaceAll("/manifest.m3u8", "");
         }
         var community = selectedCommunity ??
-            (widget.item.isReel ? 'hive-181335' : 'hive-151961');
+            (widget.item.isReel ? 'hive-151961' : 'hive-181335');
         final String response = await platform.invokeMethod('newPostVideo', {
           'thumbnail': v.thumbnailValue,
           'video_v2': v.videoValue,
