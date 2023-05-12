@@ -3,6 +3,7 @@
 
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SPKVideoPlayer extends StatefulWidget {
   const SPKVideoPlayer({Key? key, required this.playUrl}) : super(key: key);
@@ -14,12 +15,25 @@ class SPKVideoPlayer extends StatefulWidget {
 
 class _SPKVideoPlayerState extends State<SPKVideoPlayer> {
   late BetterPlayerController _betterPlayerController;
+
   @override
   void initState() {
     BetterPlayerConfiguration betterPlayerConfiguration =
-        BetterPlayerConfiguration(
-      aspectRatio: 16 / 9,
-      fit: BoxFit.contain,
+    BetterPlayerConfiguration(
+        aspectRatio: 16 / 9,
+        // fit: BoxFit.contain,
+        autoPlay: true,
+        fullScreenByDefault: false,
+        deviceOrientationsOnFullScreen: [
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.portraitDown,
+        ],
+        autoDetectFullscreenAspectRatio: true,
+        autoDetectFullscreenDeviceOrientation: true,
+        autoDispose: true,
+        expandToFill: true, 
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
