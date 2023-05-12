@@ -35,24 +35,24 @@ class _StoriesScreenState extends State<StoriesScreen> {
                 const Text('3Shorts')
               ],
             ),
-            actions: [
-              fitWidth
-                  ? IconButton(
-                      onPressed: () {
-                        setState(() {
-                          fitWidth = false;
-                        });
-                      },
-                      icon: Icon(Icons.screenshot))
-                  : IconButton(
-                      onPressed: () {
-                        setState(() {
-                          fitWidth = true;
-                        });
-                      },
-                      icon: Icon(Icons.smart_screen),
-                    )
-            ],
+            // actions: [
+            //   fitWidth
+            //       ? IconButton(
+            //           onPressed: () {
+            //             setState(() {
+            //               fitWidth = false;
+            //             });
+            //           },
+            //           icon: Icon(Icons.screenshot))
+            //       : IconButton(
+            //           onPressed: () {
+            //             setState(() {
+            //               fitWidth = true;
+            //             });
+            //           },
+            //           icon: Icon(Icons.smart_screen),
+            //         )
+            // ],
             bottom: TabBar(
               tabs: tabs,
             ),

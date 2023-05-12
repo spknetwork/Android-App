@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class StoryPlayer extends StatefulWidget {
   const StoryPlayer(
@@ -35,17 +36,24 @@ class _StoryPlayerState extends State<StoryPlayer> {
   @override
   void initState() {
     config = BetterPlayerConfiguration(
-      aspectRatio: widget.fitWidth
-          ? widget.height / widget.width
-          : widget.width / widget.height,
+      aspectRatio: widget.width / widget.height,
       fit: BoxFit.fitHeight,
       autoPlay: true,
+      fullScreenByDefault: false,
+      deviceOrientationsOnFullScreen: [
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.portraitDown,
+      ],
+      autoDetectFullscreenAspectRatio: true,
+      autoDetectFullscreenDeviceOrientation: true,
+      autoDispose: true,
+      expandToFill: true,
       controlsConfiguration: BetterPlayerControlsConfiguration(
         showControls: true,
         showControlsOnInitialize: true,
       ),
-      fullScreenByDefault: false,
-      autoDispose: true,
       showPlaceholderUntilPlay: true,
       allowedScreenSleep: false,
       eventListener: (event) {
