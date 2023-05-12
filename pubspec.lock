@@ -60,11 +60,10 @@ packages:
   better_player:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "91a9625524cdff448e0a9deb5047bcf20cc8dcf1"
-      url: "https://github.com/tintran-dev/betterplayer.git"
-    source: git
+      name: better_player
+      sha256: f2e5d57ea49fb7c4d93838d23846ca5ddf78af6f946e103aeacf2afdd01909b3
+      url: "https://pub.dev"
+    source: hosted
     version: "0.0.83"
   boolean_selector:
     dependency: transitive
