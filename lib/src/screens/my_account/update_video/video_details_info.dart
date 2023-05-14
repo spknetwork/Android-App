@@ -9,6 +9,7 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
+import 'package:acela/src/screens/my_account/update_video/add_bene_sheet.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
@@ -568,6 +569,21 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     );
   }
 
+  void showAlertForAddBene(List<BeneficiariesJson> benes) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return AddBeneSheet(benes: benes, onSave: (name, percent) {
+          benes.add(BeneficiariesJson(account: name, weight: percent, src: ''));
+          var text = json.encode(benes);
+          setState(() {
+            beneficiaries = text;
+          });
+        });
+      },
+    );
+  }
+
   void beneficiariesBottomSheet() {
     var benes = BeneficiariesJson.fromJsonString(beneficiaries);
     showModalBottomSheet(
@@ -580,12 +596,19 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               appBar: AppBar(
                 title: Text('Setup Beneficiaries'),
                 actions: [
-                  IconButton(onPressed: (){}, icon: Icon(Icons.add))
+                  IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      showAlertForAddBene(benes);
+                    },
+                    icon: Icon(Icons.add),
+                  )
                 ],
               ),
               body: ListView.separated(
                 itemBuilder: (c, i) {
-                  var percent = '${(benes[i].weight.toDouble() / 100.0).toStringAsFixed(2)} %';
+                  var percent =
+                      '${(benes[i].weight.toDouble() / 100.0).toStringAsFixed(2)} %';
                   return ListTile(
                     leading: CustomCircleAvatar(
                       height: 40,
