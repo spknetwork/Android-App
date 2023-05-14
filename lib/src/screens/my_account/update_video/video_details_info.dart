@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
+import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
@@ -12,6 +13,7 @@ import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -68,6 +70,10 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   Timer? ticker;
   var loadingQR = false;
   var shouldShowHiveAuth = false;
+  var declineRewards = false;
+  var powerUp100 = false;
+  var beneficiaries =
+      '[{"account":"spk.beneficiary","weight":850,"src":"Three Speak Service"},{"account":"threespeakleader","weight":100,"src":"Three Speak Service"},{"account":"vaultec","weight":100,"src":"1% will go to video-encoder node operator for encoding the video. vaultec is example username."},{"account":"sagarkothari88","weight":100,"src":"Mobile App Service"}]';
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -82,7 +88,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   @override
   void initState() {
     super.initState();
-    tagsController.text = widget.item.tags.isEmpty ? "threespeak,mobile" : widget.item.tags;
+    tagsController.text =
+        widget.item.tags.isEmpty ? "threespeak,mobile" : widget.item.tags;
     socket = WebSocketChannel.connect(
       Uri.parse(Communicator.hiveAuthServer),
     );
@@ -268,6 +275,9 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           isNsfwContent: isNsfwContent,
           tags: tags,
           thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
+          rewardPowerup: powerUp100,
+          declineRewards: declineRewards,
+          beneficiaries: '',
         );
         if (widget.justForEditing) {
           setState(() {
@@ -378,23 +388,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     );
     showDialog(context: context, builder: (c) => alert);
   }
-
-  // void showDialogForHASTransaction(String uuid) {
-  //   Widget okButton = TextButton(
-  //     child: Text("Okay"),
-  //     onPressed: () {
-  //       Navigator.of(context).pop();
-  //     },
-  //   );
-  //   AlertDialog alert = AlertDialog(
-  //     title: Text("Launch HiveAuth / HiveKeychain"),
-  //     content: Text("Transaction - $uuid is waiting for approval. Please launch \"Keychain for Hive\" and approve to publish on Hive."),
-  //     actions: [
-  //       okButton,
-  //     ],
-  //   );
-  //   showDialog(context: context, builder: (c) => alert);
-  // }
 
   void showMyDialog() {
     Widget okButton = TextButton(
@@ -510,17 +503,124 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       margin: const EdgeInsets.all(10),
       child: Row(
         children: [
-          const Text('Is this video NOT SAFE for work?'),
+          const Text('NOT SAFE for work?'),
           const Spacer(),
-          Switch(
+          Checkbox(
             value: isNsfwContent,
+            activeColor: Theme.of(context).primaryColor,
             onChanged: (newVal) {
               setState(() {
-                isNsfwContent = newVal;
+                isNsfwContent = newVal ?? false;
               });
             },
           )
         ],
+      ),
+    );
+  }
+
+  Widget _rewardType() {
+    return Container(
+      margin: const EdgeInsets.all(10),
+      child: Row(
+        children: [
+          Text('Reward Type'),
+          Spacer(),
+          SizedBox(
+            width: 220.0,
+            child: CupertinoSegmentedControl(
+              children: {
+                0: Center(
+                  child: Text('Decline', textAlign: TextAlign.center),
+                ),
+                1: Center(
+                  child: Text('50%\nHBD', textAlign: TextAlign.center),
+                ),
+                2: Center(
+                  child: Text('100%\nHP', textAlign: TextAlign.center),
+                )
+              },
+              selectedColor: Theme.of(context).primaryColor,
+              borderColor: Theme.of(context).primaryColor,
+              groupValue: declineRewards
+                  ? 0
+                  : powerUp100
+                      ? 2
+                      : 1,
+              onValueChanged: (value) {
+                setState(() {
+                  if (value == 0) {
+                    declineRewards = true;
+                    powerUp100 = false;
+                  } else if (value == 1) {
+                    declineRewards = false;
+                    powerUp100 = false;
+                  } else {
+                    declineRewards = false;
+                    powerUp100 = true;
+                  }
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void beneficiariesBottomSheet() {
+    var benes = BeneficiariesJson.fromJsonString(beneficiaries);
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Container(
+            height: 400,
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text('Setup Beneficiaries'),
+                actions: [
+                  IconButton(onPressed: (){}, icon: Icon(Icons.add))
+                ],
+              ),
+              body: ListView.separated(
+                itemBuilder: (c, i) {
+                  var percent = '${(benes[i].weight.toDouble() / 100.0).toStringAsFixed(2)} %';
+                  return ListTile(
+                    leading: CustomCircleAvatar(
+                      height: 40,
+                      width: 40,
+                      url: server.userOwnerThumb(benes[i].account),
+                    ),
+                    title: Text(benes[i].account),
+                    subtitle: Text(benes[i].src),
+                    trailing: Text(percent),
+                  );
+                },
+                separatorBuilder: (c, i) => const Divider(),
+                itemCount: benes.length,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _beneficiaries() {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      child: InkWell(
+        onTap: () {
+          beneficiariesBottomSheet();
+        },
+        child: Row(
+          children: [
+            Text('Update Beneficiaries'),
+            Spacer(),
+            Icon(Icons.arrow_drop_down),
+          ],
+        ),
       ),
     );
   }
@@ -533,8 +633,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       margin: EdgeInsets.all(10),
       child: Row(
         children: [
-          const Text('Post to:'),
-          SizedBox(width: 10),
+          const Text('Select Community'),
+          Spacer(),
           InkWell(
             onTap: () {
               Navigator.of(context).push(
@@ -657,7 +757,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     var user = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Provide more info'),
+        title: const Text('Set up Hive post details'),
       ),
       body: isCompleting
           ? (qrCode == null)
@@ -668,15 +768,19 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                   ),
                 )
               : _showQRCodeAndKeychainButton(qrCode!)
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _tagField(),
-                _notSafe(),
-                _communityPicker(),
-                _thumbnailPicker(user),
-                const Text('Tap to change video thumbnail'),
-              ],
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _thumbnailPicker(user),
+                  const Text('Tap to change video thumbnail'),
+                  _tagField(),
+                  _communityPicker(),
+                  _rewardType(),
+                  _beneficiaries(),
+                  _notSafe(),
+                ],
+              ),
             ),
       floatingActionButton: isCompleting
           ? null

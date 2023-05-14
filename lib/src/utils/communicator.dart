@@ -311,6 +311,9 @@ class Communicator {
     required bool isNsfwContent,
     required String tags,
     required String? thumbnail,
+    required bool rewardPowerup,
+    required bool declineRewards,
+    required String beneficiaries,
   }) async {
     var request = http.Request(
         'POST', Uri.parse('${Communicator.tsServer}/mobile/api/update_info'));
@@ -321,6 +324,9 @@ class Communicator {
       isNsfwContent: isNsfwContent,
       tags: tags,
       thumbnail: thumbnail,
+      rewardPowerup: rewardPowerup,
+      declineRewards: declineRewards,
+      beneficiaries: beneficiaries,
     ).toJsonString();
     Map<String, String> map = {
       "cookie": user.cookie ?? "",
