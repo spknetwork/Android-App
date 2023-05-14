@@ -36,9 +36,9 @@ class _MyAppState extends State<MyApp> {
           return withWidget;
         } else {
           return MaterialApp(
-            title: 'Acela',
+            title: '3Speak Video App',
             home: Scaffold(
-              appBar: AppBar(title: const Text('Acela')),
+              appBar: AppBar(title: const Text('3Speak Video App')),
               body: const Center(
                 child: CircularProgressIndicator(),
               ),

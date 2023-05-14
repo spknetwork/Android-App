@@ -1,3 +1,7 @@
+android/private_key.pepk
+android/signing.properties
+android/app/store
+android/app/release/app-release.aab
 android/.idea/**
 android/.idea
 

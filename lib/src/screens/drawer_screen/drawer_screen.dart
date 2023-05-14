@@ -118,13 +118,13 @@ class DrawerScreen extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             Text(
-              "Acela",
-              style: Theme.of(context).textTheme.headline5,
+              "Video App",
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 5),
             Text(
-              "3Speak.tv",
-              style: Theme.of(context).textTheme.headline6,
+              "@sagarkothari88",
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
         ),
