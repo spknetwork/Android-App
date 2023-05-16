@@ -800,7 +800,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                   _tagField(),
                   _communityPicker(),
                   _rewardType(),
-                  _beneficiaries(),
+                  if (!declineRewards) _beneficiaries(),
                   _notSafe(),
                 ],
               ),
