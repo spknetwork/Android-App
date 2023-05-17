@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/login/sign_up_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/crypto_manager.dart';
 import 'package:acela/src/utils/safe_convert.dart';
@@ -297,6 +298,19 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
                           backgroundColor: Colors.black),
                       child: const Text('Login with Posting Key'),
                     ),
+                    const SizedBox(height: 10),
+                    const Text('- OR -'),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        const screen = SignUpScreen();
+                        var route = MaterialPageRoute(builder: (c) => screen);
+                        Navigator.of(context).push(route);
+                      },
+                      child: Text('Sign up'),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
+                    ),
                   ],
                 ),
               )
@@ -312,7 +326,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       isLoading = true;
     });
     try {
-      var publicKey = await Communicator().getPublicKey(usernameController.text, appData.rpc);
+      var publicKey = await Communicator()
+          .getPublicKey(usernameController.text, appData.rpc);
       var resultingKey = CryptoManager().privToPub(postingKey);
       if (resultingKey == publicKey) {
         debugPrint("Successful login");
@@ -335,7 +350,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           ),
         );
         Navigator.of(context).pop();
-        showMessage('You have successfully logged in as - ${usernameController.text}');
+        showMessage(
+            'You have successfully logged in as - ${usernameController.text}');
         setState(() {
           isLoading = false;
         });
