@@ -32,12 +32,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   onTap: () {
                     var uri = Uri.parse('https://auth.3speak.tv/3/signupHive');
                     launchUrl(uri);
-                    // var screen = WebViewScreen(
-                    //   title: 'Sign up',
-                    //   url: 'https://auth.3speak.tv/3/signupHive',
-                    // );
-                    // var route = MaterialPageRoute(builder: (c) => screen);
-                    // Navigator.of(context).push(route);
                   },
                 ),
                 const SizedBox(height: 35),
