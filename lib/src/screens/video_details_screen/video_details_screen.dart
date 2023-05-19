@@ -14,6 +14,7 @@ import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
+import 'package:acela/src/widgets/full_screen_video_player.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
@@ -180,6 +181,11 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         }),
                     SizedBox(width: 10),
                     Spacer(),
+                    IconButton(onPressed: (){
+                      var screen = SPKFullScreenVideoPlayer(playUrl: details.playUrl);
+                      var route = MaterialPageRoute(builder: (c) => screen);
+                      Navigator.of(context).push(route);
+                    }, icon:Icon(Icons.fullscreen)),
                     IconButton(
                       onPressed: () {
                         var screen = HiveCommentDialog(

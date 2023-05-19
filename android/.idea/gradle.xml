@@ -9,7 +9,7 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/better_player-0.0.83/android" />
+            <option value="$USER_HOME$/.pub-cache/git/betterplayer-91a9625524cdff448e0a9deb5047bcf20cc8dcf1/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/device_info_plus-8.2.2/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/ffmpeg_kit_flutter-5.1.0/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/file_picker-5.2.10/android" />
@@ -25,6 +25,7 @@
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/video_player_android-2.4.7/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/video_thumbnail-0.5.3/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/wakelock-0.6.2/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/webview_flutter_android-3.7.0/android" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
           </set>
