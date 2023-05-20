@@ -12,6 +12,7 @@ import com.google.gson.Gson
 
 import android.annotation.TargetApi
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.os.Build
@@ -85,14 +86,20 @@ class MainActivity : FlutterActivity() {
             val community = call.argument<String?>("community")
             val ipfsHash = call.argument<String?>("ipfsHash")
             val hasKey = call.argument<String?>("hasKey")
-            val hasAuthkey = call.argument<String?>("hasAuthkey") ?: call.argument<String?>("hasAuthKey")
+            val hasAuthkey =
+                call.argument<String?>("hasAuthkey") ?: call.argument<String?>("hasAuthKey")
             val user = call.argument<String?>("user")
             val author = call.argument<String?>("author")
             val weight = call.argument<Double?>("weight")
             val comment = call.argument<String?>("comment")
+            val seconds = call.argument<Int?>("seconds")
+            val url = call.argument<String?>("url")
 
             val data = call.argument<String?>("data")
-            if (call.method == "validate" && username != null && postingKey != null) {
+            if (call.method == "playFullscreen" && url != null && seconds != null) {
+                val intent = Intent(this, VideoPlayerActivity::class.java)
+                startActivity(intent)
+            } else if (call.method == "validate" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
             } else if (call.method == "encryptedToken" && username != null
                 && postingKey != null && encryptedToken != null

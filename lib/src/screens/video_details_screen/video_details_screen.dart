@@ -190,13 +190,11 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         var seconds = position?.inSeconds ;
                         if (seconds == null) return;
                         debugPrint('position is $position');
-                        if (Platform.isIOS) {
-                          const platform = MethodChannel('com.example.acela/auth');
-                          await platform.invokeMethod('playFullscreen', {
-                            'url': details.playUrl,
-                            'seconds': seconds,
-                          });
-                        }
+                        const platform = MethodChannel('com.example.acela/auth');
+                        await platform.invokeMethod('playFullscreen', {
+                          'url': details.playUrl,
+                          'seconds': seconds,
+                        });
                         // playFullscreen
                       },
                       icon: Icon(
