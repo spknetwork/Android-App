@@ -18,6 +18,7 @@ import 'package:acela/src/widgets/full_screen_video_player.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
+import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
@@ -45,7 +46,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    // _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo();
     recommendedVideos = widget.vm.getRecommendedVideos();
   }
 
@@ -181,11 +181,17 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         }),
                     SizedBox(width: 10),
                     Spacer(),
-                    IconButton(onPressed: (){
-                      var screen = SPKFullScreenVideoPlayer(playUrl: details.playUrl);
-                      var route = MaterialPageRoute(builder: (c) => screen);
-                      Navigator.of(context).push(route);
-                    }, icon:Icon(Icons.fullscreen)),
+                    IconButton(
+                      onPressed: () async {
+                        _betterPlayerController.pause();
+                        var position = await _betterPlayerController.videoPlayerController?.position;
+                        debugPrint('position is $position');
+                      },
+                      icon: Icon(
+                        Icons.fullscreen,
+                        color: Colors.blue,
+                      ),
+                    ),
                     IconButton(
                       onPressed: () {
                         var screen = HiveCommentDialog(
@@ -197,49 +203,61 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                           onClose: () {},
                           onDone: () {
                             setState(() {
-                              _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo(appData.rpc);
+                              _fetchHiveInfoForThisVideo =
+                                  fetchHiveInfoForThisVideo(appData.rpc);
                             });
                           },
                         );
-                        Navigator.of(context).push(MaterialPageRoute(builder: (c) => screen));
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (c) => screen));
                       },
                       icon: Icon(
                         Icons.message_outlined,
                         color: Colors.blue,
                       ),
                     ),
-                    if (data.activeVotes.where((element) => element.voter == appData.username).length == 0) IconButton(
-                      onPressed: () {
-                        showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            clipBehavior: Clip.hardEdge,
-                            builder: (context) {
-                              return SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.4,
-                                child: HiveUpvoteDialog(
-                                  author: widget.vm.author,
-                                  permlink: widget.vm.permlink,
-                                  username: appData.username ?? "",
-                                  hasKey: appData.keychainData?.hasId ?? "",
-                                  hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
-                                  activeVotes: data.activeVotes,
-                                  onClose: () {},
-                                  onDone: () {
-                                    setState(() {
-                                      _fetchHiveInfoForThisVideo = fetchHiveInfoForThisVideo(appData.rpc);
-                                    });
-                                  },
-                                ),
-                              );
-                            });
-                      },
-                      icon: Icon(
-                        Icons.thumbs_up_down,
-                        color: Colors.blue,
-                      ),
-                    ) else Container(),
+                    if (data.activeVotes
+                            .where(
+                                (element) => element.voter == appData.username)
+                            .length ==
+                        0)
+                      IconButton(
+                        onPressed: () {
+                          showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              clipBehavior: Clip.hardEdge,
+                              builder: (context) {
+                                return SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.4,
+                                  child: HiveUpvoteDialog(
+                                    author: widget.vm.author,
+                                    permlink: widget.vm.permlink,
+                                    username: appData.username ?? "",
+                                    hasKey: appData.keychainData?.hasId ?? "",
+                                    hasAuthKey:
+                                        appData.keychainData?.hasAuthKey ?? "",
+                                    activeVotes: data.activeVotes,
+                                    onClose: () {},
+                                    onDone: () {
+                                      setState(() {
+                                        _fetchHiveInfoForThisVideo =
+                                            fetchHiveInfoForThisVideo(
+                                                appData.rpc);
+                                      });
+                                    },
+                                  ),
+                                );
+                              });
+                        },
+                        icon: Icon(
+                          Icons.thumbs_up_down,
+                          color: Colors.blue,
+                        ),
+                      )
+                    else
+                      Container(),
                   ],
                 ),
               ],
@@ -273,15 +291,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                   title: Text(details.title),
                   actions: [
                     IconButton(
-                      onPressed: () {
-                        var route = MaterialPageRoute(builder: (context) {
-                          return VideoDetailsInfoWidget(
-                            details: details,
-                            item: null,
-                          );
-                        });
-                        Navigator.of(context).push(route);
-                      },
+                      onPressed: () {},
                       icon: const Icon(Icons.fullscreen),
                     ),
                     details.playUrl.contains('ipfs')
@@ -500,6 +510,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
 // container list view - recommendations
+
+  late BetterPlayerController _betterPlayerController;
+
   Widget videoRecommendationListItem(VideoRecommendationItem item) {
     return ListTileVideo(
       placeholder: 'assets/branding/three_speak_logo.png',
@@ -516,6 +529,33 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       shouldResize: false,
       isIpfs: false,
     );
+  }
+
+  void setupVideo(String url) {
+    BetterPlayerConfiguration betterPlayerConfiguration =
+        BetterPlayerConfiguration(
+      aspectRatio: 16 / 9,
+      fit: BoxFit.contain,
+      autoPlay: true,
+      fullScreenByDefault: false,
+      controlsConfiguration: BetterPlayerControlsConfiguration(
+        enablePip: true,
+        enableFullscreen: false,
+        enableSkips: true,
+        pipMenuIcon: Icons.picture_in_picture,
+      ),
+      autoDetectFullscreenAspectRatio: false,
+      autoDetectFullscreenDeviceOrientation: false,
+      autoDispose: true,
+      expandToFill: true,
+    );
+    BetterPlayerDataSource dataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      url,
+      videoFormat: BetterPlayerVideoFormat.hls,
+    );
+    _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
+    _betterPlayerController.setupDataSource(dataSource);
   }
 
 // main container
@@ -548,6 +588,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           var data = snapshot.data as VideoDetails?;
           if (data != null) {
             var url = data.getVideoUrl(userData);
+            setupVideo(url);
             return Scaffold(
               body: SafeArea(
                 child: Stack(
@@ -555,7 +596,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     videoWithDetails(data, userData),
                     SizedBox(
                       height: 230,
-                      child: SPKVideoPlayer(playUrl: url),
+                      child: BetterPlayer(
+                        controller: _betterPlayerController,
+                      ),
                     ),
                   ],
                 ),
