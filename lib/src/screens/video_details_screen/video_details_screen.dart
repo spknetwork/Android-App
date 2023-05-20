@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
@@ -20,6 +21,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/video_player.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -185,7 +187,17 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                       onPressed: () async {
                         _betterPlayerController.pause();
                         var position = await _betterPlayerController.videoPlayerController?.position;
+                        var seconds = position?.inSeconds ;
+                        if (seconds == null) return;
                         debugPrint('position is $position');
+                        if (Platform.isIOS) {
+                          const platform = MethodChannel('com.example.acela/auth');
+                          await platform.invokeMethod('playFullscreen', {
+                            'url': details.playUrl,
+                            'seconds': seconds,
+                          });
+                        }
+                        // playFullscreen
                       },
                       icon: Icon(
                         Icons.fullscreen,

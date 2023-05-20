@@ -7,6 +7,8 @@
 
 import UIKit
 import Flutter
+import AVFoundation
+import AVKit
 
 class AuthBridge {
 	var window: UIWindow?
@@ -23,6 +25,24 @@ class AuthBridge {
 			[weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
 			// Note: this method is invoked on the UI thread.
 			switch (call.method) {
+				case "playFullscreen":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let stringUrl = arguments ["url"] as? String,
+						let seconds = arguments ["seconds"] as? Int,
+						let url = URL(string: stringUrl)
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					let myTime = CMTime(seconds: Double(seconds), preferredTimescale: 60000)
+					let controller = AVPlayerViewController()
+					let player = AVPlayer(url: url)
+					controller.player = player
+					player.seek(to: myTime, toleranceBefore: .zero, toleranceAfter: .zero)
+					player.play()
+					window?.rootViewController?.present(controller, animated: true)
+					result("done")
 				case "validate":
 					guard
 						let arguments = call.arguments as? NSDictionary,
