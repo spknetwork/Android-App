@@ -10,12 +10,15 @@
         android:requiredFeature="true" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" android:requiredFeature="true" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:label="Video App"
         android:usesCleartextTraffic="true">
+        <service android:name=".MediaPlayerService" />
         <activity
             android:name=".VideoPlayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"

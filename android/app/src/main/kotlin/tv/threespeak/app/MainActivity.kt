@@ -1,42 +1,25 @@
 package tv.threespeak.app
 
 import android.annotation.SuppressLint
-import androidx.annotation.NonNull
-import io.flutter.embedding.android.FlutterActivity
-import io.flutter.embedding.engine.FlutterEngine
-
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.content.Context
-import com.google.gson.Gson
-
-import android.annotation.TargetApi
-import android.app.Activity
 import android.content.Intent
-import android.content.pm.ApplicationInfo
-import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
+import android.os.Bundle
 import android.view.View
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
-import android.widget.FrameLayout
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-import android.net.Uri
-import android.util.Log
-import android.webkit.ValueCallback
 import android.webkit.WebResourceResponse
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.FrameLayout
+import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
 import androidx.webkit.WebViewAssetLoader
-import android.webkit.WebChromeClient
+import com.google.gson.Gson
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 
 
 class MainActivity : FlutterActivity() {
@@ -98,6 +81,10 @@ class MainActivity : FlutterActivity() {
             val data = call.argument<String?>("data")
             if (call.method == "playFullscreen" && url != null && seconds != null) {
                 val intent = Intent(this, VideoPlayerActivity::class.java)
+                val bundle = Bundle()
+                bundle.putString("url", url)
+                bundle.putInt("seconds", seconds)
+                intent.putExtras(bundle);
                 startActivity(intent)
             } else if (call.method == "validate" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)

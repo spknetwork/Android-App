@@ -192,7 +192,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         debugPrint('position is $position');
                         const platform = MethodChannel('com.example.acela/auth');
                         await platform.invokeMethod('playFullscreen', {
-                          'url': details.playUrl,
+                          'url': details.playUrl.replaceAll("/manifest.m3u8", "/480p/index.m3u8"),
                           'seconds': seconds,
                         });
                         // playFullscreen
@@ -561,7 +561,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      url,
+      url.replaceAll("/manifest.m3u8", "/480p/index.m3u8"),
       videoFormat: BetterPlayerVideoFormat.hls,
     );
     _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);

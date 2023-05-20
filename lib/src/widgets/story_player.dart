@@ -42,9 +42,6 @@ class _StoryPlayerState extends State<StoryPlayer> {
       fullScreenByDefault: false,
       deviceOrientationsOnFullScreen: [
         DeviceOrientation.portraitUp,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.portraitDown,
       ],
       autoDetectFullscreenAspectRatio: true,
       autoDetectFullscreenDeviceOrientation: true,
@@ -65,14 +62,11 @@ class _StoryPlayerState extends State<StoryPlayer> {
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      widget.playUrl,
+      widget.playUrl.replaceAll("/manifest.m3u8", "/480p/index.m3u8"),
       videoFormat: BetterPlayerVideoFormat.hls,
     );
     _betterPlayerController = BetterPlayerController(config);
     _betterPlayerController.setupDataSource(dataSource);
-    // _betterPlayerController.setControlsEnabled(false);
-    // _betterPlayerController.setControlsAlwaysVisible(false);
-
     super.initState();
   }
 
