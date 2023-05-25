@@ -16,7 +16,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="Video App"
+        android:label="3Speak"
         android:usesCleartextTraffic="true">
         <service android:name=".MediaPlayerService" />
         <activity
