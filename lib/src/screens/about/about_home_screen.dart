@@ -85,15 +85,15 @@ class AboutHomeScreen extends StatelessWidget {
             title: const Text('Download iOS App'),
             onTap: () {
               launchUrl(
-                  Uri.parse('https://testflight.apple.com/join/0tipqwsZ'));
+                  Uri.parse('https://apps.apple.com/us/app/3speak/id1614771373'));
             },
           ),
           ListTile(
             leading: const Icon(Icons.android),
-            title: const Text('Download Android App via Firebase'),
+            title: const Text('Download Android App'),
             onTap: () {
               launchUrl(Uri.parse(
-                  'https://appdistribution.firebase.dev/i/047cfb506633e639'));
+                  'https://play.google.com/store/apps/details?id=tv.threespeak.app'));
             },
           ),
           ListTile(
