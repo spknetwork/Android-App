@@ -118,12 +118,12 @@ class DrawerScreen extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             Text(
-              "Video App",
+              "3Sepak",
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 5),
             Text(
-              "@sagarkothari88",
+              "app by @sagarkothari88",
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
@@ -153,8 +153,8 @@ class DrawerScreen extends StatelessWidget {
 
   Widget _myAccount(BuildContext context) {
     return ListTile(
-      leading: const Icon(Icons.person),
-      title: const Text("My account"),
+      leading: const Icon(Icons.person, color: Colors.blue),
+      title: const Text("My Videos"),
       onTap: () {
         Navigator.pop(context);
         Navigator.of(context)
@@ -211,6 +211,8 @@ class DrawerScreen extends StatelessWidget {
       child: ListView(
         children: [
           _drawerHeader(context),
+          user.username == null ? _login(context, user) : _myAccount(context),
+          _divider(),
           _homeMenu(context),
           _divider(),
           _firstUploads(context),
@@ -226,8 +228,6 @@ class DrawerScreen extends StatelessWidget {
           _shorts(context),
           _divider(),
           _settings(context),
-          _divider(),
-          user.username == null ? _login(context, user) : _myAccount(context),
           _divider(),
           _importantLinks(context),
           _divider(),
