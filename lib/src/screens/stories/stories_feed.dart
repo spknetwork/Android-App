@@ -169,7 +169,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
     return Stack(
       children: [
         StoryPlayer(
-          playUrl: item.playUrl,
+          playUrl: item.getVideoUrl(data),
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height - widget.height,
           fitWidth: widget.fitWidth,

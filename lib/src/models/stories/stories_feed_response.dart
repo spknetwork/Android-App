@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 
 class StoriesFeedResponseItem {
@@ -26,6 +27,20 @@ class StoriesFeedResponseItem {
   final String jobId;
   final String created;
   final int views;
+
+  String getVideoUrl(HiveUserData data) {
+    if (playUrl.contains('ipfs')) {
+      // example
+      // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/manifest.m3u8
+      // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
+      return playUrl.replaceAll('manifest', '${data.resolution}/index');
+    } else {
+      // example
+      // https://threespeakvideo.b-cdn.net/chjwguvd/default.m3u8
+      // https://threespeakvideo.b-cdn.net/chjwguvd/480p.m3u8
+      return playUrl.replaceAll('default', '${data.resolution}');
+    }
+  }
 
   StoriesFeedResponseItem({
     this.fromMobile = false,

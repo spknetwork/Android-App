@@ -192,7 +192,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         debugPrint('position is $position');
                         const platform = MethodChannel('com.example.acela/auth');
                         await platform.invokeMethod('playFullscreen', {
-                          'url': details.playUrl.replaceAll("/manifest.m3u8", "/480p/index.m3u8"),
+                          'url': details.getVideoUrl(appData),
                           'seconds': seconds,
                         });
                         // playFullscreen

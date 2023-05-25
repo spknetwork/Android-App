@@ -62,7 +62,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      widget.playUrl.replaceAll("/manifest.m3u8", "/480p/index.m3u8"),
+      widget.playUrl,
       videoFormat: BetterPlayerVideoFormat.hls,
     );
     _betterPlayerController = BetterPlayerController(config);
