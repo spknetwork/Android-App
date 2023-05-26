@@ -1,23 +1,26 @@
 import 'dart:developer';
 
+import 'package:acela/src/models/stories/stories_feed_response.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 class StoryPlayer extends StatefulWidget {
-  const StoryPlayer(
-      {Key? key,
-      required this.playUrl,
-      required this.width,
-      required this.height,
-      required this.didFinish,
-      required this.fitWidth})
-      : super(key: key);
+  const StoryPlayer({
+    Key? key,
+    required this.playUrl,
+    required this.didFinish,
+    required this.item,
+    required this.data,
+  }) : super(key: key);
   final String playUrl;
-  final double width;
-  final double height;
   final Function didFinish;
-  final bool fitWidth;
+  final StoriesFeedResponseItem item;
+  final HiveUserData data;
 
   @override
   _StoryPlayerState createState() => _StoryPlayerState();
@@ -36,20 +39,19 @@ class _StoryPlayerState extends State<StoryPlayer> {
   @override
   void initState() {
     config = BetterPlayerConfiguration(
-      aspectRatio: widget.width / widget.height,
+      aspectRatio: 16 / 9,
       fit: BoxFit.fitHeight,
       autoPlay: true,
       fullScreenByDefault: false,
       deviceOrientationsOnFullScreen: [
         DeviceOrientation.portraitUp,
       ],
-      autoDetectFullscreenAspectRatio: true,
-      autoDetectFullscreenDeviceOrientation: true,
       autoDispose: true,
       expandToFill: true,
       controlsConfiguration: BetterPlayerControlsConfiguration(
         showControls: true,
         showControlsOnInitialize: true,
+        enableFullscreen: false,
       ),
       showPlaceholderUntilPlay: true,
       allowedScreenSleep: false,
@@ -70,10 +72,81 @@ class _StoryPlayerState extends State<StoryPlayer> {
     super.initState();
   }
 
+  ButtonStyle _style() {
+    return ElevatedButton.styleFrom(
+      backgroundColor: Colors.blue,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30.0),
+      ),
+    );
+  }
+
+  List<Widget> _fabButtonsOnRight() {
+    return [
+      const Spacer(),
+      ElevatedButton(
+        child: Icon(Icons.share),
+        style: _style(),
+        onPressed: () {
+          setState(() {
+            Share.share(
+                'https://3speak.tv/watch?v=${widget.item.owner}/${widget.item.permlink}');
+          });
+        },
+      ),
+      SizedBox(height: 10),
+      ElevatedButton(
+        style: _style(),
+        child: Icon(Icons.info),
+        onPressed: () {
+          setState(() {
+            var screen =
+                VideoDetailsInfoWidget(details: null, item: widget.item);
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
+          });
+        },
+      ),
+      SizedBox(height: 10),
+      ElevatedButton(
+        style: _style(),
+        child: Icon(Icons.comment),
+        onPressed: () {
+          setState(() {
+            var screen = VideoDetailsComments(
+              author: widget.item.owner,
+              permlink: widget.item.permlink,
+              rpc: widget.data.rpc,
+            );
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
+          });
+        },
+      ),
+      SizedBox(height: 10),
+      ElevatedButton(
+        style: _style(),
+        child: Icon(Icons.fullscreen),
+        onPressed: () {
+          setState(() {});
+        },
+      ),
+      const Spacer(),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BetterPlayer(
-      controller: _betterPlayerController,
-    );
+    return Stack(children: [
+      BetterPlayer(
+        controller: _betterPlayerController,
+      ),
+      Row(children: [
+        const Spacer(),
+        Column(
+          children: _fabButtonsOnRight(),
+        ),
+      ]),
+    ]);
   }
 }

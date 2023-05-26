@@ -166,33 +166,15 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
   }
 
   Widget _fullPost(StoriesFeedResponseItem item, HiveUserData data) {
-    return Stack(
-      children: [
-        StoryPlayer(
-          playUrl: item.getVideoUrl(data),
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height - widget.height,
-          fitWidth: widget.fitWidth,
-          didFinish: () {
-            setState(() {
-              controller.nextPage();
-            });
-          },
-        ),
-        Container(
-          child: Row(
-            children: [
-              const Spacer(),
-              Text(
-                '@${item.owner}/${item.permlink}',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const Spacer(),
-            ],
-          ),
-        ),
-        _fabContainer(item, data),
-      ],
+    return StoryPlayer(
+      playUrl: item.getVideoUrl(data),
+      data: data,
+      item: item,
+      didFinish: () {
+        setState(() {
+          controller.nextPage();
+        });
+      },
     );
   }
 
