@@ -11,6 +11,7 @@ import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
@@ -112,6 +113,41 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  // Widget _listTile(HiveUserData data, HomeFeedItem item) {
+  //   return ListTile(
+  //     tileColor: Colors.black,
+  //     contentPadding: EdgeInsets.zero,
+  //     dense: true,
+  //     visualDensity: VisualDensity(horizontal: -4, vertical: -4),
+  //     title: ConstrainedBox(
+  //       child: Image.network(
+  //         server.resizedImage(item.images.thumbnail),
+  //         fit: BoxFit.cover,
+  //       ),
+  //       constraints: BoxConstraints(maxHeight: 180),
+  //     ),
+  //     subtitle: ListTile(
+  //       contentPadding: EdgeInsets.all(2),
+  //       dense: true,
+  //       leading: InkWell(
+  //         child: CustomCircleAvatar(
+  //           width: 40,
+  //           height: 40,
+  //           url: server.userOwnerThumb(item.author),
+  //         ),
+  //         onTap: () {
+  //
+  //         },
+  //       ),
+  //       title: Text(item.title),
+  //       subtitle: Text('Hello hello Hello'),
+  //     ),
+  //     onTap: () {
+  //
+  //     },
+  //   );
+  // }
+
   Widget _screen(HiveUserData appData) {
     return FutureBuilder<List<HomeFeedItem>>(
       builder: (c, s) {
@@ -125,11 +161,25 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           } else if (s.hasData) {
             var list = s.data as List<HomeFeedItem>;
-            return widgets.list(list, (item) {
-              onTap(item);
-            }, (item) {
-              onUserTap(item);
-            }, {});
+            return ListView.separated(
+              itemBuilder: (c, i) {
+                return widgets.listTile(
+                  appData,
+                  list[i],
+                  server.resizedImage(list[i].images.thumbnail),
+                  list[i].author,
+                  list[i].title,
+                  list[i].createdAt,
+                  list[i].duration,
+                  list[i].views,
+                );
+              },
+              separatorBuilder: (c, i) => const Divider(
+                color: Colors.transparent,
+                height: 10,
+              ),
+              itemCount: list.length,
+            );
           } else {
             return RetryScreen(
               error: "Something went wrong",
@@ -301,7 +351,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _screen(appData),
       drawer: widget.showDrawer ? const DrawerScreen() : null,
-      floatingActionButton: appData.username == null ? null : _fabNewUpload(appData),
+      floatingActionButton:
+          appData.username == null ? null : _fabNewUpload(appData),
     );
   }
 }
