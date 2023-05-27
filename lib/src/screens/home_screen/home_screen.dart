@@ -13,6 +13,7 @@ import 'package:acela/src/screens/video_details_screen/video_details_screen.dart
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
+import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
@@ -113,41 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  // Widget _listTile(HiveUserData data, HomeFeedItem item) {
-  //   return ListTile(
-  //     tileColor: Colors.black,
-  //     contentPadding: EdgeInsets.zero,
-  //     dense: true,
-  //     visualDensity: VisualDensity(horizontal: -4, vertical: -4),
-  //     title: ConstrainedBox(
-  //       child: Image.network(
-  //         server.resizedImage(item.images.thumbnail),
-  //         fit: BoxFit.cover,
-  //       ),
-  //       constraints: BoxConstraints(maxHeight: 180),
-  //     ),
-  //     subtitle: ListTile(
-  //       contentPadding: EdgeInsets.all(2),
-  //       dense: true,
-  //       leading: InkWell(
-  //         child: CustomCircleAvatar(
-  //           width: 40,
-  //           height: 40,
-  //           url: server.userOwnerThumb(item.author),
-  //         ),
-  //         onTap: () {
-  //
-  //         },
-  //       ),
-  //       title: Text(item.title),
-  //       subtitle: Text('Hello hello Hello'),
-  //     ),
-  //     onTap: () {
-  //
-  //     },
-  //   );
-  // }
-
   Widget _screen(HiveUserData appData) {
     return FutureBuilder<List<HomeFeedItem>>(
       builder: (c, s) {
@@ -163,15 +129,15 @@ class _HomeScreenState extends State<HomeScreen> {
             var list = s.data as List<HomeFeedItem>;
             return ListView.separated(
               itemBuilder: (c, i) {
-                return widgets.listTile(
-                  appData,
-                  list[i],
-                  server.resizedImage(list[i].images.thumbnail),
-                  list[i].author,
-                  list[i].title,
-                  list[i].createdAt,
-                  list[i].duration,
-                  list[i].views,
+                return NewFeedListItem(
+                  rpc: appData.rpc,
+                  thumbUrl: server.resizedImage(list[i].images.thumbnail),
+                  author: list[i].author,
+                  title: list[i].title,
+                  createdAt: list[i].createdAt,
+                  duration: list[i].duration,
+                  views: list[i].views,
+                  permlink: list[i].permlink,
                 );
               },
               separatorBuilder: (c, i) => const Divider(
