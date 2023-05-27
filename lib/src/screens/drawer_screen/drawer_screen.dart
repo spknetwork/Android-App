@@ -96,7 +96,7 @@ class DrawerScreen extends StatelessWidget {
 
   Widget _shorts(BuildContext context) {
     return ListTile(
-      leading: const Icon(Icons.video_camera_front_outlined),
+      leading: const Icon(Icons.video_camera_front_outlined, color: Colors.red),
       title: const Text("3Speak Shorts"),
       onTap: () {
         Navigator.pop(context);
@@ -118,12 +118,12 @@ class DrawerScreen extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             Text(
-              "3Sepak",
+              "3Speak",
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 5),
             Text(
-              "app by @sagarkothari88",
+              "App By @sagarkothari88",
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
@@ -139,7 +139,7 @@ class DrawerScreen extends StatelessWidget {
 
   Widget _login(BuildContext context, HiveUserData data) {
     return ListTile(
-      leading: const Icon(Icons.login),
+      leading: const Icon(Icons.login, color: Colors.blue),
       title: const Text("Log in"),
       onTap: () {
         Navigator.pop(context);
@@ -221,11 +221,11 @@ class DrawerScreen extends StatelessWidget {
           _divider(),
           _newContent(context),
           _divider(),
+          _shorts(context),
+          _divider(),
           _communities(context),
           _divider(),
           _leaderBoard(context),
-          _divider(),
-          _shorts(context),
           _divider(),
           _settings(context),
           _divider(),

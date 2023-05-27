@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
@@ -36,13 +39,12 @@ class NewFeedListItem extends StatefulWidget {
 }
 
 class _NewFeedListItemState extends State<NewFeedListItem> {
-
-
-
   Widget listTile() {
-    String timeInString =
-        widget.createdAt != null ? "📝 ${timeago.format(widget.createdAt!)}" : "";
-    String durationString = " 🕚 ${Utilities.formatTime(widget.duration.toInt())} ";
+    String timeInString = widget.createdAt != null
+        ? "📝 ${timeago.format(widget.createdAt!)}"
+        : "";
+    String durationString =
+        " 🕚 ${Utilities.formatTime(widget.duration.toInt())} ";
     String viewsString = "👁️ ${widget.views} views";
     return Stack(
       children: [
@@ -63,28 +65,44 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
                 height: 40,
                 url: server.userOwnerThumb(widget.author),
               ),
-              onTap: () {},
+              onTap: () {
+                var screen = UserChannelScreen(owner: widget.author);
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(context).push(route);
+              },
             ),
             title: Padding(
-              padding: const EdgeInsets.only(bottom: 10.0),
+              padding: const EdgeInsets.only(bottom: 5.0),
               child: Text(widget.title),
             ),
             subtitle: Row(
               children: [
                 InkWell(
                   child: Text('👤 ${widget.author}'),
-                  onTap: () {},
+                  onTap: () {
+                    var screen = UserChannelScreen(owner: widget.author);
+                    var route = MaterialPageRoute(builder: (c) => screen);
+                    Navigator.of(context).push(route);
+                  },
                 ),
                 SizedBox(width: 10),
                 payoutInfo(),
               ],
             ),
           ),
-          onTap: () {},
+          onTap: () {
+            var viewModel = VideoDetailsViewModel(
+              author: widget.author,
+              permlink: widget.permlink,
+            );
+            var screen = VideoDetailsScreen(vm: viewModel);
+            var route = MaterialPageRoute(builder: (context) => screen);
+            Navigator.of(context).push(route);
+          },
         ),
         Column(
           children: [
-            const SizedBox(height: 212),
+            const SizedBox(height: 208),
             Row(
               children: [
                 SizedBox(width: 5),

@@ -109,6 +109,7 @@ flutter:
     - assets/hive-keychain-image.png
     - assets/ipfs-logo.png
     - assets/hiveauth_icon.png
+    - assets/ctt-logo.png
     - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

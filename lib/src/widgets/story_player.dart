@@ -1,13 +1,17 @@
 import 'dart:developer';
 
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/stories/stories_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
+import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+
+import '../screens/user_channel_screen/user_channel_screen.dart';
 
 class StoryPlayer extends StatefulWidget {
   const StoryPlayer({
@@ -28,7 +32,8 @@ class StoryPlayer extends StatefulWidget {
 
 class _StoryPlayerState extends State<StoryPlayer> {
   late BetterPlayerController _betterPlayerController;
-  late BetterPlayerConfiguration config;
+
+  var aspectRatio = 1.777777778; // 0.5625
 
   @override
   void dispose() {
@@ -38,8 +43,13 @@ class _StoryPlayerState extends State<StoryPlayer> {
 
   @override
   void initState() {
-    config = BetterPlayerConfiguration(
-      aspectRatio: 16 / 9,
+    super.initState();
+    setupPlayer();
+  }
+
+  void setupPlayer() {
+    BetterPlayerConfiguration config = BetterPlayerConfiguration(
+      aspectRatio: aspectRatio,
       fit: BoxFit.fitHeight,
       autoPlay: true,
       fullScreenByDefault: false,
@@ -49,8 +59,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
       autoDispose: true,
       expandToFill: true,
       controlsConfiguration: BetterPlayerControlsConfiguration(
-        showControls: true,
-        showControlsOnInitialize: true,
+        showControls: false,
+        showControlsOnInitialize: false,
         enableFullscreen: false,
       ),
       showPlaceholderUntilPlay: true,
@@ -67,9 +77,10 @@ class _StoryPlayerState extends State<StoryPlayer> {
       widget.playUrl,
       videoFormat: BetterPlayerVideoFormat.hls,
     );
-    _betterPlayerController = BetterPlayerController(config);
-    _betterPlayerController.setupDataSource(dataSource);
-    super.initState();
+    setState(() {
+      _betterPlayerController = BetterPlayerController(config);
+      _betterPlayerController.setupDataSource(dataSource);
+    });
   }
 
   ButtonStyle _style() {
@@ -83,10 +94,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
 
   List<Widget> _fabButtonsOnRight() {
     return [
-      const Spacer(),
-      ElevatedButton(
-        child: Icon(Icons.share),
-        style: _style(),
+      IconButton(
+        icon: Icon(Icons.share),
         onPressed: () {
           setState(() {
             Share.share(
@@ -95,9 +104,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
         },
       ),
       SizedBox(height: 10),
-      ElevatedButton(
-        style: _style(),
-        child: Icon(Icons.info),
+      IconButton(
+        icon: Icon(Icons.info),
         onPressed: () {
           setState(() {
             var screen =
@@ -108,9 +116,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
         },
       ),
       SizedBox(height: 10),
-      ElevatedButton(
-        style: _style(),
-        child: Icon(Icons.comment),
+      IconButton(
+        icon: Icon(Icons.comment),
         onPressed: () {
           setState(() {
             var screen = VideoDetailsComments(
@@ -124,29 +131,74 @@ class _StoryPlayerState extends State<StoryPlayer> {
         },
       ),
       SizedBox(height: 10),
-      ElevatedButton(
-        style: _style(),
-        child: Icon(Icons.fullscreen),
+      IconButton(
+        icon: Icon(aspectRatio != 1.777777778
+            ? Icons.stay_current_landscape
+            : Icons.stay_current_portrait),
         onPressed: () {
-          setState(() {});
+          _betterPlayerController.pause();
+          setState(() {
+            aspectRatio = aspectRatio != 1.777777778 ? 1.777777778 : 0.5625;
+            setupPlayer();
+          });
         },
       ),
-      const Spacer(),
+      SizedBox(height: 10),
+      IconButton(
+        icon: Icon(Icons.fullscreen),
+        onPressed: () async {
+          _betterPlayerController.pause();
+          var position =
+              await _betterPlayerController.videoPlayerController?.position;
+          debugPrint('position is $position');
+          var seconds = position?.inSeconds;
+          if (seconds == null) return;
+          const platform = MethodChannel('com.example.acela/auth');
+          await platform.invokeMethod('playFullscreen', {
+            'url': widget.playUrl,
+            'seconds': seconds,
+          });
+        },
+      ),
+      SizedBox(height: 10),
+      IconButton(
+        icon: CustomCircleAvatar(
+          height: 40,
+          width: 40,
+          url: server.userOwnerThumb(widget.item.owner),
+        ),
+        onPressed: () {
+          var screen = UserChannelScreen(owner: widget.item.owner);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        },
+      ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      BetterPlayer(
-        controller: _betterPlayerController,
-      ),
-      Row(children: [
-        const Spacer(),
-        Column(
-          children: _fabButtonsOnRight(),
+    return Stack(
+      children: [
+        BetterPlayer(
+          controller: _betterPlayerController,
         ),
-      ]),
-    ]);
+        Row(
+          children: [
+            const Spacer(),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black26,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: _fabButtonsOnRight(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

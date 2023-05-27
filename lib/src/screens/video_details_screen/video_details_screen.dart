@@ -195,7 +195,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                           'url': details.getVideoUrl(appData),
                           'seconds': seconds,
                         });
-                        // playFullscreen
                       },
                       icon: Icon(
                         Icons.fullscreen,

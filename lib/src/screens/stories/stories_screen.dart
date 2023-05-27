@@ -9,10 +9,11 @@ class StoriesScreen extends StatefulWidget {
 }
 
 class _StoriesScreenState extends State<StoriesScreen> {
-  static const List<Tab> tabs = [
+  static List<Tab> tabs = [
     Tab(icon: const Icon(Icons.home)),
     Tab(icon: const Icon(Icons.trending_up)),
     Tab(icon: const Icon(Icons.new_label)),
+    Tab(child: Image.asset('assets/ctt-logo.png')),
   ];
   var fitWidth = true;
 
@@ -35,24 +36,6 @@ class _StoriesScreenState extends State<StoriesScreen> {
                 const Text('3Shorts')
               ],
             ),
-            // actions: [
-            //   fitWidth
-            //       ? IconButton(
-            //           onPressed: () {
-            //             setState(() {
-            //               fitWidth = false;
-            //             });
-            //           },
-            //           icon: Icon(Icons.screenshot))
-            //       : IconButton(
-            //           onPressed: () {
-            //             setState(() {
-            //               fitWidth = true;
-            //             });
-            //           },
-            //           icon: Icon(Icons.smart_screen),
-            //         )
-            // ],
             bottom: TabBar(
               tabs: tabs,
             ),
