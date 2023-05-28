@@ -11,7 +11,9 @@ import 'package:provider/provider.dart';
 class NewStoriesFeedScreen extends StatefulWidget {
   const NewStoriesFeedScreen({
     Key? key,
+    required this.isCTT,
   }) : super(key: key);
+  final bool isCTT;
 
   @override
   State<NewStoriesFeedScreen> createState() => _NewStoriesFeedScreenState();
@@ -28,17 +30,25 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
   }
 
   Future<List<HomeFeedItem>> _loadAllFeeds() async {
-    var homeItems = await _loadFeed("${server.domain}/apiv2/feeds/Home");
-    var newItems = await _loadFeed("${server.domain}/apiv2/feeds/new");
-    var trendingItems =
-        await _loadFeed("${server.domain}/apiv2/feeds/trending");
-    var firstUploadsItems =
-        await _loadFeed("${server.domain}/apiv2/feeds/firstUploads");
-    return [...homeItems, ...newItems, ...trendingItems, ...firstUploadsItems]
-        .toSet()
-        .toList()
-        .where((e) => (e.isShorts == true || e.duration <= 90.0))
-        .toList();
+    if (widget.isCTT) {
+      var cttItems =
+          await _loadFeed("${server.domain}/apiv2/feeds/@spknetwork.chat");
+      return cttItems
+          .where((e) => (e.isShorts == true || e.duration <= 90.0))
+          .toList();
+    } else {
+      var homeItems = await _loadFeed("${server.domain}/apiv2/feeds/Home");
+      var newItems = await _loadFeed("${server.domain}/apiv2/feeds/new");
+      var trendingItems =
+          await _loadFeed("${server.domain}/apiv2/feeds/trending");
+      var firstUploadsItems =
+          await _loadFeed("${server.domain}/apiv2/feeds/firstUploads");
+      return [...homeItems, ...newItems, ...trendingItems, ...firstUploadsItems]
+          .toSet()
+          .toList()
+          .where((e) => ((e.isShorts == true || e.duration <= 90.0) && e.author != "spknetwork.chat"))
+          .toList();
+    }
   }
 
   Future<List<HomeFeedItem>> _loadFeed(String path) async {
@@ -57,6 +67,7 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
       data: data,
       item: null,
       homeFeedItem: item,
+      isPortrait: widget.isCTT ? true : false,
       didFinish: () {
         setState(() {
           controller.nextPage();

@@ -11,10 +11,8 @@ class StoriesScreen extends StatefulWidget {
 
 class _StoriesScreenState extends State<StoriesScreen> {
   static List<Tab> tabs = [
-    Tab(icon: const Icon(Icons.home)),
-    // Tab(icon: const Icon(Icons.trending_up)),
-    // Tab(icon: const Icon(Icons.new_label)),
     Tab(child: Image.asset('assets/ctt-logo.png')),
+    Tab(icon: const Icon(Icons.video_camera_front_outlined)),
   ];
   var fitWidth = true;
 
@@ -46,12 +44,8 @@ class _StoriesScreenState extends State<StoriesScreen> {
             appBar: appBar,
             body: TabBarView(
               children: [
-                NewStoriesFeedScreen(),
-                StoriesFeedScreen(
-                  type: 'new',
-                  height: height,
-                  fitWidth: fitWidth,
-                ),
+                NewStoriesFeedScreen(isCTT: true),
+                NewStoriesFeedScreen(isCTT: false),
               ],
             ),
           );

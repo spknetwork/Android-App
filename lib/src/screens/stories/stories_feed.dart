@@ -90,6 +90,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
       data: data,
       item: item,
       homeFeedItem: null,
+      isPortrait: false,
       didFinish: () {
         setState(() {
           controller.nextPage();

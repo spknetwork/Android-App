@@ -22,12 +22,14 @@ class StoryPlayer extends StatefulWidget {
     required this.item,
     required this.data,
     required this.homeFeedItem,
+    required this.isPortrait,
   }) : super(key: key);
   final String playUrl;
   final Function didFinish;
   final StoriesFeedResponseItem? item;
   final HiveUserData data;
   final HomeFeedItem? homeFeedItem;
+  final bool isPortrait;
 
   @override
   _StoryPlayerState createState() => _StoryPlayerState();
@@ -47,6 +49,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
   @override
   void initState() {
     super.initState();
+    aspectRatio = widget.isPortrait ? 0.5625 : 1.777777778;
     setupPlayer();
   }
 
