@@ -37,7 +37,7 @@ class HomeFeedItem {
   final String playUrl;
   final String ipfs;
   final HomeFeedItemImage images;
-  final bool isReel;
+  final bool isShorts;
 
   HomeFeedItem({
     this.created = "",
@@ -53,7 +53,7 @@ class HomeFeedItem {
     this.playUrl = "",
     this.ipfs = "",
     required this.images,
-    required this.isReel,
+    required this.isShorts,
   });
 
   String getVideoUrl(HiveUserData data) {
@@ -88,7 +88,7 @@ class HomeFeedItem {
         isIpfs: asBool(json, 'isIpfs'),
         playUrl: asString(json, 'playUrl'),
         ipfs: asString(json, 'ipfs'),
-        isReel: asBool(json, 'isReel'),
+        isShorts: asBool(json, 'isShorts'),
         images: HomeFeedItemImage.fromJson(asMap(json, 'images')),
       );
 
@@ -105,7 +105,7 @@ class HomeFeedItem {
         'isIpfs': isIpfs,
         'playUrl': playUrl,
         'ipfs': ipfs,
-        'isReel': isReel,
+        'isShorts': isShorts,
         'images': images.toJson(),
       };
 }

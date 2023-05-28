@@ -1,17 +1,12 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/stories/stories_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
-import 'package:acela/src/widgets/fab_custom.dart';
-import 'package:acela/src/widgets/fab_overlay.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/story_player.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 class StoriesFeedScreen extends StatefulWidget {
   const StoriesFeedScreen({
@@ -89,87 +84,12 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
     );
   }
 
-  List<FabOverItemData> _fabItems(
-      StoriesFeedResponseItem item, HiveUserData data) {
-    List<FabOverItemData> fabItems = [
-      FabOverItemData(
-        displayName: 'Share',
-        icon: Icons.share,
-        onTap: () {
-          setState(() {
-            isFilterMenuOn = false;
-            Share.share(
-                'https://3speak.tv/watch?v=${item.owner}/${item.permlink}');
-          });
-        },
-      ),
-      FabOverItemData(
-        displayName: 'Info',
-        icon: Icons.info,
-        onTap: () {
-          setState(() {
-            isFilterMenuOn = false;
-            var screen = VideoDetailsInfoWidget(details: null, item: item);
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
-          });
-        },
-      ),
-      FabOverItemData(
-        displayName: 'Comments',
-        icon: Icons.comment,
-        onTap: () {
-          setState(() {
-            isFilterMenuOn = false;
-            var screen = VideoDetailsComments(
-              author: item.owner,
-              permlink: item.permlink,
-              rpc: data.rpc,
-            );
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
-          });
-        },
-      ),
-      FabOverItemData(
-        displayName: 'Close',
-        icon: Icons.close,
-        onTap: () {
-          setState(() {
-            isFilterMenuOn = false;
-          });
-        },
-      ),
-    ];
-    return fabItems;
-  }
-
-  Widget _fabContainer(StoriesFeedResponseItem item, HiveUserData data) {
-    if (!isFilterMenuOn) {
-      return FabCustom(
-        icon: Icons.bolt,
-        onTap: () {
-          setState(() {
-            isFilterMenuOn = true;
-          });
-        },
-      );
-    }
-    return FabOverlay(
-      items: _fabItems(item, data),
-      onBackgroundTap: () {
-        setState(() {
-          isFilterMenuOn = false;
-        });
-      },
-    );
-  }
-
   Widget _fullPost(StoriesFeedResponseItem item, HiveUserData data) {
     return StoryPlayer(
       playUrl: item.getVideoUrl(data),
       data: data,
       item: item,
+      homeFeedItem: null,
       didFinish: () {
         setState(() {
           controller.nextPage();

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/stories/stories_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
@@ -20,11 +21,13 @@ class StoryPlayer extends StatefulWidget {
     required this.didFinish,
     required this.item,
     required this.data,
+    required this.homeFeedItem,
   }) : super(key: key);
   final String playUrl;
   final Function didFinish;
-  final StoriesFeedResponseItem item;
+  final StoriesFeedResponseItem? item;
   final HiveUserData data;
+  final HomeFeedItem? homeFeedItem;
 
   @override
   _StoryPlayerState createState() => _StoryPlayerState();
@@ -83,15 +86,6 @@ class _StoryPlayerState extends State<StoryPlayer> {
     });
   }
 
-  ButtonStyle _style() {
-    return ElevatedButton.styleFrom(
-      backgroundColor: Colors.blue,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30.0),
-      ),
-    );
-  }
-
   List<Widget> _fabButtonsOnRight() {
     return [
       IconButton(
@@ -99,7 +93,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
         onPressed: () {
           setState(() {
             Share.share(
-                'https://3speak.tv/watch?v=${widget.item.owner}/${widget.item.permlink}');
+                'https://3speak.tv/watch?v=${widget.item?.owner ?? widget.homeFeedItem?.author ?? '' }/${widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? ''}');
           });
         },
       ),
@@ -108,10 +102,10 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: Icon(Icons.info),
         onPressed: () {
           setState(() {
-            var screen =
-                VideoDetailsInfoWidget(details: null, item: widget.item);
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
+            // var screen =
+            //     VideoDetailsInfoWidget(details: null, item: widget.item);
+            // var route = MaterialPageRoute(builder: (c) => screen);
+            // Navigator.of(context).push(route);
           });
         },
       ),
@@ -121,8 +115,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
         onPressed: () {
           setState(() {
             var screen = VideoDetailsComments(
-              author: widget.item.owner,
-              permlink: widget.item.permlink,
+              author: widget.item?.owner ?? widget.homeFeedItem?.author ?? '',
+              permlink: widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? '',
               rpc: widget.data.rpc,
             );
             var route = MaterialPageRoute(builder: (c) => screen);
@@ -165,40 +159,43 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: CustomCircleAvatar(
           height: 40,
           width: 40,
-          url: server.userOwnerThumb(widget.item.owner),
+          url: server.userOwnerThumb(widget.item?.owner ?? widget.homeFeedItem?.author ?? ''),
         ),
         onPressed: () {
-          var screen = UserChannelScreen(owner: widget.item.owner);
+          var screen = UserChannelScreen(owner: widget.item?.owner ?? widget.homeFeedItem?.author ?? '',);
           var route = MaterialPageRoute(builder: (c) => screen);
           Navigator.of(context).push(route);
         },
       ),
+      SizedBox(height: 10),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        BetterPlayer(
-          controller: _betterPlayerController,
-        ),
-        Row(
-          children: [
-            const Spacer(),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.black26,
+    return SafeArea(
+      child: Stack(
+        children: [
+          BetterPlayer(
+            controller: _betterPlayerController,
+          ),
+          Row(
+            children: [
+              const Spacer(),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: _fabButtonsOnRight(),
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: _fabButtonsOnRight(),
-              ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

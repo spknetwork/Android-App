@@ -1,3 +1,4 @@
+import 'package:acela/src/screens/stories/new_stories_feed.dart';
 import 'package:acela/src/screens/stories/stories_feed.dart';
 import 'package:flutter/material.dart';
 
@@ -11,8 +12,8 @@ class StoriesScreen extends StatefulWidget {
 class _StoriesScreenState extends State<StoriesScreen> {
   static List<Tab> tabs = [
     Tab(icon: const Icon(Icons.home)),
-    Tab(icon: const Icon(Icons.trending_up)),
-    Tab(icon: const Icon(Icons.new_label)),
+    // Tab(icon: const Icon(Icons.trending_up)),
+    // Tab(icon: const Icon(Icons.new_label)),
     Tab(child: Image.asset('assets/ctt-logo.png')),
   ];
   var fitWidth = true;
@@ -45,16 +46,7 @@ class _StoriesScreenState extends State<StoriesScreen> {
             appBar: appBar,
             body: TabBarView(
               children: [
-                StoriesFeedScreen(
-                  type: 'feed',
-                  height: height,
-                  fitWidth: fitWidth,
-                ),
-                StoriesFeedScreen(
-                  type: 'trends',
-                  height: height,
-                  fitWidth: fitWidth,
-                ),
+                NewStoriesFeedScreen(),
                 StoriesFeedScreen(
                   type: 'new',
                   height: height,
