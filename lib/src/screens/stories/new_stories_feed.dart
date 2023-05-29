@@ -7,6 +7,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' show get;
 import 'package:provider/provider.dart';
+import 'package:wakelock/wakelock.dart';
+
 
 class NewStoriesFeedScreen extends StatefulWidget {
   const NewStoriesFeedScreen({
@@ -26,7 +28,15 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
   @override
   void initState() {
     super.initState();
+    Wakelock.enable();
     _future = _loadAllFeeds();
+  }
+
+
+  @override
+  void dispose() {
+    super.dispose();
+    Wakelock.disable();
   }
 
   Future<List<HomeFeedItem>> _loadAllFeeds() async {

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
@@ -11,14 +10,11 @@ import 'package:acela/src/models/video_recommendation_models/video_recommendatio
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
-import 'package:acela/src/widgets/full_screen_video_player.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
-import 'package:acela/src/widgets/video_player.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +24,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wakelock/wakelock.dart';
 
 import 'hive_upvote_dialog.dart';
 
@@ -48,7 +45,15 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    Wakelock.enable();
     recommendedVideos = widget.vm.getRecommendedVideos();
+  }
+
+
+  @override
+  void dispose() {
+    super.dispose();
+    Wakelock.disable();
   }
 
   void onUserTap() {
@@ -126,33 +131,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             margin: const EdgeInsets.all(10),
             child: Column(
               children: [
-                InkWell(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(details.title,
-                                style: Theme.of(context).textTheme.bodyLarge),
-                            const SizedBox(height: 3),
-                            Text(string,
-                                style: Theme.of(context).textTheme.bodySmall),
-                            const SizedBox(height: 3),
-                            Text(priceAndVotes,
-                                style: Theme.of(context).textTheme.bodySmall),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_drop_down_outlined),
-                    ],
-                  ),
-                  onTap: () {
-                    showModalForDescription(details);
-                  },
-                ),
-                SizedBox(height: 10),
                 Row(
                   children: [
                     InkWell(
@@ -186,11 +164,13 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     IconButton(
                       onPressed: () async {
                         _betterPlayerController.pause();
-                        var position = await _betterPlayerController.videoPlayerController?.position;
-                        var seconds = position?.inSeconds ;
+                        var position = await _betterPlayerController
+                            .videoPlayerController?.position;
+                        var seconds = position?.inSeconds;
                         if (seconds == null) return;
                         debugPrint('position is $position');
-                        const platform = MethodChannel('com.example.acela/auth');
+                        const platform =
+                        MethodChannel('com.example.acela/auth');
                         await platform.invokeMethod('playFullscreen', {
                           'url': details.getVideoUrl(appData),
                           'seconds': seconds,
@@ -226,9 +206,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                       ),
                     ),
                     if (data.activeVotes
-                            .where(
-                                (element) => element.voter == appData.username)
-                            .length ==
+                        .where(
+                            (element) => element.voter == appData.username)
+                        .length ==
                         0)
                       IconButton(
                         onPressed: () {
@@ -239,14 +219,14 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                               builder: (context) {
                                 return SizedBox(
                                   height:
-                                      MediaQuery.of(context).size.height * 0.4,
+                                  MediaQuery.of(context).size.height * 0.4,
                                   child: HiveUpvoteDialog(
                                     author: widget.vm.author,
                                     permlink: widget.vm.permlink,
                                     username: appData.username ?? "",
                                     hasKey: appData.keychainData?.hasId ?? "",
                                     hasAuthKey:
-                                        appData.keychainData?.hasAuthKey ?? "",
+                                    appData.keychainData?.hasAuthKey ?? "",
                                     activeVotes: data.activeVotes,
                                     onClose: () {},
                                     onDone: () {
@@ -268,6 +248,33 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     else
                       Container(),
                   ],
+                ),
+                SizedBox(height: 10),
+                InkWell(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(details.title,
+                                style: Theme.of(context).textTheme.bodyLarge),
+                            const SizedBox(height: 3),
+                            Text(string,
+                                style: Theme.of(context).textTheme.bodySmall),
+                            const SizedBox(height: 3),
+                            Text(priceAndVotes,
+                                style: Theme.of(context).textTheme.bodySmall),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_drop_down_outlined),
+                    ],
+                  ),
+                  onTap: () {
+                    showModalForDescription(details);
+                  },
                 ),
               ],
             ),
@@ -557,6 +564,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       autoDetectFullscreenDeviceOrientation: false,
       autoDispose: true,
       expandToFill: true,
+      allowedScreenSleep: false,
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
