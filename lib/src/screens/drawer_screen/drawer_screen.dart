@@ -113,18 +113,12 @@ class DrawerScreen extends StatelessWidget {
           children: [
             Image.asset(
               "assets/branding/three_speak_icon.png",
-              width: 60,
-              height: 60,
+              height: 90,
             ),
             const SizedBox(height: 5),
             Text(
               "3Speak",
               style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 5),
-            Text(
-              "App By @sagarkothari88",
-              style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
         ),

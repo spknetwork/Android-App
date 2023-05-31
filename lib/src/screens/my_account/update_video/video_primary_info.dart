@@ -37,9 +37,15 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
         child: Column(
           children: [
             TextField(
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Video title goes here',
                 labelText: 'Title',
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    titleController.clear();
+                  },
+                  icon: Icon(Icons.clear),
+                ),
               ),
               onChanged: (text) {
                 setState(() {
@@ -52,9 +58,15 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
               maxLength: 150,
             ),
             TextFormField(
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Video description',
                 labelText: 'Description',
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    descriptionController.clear();
+                  },
+                  icon: Icon(Icons.clear),
+                ),
               ),
               onChanged: (text) {
                 setState(() {

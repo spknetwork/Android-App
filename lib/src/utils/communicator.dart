@@ -43,7 +43,7 @@ class Communicator {
 
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
-  static const hiveAuthServer = 'wss://has.hiveauth.com';
+  static const hiveAuthServer = 'wss://hive-auth.arcange.eu';
 
   Future<bool> doesPostNotExist(
     String user,
