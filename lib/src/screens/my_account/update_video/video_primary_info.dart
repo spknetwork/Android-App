@@ -28,6 +28,8 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
     super.initState();
     titleController.text = widget.item.title;
     descriptionController.text = widget.item.description;
+    title = widget.item.title;
+    description = widget.item.description;
   }
 
   Widget _body() {
@@ -43,6 +45,9 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
                 suffixIcon: IconButton(
                   onPressed: () {
                     titleController.clear();
+                    setState(() {
+                      title = '';
+                    });
                   },
                   icon: Icon(Icons.clear),
                 ),
@@ -64,6 +69,9 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
                 suffixIcon: IconButton(
                   onPressed: () {
                     descriptionController.clear();
+                    setState(() {
+                      description = '';
+                    });
                   },
                   icon: Icon(Icons.clear),
                 ),
@@ -91,8 +99,8 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
         title: const Text('Video Info'),
       ),
       body: _body(),
-      floatingActionButton: titleController.text.isNotEmpty &&
-              descriptionController.text.isNotEmpty
+      floatingActionButton: description.isNotEmpty &&
+              title.isNotEmpty
           ? FloatingActionButton(
               onPressed: () {
                 var screen = VideoDetailsInfo(
