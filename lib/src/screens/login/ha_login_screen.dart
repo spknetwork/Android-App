@@ -222,13 +222,19 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
                     const SizedBox(height: 10),
                     Text('Scan QR Code'),
                     SizedBox(height: 10),
-                    Container(
-                      decoration: BoxDecoration(color: Colors.white),
-                      child: QrImage(
-                        data: qr,
-                        size: 200.0,
-                        gapless: true,
+                    InkWell(
+                      child: Container(
+                        decoration: BoxDecoration(color: Colors.white),
+                        child: QrImage(
+                          data: qr,
+                          size: 200.0,
+                          gapless: true,
+                        ),
                       ),
+                      onTap: () {
+                        var url = Uri.parse(qr);
+                        launchUrl(url);
+                      },
                     ),
                     SizedBox(height: 10),
                     SizedBox(
