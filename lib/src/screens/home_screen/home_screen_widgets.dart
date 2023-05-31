@@ -1,8 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
-import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
-import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
