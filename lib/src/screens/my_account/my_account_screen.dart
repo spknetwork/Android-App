@@ -168,7 +168,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       itemBuilder: (context, index) {
         if (index == 0) {
           var text = currentIndex == 0
-              ? 'Your uploaded videos are in video encoding process\nCome back soon to publish your videos'
+              ? 'Your uploaded videos are in video encoding process\nCome back soon to publish your videos\nVideos will be published automatically after 15-Jun-2023'
               : currentIndex == 1
               ? 'Your videos are ready to post\nTap on a video to edit details & publish'
               : currentIndex == 2
@@ -176,9 +176,11 @@ class _MyAccountScreenState extends State<MyAccountScreen>
               : 'Following videos failed encoding\nTo publish, consider re-uploading';
           return ListTile(
             dense: true,
+            tileColor: Colors.black,
             title: Text(
               text,
               textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
             ),
           );
         }

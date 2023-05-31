@@ -657,7 +657,15 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     var user = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Provide more info'),
+        title: ListTile(
+          leading: CustomCircleAvatar(
+            height: 36,
+            width: 36,
+            url: 'https://images.hive.blog/u/${user.username ?? ''}/avatar',
+          ),
+          title: Text(user.username ?? ''),
+          subtitle: Text('Provide more details to publish'),
+        ),
       ),
       body: isCompleting
           ? (qrCode == null)

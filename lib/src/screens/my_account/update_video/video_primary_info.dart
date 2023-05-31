@@ -1,6 +1,7 @@
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/my_account/update_video/video_details_info.dart';
+import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -96,7 +97,15 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
     var appData = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Video Info'),
+        title: ListTile(
+          leading: CustomCircleAvatar(
+            height: 36,
+            width: 36,
+            url: 'https://images.hive.blog/u/${appData.username ?? ''}/avatar',
+          ),
+          title: Text(appData.username ?? ''),
+          subtitle: Text('Edit Video Info'),
+        ),
       ),
       body: _body(),
       floatingActionButton: description.isNotEmpty &&

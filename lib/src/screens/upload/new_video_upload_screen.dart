@@ -7,6 +7,7 @@ import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:flutter/material.dart';
@@ -381,7 +382,15 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Video Upload Process'),
+        title: ListTile(
+          leading: CustomCircleAvatar(
+            height: 36,
+            width: 36,
+            url: 'https://images.hive.blog/u/${user.username ?? ''}/avatar',
+          ),
+          title: Text(user.username ?? ''),
+          subtitle: Text('Video Upload Process'),
+        ),
       ),
       body: ListView(
         children: [
