@@ -23,16 +23,20 @@ class NewFeedListItem extends StatefulWidget {
     required this.title,
     required this.rpc,
     required this.permlink,
+    required this.onTap,
+    required this.onUserTap,
   }) : super(key: key);
 
   final DateTime? createdAt;
-  final double duration;
-  final int views;
+  final double? duration;
+  final int? views;
   final String thumbUrl;
   final String author;
   final String title;
   final String rpc;
   final String permlink;
+  final Function onTap;
+  final Function onUserTap;
 
   @override
   State<NewFeedListItem> createState() => _NewFeedListItemState();
@@ -43,9 +47,11 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
     String timeInString = widget.createdAt != null
         ? "📝 ${timeago.format(widget.createdAt!)}"
         : "";
-    String durationString =
-        " 🕚 ${Utilities.formatTime(widget.duration.toInt())} ";
-    String viewsString = "👁️ ${widget.views} views";
+    String durationString = widget.duration != null
+        ? " 🕚 ${Utilities.formatTime(widget.duration!.toInt())} "
+        : "";
+    String viewsString =
+        widget.views != null ? "👁️ ${widget.views} views" : "";
     return Stack(
       children: [
         ListTile(
@@ -66,6 +72,7 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
                 url: server.userOwnerThumb(widget.author),
               ),
               onTap: () {
+                widget.onUserTap();
                 var screen = UserChannelScreen(owner: widget.author);
                 var route = MaterialPageRoute(builder: (c) => screen);
                 Navigator.of(context).push(route);
@@ -80,6 +87,7 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
                 InkWell(
                   child: Text('👤 ${widget.author}'),
                   onTap: () {
+                    widget.onUserTap();
                     var screen = UserChannelScreen(owner: widget.author);
                     var route = MaterialPageRoute(builder: (c) => screen);
                     Navigator.of(context).push(route);
@@ -91,6 +99,7 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
             ),
           ),
           onTap: () {
+            widget.onTap();
             var viewModel = VideoDetailsViewModel(
               author: widget.author,
               permlink: widget.permlink,
@@ -106,35 +115,38 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
             Row(
               children: [
                 SizedBox(width: 5),
-                Container(
-                  padding: EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(6),
+                if (timeInString.isNotEmpty)
+                  Container(
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(timeInString,
+                        style: TextStyle(color: Colors.white)),
                   ),
-                  child:
-                      Text(timeInString, style: TextStyle(color: Colors.white)),
-                ),
                 Spacer(),
-                Container(
-                  padding: EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(6),
+                if (viewsString.isNotEmpty)
+                  Container(
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(viewsString,
+                        style: TextStyle(color: Colors.white)),
                   ),
-                  child:
-                      Text(viewsString, style: TextStyle(color: Colors.white)),
-                ),
                 Spacer(),
-                Container(
-                  padding: EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(6),
+                if (durationString.isNotEmpty)
+                  Container(
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(durationString,
+                        style: TextStyle(color: Colors.white)),
                   ),
-                  child: Text(durationString,
-                      style: TextStyle(color: Colors.white)),
-                ),
                 SizedBox(width: 5),
               ],
             )

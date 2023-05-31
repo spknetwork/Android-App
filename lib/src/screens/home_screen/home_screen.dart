@@ -138,6 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   duration: list[i].duration,
                   views: list[i].views,
                   permlink: list[i].permlink,
+                  onTap: () {},
+                  onUserTap: () {},
                 );
               },
               separatorBuilder: (c, i) => const Divider(

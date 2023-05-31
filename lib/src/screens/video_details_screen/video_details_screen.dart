@@ -15,6 +15,7 @@ import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
+import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -49,7 +50,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     recommendedVideos = widget.vm.getRecommendedVideos();
   }
 
-
   @override
   void dispose() {
     super.dispose();
@@ -57,6 +57,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   void onUserTap() {
+    _betterPlayerController.pause();
     Navigator.of(context).push(MaterialPageRoute(
         builder: (c) => UserChannelScreen(owner: widget.vm.author)));
   }
@@ -170,7 +171,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         if (seconds == null) return;
                         debugPrint('position is $position');
                         const platform =
-                        MethodChannel('com.example.acela/auth');
+                            MethodChannel('com.example.acela/auth');
                         await platform.invokeMethod('playFullscreen', {
                           'url': details.getVideoUrl(appData),
                           'seconds': seconds,
@@ -206,9 +207,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                       ),
                     ),
                     if (data.activeVotes
-                        .where(
-                            (element) => element.voter == appData.username)
-                        .length ==
+                            .where(
+                                (element) => element.voter == appData.username)
+                            .length ==
                         0)
                       IconButton(
                         onPressed: () {
@@ -219,14 +220,14 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                               builder: (context) {
                                 return SizedBox(
                                   height:
-                                  MediaQuery.of(context).size.height * 0.4,
+                                      MediaQuery.of(context).size.height * 0.4,
                                   child: HiveUpvoteDialog(
                                     author: widget.vm.author,
                                     permlink: widget.vm.permlink,
                                     username: appData.username ?? "",
                                     hasKey: appData.keychainData?.hasId ?? "",
                                     hasAuthKey:
-                                    appData.keychainData?.hasAuthKey ?? "",
+                                        appData.keychainData?.hasAuthKey ?? "",
                                     activeVotes: data.activeVotes,
                                     onClose: () {},
                                     onDone: () {
@@ -495,21 +496,21 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                       title: Text('Recommended Videos'),
                     );
                   } else {
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      minVerticalPadding: 0,
-                      title: videoRecommendationListItem(
-                        recommendations[index - 3],
-                      ),
+                    var item = recommendations[index - 3];
+                    return NewFeedListItem(
+                      rpc: appData.rpc,
+                      thumbUrl: server.resizedImage(item.image),
+                      author: item.owner,
+                      title: item.title,
+                      createdAt: null,
+                      duration: null,
+                      views: null,
+                      permlink: item.mediaid,
                       onTap: () {
-                        var viewModel = VideoDetailsViewModel(
-                          author: recommendations[index - 3].owner,
-                          permlink: recommendations[index - 3].mediaid,
-                        );
-                        var screen = VideoDetailsScreen(vm: viewModel);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (c) => screen),
-                        );
+                        _betterPlayerController.pause();
+                      },
+                      onUserTap: () {
+                        _betterPlayerController.pause();
                       },
                     );
                   }
@@ -537,6 +538,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       title: item.title,
       subtitle: "",
       onUserTap: () {
+        _betterPlayerController.pause();
         Navigator.of(context).push(MaterialPageRoute(
             builder: (c) => UserChannelScreen(owner: item.owner)));
       },
