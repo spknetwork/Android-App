@@ -19,7 +19,7 @@
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
     <script>
-      const HAS_SERVER = "wss://hive-auth.arcange.eu";
+      const HAS_SERVER = "wss://has.hiveauth.com";
       const HAS_APP_DATA = {
         name: "3Speak Mobile iOS App",
         description: "3Speak Mobile iOS App with HAS Integration",
@@ -396,6 +396,7 @@
             key_type: "posting",
             ops: operations,
             broadcast: true,
+            nonce: Date.now()
           };
           const data = CryptoJS.AES.encrypt(
             JSON.stringify(sign_data),
@@ -526,7 +527,7 @@
         username = uname.toLowerCase();
         const auth_data = {
           app: HAS_APP_DATA,
-          token: undefined,
+          // token: undefined,
           challenge: undefined,
         };
         auth_key = uuidv4();
