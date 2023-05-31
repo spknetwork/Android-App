@@ -7,6 +7,7 @@ import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/stories_screen.dart';
+import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -146,9 +147,15 @@ class DrawerScreen extends StatelessWidget {
   }
 
   Widget _myAccount(BuildContext context) {
+    var user = Provider.of<HiveUserData>(context);
     return ListTile(
-      leading: const Icon(Icons.person, color: Colors.blue),
-      title: const Text("My Videos"),
+      leading: CustomCircleAvatar(
+        height: 36,
+        width: 36,
+        url: 'https://images.hive.blog/u/${user.username ?? ''}/avatar',
+      ),
+      title: Text('@${user.username ?? ''}'),
+      subtitle: Text("My Videos"),
       onTap: () {
         Navigator.pop(context);
         Navigator.of(context)
