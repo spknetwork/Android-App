@@ -50,8 +50,11 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   AppBar _appBar(String username) {
     var text = currentIndex == 0
         ? 'Videos - in Encoding Process'
-        : currentIndex == 1 ? 'Videos - Ready to post' : currentIndex ==
-        2 ? 'Videos - Already posted' : 'Videos - failed to encode';
+        : currentIndex == 1
+            ? 'Videos - Ready to post'
+            : currentIndex == 2
+                ? 'Videos - Already posted'
+                : 'Videos - failed to encode';
     return AppBar(
       title: ListTile(
         leading: CustomCircleAvatar(
@@ -65,35 +68,10 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       bottom: TabBar(
         controller: _tabController,
         tabs: [
-          Tab(
-            icon: Icon(Icons.hourglass_top, color: Colors.yellowAccent),
-            // child: Text(
-            //   'Encoding',
-            //   style: TextStyle(color: Colors.yellowAccent),
-            // ),
-          ),
-          Tab(
-            icon: Icon(Icons.rocket_launch, color: Colors.green),
-            // child: Text(
-            //   'Ready',
-            //   style: TextStyle(color: Colors.green),
-            // ),
-          ),
-          Tab(
-            icon: Icon(Icons.check, color: Colors.blueAccent),
-            // child: Text(
-            //   'Done',
-            //   style: TextStyle(color: Colors.blueAccent),
-            // ),
-          ),
-          Tab(
-            icon: Icon(Icons.cancel_rounded, color: Colors.red),
-            // child: Text(
-            //   'Failed',
-            //   style: TextStyle(color: Colors.red),
-            // ),
-          ),
-          //(icon: Icon(Icons.cancel_rounded)),
+          Tab(icon: Icon(Icons.hourglass_top, color: Colors.yellowAccent)),
+          Tab(icon: Icon(Icons.rocket_launch, color: Colors.green)),
+          Tab(icon: Icon(Icons.check, color: Colors.blueAccent)),
+          Tab(icon: Icon(Icons.cancel_rounded, color: Colors.red)),
         ],
       ),
       actions: [
@@ -113,26 +91,26 @@ class _MyAccountScreenState extends State<MyAccountScreen>
     return item.status == 'published'
         ? const Icon(Icons.check, color: Colors.blueAccent)
         : item.status == "encoding_failed"
-        ? const Icon(Icons.cancel_outlined, color: Colors.red)
-        : item.status == 'publish_manual'
-        ? IconButton(
-      onPressed: () {
-        var screen = VideoPrimaryInfo(
-          item: item,
-          justForEditing: false,
-        );
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).push(route);
-      },
-      icon: const Icon(
-        Icons.rocket_launch,
-        color: Colors.green,
-      ),
-    )
-        : const Icon(
-      Icons.hourglass_top,
-      color: Colors.yellowAccent,
-    );
+            ? const Icon(Icons.cancel_outlined, color: Colors.red)
+            : item.status == 'publish_manual'
+                ? IconButton(
+                    onPressed: () {
+                      var screen = VideoPrimaryInfo(
+                        item: item,
+                        justForEditing: false,
+                      );
+                      var route = MaterialPageRoute(builder: (c) => screen);
+                      Navigator.of(context).push(route);
+                    },
+                    icon: const Icon(
+                      Icons.rocket_launch,
+                      color: Colors.green,
+                    ),
+                  )
+                : const Icon(
+                    Icons.hourglass_top,
+                    color: Colors.yellowAccent,
+                  );
   }
 
   void _showBottomSheet(VideoDetails item) {
@@ -188,10 +166,29 @@ class _MyAccountScreenState extends State<MyAccountScreen>
     }
     return ListView.separated(
       itemBuilder: (context, index) {
-        return _videoListItem(items[index], user);
+        if (index == 0) {
+          var text = currentIndex == 0
+              ? 'Your uploaded videos are in video encoding process\nCome back soon to publish your videos'
+              : currentIndex == 1
+              ? 'Your videos are ready to post\nTap on a video to edit details & publish'
+              : currentIndex == 2
+              ? 'Following videos are already posted\nTap on a video to change thumbnail'
+              : 'Following videos failed encoding\nTo publish, consider re-uploading';
+          return ListTile(
+            dense: true,
+            title: Text(
+              text,
+              textAlign: TextAlign.center,
+            ),
+          );
+        }
+        return _videoListItem(items[index - 1], user);
       },
-      separatorBuilder: (context, index) => const Divider(),
-      itemCount: items.length,
+      separatorBuilder: (context, index) => const Divider(
+        height: 0,
+        color: Colors.transparent,
+      ),
+      itemCount: items.length + 1,
     );
   }
 
@@ -199,12 +196,12 @@ class _MyAccountScreenState extends State<MyAccountScreen>
     var published = items.where((item) => item.status == 'published').toList();
     var ready = items.where((item) => item.status == 'publish_manual').toList();
     var failed =
-    items.where((item) => item.status == 'encoding_failed').toList();
+        items.where((item) => item.status == 'encoding_failed').toList();
     var process = items
         .where((item) =>
-    item.status != 'published' &&
-        item.status != 'publish_manual' &&
-        item.status != 'encoding_failed')
+            item.status != 'published' &&
+            item.status != 'publish_manual' &&
+            item.status != 'encoding_failed')
         .toList();
     return TabBarView(
       controller: _tabController,
