@@ -344,7 +344,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           var socketData = {
             "cmd": "sign_req",
             "account": user.username!,
-            // "token": user.keychainData!.hasId,
+            "token": user.keychainData!.hasId,
             "data": bridgeResponse.data!,
           };
           var jsonData = json.encode(socketData);

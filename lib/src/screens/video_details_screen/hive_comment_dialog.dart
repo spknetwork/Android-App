@@ -214,7 +214,7 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
           var socketData = {
             "cmd": "sign_req",
             "account": data.username!,
-            // "token": data.keychainData!.hasId,
+            "token": data.keychainData!.hasId,
             "data": response.data!,
           };
           log('Socket message is - ${json.encode(socketData)}');

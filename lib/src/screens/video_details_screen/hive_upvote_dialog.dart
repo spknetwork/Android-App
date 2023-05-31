@@ -232,7 +232,7 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
           var socketData = {
             "cmd": "sign_req",
             "account": data.username!,
-            // "token": data.keychainData!.hasId,
+            "token": data.keychainData!.hasId,
             "data": response.data!,
           };
           loadingQR = true;
