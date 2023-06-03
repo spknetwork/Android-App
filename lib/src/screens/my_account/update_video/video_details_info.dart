@@ -590,7 +590,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     Widget qrCode = InkWell(
       child: Container(
         decoration: BoxDecoration(color: Colors.white),
-        child: QrImage(
+        child: QrImageView(
           data: qr,
           size: 150.0,
           gapless: true,

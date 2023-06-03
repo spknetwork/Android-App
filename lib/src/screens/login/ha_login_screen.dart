@@ -225,9 +225,9 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
                     InkWell(
                       child: Container(
                         decoration: BoxDecoration(color: Colors.white),
-                        child: QrImage(
+                        child: QrImageView(
                           data: qr,
-                          size: 200.0,
+                          size: 200,
                           gapless: true,
                         ),
                       ),
