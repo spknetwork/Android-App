@@ -42,6 +42,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   Future<List<HiveComment>>? _loadComments;
 
   Future<HivePostInfoPostResultBody>? _fetchHiveInfoForThisVideo;
+  var controlsHidden = false;
 
   @override
   void initState() {
@@ -112,6 +113,20 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     }
   }
 
+  void fullscreenTapped(VideoDetails details, HiveUserData appData) async {
+    _betterPlayerController.pause();
+    var position =
+        await _betterPlayerController.videoPlayerController?.position;
+    var seconds = position?.inSeconds;
+    if (seconds == null) return;
+    debugPrint('position is $position');
+    const platform = MethodChannel('com.example.acela/auth');
+    await platform.invokeMethod('playFullscreen', {
+      'url': details.getVideoUrl(appData),
+      'seconds': seconds,
+    });
+  }
+
   // video description
   Widget titleAndSubtitle(VideoDetails details, HiveUserData appData) {
     return FutureBuilder(
@@ -162,26 +177,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         }),
                     SizedBox(width: 10),
                     Spacer(),
-                    IconButton(
-                      onPressed: () async {
-                        _betterPlayerController.pause();
-                        var position = await _betterPlayerController
-                            .videoPlayerController?.position;
-                        var seconds = position?.inSeconds;
-                        if (seconds == null) return;
-                        debugPrint('position is $position');
-                        const platform =
-                            MethodChannel('com.example.acela/auth');
-                        await platform.invokeMethod('playFullscreen', {
-                          'url': details.getVideoUrl(appData),
-                          'seconds': seconds,
-                        });
-                      },
-                      icon: Icon(
-                        Icons.fullscreen,
-                        color: Colors.blue,
-                      ),
-                    ),
                     IconButton(
                       onPressed: () {
                         var screen = HiveCommentDialog(
@@ -557,10 +552,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       autoPlay: true,
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
-        enablePip: true,
+        enablePip: false,
         enableFullscreen: false,
         enableSkips: true,
-        pipMenuIcon: Icons.picture_in_picture,
       ),
       autoDetectFullscreenAspectRatio: false,
       autoDetectFullscreenDeviceOrientation: false,
@@ -615,8 +609,49 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     videoWithDetails(data, userData),
                     SizedBox(
                       height: 230,
-                      child: BetterPlayer(
-                        controller: _betterPlayerController,
+                      child: Stack(
+                        children: [
+                          BetterPlayer(
+                            controller: _betterPlayerController,
+                          ),
+                          if (!controlsHidden) Column(
+                            children: [
+                              SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  SizedBox(width: 10),
+                                  CircleAvatar(
+                                    backgroundColor:
+                                        Colors.black.withOpacity(0.6),
+                                    child: IconButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      icon: Icon(
+                                        Icons.arrow_back_outlined,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 15),
+                                  CircleAvatar(
+                                    backgroundColor:
+                                        Colors.black.withOpacity(0.6),
+                                    child: IconButton(
+                                      onPressed: () {
+                                        fullscreenTapped(data, userData);
+                                      },
+                                      icon: Icon(
+                                        Icons.fullscreen,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],

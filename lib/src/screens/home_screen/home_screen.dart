@@ -255,38 +255,43 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _fabNewUpload(HiveUserData data) {
-    return FloatingActionButton.extended(
-      onPressed: () {
-        if (data.username != null && data.postingKey != null) {
+  void uploadClicked(HiveUserData data) {
+    if (data.username != null && data.postingKey != null) {
+      showBottomSheetForRecordingTypes(data);
+    } else if (data.keychainData != null) {
+      var expiry = data.keychainData!.hasExpiry;
+      log('Expiry is $expiry');
+      try {
+        var longValue = int.tryParse(expiry) ?? 0;
+        var expiryDate = DateTime.fromMillisecondsSinceEpoch(longValue);
+        var nowDate = DateTime.now();
+        log('Expiry Date is $expiryDate, now date is $nowDate');
+        var compareResult = nowDate.compareTo(expiryDate);
+        log('compare result - $compareResult');
+        if (compareResult == -1) {
           showBottomSheetForRecordingTypes(data);
-        } else if (data.keychainData != null) {
-          var expiry = data.keychainData!.hasExpiry;
-          log('Expiry is $expiry');
-          try {
-            var longValue = int.tryParse(expiry) ?? 0;
-            var expiryDate = DateTime.fromMillisecondsSinceEpoch(longValue);
-            var nowDate = DateTime.now();
-            log('Expiry Date is $expiryDate, now date is $nowDate');
-            var compareResult = nowDate.compareTo(expiryDate);
-            log('compare result - $compareResult');
-            if (compareResult == -1) {
-              showBottomSheetForRecordingTypes(data);
-            } else {
-              showError('Invalid Session. Please login again.');
-              logout(data);
-            }
-          } catch (e) {
-            showError('Invalid Session. Please login again.');
-            logout(data);
-          }
         } else {
           showError('Invalid Session. Please login again.');
           logout(data);
         }
+      } catch (e) {
+        showError('Invalid Session. Please login again.');
+        logout(data);
+      }
+    } else {
+      showError('Invalid Session. Please login again.');
+      logout(data);
+    }
+  }
+
+  Widget _fabNewUpload(HiveUserData data) {
+    return FloatingActionButton.extended(
+      onPressed: () {
+        uploadClicked(data);
       },
       label: const Text('Upload Video'),
       icon: const Icon(Icons.upload),
+      backgroundColor: Colors.cyanAccent,
     );
   }
 
@@ -306,6 +311,13 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
+          if (appData.username != null)
+            IconButton(
+              onPressed: () {
+                uploadClicked(appData);
+              },
+              icon: const Icon(Icons.upload),
+            ),
           IconButton(
             onPressed: () {
               var route = MaterialPageRoute(
@@ -314,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.of(context).push(route);
             },
             icon: const Icon(Icons.search),
-          )
+          ),
         ],
       ),
       body: _screen(appData),
