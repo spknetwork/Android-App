@@ -143,10 +143,11 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
             break;
           case "sign_err":
             setState(() {
+              isCommenting = false;
               ticker?.cancel();
               qrCode = null;
             });
-            showError("Upvote action failed.");
+            showError("Comment action failed.");
             break;
           default:
             log('Default case here');
@@ -247,56 +248,56 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
         }
       },
       style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-      child: Image.asset('assets/hive-keychain-image.png', width: 100),
+      child: Text('Launch HiveAuth Signer App'),
     );
-    Widget haButton = ElevatedButton(
-      onPressed: () {
-        setState(() {
-          shouldShowHiveAuth = true;
-        });
-      },
-      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-      child: Image.asset('assets/hive_auth_button.png', width: 120),
-    );
-    Widget qrCode = InkWell(
-      child: Container(
-        decoration: BoxDecoration(color: Colors.white),
-        child: QrImageView(
-          data: qr,
-          size: 150.0,
-          gapless: true,
-        ),
-      ),
-      onTap: () {
-        var uri = Uri.tryParse(qr);
-        if (uri != null) {
-          launchUrl(uri);
-        }
-      },
-    );
-    var backButton = ElevatedButton.icon(
-      onPressed: () {
-        setState(() {
-          shouldShowHiveAuth = false;
-        });
-      },
-      icon: Icon(Icons.arrow_back),
-      label: Text("Back"),
-    );
-    List<Widget> array = [];
-    if (shouldShowHiveAuth) {
-      array = [
-        backButton,
-        const SizedBox(width: 10),
-        qrCode,
-      ];
-    } else {
-      array = [
-        haButton,
-        const SizedBox(width: 10),
-        hkButton,
-      ];
-    }
+    // Widget haButton = ElevatedButton(
+    //   onPressed: () {
+    //     setState(() {
+    //       shouldShowHiveAuth = true;
+    //     });
+    //   },
+    //   style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+    //   child: Image.asset('assets/hive_auth_button.png', width: 120),
+    // );
+    // Widget qrCode = InkWell(
+    //   child: Container(
+    //     decoration: BoxDecoration(color: Colors.white),
+    //     child: QrImageView(
+    //       data: qr,
+    //       size: 150.0,
+    //       gapless: true,
+    //     ),
+    //   ),
+    //   onTap: () {
+    //     var uri = Uri.tryParse(qr);
+    //     if (uri != null) {
+    //       launchUrl(uri);
+    //     }
+    //   },
+    // );
+    // var backButton = ElevatedButton.icon(
+    //   onPressed: () {
+    //     setState(() {
+    //       shouldShowHiveAuth = false;
+    //     });
+    //   },
+    //   icon: Icon(Icons.arrow_back),
+    //   label: Text("Back"),
+    // );
+    // List<Widget> array = [];
+    // if (shouldShowHiveAuth) {
+    //   array = [
+    //     backButton,
+    //     const SizedBox(width: 10),
+    //     qrCode,
+    //   ];
+    // } else {
+    //   array = [
+    //     haButton,
+    //     const SizedBox(width: 10),
+    //     hkButton,
+    //   ];
+    // }
     return Center(
       child: Column(
         children: [
@@ -304,10 +305,7 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: array,
-              ),
+              hkButton,
               SizedBox(height: 10),
               SizedBox(
                 width: 200,

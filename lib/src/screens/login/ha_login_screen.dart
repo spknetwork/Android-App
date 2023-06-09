@@ -39,7 +39,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   var timer = 0;
   var timeoutValue = 0;
   Timer? ticker;
-  var didTapKeychainButton = false;
+  // var didTapKeychainButton = false;
 
   var isLoading = false;
   var postingKey = '';
@@ -54,6 +54,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
     socket.stream.listen((message) {
       var map = json.decode(message) as Map<String, dynamic>;
       var cmd = asString(map, 'cmd');
+      var text = usernameController.text.toLowerCase().trim();
       if (cmd.isNotEmpty) {
         switch (cmd) {
           case "connected":
@@ -64,7 +65,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           case "auth_wait":
             var uuid = asString(map, 'uuid');
             var jsonData = {
-              "account": usernameController.text,
+              "account": text,
               "uuid": uuid,
               "key": authKey,
               "host": Communicator.hiveAuthServer
@@ -75,12 +76,12 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             qr = "has://auth_req/$qr";
             setState(() {
               qrCode = qr;
-              if (didTapKeychainButton) {
-                var uri = Uri.tryParse(qr);
-                if (uri != null) {
-                  launchUrl(uri);
-                }
-              }
+              // if (didTapKeychainButton) {
+              //   var uri = Uri.tryParse(qr);
+              //   if (uri != null) {
+              //     launchUrl(uri);
+              //   }
+              // }
               timer = timeoutValue;
               ticker = Timer.periodic(Duration(seconds: 1), (tickrr) {
                 if (timer == 0) {
@@ -139,7 +140,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   }
 
   void _hasButtonTapped(bool keychainTapped) async {
-    if (usernameController.text.isEmpty) {
+    var text = usernameController.text.toLowerCase().trim();
+    if (text.isEmpty) {
       showError('Please enter hive username');
       return;
     }
@@ -147,7 +149,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       loadingQR = true;
     });
     final String response = await platform.invokeMethod('getRedirectUriData', {
-      'username': usernameController.text,
+      'username': text,
     });
     var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
     if (bridgeResponse.data != null) {
@@ -156,13 +158,13 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       var key = asString(data, 'authKey');
       var socketData = {
         "cmd": "auth_req",
-        "account": usernameController.text,
+        "account": text,
         "data": dataForSocket,
       };
       var jsonEncodedData = json.encode(socketData);
       socket.sink.add(jsonEncodedData);
       setState(() {
-        didTapKeychainButton = keychainTapped;
+        // didTapKeychainButton = keychainTapped;
         authKey = key;
       });
     }
@@ -172,14 +174,14 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
     return Row(
       children: [
         const Spacer(),
-        ElevatedButton(
-          onPressed: () {
-            _hasButtonTapped(true);
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-          child: Image.asset('assets/hive-keychain-image.png', width: 120),
-        ),
-        const SizedBox(width: 10),
+        // ElevatedButton(
+        //   onPressed: () {
+        //     _hasButtonTapped(true);
+        //   },
+        //   style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+        //   child: Image.asset('assets/hive-keychain-image.png', width: 120),
+        // ),
+        // const SizedBox(width: 10),
         ElevatedButton(
           onPressed: () {
             _hasButtonTapped(false);
@@ -213,9 +215,10 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
     return Center(
       child: Column(
         children: [
-          didTapKeychainButton
-              ? Container()
-              : Column(
+          // didTapKeychainButton
+          //     ? Container()
+          //     :
+          Column(
                   children: [
                     const SizedBox(height: 10),
                     Image.asset('assets/hive_auth_button.png'),
@@ -244,37 +247,41 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
                         semanticsLabel: 'Timeout Timer for HiveAuth QR',
                       ),
                     ),
+                    SizedBox(height: 10),
+                    Text('- OR - '),
+                    SizedBox(height: 10),
+                    Text('Tap on QR Code to Launch HiveAuth Signer App'),
                   ],
                 ),
-          didTapKeychainButton
-              ? Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    const Text(
-                        'Authorize this request with "Keychain for Hive" app.'),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        var url = Uri.parse(qr);
-                        launchUrl(url);
-                      },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black),
-                      child: Image.asset('assets/hive-keychain-image.png',
-                          width: 220),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(height: 10),
-                    SizedBox(
-                      width: 200,
-                      child: LinearProgressIndicator(
-                        value: timer.toDouble() / timeoutValue.toDouble(),
-                        semanticsLabel: 'Timeout Timer for HiveAuth QR',
-                      ),
-                    ),
-                  ],
-                )
-              : Container()
+          // didTapKeychainButton
+          //     ? Column(
+          //         children: [
+          //           const SizedBox(height: 10),
+          //           const Text(
+          //               'Authorize this request with "Keychain for Hive" app.'),
+          //           const SizedBox(height: 20),
+          //           ElevatedButton(
+          //             onPressed: () {
+          //               var url = Uri.parse(qr);
+          //               launchUrl(url);
+          //             },
+          //             style: ElevatedButton.styleFrom(
+          //                 backgroundColor: Colors.black),
+          //             child: Image.asset('assets/hive-keychain-image.png',
+          //                 width: 220),
+          //           ),
+          //           const SizedBox(height: 20),
+          //           SizedBox(height: 10),
+          //           SizedBox(
+          //             width: 200,
+          //             child: LinearProgressIndicator(
+          //               value: timer.toDouble() / timeoutValue.toDouble(),
+          //               semanticsLabel: 'Timeout Timer for HiveAuth QR',
+          //             ),
+          //           ),
+          //         ],
+          //       )
+          //     : Container()
         ],
       ),
     );
@@ -324,7 +331,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   }
 
   void onLoginTapped(HiveUserData appData) async {
-    if (usernameController.text.isEmpty) {
+    var text = usernameController.text.toLowerCase().trim();
+    if (text.isEmpty) {
       showError('Please enter hive username');
       return;
     }
@@ -333,13 +341,13 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
     });
     try {
       var publicKey = await Communicator()
-          .getPublicKey(usernameController.text, appData.rpc);
+          .getPublicKey(text, appData.rpc);
       var resultingKey = CryptoManager().privToPub(postingKey);
       if (resultingKey == publicKey) {
         debugPrint("Successful login");
         String resolution = await storage.read(key: 'resolution') ?? '480p';
         String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-        await storage.write(key: 'username', value: usernameController.text);
+        await storage.write(key: 'username', value: text);
         await storage.write(key: 'postingKey', value: postingKey);
         await storage.delete(key: 'hasId');
         await storage.delete(key: 'hasExpiry');
@@ -347,7 +355,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         await storage.delete(key: 'cookie');
         server.updateHiveUserData(
           HiveUserData(
-            username: usernameController.text,
+            username: text,
             postingKey: postingKey,
             keychainData: null,
             cookie: null,
@@ -357,7 +365,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         );
         Navigator.of(context).pop();
         showMessage(
-            'You have successfully logged in as - ${usernameController.text}');
+            'You have successfully logged in as - $text');
         setState(() {
           isLoading = false;
         });
@@ -383,9 +391,10 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   }
 
   void decryptData(HiveUserData data, String encryptedData) async {
+    var text = usernameController.text.toLowerCase().trim();
     final String response =
         await platform.invokeMethod('getDecryptedHASToken', {
-      'username': usernameController.text,
+      'username': text,
       'authKey': authKey,
       'data': encryptedData,
     });
@@ -399,7 +408,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             'Did not find token & expiry details from HiveAuth. Please go back & try again.');
       } else {
         const storage = FlutterSecureStorage();
-        await storage.write(key: 'username', value: usernameController.text);
+        await storage.write(key: 'username', value: text);
         await storage.delete(key: 'postingKey');
         await storage.delete(key: 'cookie');
         await storage.write(key: 'hasId', value: tokenData[0]);
@@ -407,7 +416,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         await storage.write(key: 'hasAuthKey', value: authKey);
         server.updateHiveUserData(
           HiveUserData(
-            username: usernameController.text,
+            username: text,
             postingKey: null,
             keychainData: HiveKeychainData(
               hasAuthKey: authKey,
@@ -420,7 +429,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           ),
         );
         showMessage(
-            'You have successfully logged in with Hive Auth with user - ${usernameController.text}');
+            'You have successfully logged in with Hive Auth with user - $text');
         Navigator.of(context).pop();
       }
     } else {

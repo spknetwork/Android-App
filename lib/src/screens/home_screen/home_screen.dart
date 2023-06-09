@@ -6,6 +6,7 @@ import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
+import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -317,6 +318,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 uploadClicked(appData);
               },
               icon: const Icon(Icons.upload),
+            )
+          else
+            IconButton(
+              onPressed: () {
+                var screen = HiveAuthLoginScreen(appData: appData);
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(context).push(route);
+              },
+              icon: const Icon(Icons.login, color: Colors.blue),
             ),
           IconButton(
             onPressed: () {
