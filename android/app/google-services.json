@@ -7,7 +7,7 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:252548198943:android:ea163470c7c668c9355b2a",
+        "mobilesdk_app_id": "1:252548198943:android:3af79775d4815fab355b2a",
         "android_client_info": {
           "package_name": "tv.threespeak.app"
         }
@@ -29,6 +29,13 @@
             {
               "client_id": "252548198943-gu14ujl4f9b45042d76b4tq6h8n1aa4a.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "252548198943-ec3gnethnkvoudaat0lrobmq2t7mve8g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.acela"
+              }
             }
           ]
         }
