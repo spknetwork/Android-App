@@ -18,6 +18,7 @@ class StoryPlayer extends StatefulWidget {
   const StoryPlayer({
     Key? key,
     required this.playUrl,
+    required this.thumbUrl,
     required this.didFinish,
     required this.item,
     required this.data,
@@ -30,6 +31,7 @@ class StoryPlayer extends StatefulWidget {
   final HiveUserData data;
   final HomeFeedItem? homeFeedItem;
   final bool isPortrait;
+  final String thumbUrl;
 
   @override
   _StoryPlayerState createState() => _StoryPlayerState();
@@ -38,7 +40,9 @@ class StoryPlayer extends StatefulWidget {
 class _StoryPlayerState extends State<StoryPlayer> {
   late BetterPlayerController _betterPlayerController;
 
-  var aspectRatio = 1.777777778; // 0.5625
+  var aspectRatio = 0.0; // 0.5625
+  double? height;
+  double? width;
 
   @override
   void dispose() {
@@ -49,8 +53,22 @@ class _StoryPlayerState extends State<StoryPlayer> {
   @override
   void initState() {
     super.initState();
-    aspectRatio = widget.isPortrait ? 0.5625 : 1.777777778;
-    setupPlayer();
+    // aspectRatio = widget.isPortrait ? 0.5625 : 1.777777778;
+    Image(image: NetworkImage(widget.thumbUrl))
+        .image
+        .resolve(const ImageConfiguration())
+        .addListener(ImageStreamListener((image, synchronousCall) {
+      int width = image.image.width;
+      int height = image.image.height;
+      debugPrint('Height is - $height, width is - $width');
+      debugPrint('Ratio is - ${height > width ? 0.5625 : 1.777777778}');
+      setState(() {
+        this.width = width.toDouble();
+        this.height = height.toDouble();
+        aspectRatio = height > width ? 0.5625 : 1.777777778;
+        setupPlayer();
+      });
+    }));
   }
 
   void setupPlayer() {
@@ -96,7 +114,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
         onPressed: () {
           setState(() {
             Share.share(
-                'https://3speak.tv/watch?v=${widget.item?.owner ?? widget.homeFeedItem?.author ?? '' }/${widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? ''}');
+                'https://3speak.tv/watch?v=${widget.item?.owner ?? widget.homeFeedItem?.author ?? ''}/${widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? ''}');
           });
         },
       ),
@@ -119,7 +137,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
           setState(() {
             var screen = VideoDetailsComments(
               author: widget.item?.owner ?? widget.homeFeedItem?.author ?? '',
-              permlink: widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? '',
+              permlink:
+                  widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? '',
               rpc: widget.data.rpc,
             );
             var route = MaterialPageRoute(builder: (c) => screen);
@@ -127,19 +146,19 @@ class _StoryPlayerState extends State<StoryPlayer> {
           });
         },
       ),
-      SizedBox(height: 10),
-      IconButton(
-        icon: Icon(aspectRatio != 1.777777778
-            ? Icons.stay_current_landscape
-            : Icons.stay_current_portrait),
-        onPressed: () {
-          _betterPlayerController.pause();
-          setState(() {
-            aspectRatio = aspectRatio != 1.777777778 ? 1.777777778 : 0.5625;
-            setupPlayer();
-          });
-        },
-      ),
+      // SizedBox(height: 10),
+      // IconButton(
+      //   icon: Icon(aspectRatio != 1.777777778
+      //       ? Icons.stay_current_landscape
+      //       : Icons.stay_current_portrait),
+      //   onPressed: () {
+      //     _betterPlayerController.pause();
+      //     setState(() {
+      //       aspectRatio = aspectRatio != 1.777777778 ? 1.777777778 : 0.5625;
+      //       setupPlayer();
+      //     });
+      //   },
+      // ),
       SizedBox(height: 10),
       IconButton(
         icon: Icon(Icons.fullscreen),
@@ -162,10 +181,13 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: CustomCircleAvatar(
           height: 40,
           width: 40,
-          url: server.userOwnerThumb(widget.item?.owner ?? widget.homeFeedItem?.author ?? ''),
+          url: server.userOwnerThumb(
+              widget.item?.owner ?? widget.homeFeedItem?.author ?? ''),
         ),
         onPressed: () {
-          var screen = UserChannelScreen(owner: widget.item?.owner ?? widget.homeFeedItem?.author ?? '',);
+          var screen = UserChannelScreen(
+            owner: widget.item?.owner ?? widget.homeFeedItem?.author ?? '',
+          );
           var route = MaterialPageRoute(builder: (c) => screen);
           Navigator.of(context).push(route);
         },
@@ -179,9 +201,11 @@ class _StoryPlayerState extends State<StoryPlayer> {
     return SafeArea(
       child: Stack(
         children: [
-          BetterPlayer(
-            controller: _betterPlayerController,
-          ),
+          width == null || height == null
+              ? Center(child: CircularProgressIndicator())
+              : BetterPlayer(
+                  controller: _betterPlayerController,
+                ),
           Row(
             children: [
               const Spacer(),

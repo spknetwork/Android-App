@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 
 class StoriesFeedResponseItem {
@@ -40,6 +41,13 @@ class StoriesFeedResponseItem {
       // https://threespeakvideo.b-cdn.net/chjwguvd/480p.m3u8
       return playUrl.replaceAll('default', '${data.resolution}');
     }
+  }
+
+  String get thumbnailValue {
+    if (thumbnail.startsWith("http")) {
+      return thumbnail;
+    }
+    return '${Communicator.threeSpeakCDN}/ipfs/${thumbnail.replaceAll("ipfs://", '')}';
   }
 
   StoriesFeedResponseItem({

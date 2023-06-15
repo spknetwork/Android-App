@@ -53,7 +53,7 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
           await _loadFeed("${server.domain}/apiv2/feeds/trending");
       var firstUploadsItems =
           await _loadFeed("${server.domain}/apiv2/feeds/firstUploads");
-      return [...homeItems, ...newItems, ...trendingItems, ...firstUploadsItems]
+      return [...homeItems, ...trendingItems, ...newItems, ...firstUploadsItems]
           .toSet()
           .toList()
           .where((e) => ((e.isShorts == true || e.duration <= 90.0) && e.author != "spknetwork.chat"))
@@ -74,6 +74,7 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
   Widget _fullPost(HomeFeedItem item, HiveUserData data) {
     return StoryPlayer(
       playUrl: item.getVideoUrl(data),
+      thumbUrl: item.images.thumbnail,
       data: data,
       item: null,
       homeFeedItem: item,
