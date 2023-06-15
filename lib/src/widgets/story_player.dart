@@ -146,19 +146,19 @@ class _StoryPlayerState extends State<StoryPlayer> {
           });
         },
       ),
-      // SizedBox(height: 10),
-      // IconButton(
-      //   icon: Icon(aspectRatio != 1.777777778
-      //       ? Icons.stay_current_landscape
-      //       : Icons.stay_current_portrait),
-      //   onPressed: () {
-      //     _betterPlayerController.pause();
-      //     setState(() {
-      //       aspectRatio = aspectRatio != 1.777777778 ? 1.777777778 : 0.5625;
-      //       setupPlayer();
-      //     });
-      //   },
-      // ),
+      SizedBox(height: 10),
+      IconButton(
+        icon: Icon(aspectRatio != 1.777777778
+            ? Icons.stay_current_landscape
+            : Icons.stay_current_portrait),
+        onPressed: () {
+          _betterPlayerController.pause();
+          setState(() {
+            aspectRatio = aspectRatio != 1.777777778 ? 1.777777778 : 0.5625;
+            setupPlayer();
+          });
+        },
+      ),
       SizedBox(height: 10),
       IconButton(
         icon: Icon(Icons.fullscreen),

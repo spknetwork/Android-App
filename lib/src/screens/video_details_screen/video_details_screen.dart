@@ -42,7 +42,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   Future<List<HiveComment>>? _loadComments;
 
   Future<HivePostInfoPostResultBody>? _fetchHiveInfoForThisVideo;
-  var controlsHidden = false;
+  double? height;
+  double? width;
+  var aspectRatio = 0.0;
 
   @override
   void initState() {
@@ -290,7 +292,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       clipBehavior: Clip.hardEdge,
       builder: (context) {
         return SizedBox(
-          height: MediaQuery.of(context).size.height - 230.0,
+          height: MediaQuery.of(context).size.height - (height! > width! ? 460 : 230),
           child: Stack(
             children: [
               Container(
@@ -445,7 +447,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     HiveUserData appData,
   ) {
     return Container(
-      margin: const EdgeInsets.only(top: 230),
+      margin: EdgeInsets.only(top: ((height ?? 0) > (width ?? 1) ? 460 : 230)),
       child: ListView.separated(
         itemBuilder: (context, index) {
           if (index == 0) {
@@ -479,7 +481,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             var recommendations =
                 snapshot.data as List<VideoRecommendationItem>;
             return Container(
-              margin: const EdgeInsets.only(top: 230),
+              margin: EdgeInsets.only(top: ((height ?? 0) > (width ?? 1) ? 460 : 230)),
               child: ListView.separated(
                 itemBuilder: (context, index) {
                   if (index == 0) {
@@ -547,7 +549,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   void setupVideo(String url) {
     BetterPlayerConfiguration betterPlayerConfiguration =
         BetterPlayerConfiguration(
-      aspectRatio: 16 / 9,
+      aspectRatio: aspectRatio,
       fit: BoxFit.contain,
       autoPlay: true,
       fullScreenByDefault: false,
@@ -569,6 +571,84 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
     _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
     _betterPlayerController.setupDataSource(dataSource);
+  }
+
+  void loadImageAndSetSize(VideoDetails data, HiveUserData userData) {
+    debugPrint('Image Loading start ${DateTime.now().toIso8601String()}');
+    Image(image: NetworkImage(data.thumbnailValue))
+        .image
+        .resolve(const ImageConfiguration())
+        .addListener(ImageStreamListener((image, synchronousCall) {
+      int width = image.image.width;
+      int height = image.image.height;
+      debugPrint('Height is - $height, width is - $width');
+      debugPrint('Ratio is - ${height > width ? 0.5625 : 1.777777778}');
+      setState(() {
+        debugPrint('Image Loading end ${DateTime.now().toIso8601String()}');
+        this.width = width.toDouble();
+        this.height = height.toDouble();
+        aspectRatio = height > width ? 0.5625 : 1.777777778;
+        var url = data.getVideoUrl(userData);
+        setupVideo(url);
+      });
+    }));
+  }
+
+  Widget _videoPlayerStack(VideoDetails data, HiveUserData userData) {
+    if (width == null || height == null) {
+      loadImageAndSetSize(data, userData);
+      return SizedBox(
+        height: 230,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    return SizedBox(
+      height: ((height ?? 0) > (width ?? 1) ? 460 : 230),
+      child: Stack(
+        children: [
+          BetterPlayer(
+            controller: _betterPlayerController,
+          ),
+          Column(
+            children: [
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  SizedBox(width: 10),
+                  CircleAvatar(
+                    backgroundColor:
+                    Colors.black.withOpacity(0.6),
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: Icon(
+                        Icons.arrow_back_outlined,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 15),
+                  CircleAvatar(
+                    backgroundColor:
+                    Colors.black.withOpacity(0.6),
+                    child: IconButton(
+                      onPressed: () {
+                        fullscreenTapped(data, userData);
+                      },
+                      icon: Icon(
+                        Icons.fullscreen,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
 // main container
@@ -600,60 +680,12 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data as VideoDetails?;
           if (data != null) {
-            var url = data.getVideoUrl(userData);
-            setupVideo(url);
             return Scaffold(
               body: SafeArea(
                 child: Stack(
                   children: [
                     videoWithDetails(data, userData),
-                    SizedBox(
-                      height: 230,
-                      child: Stack(
-                        children: [
-                          BetterPlayer(
-                            controller: _betterPlayerController,
-                          ),
-                          if (!controlsHidden) Column(
-                            children: [
-                              SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  SizedBox(width: 10),
-                                  CircleAvatar(
-                                    backgroundColor:
-                                        Colors.black.withOpacity(0.6),
-                                    child: IconButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      icon: Icon(
-                                        Icons.arrow_back_outlined,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 15),
-                                  CircleAvatar(
-                                    backgroundColor:
-                                        Colors.black.withOpacity(0.6),
-                                    child: IconButton(
-                                      onPressed: () {
-                                        fullscreenTapped(data, userData);
-                                      },
-                                      icon: Icon(
-                                        Icons.fullscreen,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                    _videoPlayerStack(data, userData),
                   ],
                 ),
               ),
