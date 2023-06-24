@@ -4,6 +4,8 @@ import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/my_account/account_settings/account_settings_screen.dart';
 import 'package:acela/src/screens/my_account/update_thumb/update_thumb_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -114,21 +116,37 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   }
 
   void _showBottomSheet(VideoDetails item) {
+    var actions = [
+      BottomSheetAction(
+        title: const Text('Change Thumbnail'),
+        onPressed: (context) {
+          Navigator.of(context).pop();
+          var screen = UpdateThumbScreen(item: item);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        },
+      ),
+    ];
+    if (item.status == 'published') {
+      actions.add(
+        BottomSheetAction(
+          title: Text('Play Video'),
+          onPressed: (context) {
+            Navigator.of(context).pop();
+            var vm = VideoDetailsViewModel(
+                author: item.owner, permlink: item.permlink);
+            var details = VideoDetailsScreen(vm: vm);
+            var route = MaterialPageRoute(builder: (_) => details);
+            Navigator.of(context).push(route);
+          },
+        ),
+      );
+    }
     showAdaptiveActionSheet(
       context: context,
       title: const Text('Options'),
       androidBorderRadius: 30,
-      actions: <BottomSheetAction>[
-        BottomSheetAction(
-          title: const Text('Change Thumbnail'),
-          onPressed: (context) {
-            Navigator.of(context).pop();
-            var screen = UpdateThumbScreen(item: item);
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
-          },
-        ),
-      ],
+      actions: actions,
       cancelAction: CancelAction(
         title: const Text('Cancel'),
       ),
@@ -170,10 +188,10 @@ class _MyAccountScreenState extends State<MyAccountScreen>
           var text = currentIndex == 0
               ? 'Your uploaded videos are in video encoding process\nCome back soon to publish your videos\nVideos will be published automatically after 15-Jun-2023'
               : currentIndex == 1
-              ? 'Your videos are ready to post\nTap on a video to edit details & publish'
-              : currentIndex == 2
-              ? 'Following videos are already posted\nTap on a video to change thumbnail'
-              : 'Following videos failed encoding\nTo publish, consider re-uploading';
+                  ? 'Your videos are ready to post\nTap on a video to edit details & publish'
+                  : currentIndex == 2
+                      ? 'Following videos are already posted\nTap on a video to change thumbnail'
+                      : 'Following videos failed encoding\nTo publish, consider re-uploading';
           return ListTile(
             dense: true,
             tileColor: Colors.black,
