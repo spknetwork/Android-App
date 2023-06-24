@@ -87,6 +87,7 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
   Widget _fullPost(StoriesFeedResponseItem item, HiveUserData data) {
     return StoryPlayer(
       playUrl: item.getVideoUrl(data),
+      hlsUrl: item.playUrl,
       thumbUrl: item.thumbnailValue,
       data: data,
       item: item,

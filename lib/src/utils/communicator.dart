@@ -69,6 +69,43 @@ class Communicator {
     }
   }
 
+  Future<double> getAspectRatio(String playUrl) async {
+    var request = http.Request('GET', Uri.parse(playUrl));
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var responseBody = await response.stream.bytesToString();
+      var exp = RegExp(r"RESOLUTION=(.+),");
+      var matches = exp.allMatches(responseBody);
+      if (matches.isEmpty) {
+        exp = RegExp(r"RESOLUTION=(.+)\n");
+        matches = exp.allMatches(responseBody);
+      }
+      if (matches.isNotEmpty) {
+        var firstMatch = (matches.first.group(0) ?? '')
+            .replaceAll('RESOLUTION=', '')
+            .replaceAll(',', '')
+            .replaceAll('\n', '');
+        var comps = firstMatch.split("x");
+        if (comps.length == 2) {
+          var width = double.tryParse(comps[0]);
+          var height = double.tryParse(comps[1]);
+          if (width != null && height != null) {
+            return width / height;
+          } else {
+            return 1.777777778;
+          }
+        } else {
+          return 1.777777778;
+        }
+      } else {
+        return 1.777777778;
+      }
+    } else {
+      log(response.reasonPhrase.toString());
+      throw response.reasonPhrase.toString();
+    }
+  }
+
   Future<String> getPublicKey(String user, String hiveApiUrl) async {
     var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
     request.body = json.encode({
@@ -183,7 +220,8 @@ class Communicator {
         var loginResponse = VideoUploadLoginResponse.fromJsonString(string);
         if (loginResponse.error != null && loginResponse.error!.isNotEmpty) {
           throw 'Error - ${loginResponse.error}';
-        } else if (loginResponse.memo != null && loginResponse.memo!.isNotEmpty) {
+        } else if (loginResponse.memo != null &&
+            loginResponse.memo!.isNotEmpty) {
           var token = await _getAccessToken(user, loginResponse.memo!);
           var url =
               '${Communicator.tsServer}/mobile/login?username=${user.username}&access_token=$token';
@@ -252,7 +290,7 @@ class Communicator {
       } else {
         throw 'Status code ${response.statusCode}';
       }
-    } catch (e){
+    } catch (e) {
       throw e;
     }
   }

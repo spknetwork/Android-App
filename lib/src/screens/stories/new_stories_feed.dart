@@ -48,7 +48,8 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
           .toList();
     } else {
       var homeItems = await _loadFeed("${server.domain}/apiv2/feeds/Home");
-      var newItems = await _loadFeed("${server.domain}/apiv2/feeds/new");
+      // var newItems = await _loadFeed("${server.domain}/apiv2/feeds/new");
+      List<HomeFeedItem> newItems = [];
       var trendingItems =
           await _loadFeed("${server.domain}/apiv2/feeds/trending");
       var firstUploadsItems =
@@ -74,6 +75,7 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
   Widget _fullPost(HomeFeedItem item, HiveUserData data) {
     return StoryPlayer(
       playUrl: item.getVideoUrl(data),
+      hlsUrl: item.playUrl,
       thumbUrl: item.images.thumbnail,
       data: data,
       item: null,

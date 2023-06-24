@@ -6,6 +6,7 @@ import 'package:acela/src/models/stories/stories_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class StoryPlayer extends StatefulWidget {
   const StoryPlayer({
     Key? key,
     required this.playUrl,
+    required this.hlsUrl,
     required this.thumbUrl,
     required this.didFinish,
     required this.item,
@@ -32,6 +34,7 @@ class StoryPlayer extends StatefulWidget {
   final HomeFeedItem? homeFeedItem;
   final bool isPortrait;
   final String thumbUrl;
+  final String hlsUrl;
 
   @override
   _StoryPlayerState createState() => _StoryPlayerState();
@@ -53,22 +56,15 @@ class _StoryPlayerState extends State<StoryPlayer> {
   @override
   void initState() {
     super.initState();
-    // aspectRatio = widget.isPortrait ? 0.5625 : 1.777777778;
-    Image(image: NetworkImage(widget.thumbUrl))
-        .image
-        .resolve(const ImageConfiguration())
-        .addListener(ImageStreamListener((image, synchronousCall) {
-      int width = image.image.width;
-      int height = image.image.height;
-      debugPrint('Height is - $height, width is - $width');
-      debugPrint('Ratio is - ${height > width ? 0.5625 : 1.777777778}');
-      setState(() {
-        this.width = width.toDouble();
-        this.height = height.toDouble();
-        aspectRatio = height > width ? 0.5625 : 1.777777778;
-        setupPlayer();
-      });
-    }));
+    updateRatio();
+  }
+
+  void updateRatio() async {
+    var ratio = await Communicator().getAspectRatio(widget.hlsUrl);
+    setState(() {
+      aspectRatio = ratio;
+      setupPlayer();
+    });
   }
 
   void setupPlayer() {
@@ -112,54 +108,48 @@ class _StoryPlayerState extends State<StoryPlayer> {
       IconButton(
         icon: Icon(Icons.share),
         onPressed: () {
-          setState(() {
-            Share.share(
-                'https://3speak.tv/watch?v=${widget.item?.owner ?? widget.homeFeedItem?.author ?? ''}/${widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? ''}');
-          });
+          Share.share(
+              'https://3speak.tv/watch?v=${widget.item?.owner ?? widget.homeFeedItem?.author ?? ''}/${widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? ''}');
         },
       ),
       SizedBox(height: 10),
       IconButton(
         icon: Icon(Icons.info),
         onPressed: () {
-          setState(() {
-            // var screen =
-            //     VideoDetailsInfoWidget(details: null, item: widget.item);
-            // var route = MaterialPageRoute(builder: (c) => screen);
-            // Navigator.of(context).push(route);
-          });
+          var screen =
+          VideoDetailsInfoWidget(details: null, item: widget.item);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
         },
       ),
       SizedBox(height: 10),
       IconButton(
         icon: Icon(Icons.comment),
         onPressed: () {
-          setState(() {
-            var screen = VideoDetailsComments(
-              author: widget.item?.owner ?? widget.homeFeedItem?.author ?? '',
-              permlink:
-                  widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? '',
-              rpc: widget.data.rpc,
-            );
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
-          });
+          var screen = VideoDetailsComments(
+            author: widget.item?.owner ?? widget.homeFeedItem?.author ?? '',
+            permlink:
+            widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? '',
+            rpc: widget.data.rpc,
+          );
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
         },
       ),
       SizedBox(height: 10),
-      IconButton(
-        icon: Icon(aspectRatio != 1.777777778
-            ? Icons.stay_current_landscape
-            : Icons.stay_current_portrait),
-        onPressed: () {
-          _betterPlayerController.pause();
-          setState(() {
-            aspectRatio = aspectRatio != 1.777777778 ? 1.777777778 : 0.5625;
-            setupPlayer();
-          });
-        },
-      ),
-      SizedBox(height: 10),
+      // IconButton(
+      //   icon: Icon(aspectRatio != 1.777777778
+      //       ? Icons.stay_current_landscape
+      //       : Icons.stay_current_portrait),
+      //   onPressed: () {
+      //     _betterPlayerController.pause();
+      //     setState(() {
+      //       aspectRatio = aspectRatio != 1.777777778 ? 1.777777778 : 0.5625;
+      //       setupPlayer();
+      //     });
+      //   },
+      // ),
+      // SizedBox(height: 10),
       IconButton(
         icon: Icon(Icons.fullscreen),
         onPressed: () async {
@@ -201,7 +191,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
     return SafeArea(
       child: Stack(
         children: [
-          width == null || height == null
+          aspectRatio == 0.0
               ? Center(child: CircularProgressIndicator())
               : BetterPlayer(
                   controller: _betterPlayerController,

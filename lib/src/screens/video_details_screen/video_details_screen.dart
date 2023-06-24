@@ -11,6 +11,7 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
@@ -42,9 +43,6 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   Future<List<HiveComment>>? _loadComments;
 
   Future<HivePostInfoPostResultBody>? _fetchHiveInfoForThisVideo;
-  double? height;
-  double? width;
-  var aspectRatio = 0.0;
 
   @override
   void initState() {
@@ -130,7 +128,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
   // video description
-  Widget titleAndSubtitle(VideoDetails details, HiveUserData appData) {
+  Widget titleAndSubtitle(
+      VideoDetails details, HiveUserData appData, double ratio) {
     return FutureBuilder(
       future: _fetchHiveInfoForThisVideo,
       builder: (builder, snapshot) {
@@ -203,6 +202,16 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         color: Colors.blue,
                       ),
                     ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.share,
+                        color: Colors.blue,
+                      ),
+                      onPressed: () {
+                        Share.share(
+                            'https://3speak.tv/watch?v=${widget.vm.author}/${widget.vm.permlink}');
+                      },
+                    ),
                     if (data.activeVotes
                             .where(
                                 (element) => element.voter == appData.username)
@@ -271,7 +280,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                     ],
                   ),
                   onTap: () {
-                    showModalForDescription(details);
+                    showModalForDescription(details, ratio);
                   },
                 ),
               ],
@@ -285,14 +294,14 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
 // video description
-  void showModalForDescription(VideoDetails details) {
+  void showModalForDescription(VideoDetails details, double ratio) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       clipBehavior: Clip.hardEdge,
       builder: (context) {
         return SizedBox(
-          height: MediaQuery.of(context).size.height - (height! > width! ? 460 : 230),
+          height: MediaQuery.of(context).size.height - (ratio < 1.0 ? 460 : 230),
           child: Stack(
             children: [
               Container(
@@ -445,13 +454,14 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   Widget videoWithDetailsWithoutRecommendation(
     VideoDetails details,
     HiveUserData appData,
+    double ratio,
   ) {
     return Container(
-      margin: EdgeInsets.only(top: ((height ?? 0) > (width ?? 1) ? 460 : 230)),
+      margin: EdgeInsets.only(top: ratio < 1.0 ? 460 : 230),
       child: ListView.separated(
         itemBuilder: (context, index) {
           if (index == 0) {
-            return titleAndSubtitle(details, appData);
+            return titleAndSubtitle(details, appData, ratio);
           } else if (index == 1) {
             return videoComments(appData);
           } else {
@@ -470,22 +480,24 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
   }
 
 // container list view
-  Widget videoWithDetails(VideoDetails details, HiveUserData appData) {
+  Widget videoWithDetails(
+      VideoDetails details, HiveUserData appData, double ratio) {
     return FutureBuilder(
         future: recommendedVideos,
         builder: (builder, snapshot) {
           if (snapshot.hasError) {
-            return videoWithDetailsWithoutRecommendation(details, appData);
+            return videoWithDetailsWithoutRecommendation(
+                details, appData, ratio);
           } else if (snapshot.hasData &&
               snapshot.connectionState == ConnectionState.done) {
             var recommendations =
                 snapshot.data as List<VideoRecommendationItem>;
             return Container(
-              margin: EdgeInsets.only(top: ((height ?? 0) > (width ?? 1) ? 460 : 230)),
+              margin: EdgeInsets.only(top: ratio < 1.0 ? 460 : 230),
               child: ListView.separated(
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return titleAndSubtitle(details, appData);
+                    return titleAndSubtitle(details, appData, ratio);
                   } else if (index == 1) {
                     return videoComments(appData);
                   } else if (index == 2) {
@@ -518,7 +530,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
               ),
             );
           } else {
-            return videoWithDetailsWithoutRecommendation(details, appData);
+            return videoWithDetailsWithoutRecommendation(
+                details, appData, ratio);
           }
         });
   }
@@ -546,10 +559,10 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
   }
 
-  void setupVideo(String url) {
+  void setupVideo(String url, double ratio) {
     BetterPlayerConfiguration betterPlayerConfiguration =
         BetterPlayerConfiguration(
-      aspectRatio: aspectRatio,
+      aspectRatio: ratio,
       fit: BoxFit.contain,
       autoPlay: true,
       fullScreenByDefault: false,
@@ -566,44 +579,18 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      url.replaceAll("/manifest.m3u8", "/480p/index.m3u8"),
+      url,
+      // url.replaceAll("/manifest.m3u8", "/480p/index.m3u8"),
       videoFormat: BetterPlayerVideoFormat.hls,
     );
     _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
     _betterPlayerController.setupDataSource(dataSource);
   }
 
-  void loadImageAndSetSize(VideoDetails data, HiveUserData userData) {
-    debugPrint('Image Loading start ${DateTime.now().toIso8601String()}');
-    Image(image: NetworkImage(data.thumbnailValue))
-        .image
-        .resolve(const ImageConfiguration())
-        .addListener(ImageStreamListener((image, synchronousCall) {
-      int width = image.image.width;
-      int height = image.image.height;
-      debugPrint('Height is - $height, width is - $width');
-      debugPrint('Ratio is - ${height > width ? 0.5625 : 1.777777778}');
-      setState(() {
-        debugPrint('Image Loading end ${DateTime.now().toIso8601String()}');
-        this.width = width.toDouble();
-        this.height = height.toDouble();
-        aspectRatio = height > width ? 0.5625 : 1.777777778;
-        var url = data.getVideoUrl(userData);
-        setupVideo(url);
-      });
-    }));
-  }
-
-  Widget _videoPlayerStack(VideoDetails data, HiveUserData userData) {
-    if (width == null || height == null) {
-      loadImageAndSetSize(data, userData);
-      return SizedBox(
-        height: 230,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
+  Widget _videoPlayerStack(
+      VideoDetails data, HiveUserData userData, double ratio) {
     return SizedBox(
-      height: ((height ?? 0) > (width ?? 1) ? 460 : 230),
+      height: (ratio < 1.0 ? 460 : 230),
       child: Stack(
         children: [
           BetterPlayer(
@@ -616,8 +603,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                 children: [
                   SizedBox(width: 10),
                   CircleAvatar(
-                    backgroundColor:
-                    Colors.black.withOpacity(0.6),
+                    backgroundColor: Colors.black.withOpacity(0.6),
                     child: IconButton(
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -630,8 +616,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                   ),
                   SizedBox(width: 15),
                   CircleAvatar(
-                    backgroundColor:
-                    Colors.black.withOpacity(0.6),
+                    backgroundColor: Colors.black.withOpacity(0.6),
                     child: IconButton(
                       onPressed: () {
                         fullscreenTapped(data, userData);
@@ -649,6 +634,40 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _futureForLoadingRatio(HiveUserData userData, VideoDetails data) {
+    return FutureBuilder(
+        future: Communicator().getAspectRatio(data.playUrl),
+        builder: (builder, snapshot) {
+          if (snapshot.hasError) {
+            String text =
+                'Something went wrong while loading video information - ${snapshot.error?.toString() ?? ""}';
+            return container(widget.vm.author, Text(text));
+          } else if (snapshot.hasData &&
+              snapshot.connectionState == ConnectionState.done) {
+            var ratio = snapshot.data as double;
+            setupVideo(data.getVideoUrl(userData), ratio);
+            return Scaffold(
+              body: SafeArea(
+                child: Stack(
+                  children: [
+                    videoWithDetails(data, userData, ratio),
+                    _videoPlayerStack(data, userData, ratio),
+                  ],
+                ),
+              ),
+            );
+          } else {
+            return container(
+              widget.vm.author,
+              const LoadingScreen(
+                title: 'Loading Data',
+                subtitle: 'Please wait',
+              ),
+            );
+          }
+        });
   }
 
 // main container
@@ -680,16 +699,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data as VideoDetails?;
           if (data != null) {
-            return Scaffold(
-              body: SafeArea(
-                child: Stack(
-                  children: [
-                    videoWithDetails(data, userData),
-                    _videoPlayerStack(data, userData),
-                  ],
-                ),
-              ),
-            );
+            return _futureForLoadingRatio(userData, data);
           } else {
             return container(
               widget.vm.author,
