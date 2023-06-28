@@ -7,6 +7,7 @@ class VideoUploadCompleteRequest {
   final bool isNsfwContent;
   final String tags;
   final String? thumbnail;
+  final String communityID;
 
   VideoUploadCompleteRequest({
     required this.videoId,
@@ -15,6 +16,7 @@ class VideoUploadCompleteRequest {
     required this.isNsfwContent,
     required this.tags,
     required this.thumbnail,
+    required this.communityID,
   });
 
   Map<String, dynamic> toJson() {
@@ -24,6 +26,7 @@ class VideoUploadCompleteRequest {
       'description': description,
       'isNsfwContent': isNsfwContent,
       'tags': tags,
+      'communityID': communityID,
     };
     if (thumbnail != null && thumbnail!.isNotEmpty) {
       map['thumbnail'] = thumbnail!;

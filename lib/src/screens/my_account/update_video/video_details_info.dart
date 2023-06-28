@@ -57,8 +57,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var processText = '';
   TextEditingController tagsController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  String? selectedCommunity; //= 'hive-181335';
-  String? selectedCommunityVisibleName; //= 'Threespeak';
+  late String selectedCommunity; //= 'hive-181335';
+  late String selectedCommunityVisibleName; //= 'Threespeak';
   String? hiveKeychainTransactionId;
   late WebSocketChannel socket;
   var socketClosed = true;
@@ -83,6 +83,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   void initState() {
     super.initState();
     tagsController.text = widget.item.tags.isEmpty ? "threespeak,mobile" : widget.item.tags;
+    selectedCommunity = widget.item.community.isEmpty ? widget.item.isReel ? 'hive-151961' : 'hive-181335' : widget.item.community;
+    selectedCommunityVisibleName = widget.item.community.isEmpty ? widget.item.isReel ? 'Three Shorts' : 'Three Speak' : widget.item.community;
     socket = WebSocketChannel.connect(
       Uri.parse(Communicator.hiveAuthServer),
     );
@@ -268,6 +270,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           isNsfwContent: isNsfwContent,
           tags: tags,
           thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
+          communityID: selectedCommunity
         );
         if (widget.justForEditing) {
           setState(() {
@@ -284,9 +287,9 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         const platform = MethodChannel('com.example.acela/auth');
         var title = base64.encode(utf8.encode(widget.title));
         var description = widget.subtitle;
-        if (!(description.contains(Communicator.suffixText))) {
-          description = "$description\n${Communicator.suffixText}";
-        }
+        // if (!(description.contains(Communicator.suffixText))) {
+        //   description = "$description\n${Communicator.suffixText}";
+        // }
         description = base64.encode(utf8.encode(description));
         var ipfsHash = "";
         if (widget.item.video_v2.isNotEmpty) {

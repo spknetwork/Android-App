@@ -29,7 +29,7 @@ class Communicator {
   | | | | |
   | :-: | :-: | :-: | :-: |
   | [![](https://i.imgur.com/enwTLng.png)](https://apps.apple.com/us/app/3speak/id1614771373) | [![](https://i.imgur.com/6K5fgGX.png)](https://play.google.com/store/apps/details?id=tv.threespeak.app) | [![](https://i.imgur.com/2cEH8bp.png)](https://hivesigner.com/sign/account-witness-vote?witness=threespeak&approve=1) | [![](https://i.imgur.com/bTdSCuq.png)](https://hivesigner.com/sign/account-witness-vote?witness=sagarkothari88&approve=1) |
-  | [appStore](https://apps.apple.com/us/app/3speak/id1614771373) | [GooglePlayStore](https://play.google.com/store/apps/details?id=tv.threespeak.app) | [Support @threespeak](https://hivesigner.com/sign/account-witness-vote?witness=threespeak&approve=1) | [Support @sagarkothari88](https://hivesigner.com/sign/account-witness-vote?witness=sagarkothari88&approve=1) |""";
+""";
 
   // Android
   // static const fsServer = "http://10.0.2.2:1080/files";
@@ -355,6 +355,7 @@ class Communicator {
     required bool isNsfwContent,
     required String tags,
     required String? thumbnail,
+    required String communityID,
   }) async {
     var request = http.Request(
         'POST', Uri.parse('${Communicator.tsServer}/mobile/api/update_info'));
@@ -365,6 +366,7 @@ class Communicator {
       isNsfwContent: isNsfwContent,
       tags: tags,
       thumbnail: thumbnail,
+      communityID: communityID,
     ).toJsonString();
     Map<String, String> map = {
       "cookie": user.cookie ?? "",
