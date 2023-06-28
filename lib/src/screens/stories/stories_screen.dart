@@ -15,6 +15,8 @@ class _StoriesScreenState extends State<StoriesScreen> {
     Tab(icon: const Icon(Icons.video_camera_front_outlined)),
   ];
   var fitWidth = true;
+  var cttKey = Key('ctt');
+  var feedKey = Key('feed');
 
   @override
   Widget build(BuildContext context) {
@@ -35,17 +37,27 @@ class _StoriesScreenState extends State<StoriesScreen> {
                 const Text('3Shorts')
               ],
             ),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    cttKey = new Key('ctt+${DateTime.now().toIso8601String()}');
+                    feedKey = new Key('feed+${DateTime.now().toIso8601String()}');
+                  });
+                },
+                icon: const Icon(Icons.refresh),
+              ),
+            ],
             bottom: TabBar(
               tabs: tabs,
             ),
           );
-          var height = appBar.preferredSize.height;
           return Scaffold(
             appBar: appBar,
             body: TabBarView(
               children: [
-                NewStoriesFeedScreen(isCTT: true),
-                NewStoriesFeedScreen(isCTT: false),
+                NewStoriesFeedScreen(isCTT: true, key: cttKey),
+                NewStoriesFeedScreen(isCTT: false, key: feedKey),
               ],
             ),
           );

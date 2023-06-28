@@ -32,7 +32,6 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
     _future = _loadAllFeeds();
   }
 
-
   @override
   void dispose() {
     super.dispose();
@@ -48,8 +47,8 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
           .toList();
     } else {
       var homeItems = await _loadFeed("${server.domain}/apiv2/feeds/Home");
-      // var newItems = await _loadFeed("${server.domain}/apiv2/feeds/new");
-      List<HomeFeedItem> newItems = [];
+      var newItems = await _loadFeed("${server.domain}/apiv2/feeds/new");
+      // List<HomeFeedItem> newItems = [];
       var trendingItems =
           await _loadFeed("${server.domain}/apiv2/feeds/trending");
       var firstUploadsItems =
@@ -90,24 +89,22 @@ class _NewStoriesFeedScreenState extends State<NewStoriesFeedScreen> {
   }
 
   Widget carousel(HiveUserData data, List<HomeFeedItem> items) {
-    return SafeArea(
-      child: Container(
-        child: CarouselSlider(
-          carouselController: controller,
-          options: CarouselOptions(
-            height: MediaQuery.of(context).size.height,
-            enableInfiniteScroll: true,
-            viewportFraction: 1,
-            scrollDirection: Axis.vertical,
-          ),
-          items: items.map((item) {
-            return Builder(
-              builder: (BuildContext context) {
-                return _fullPost(item, data);
-              },
-            );
-          }).toList(),
+    return Container(
+      child: CarouselSlider(
+        carouselController: controller,
+        options: CarouselOptions(
+          height: MediaQuery.of(context).size.height,
+          enableInfiniteScroll: true,
+          viewportFraction: 1,
+          scrollDirection: Axis.vertical,
         ),
+        items: items.map((item) {
+          return Builder(
+            builder: (BuildContext context) {
+              return _fullPost(item, data);
+            },
+          );
+        }).toList(),
       ),
     );
   }

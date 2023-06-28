@@ -6,6 +6,7 @@ import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/drawer_screen/drawer_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_widgets.dart';
+import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -75,9 +76,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    if (_future == null) {
-      updateFeed();
-    }
+    setState(() {
+      _future = _loadFeed();
+    });
   }
 
   Future<List<HomeFeedItem>> _loadFeed() async {
@@ -122,37 +123,48 @@ class _HomeScreenState extends State<HomeScreen> {
             return RetryScreen(
               error: s.error?.toString() ?? "Something went wrong",
               onRetry: () {
-                _future = null;
+                setState(() {
+                  _future = _loadFeed();
+                });
               },
             );
           } else if (s.hasData) {
             var list = s.data as List<HomeFeedItem>;
-            return ListView.separated(
-              itemBuilder: (c, i) {
-                return NewFeedListItem(
-                  rpc: appData.rpc,
-                  thumbUrl: server.resizedImage(list[i].images.thumbnail),
-                  author: list[i].author,
-                  title: list[i].title,
-                  createdAt: list[i].createdAt,
-                  duration: list[i].duration,
-                  views: list[i].views,
-                  permlink: list[i].permlink,
-                  onTap: () {},
-                  onUserTap: () {},
-                );
+            return RefreshIndicator(
+              onRefresh: () async {
+                setState(() {
+                  _future = _loadFeed();
+                });
               },
-              separatorBuilder: (c, i) => const Divider(
-                color: Colors.transparent,
-                height: 10,
+              child: ListView.separated(
+                itemBuilder: (c, i) {
+                  return NewFeedListItem(
+                    rpc: appData.rpc,
+                    thumbUrl: server.resizedImage(list[i].images.thumbnail),
+                    author: list[i].author,
+                    title: list[i].title,
+                    createdAt: list[i].createdAt,
+                    duration: list[i].duration,
+                    views: list[i].views,
+                    permlink: list[i].permlink,
+                    onTap: () {},
+                    onUserTap: () {},
+                  );
+                },
+                separatorBuilder: (c, i) => const Divider(
+                  color: Colors.transparent,
+                  height: 10,
+                ),
+                itemCount: list.length,
               ),
-              itemCount: list.length,
             );
           } else {
             return RetryScreen(
               error: "Something went wrong",
               onRetry: () {
-                _future = null;
+                setState(() {
+                  _future = _loadFeed();
+                });
               },
             );
           }
@@ -295,15 +307,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void updateFeed() {
-    Timer.periodic(const Duration(milliseconds: 1000), (timer) {
-      timer.cancel();
-      setState(() {
-        _future = _loadFeed();
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     var appData = Provider.of<HiveUserData>(context);
@@ -311,13 +314,6 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
-          if (appData.username != null)
-            IconButton(
-              onPressed: () {
-                uploadClicked(appData);
-              },
-              icon: const Icon(Icons.upload),
-            ),
           IconButton(
             onPressed: () {
               var route = MaterialPageRoute(
@@ -327,6 +323,29 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             icon: const Icon(Icons.search),
           ),
+          if (appData.username != null)
+            IconButton(
+              onPressed: () {
+                uploadClicked(appData);
+              },
+              icon: const Icon(Icons.upload),
+            ),
+          if (appData.username != null)
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (c) => MyAccountScreen(data: appData),
+                  ),
+                );
+              },
+              icon: CustomCircleAvatar(
+                height: 36,
+                width: 36,
+                url:
+                    'https://images.hive.blog/u/${appData.username ?? ''}/avatar',
+              ),
+            )
         ],
       ),
       body: _screen(appData),
