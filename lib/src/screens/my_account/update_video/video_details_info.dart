@@ -272,7 +272,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         if (widget.justForEditing) {
           setState(() {
             showMessage('Video details are saved.');
-            var screen = MyAccountScreen();
+            var screen = MyAccountScreen(data: user);
             Navigator.of(context).pop();
             Navigator.of(context).pop();
             var route = MaterialPageRoute(builder: (c) => screen);
@@ -283,7 +283,11 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         await Future.delayed(const Duration(seconds: 1), () {});
         const platform = MethodChannel('com.example.acela/auth');
         var title = base64.encode(utf8.encode(widget.title));
-        var description = base64.encode(utf8.encode(widget.subtitle));
+        var description = widget.subtitle;
+        if (!(description.contains(Communicator.suffixText))) {
+          description = "$description\n${Communicator.suffixText}";
+        }
+        description = base64.encode(utf8.encode(description));
         var ipfsHash = "";
         if (widget.item.video_v2.isNotEmpty) {
           ipfsHash = widget.item.video_v2

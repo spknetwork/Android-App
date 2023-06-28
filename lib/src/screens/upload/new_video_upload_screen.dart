@@ -301,7 +301,7 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
     AlertDialog alert = AlertDialog(
       title: Text("🎉 Upload Complete 🎉"),
       content: Text(
-          "✅ Your Video is in-process\n\n✅ Video has be added to encoding queue\n\n👀 Check status from My Account\n\n📝 Let's edit video details now."),
+          "✅ Your Video is in-process\n\n✅ Video has be added to encoding queue\n\n👀 Check status from My Account\n\n📝 Let's edit video details now.\n\n🚨 From 1-Jul-2023, your video will be automatically published if you've given posting authority to @threespeak."),
       actions: [
         nowButton,
       ],

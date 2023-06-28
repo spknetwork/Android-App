@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
@@ -301,7 +302,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       clipBehavior: Clip.hardEdge,
       builder: (context) {
         return SizedBox(
-          height: MediaQuery.of(context).size.height - (ratio < 1.0 ? 460 : 230),
+          height:
+              MediaQuery.of(context).size.height - (ratio < 1.0 ? 460 : 230),
           child: Stack(
             children: [
               Container(
@@ -579,8 +581,9 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      url,
-      // url.replaceAll("/manifest.m3u8", "/480p/index.m3u8"),
+      Platform.isAndroid
+          ? url.replaceAll("/manifest.m3u8", "/480p/index.m3u8")
+          : url,
       videoFormat: BetterPlayerVideoFormat.hls,
     );
     _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);

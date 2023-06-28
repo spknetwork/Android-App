@@ -4,6 +4,7 @@ import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/my_account/account_settings/account_settings_screen.dart';
 import 'package:acela/src/screens/my_account/update_thumb/update_thumb_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
+import 'package:acela/src/screens/my_account/video_preview.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -11,11 +12,13 @@ import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:provider/provider.dart';
 
 class MyAccountScreen extends StatefulWidget {
-  const MyAccountScreen({Key? key}) : super(key: key);
+  const MyAccountScreen({
+    Key? key,
+    required this.data,
+  }) : super(key: key);
+  final HiveUserData data;
 
   @override
   State<MyAccountScreen> createState() => _MyAccountScreenState();
@@ -30,6 +33,9 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   @override
   void initState() {
     super.initState();
+    setState(() {
+      loadVideos = Communicator().loadVideos(widget.data);
+    });
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       setState(() {
@@ -79,6 +85,14 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       actions: [
         IconButton(
           onPressed: () {
+            setState(() {
+              loadVideos = Communicator().loadVideos(widget.data);
+            });
+          },
+          icon: Icon(Icons.refresh),
+        ),
+        IconButton(
+          onPressed: () {
             var screen = const AccountSettingsScreen();
             var route = MaterialPageRoute(builder: (c) => screen);
             Navigator.of(context).push(route);
@@ -95,19 +109,9 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         : item.status == "encoding_failed"
             ? const Icon(Icons.cancel_outlined, color: Colors.red)
             : item.status == 'publish_manual'
-                ? IconButton(
-                    onPressed: () {
-                      var screen = VideoPrimaryInfo(
-                        item: item,
-                        justForEditing: false,
-                      );
-                      var route = MaterialPageRoute(builder: (c) => screen);
-                      Navigator.of(context).push(route);
-                    },
-                    icon: const Icon(
-                      Icons.rocket_launch,
-                      color: Colors.green,
-                    ),
+                ? const Icon(
+                    Icons.rocket_launch,
+                    color: Colors.green,
                   )
                 : const Icon(
                     Icons.hourglass_top,
@@ -142,6 +146,28 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         ),
       );
     }
+    if (item.status == 'publish_manual') {
+      actions.add(BottomSheetAction(
+        title: Text('Preview'),
+        onPressed: (context) {
+          Navigator.of(context).pop();
+          var screen = VideoPreviewScreen(data: widget.data, item: item);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        },
+      ));
+    }
+    if (item.status == 'publish_manual') {
+      actions.add(BottomSheetAction(
+        title: Text('Publish'),
+        onPressed: (context) {
+          Navigator.of(context).pop();
+          var screen = VideoPrimaryInfo(item: item, justForEditing: false);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        },
+      ));
+    }
     showAdaptiveActionSheet(
       context: context,
       title: const Text('Options'),
@@ -168,9 +194,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
             item.status != 'encoding_failed') {
           _showBottomSheet(item);
         } else if (item.status == 'publish_manual') {
-          var screen = VideoPrimaryInfo(item: item, justForEditing: false);
-          var route = MaterialPageRoute(builder: (c) => screen);
-          Navigator.of(context).push(route);
+          _showBottomSheet(item);
         }
       },
     );
@@ -186,7 +210,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       itemBuilder: (context, index) {
         if (index == 0) {
           var text = currentIndex == 0
-              ? 'Your uploaded videos are in video encoding process\nCome back soon to publish your videos\nVideos will be published automatically after 15-Jun-2023'
+              ? 'Your uploaded videos are in video encoding process\nCome back soon to publish your videos\nVideos will be published automatically after 1-Jul-2023'
               : currentIndex == 1
                   ? 'Your videos are ready to post\nTap on a video to edit details & publish'
                   : currentIndex == 2
@@ -242,7 +266,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
     );
   }
 
-  Widget _videoFuture(HiveUserData user) {
+  Widget _videoFuture() {
     return FutureBuilder(
       future: loadVideos,
       builder: (context, snapshot) {
@@ -250,7 +274,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
           return const Center(child: Text('Something went wrong'));
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
-          return _videosList(snapshot.data as List<VideoDetails>, user);
+          return _videosList(snapshot.data as List<VideoDetails>, widget.data);
         } else {
           return const LoadingScreen(
             title: 'Getting your videos',
@@ -263,21 +287,13 @@ class _MyAccountScreenState extends State<MyAccountScreen>
 
   @override
   Widget build(BuildContext context) {
-    var user = Provider.of<HiveUserData>(context);
-    if (user.username != null && loadVideos == null) {
-      setState(() {
-        loadVideos = Communicator().loadVideos(user);
-      });
-    }
-    var username = user.username ?? 'Unknown';
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        appBar: _appBar(username),
-        body: Container(
-            child: user.username == null
-                ? const Center(child: Text('Nothing'))
-                : _videoFuture(user)),
+        appBar: _appBar(widget.data.username ?? 'sagarkothari88'),
+        body: SafeArea(
+          child: _videoFuture(),
+        ),
       ),
     );
   }
