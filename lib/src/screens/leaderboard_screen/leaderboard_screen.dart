@@ -10,7 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' show get;
 
 class LeaderboardScreen extends StatefulWidget {
-  const LeaderboardScreen({Key? key}) : super(key: key);
+  const LeaderboardScreen({
+    Key? key,
+    required this.withoutScaffold,
+  }) : super(key: key);
+  final bool withoutScaffold;
 
   @override
   _LeaderboardScreenState createState() => _LeaderboardScreenState();
@@ -132,11 +136,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Leaderboard"),
-      ),
-      body: _body(),
-    );
+    if (widget.withoutScaffold) {
+      return _body();
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Leaderboard"),
+        ),
+        body: _body(),
+      );
+    }
   }
 }

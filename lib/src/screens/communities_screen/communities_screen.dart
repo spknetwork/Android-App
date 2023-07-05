@@ -14,8 +14,10 @@ class CommunitiesScreen extends StatefulWidget {
   const CommunitiesScreen({
     Key? key,
     required this.didSelectCommunity,
+    required this.withoutScaffold,
   }) : super(key: key);
   final Function(String, String)? didSelectCommunity;
+  final bool withoutScaffold;
 
   @override
   _CommunitiesScreenState createState() => _CommunitiesScreenState();
@@ -138,11 +140,15 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
         _future = getListOfCommunities(appData.rpc);
       });
     }
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Communities"),
-      ),
-      body: _body(appData),
-    );
+    if (widget.withoutScaffold) {
+      return _body(appData);
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Communities"),
+        ),
+        body: _body(appData),
+      );
+    }
   }
 }

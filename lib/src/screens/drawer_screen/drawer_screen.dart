@@ -76,6 +76,7 @@ class DrawerScreen extends StatelessWidget {
           MaterialPageRoute(
             builder: (c) => CommunitiesScreen(
               didSelectCommunity: null,
+              withoutScaffold: false,
             ),
           ),
         );
@@ -90,7 +91,7 @@ class DrawerScreen extends StatelessWidget {
       onTap: () {
         Navigator.pop(context);
         Navigator.of(context)
-            .push(MaterialPageRoute(builder: (c) => const LeaderboardScreen()));
+            .push(MaterialPageRoute(builder: (c) => LeaderboardScreen(withoutScaffold: false,)));
       },
     );
   }

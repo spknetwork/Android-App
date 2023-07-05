@@ -24,12 +24,6 @@ class Communicator {
   // Production
   static const tsServer = "https://studio.3speak.tv";
   static const fsServer = "https://uploads.3speak.tv/files";
-  static const suffixText = """
-
-  | | | | |
-  | :-: | :-: | :-: | :-: |
-  | [![](https://i.imgur.com/enwTLng.png)](https://apps.apple.com/us/app/3speak/id1614771373) | [![](https://i.imgur.com/6K5fgGX.png)](https://play.google.com/store/apps/details?id=tv.threespeak.app) | [![](https://i.imgur.com/2cEH8bp.png)](https://hivesigner.com/sign/account-witness-vote?witness=threespeak&approve=1) | [![](https://i.imgur.com/bTdSCuq.png)](https://hivesigner.com/sign/account-witness-vote?witness=sagarkothari88&approve=1) |
-""";
 
   // Android
   // static const fsServer = "http://10.0.2.2:1080/files";
@@ -428,6 +422,29 @@ class Communicator {
     } catch (e) {
       log('Error from server is ${e.toString()}');
       rethrow;
+    }
+  }
+
+  Future<List<VideoDetails>> loadMyFeedVideos(HiveUserData user) async {
+    log("Starting my feed videos ${DateTime.now().toIso8601String()}");
+    var cookie = await getValidCookie(user);
+    var request = http.Request(
+        'GET', Uri.parse('${Communicator.tsServer}/mobile/api/my-feed'));
+    Map<String, String> map = {"cookie": cookie};
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      log('My videos response\n\n$string\n\n');
+      var videos = videoItemsFromString(string);
+      log("Ended fetch videos ${DateTime.now().toIso8601String()}");
+      return videos;
+    } else {
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
     }
   }
 

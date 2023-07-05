@@ -18,7 +18,7 @@ class Server {
   }
 
   String resizedImage(String value) {
-    return "https://images.hive.blog/320x160/$value";
+    return "https://images.hive.blog/640x320/$value";
   }
 
   final _controller = StreamController<bool>();

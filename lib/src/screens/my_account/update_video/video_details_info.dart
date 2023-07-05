@@ -547,6 +547,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (c) => CommunitiesScreen(
+                    withoutScaffold: false,
                     didSelectCommunity: (name, id) {
                       setState(() {
                         selectedCommunity = id;
