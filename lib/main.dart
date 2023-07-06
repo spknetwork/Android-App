@@ -121,9 +121,10 @@ class AcelaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var isDarkMode = Provider.of<bool>(context);
+    var userData = Provider.of<HiveUserData>(context);
     return MaterialApp(
       title: 'Acela - 3Speak App',
-      home: GQLFeedScreen(),
+      home: GQLFeedScreen(appData: userData),
       theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
       debugShowCheckedModeBanner: false,
     );

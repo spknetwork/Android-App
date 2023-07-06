@@ -435,7 +435,7 @@ class Communicator {
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
-      log('My videos response\n\n$string\n\n');
+      log('My Feed videos response\n\n$string\n\n');
       var videos = videoItemsFromString(string);
       log("Ended fetch videos ${DateTime.now().toIso8601String()}");
       return videos;

@@ -1,25 +1,28 @@
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/graphql/gql_communicator.dart';
-import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
+import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
-import 'package:acela/src/widgets/gql_feed_list_item.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:acela/src/widgets/retry.dart';
-import 'package:acela/src/widgets/shorts_xlist_item.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:http/http.dart' show get;
 
 class GQLFeedScreen extends StatefulWidget {
-  const GQLFeedScreen({Key? key});
+  const GQLFeedScreen({
+    Key? key,
+    required this.appData,
+  });
+
+  final HiveUserData appData;
 
   @override
   State<GQLFeedScreen> createState() => _GQLFeedScreenState();
@@ -31,6 +34,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   late Future<List<HomeFeedItem>> loadTrending;
   late Future<List<HomeFeedItem>> loadNew;
   late Future<List<HomeFeedItem>> loadFirstUploads;
+  Future<List<VideoDetails>>? loadMyFeedVideos;
 
   var urls = [
     "${server.domain}/apiv2/feeds/Home",
@@ -65,6 +69,9 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     loadTrending = _loadFeed(urls[1]);
     loadNew = _loadFeed(urls[2]);
     loadFirstUploads = _loadFeed(urls[3]);
+    if (widget.appData.username != null) {
+      loadMyFeedVideos = Communicator().loadMyFeedVideos(widget.appData);
+    }
   }
 
   Future<List<HomeFeedItem>> _loadFeed(String url) async {
@@ -97,7 +104,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     });
   }
 
-  Widget futureBuilderForTrending(int index, HiveUserData data) {
+  Widget futureBuilderForTrending(int index) {
     return FutureBuilder(
       future: (index == 0)
           ? loadHome
@@ -118,25 +125,106 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           );
         } else if (snapshot.connectionState == ConnectionState.done) {
           var list = snapshot.data as List<HomeFeedItem>;
-          var shorts = list.where((element) => element.duration <= 90).toList();
-          return ListView.separated(
-            itemBuilder: (c, i) {
-              return NewFeedListItem(
-                rpc: data.rpc,
-                thumbUrl: server.resizedImage(list[i].images.thumbnail),
-                author: list[i].author,
-                title: list[i].title,
-                createdAt: list[i].createdAt,
-                duration: list[i].duration,
-                views: list[i].views,
-                permlink: list[i].permlink,
-                onTap: () {},
-                onUserTap: () {},
-              );
+          if (list.isEmpty) {
+            return noDataFound(() {
+              reloadWithIndex(index);
+            });
+          }
+          return RefreshIndicator(
+            onRefresh: () async {
+              reloadWithIndex(index);
             },
-            separatorBuilder: (c, i) =>
-                const Divider(color: Colors.transparent),
-            itemCount: list.length,
+            child: ListView.separated(
+              itemBuilder: (c, i) {
+                return NewFeedListItem(
+                  rpc: widget.appData.rpc,
+                  thumbUrl: server.resizedImage(list[i].images.thumbnail),
+                  author: list[i].author,
+                  title: list[i].title,
+                  createdAt: list[i].createdAt,
+                  duration: list[i].duration,
+                  views: list[i].views,
+                  permlink: list[i].permlink,
+                  onTap: () {},
+                  onUserTap: () {},
+                );
+              },
+              separatorBuilder: (c, i) =>
+                  const Divider(color: Colors.transparent),
+              itemCount: list.length,
+            ),
+          );
+        } else {
+          return LoadingScreen(
+            title: 'Loading Data',
+            subtitle: 'Please wait...',
+          );
+        }
+      },
+    );
+  }
+
+  Widget futureBuilderForMyFeed() {
+    return FutureBuilder(
+      future: loadMyFeedVideos,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: RetryScreen(
+              error: snapshot.error?.toString() ?? 'Something went wrong',
+              onRetry: () {
+                setState(() {
+                  if (widget.appData.username != null) {
+                    setState(() {
+                      loadMyFeedVideos =
+                          Communicator().loadMyFeedVideos(widget.appData);
+                    });
+                  }
+                });
+              },
+            ),
+          );
+        } else if (snapshot.connectionState == ConnectionState.done) {
+          var list = snapshot.data as List<VideoDetails>;
+          if (list.isEmpty) {
+            return noDataFound(() {
+              if (widget.appData.username != null) {
+                setState(() {
+                  loadMyFeedVideos =
+                      Communicator().loadMyFeedVideos(widget.appData);
+                });
+              }
+            });
+          }
+          return RefreshIndicator(
+            onRefresh: () async {
+              if (widget.appData.username != null) {
+                setState(() {
+                  loadMyFeedVideos =
+                      Communicator().loadMyFeedVideos(widget.appData);
+                });
+              }
+            },
+            child: ListView.separated(
+              itemBuilder: (c, i) {
+                return NewFeedListItem(
+                  rpc: widget.appData.rpc,
+                  thumbUrl: server.resizedImage(list[i].thumbUrl),
+                  author: list[i].owner,
+                  title: list[i].title,
+                  createdAt:
+                      DateTime.tryParse(list[i].created) ?? DateTime.now(),
+                  duration: list[i].duration,
+                  views: list[i].views,
+                  permlink: list[i].permlink,
+                  onTap: () {},
+                  onUserTap: () {},
+                );
+              },
+              separatorBuilder: (c, i) =>
+                  const Divider(color: Colors.transparent),
+              itemCount: list.length,
+            ),
           );
         } else {
           return LoadingScreen(
@@ -151,80 +239,138 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   String getSubtitle() {
     switch (currentIndex) {
       case 0:
-        return 'User Feed';
+        return '${widget.appData.username ?? 'User'}\'s feed';
       case 1:
-        return 'Home Feed';
+        return 'Home feed';
       case 2:
-        return 'Trending Feed';
+        return 'Trending feed';
       case 3:
-        return 'New Feed';
+        return 'New feed';
       case 4:
-        return 'First Uploads';
+        return 'First uploads';
       case 5:
         return 'Communities';
       case 6:
         return 'Leaderboard';
       default:
-        return 'User Feed';
+        return 'User\'s feed';
     }
+  }
+
+  List<Widget> actions() {
+    return [
+      IconButton(
+        onPressed: () {
+          var route = MaterialPageRoute(
+            builder: (context) => const SearchScreen(),
+          );
+          Navigator.of(context).push(route);
+        },
+        icon: const Icon(Icons.search),
+      ),
+      if (widget.appData.username != null)
+        IconButton(
+          onPressed: () {
+            // uploadClicked(appData);
+          },
+          icon: const Icon(Icons.upload),
+        ),
+      if (widget.appData.username != null)
+        IconButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (c) => MyAccountScreen(data: widget.appData),
+              ),
+            );
+          },
+          icon: CustomCircleAvatar(
+            height: 36,
+            width: 36,
+            url:
+                'https://images.hive.blog/u/${widget.appData.username ?? ''}/avatar',
+          ),
+        )
+    ];
+  }
+
+  Widget appBarHeader() {
+    return ListTile(
+      leading: InkWell(
+        child: CircleAvatar(
+          child: ClipOval(
+              child: Image.asset('assets/branding/three_speak_icon.png',
+                  height: 40, width: 40)),
+          radius: 20,
+        ),
+        onTap: () {
+          var screen = const AboutHomeScreen();
+          var route = MaterialPageRoute(builder: (_) => screen);
+          Navigator.of(context).push(route);
+        },
+      ),
+      title: Text('3Speak.tv'),
+      subtitle: Text(getSubtitle()),
+    );
+  }
+
+  Widget pleaseLogIn() {
+    return Column(
+      children: [
+        Spacer(),
+        Icon(Icons.rss_feed, size: 60),
+        SizedBox(height: 20),
+        Text(
+          'To see videos\nfrom whom you follow,\nplease login.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            var screen = HiveAuthLoginScreen(appData: widget.appData);
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
+          },
+          child: Text('Login'),
+        ),
+        Spacer(),
+      ],
+    );
+  }
+
+  Widget noDataFound(Function retry) {
+    return Column(
+      children: [
+        Spacer(),
+        Icon(Icons.autorenew, size: 60),
+        SizedBox(height: 20),
+        Text(
+          'We did not find anything to show.\nTap on retry to load again.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            retry();
+          },
+          child: Text('Retry'),
+        ),
+        Spacer(),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    var appData = Provider.of<HiveUserData>(context);
+    if (widget.appData.username != null && loadMyFeedVideos == null) {
+      loadMyFeedVideos = Communicator().loadMyFeedVideos(widget.appData);
+    }
     return Scaffold(
       appBar: AppBar(
-        title: ListTile(
-          leading: InkWell(
-            child: CircleAvatar(
-              child: ClipOval(
-                  child: Image.asset('assets/branding/three_speak_icon.png',
-                      height: 40, width: 40)),
-              radius: 20,
-            ),
-            onTap: () {
-              var screen = const AboutHomeScreen();
-              var route = MaterialPageRoute(builder: (_) => screen);
-              Navigator.of(context).push(route);
-            },
-          ),
-          title: Text('3Speak.tv'),
-          subtitle: Text(getSubtitle()),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              var route = MaterialPageRoute(
-                builder: (context) => const SearchScreen(),
-              );
-              Navigator.of(context).push(route);
-            },
-            icon: const Icon(Icons.search),
-          ),
-          if (appData.username != null)
-            IconButton(
-              onPressed: () {
-                // uploadClicked(appData);
-              },
-              icon: const Icon(Icons.upload),
-            ),
-          if (appData.username != null)
-            IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (c) => MyAccountScreen(data: appData),
-                  ),
-                );
-              },
-              icon: CustomCircleAvatar(
-                height: 36,
-                width: 36,
-                url:
-                    'https://images.hive.blog/u/${appData.username ?? ''}/avatar',
-              ),
-            )
-        ],
+        title: appBarHeader(),
+        actions: actions(),
         bottom: TabBar(
           controller: _tabController,
           tabs: myTabs,
@@ -234,13 +380,13 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          appData.username != null
-              ? Center(child: Text(appData.username!))
-              : Center(child: Text('Please log in')),
-          futureBuilderForTrending(0, appData),
-          futureBuilderForTrending(1, appData),
-          futureBuilderForTrending(2, appData),
-          futureBuilderForTrending(3, appData),
+          widget.appData.username != null
+              ? futureBuilderForMyFeed()
+              : pleaseLogIn(),
+          futureBuilderForTrending(0),
+          futureBuilderForTrending(1),
+          futureBuilderForTrending(2),
+          futureBuilderForTrending(3),
           CommunitiesScreen(
             didSelectCommunity: null,
             withoutScaffold: true,
