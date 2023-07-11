@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -30,17 +32,17 @@ class GQLFeedScreen extends StatefulWidget {
 
 class _GQLFeedScreenState extends State<GQLFeedScreen>
     with SingleTickerProviderStateMixin {
-  late Future<List<HomeFeedItem>> loadHome;
-  late Future<List<HomeFeedItem>> loadTrending;
-  late Future<List<HomeFeedItem>> loadNew;
-  late Future<List<HomeFeedItem>> loadFirstUploads;
+  late Future<List<VideoDetails>> loadHome;
+  late Future<List<VideoDetails>> loadTrending;
+  late Future<List<VideoDetails>> loadNew;
+  late Future<List<VideoDetails>> loadFirstUploads;
   Future<List<VideoDetails>>? loadMyFeedVideos;
 
   var urls = [
-    "${server.domain}/apiv2/feeds/Home",
-    "${server.domain}/apiv2/feeds/trending",
-    "${server.domain}/apiv2/feeds/new",
-    "${server.domain}/apiv2/feeds/firstUploads",
+    '${Communicator.tsServer}/mobile/api/feed/home',
+    '${Communicator.tsServer}/mobile/api/feed/trending',
+    '${Communicator.tsServer}/mobile/api/feed/new',
+    '${Communicator.tsServer}/mobile/api/feed/first',
   ];
 
   static const List<Tab> myTabs = <Tab>[
@@ -74,11 +76,10 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     }
   }
 
-  Future<List<HomeFeedItem>> _loadFeed(String url) async {
+  Future<List<VideoDetails>> _loadFeed(String url) async {
     var response = await get(Uri.parse(url));
     if (response.statusCode == 200) {
-      List<HomeFeedItem> list = homeFeedItemFromString(response.body);
-      return list;
+      return videoItemsFromString(response.body);
     } else {
       throw 'Status code ${response.statusCode}';
     }
@@ -124,9 +125,9 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
             ),
           );
         } else if (snapshot.connectionState == ConnectionState.done) {
-          var list = snapshot.data as List<HomeFeedItem>;
+          var list = snapshot.data as List<VideoDetails>;
           if (list.isEmpty) {
-            return noDataFound(() {
+            return noDataFound(false, () {
               reloadWithIndex(index);
             });
           }
@@ -138,10 +139,11 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
               itemBuilder: (c, i) {
                 return NewFeedListItem(
                   rpc: widget.appData.rpc,
-                  thumbUrl: server.resizedImage(list[i].images.thumbnail),
-                  author: list[i].author,
+                  thumbUrl: list[i].getThumbnail(),
+                  author: list[i].owner,
                   title: list[i].title,
-                  createdAt: list[i].createdAt,
+                  createdAt:
+                  DateTime.tryParse(list[i].created) ?? DateTime.now(),
                   duration: list[i].duration,
                   views: list[i].views,
                   permlink: list[i].permlink,
@@ -187,7 +189,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         } else if (snapshot.connectionState == ConnectionState.done) {
           var list = snapshot.data as List<VideoDetails>;
           if (list.isEmpty) {
-            return noDataFound(() {
+            return noDataFound(true, () {
               if (widget.appData.username != null) {
                 setState(() {
                   loadMyFeedVideos =
@@ -209,7 +211,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
               itemBuilder: (c, i) {
                 return NewFeedListItem(
                   rpc: widget.appData.rpc,
-                  thumbUrl: server.resizedImage(list[i].thumbUrl),
+                  thumbUrl: list[i].getThumbnail(),
                   author: list[i].owner,
                   title: list[i].title,
                   createdAt:
@@ -339,14 +341,14 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     );
   }
 
-  Widget noDataFound(Function retry) {
+  Widget noDataFound(bool isMyFeed, Function retry) {
     return Column(
       children: [
         Spacer(),
         Icon(Icons.autorenew, size: 60),
         SizedBox(height: 20),
         Text(
-          'We did not find anything to show.\nTap on retry to load again.',
+          'We did not find anything to show.\nTap on retry to load again.${isMyFeed ? '\nOR Follow more users' : ''}',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleMedium,
         ),

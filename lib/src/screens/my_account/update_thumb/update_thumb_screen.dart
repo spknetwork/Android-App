@@ -118,9 +118,9 @@ class _UpdateThumbScreenState extends State<UpdateThumbScreen> {
                             width: 320,
                             height: 160,
                           )
-                        : widget.item.thumbUrl.isNotEmpty
+                        : widget.item.getThumbnail().isNotEmpty
                             ? Image.network(
-                                widget.item.thumbUrl,
+                                widget.item.getThumbnail(),
                                 width: 320,
                                 height: 160,
                               )
@@ -188,7 +188,7 @@ class _UpdateThumbScreenState extends State<UpdateThumbScreen> {
             ),
       floatingActionButton: isCompleting
           ? null
-          : thumbIpfs.isNotEmpty || widget.item.thumbUrl.isNotEmpty
+          : thumbIpfs.isNotEmpty || widget.item.getThumbnail().isNotEmpty
               ? FloatingActionButton(
                   onPressed: () {
                     if (user.username != null) {

@@ -454,9 +454,9 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                             width: 320,
                             height: 160,
                           )
-                        : widget.item.thumbUrl.isNotEmpty
+                        : widget.item.getThumbnail().isNotEmpty
                             ? Image.network(
-                                widget.item.thumbUrl,
+                                widget.item.getThumbnail(),
                                 width: 320,
                                 height: 160,
                               )
@@ -696,7 +696,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             ),
       floatingActionButton: isCompleting
           ? null
-          : thumbIpfs.isNotEmpty || widget.item.thumbUrl.isNotEmpty
+          : thumbIpfs.isNotEmpty || widget.item.getThumbnail().isNotEmpty
               ? FloatingActionButton(
                   onPressed: () {
                     if (user.username != null) {

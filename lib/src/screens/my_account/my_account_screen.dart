@@ -182,7 +182,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   Widget _videoListItem(VideoDetails item, HiveUserData user) {
     return ListTile(
       leading: Image.network(
-        item.thumbUrl,
+        item.getThumbnail(),
       ),
       title: Text(item.title),
       subtitle: Text(item.description.length > 30

@@ -19,15 +19,14 @@ class VideoDetails {
   final String id;
   final String community;
   final String owner;
-  final String baseThumbUrl;
   final bool steemPosted;
   final String status;
   final String playUrl;
   final bool isReel;
+  final String language;
 
   final String thumbnail;
 
-  final String thumbUrl;
   final String video_v2;
   final String description;
   final String title;
@@ -38,6 +37,10 @@ class VideoDetails {
   final String originalFilename;
   final bool firstUpload;
   final String beneficiaries;
+
+  String getThumbnail() {
+    return thumbnail.replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
+  }
 
   String getVideoUrl(HiveUserData data) {
     if (playUrl.contains('ipfs')) {
@@ -94,8 +97,7 @@ class VideoDetails {
     this.description = "",
     this.thumbnail = "",
     this.title = "",
-    this.thumbUrl = "",
-    this.baseThumbUrl = "",
+    this.language = "",
     this.playUrl = "",
     this.steemPosted = false,
     this.status = "",
@@ -143,8 +145,7 @@ class VideoDetails {
         description: asString(json, 'description'),
         thumbnail: asString(json, 'thumbnail'),
         title: asString(json, 'title'),
-        thumbUrl: asString(json, 'thumbUrl'),
-        baseThumbUrl: asString(json, 'baseThumbUrl'),
+        language: asString(json, 'language'),
         playUrl: asString(json, 'playUrl'),
         steemPosted: asBool(json, 'steemPosted'),
         status: asString(json, 'status'),
@@ -172,8 +173,7 @@ class VideoDetails {
         'description': description,
         'thumbnail': thumbnail,
         'title': title,
-        'thumbUrl': thumbUrl,
-        'baseThumbUrl': baseThumbUrl,
+        'language': language,
         'playUrl': playUrl,
         'steemPosted': steemPosted,
         'status': status,
