@@ -1,17 +1,13 @@
-import 'dart:developer';
 
-import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
-import 'package:acela/src/screens/my_account/my_account_screen.dart';
-import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
-import 'package:acela/src/widgets/custom_circle_avatar.dart';
+import 'package:acela/src/widgets/fab_custom.dart';
+import 'package:acela/src/widgets/fab_overlay.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:acela/src/widgets/retry.dart';
@@ -37,6 +33,8 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   late Future<List<VideoDetails>> loadNew;
   late Future<List<VideoDetails>> loadFirstUploads;
   Future<List<VideoDetails>>? loadMyFeedVideos;
+
+  var isMenuOpen = false;
 
   var urls = [
     '${Communicator.tsServer}/mobile/api/feed/home',
@@ -143,7 +141,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
                   author: list[i].owner,
                   title: list[i].title,
                   createdAt:
-                  DateTime.tryParse(list[i].created) ?? DateTime.now(),
+                      DateTime.tryParse(list[i].created) ?? DateTime.now(),
                   duration: list[i].duration,
                   views: list[i].views,
                   permlink: list[i].permlink,
@@ -241,7 +239,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   String getSubtitle() {
     switch (currentIndex) {
       case 0:
-        return '${widget.appData.username ?? 'User'}\'s feed';
+        return '@${widget.appData.username ?? 'User'}\'s feed';
       case 1:
         return 'Home feed';
       case 2:
@@ -257,43 +255,6 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
       default:
         return 'User\'s feed';
     }
-  }
-
-  List<Widget> actions() {
-    return [
-      IconButton(
-        onPressed: () {
-          var route = MaterialPageRoute(
-            builder: (context) => const SearchScreen(),
-          );
-          Navigator.of(context).push(route);
-        },
-        icon: const Icon(Icons.search),
-      ),
-      if (widget.appData.username != null)
-        IconButton(
-          onPressed: () {
-            // uploadClicked(appData);
-          },
-          icon: const Icon(Icons.upload),
-        ),
-      if (widget.appData.username != null)
-        IconButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (c) => MyAccountScreen(data: widget.appData),
-              ),
-            );
-          },
-          icon: CustomCircleAvatar(
-            height: 36,
-            width: 36,
-            url:
-                'https://images.hive.blog/u/${widget.appData.username ?? ''}/avatar',
-          ),
-        )
-    ];
   }
 
   Widget appBarHeader() {
@@ -372,30 +333,129 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     return Scaffold(
       appBar: AppBar(
         title: appBarHeader(),
-        actions: actions(),
         bottom: TabBar(
           controller: _tabController,
           tabs: myTabs,
           isScrollable: true,
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          widget.appData.username != null
-              ? futureBuilderForMyFeed()
-              : pleaseLogIn(),
-          futureBuilderForTrending(0),
-          futureBuilderForTrending(1),
-          futureBuilderForTrending(2),
-          futureBuilderForTrending(3),
-          CommunitiesScreen(
-            didSelectCommunity: null,
-            withoutScaffold: true,
-          ),
-          LeaderboardScreen(withoutScaffold: true),
-        ],
+      body: SafeArea(
+        child: Stack(
+          children: [
+            TabBarView(
+              controller: _tabController,
+              children: [
+                widget.appData.username != null
+                    ? futureBuilderForMyFeed()
+                    : pleaseLogIn(),
+                futureBuilderForTrending(0),
+                futureBuilderForTrending(1),
+                futureBuilderForTrending(2),
+                futureBuilderForTrending(3),
+                CommunitiesScreen(
+                  didSelectCommunity: null,
+                  withoutScaffold: true,
+                ),
+                LeaderboardScreen(withoutScaffold: true),
+              ],
+            ),
+            _fabContainer()
+          ],
+        ),
       ),
+    );
+  }
+
+  List<FabOverItemData> _fabItems() {
+    var threeShorts = FabOverItemData(
+      displayName: '3Shorts',
+      icon: Icons.video_camera_front_outlined,
+      onTap: () {
+        setState(() {
+          isMenuOpen = false;
+        });
+      },
+    );
+    var search = FabOverItemData(
+      displayName: 'Search',
+      icon: Icons.search,
+      onTap: () {
+        setState(() {
+          isMenuOpen = false;
+        });
+      },
+    );
+    var fabItems = [threeShorts, search];
+    if (widget.appData.username != null) {
+      fabItems.add(
+        FabOverItemData(
+          displayName: 'Upload',
+          icon: Icons.upload,
+          onTap: () {
+            setState(() {
+              isMenuOpen = false;
+            });
+          },
+        ),
+      );
+      fabItems.add(
+        FabOverItemData(
+          displayName: 'My Account',
+          icon: Icons.person,
+          url:
+              'https://images.hive.blog/u/${widget.appData.username ?? ''}/avatar',
+          onTap: () {
+            setState(() {
+              isMenuOpen = false;
+            });
+          },
+        ),
+      );
+    } else {
+      fabItems.add(
+        FabOverItemData(
+          displayName: 'Log in',
+          icon: Icons.person,
+          onTap: () {
+            setState(() {
+              isMenuOpen = false;
+            });
+          },
+        ),
+      );
+    }
+    fabItems.add(
+      FabOverItemData(
+        displayName: 'Close',
+        icon: Icons.close,
+        onTap: () {
+          setState(() {
+            isMenuOpen = false;
+          });
+        },
+      ),
+    );
+    return fabItems;
+  }
+
+  Widget _fabContainer() {
+    if (!isMenuOpen) {
+      return FabCustom(
+        icon: Icons.bolt,
+        onTap: () {
+          setState(() {
+            isMenuOpen = true;
+          });
+        },
+      );
+    }
+    return FabOverlay(
+      items: _fabItems(),
+      onBackgroundTap: () {
+        setState(() {
+          isMenuOpen = false;
+        });
+      },
     );
   }
 }

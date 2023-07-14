@@ -1,14 +1,17 @@
+import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 
 class FabOverItemData {
   String displayName;
   IconData icon;
   Function onTap;
+  String? url;
 
   FabOverItemData({
     required this.displayName,
     required this.icon,
     required this.onTap,
+    this.url
   });
 }
 
@@ -22,6 +25,16 @@ class FabOverlay extends StatelessWidget {
   final Function onBackgroundTap;
 
   Widget _singleItem(BuildContext context, FabOverItemData data) {
+    late Widget child;
+    if (data.url != null) {
+      child = CustomCircleAvatar(
+        height: 40,
+        width: 40,
+        url: data.url!,
+      );
+    } else {
+      child = Icon(data.icon);
+    }
     return Column(
       children: [
         const SizedBox(height: 5),
@@ -31,17 +44,19 @@ class FabOverlay extends StatelessWidget {
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
-                color: Theme.of(context).backgroundColor,
+                color: Theme
+                    .of(context)
+                    .backgroundColor,
               ),
               child: Text(data.displayName),
             ),
             const SizedBox(width: 5),
             FloatingActionButton(
-              mini: true,
-              onPressed: () {
-                data.onTap();
-              },
-              child: Icon(data.icon),
+                mini: true,
+                onPressed: () {
+                  data.onTap();
+                },
+                child: child
             ),
           ],
         ),
@@ -58,7 +73,10 @@ class FabOverlay extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor.withAlpha(200),
+          color: Theme
+              .of(context)
+              .scaffoldBackgroundColor
+              .withAlpha(200),
         ),
         child: Row(
           children: [

@@ -39,6 +39,7 @@ class Communicator {
 
   // iOS Devices - Local server testing different router
   static const tsServer = "http://192.168.1.2:13050";
+
   // static const fsServer = "http://192.168.1.2:1080/files";
 
   // static const hiveApiUrl = 'api.hive.blog';
@@ -423,6 +424,52 @@ class Communicator {
       log('Error from server is ${e.toString()}');
       rethrow;
     }
+  }
+
+  Future<List<VideoDetails>> loadAnyFeed(Uri uri) async {
+    var request = http.Request('GET', uri);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var videos = videoItemsFromString(string);
+      return videos;
+    } else {
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
+    }
+  }
+
+  Future<List<VideoDetails>> loadNewHomeFeed(bool shorts, [int skip = 0]) async {
+    return await loadAnyFeed(Uri.parse(
+        '${Communicator.tsServer}/mobile/api/feed/home?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
+  }
+
+  Future<List<VideoDetails>> loadNewTrendingFeed(bool shorts, [int skip = 0]) async {
+    return await loadAnyFeed(Uri.parse(
+        '${Communicator.tsServer}/mobile/api/feed/trending?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
+  }
+
+  Future<List<VideoDetails>> loadNewNewFeed(bool shorts, [int skip = 0]) async {
+    return await loadAnyFeed(Uri.parse(
+        '${Communicator.tsServer}/mobile/api/feed/new?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
+  }
+
+  Future<List<VideoDetails>> loadNewFirstUploadsFeed(bool shorts, [int skip = 0]) async {
+    return await loadAnyFeed(Uri.parse(
+        '${Communicator.tsServer}/mobile/api/feed/first?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
+  }
+
+  Future<List<VideoDetails>> loadNewUserFeed(String user, bool shorts, [int skip = 0]) async {
+    return await loadAnyFeed(Uri.parse(
+        '${Communicator.tsServer}/mobile/api/feed/user/@$user/?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
+  }
+
+  Future<List<VideoDetails>> loadNewCommunityFeed(String community, bool shorts, [int skip = 0]) async {
+    return await loadAnyFeed(Uri.parse(
+        '${Communicator.tsServer}/mobile/api/feed/community/@$community/?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
   }
 
   Future<List<VideoDetails>> loadMyFeedVideos(HiveUserData user) async {
