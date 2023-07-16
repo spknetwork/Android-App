@@ -442,12 +442,14 @@ class Communicator {
     }
   }
 
-  Future<List<VideoDetails>> loadNewHomeFeed(bool shorts, [int skip = 0]) async {
+  Future<List<VideoDetails>> loadNewHomeFeed(bool shorts,
+      [int skip = 0]) async {
     return await loadAnyFeed(Uri.parse(
         '${Communicator.tsServer}/mobile/api/feed/home?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
   }
 
-  Future<List<VideoDetails>> loadNewTrendingFeed(bool shorts, [int skip = 0]) async {
+  Future<List<VideoDetails>> loadNewTrendingFeed(bool shorts,
+      [int skip = 0]) async {
     return await loadAnyFeed(Uri.parse(
         '${Communicator.tsServer}/mobile/api/feed/trending?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
   }
@@ -457,28 +459,33 @@ class Communicator {
         '${Communicator.tsServer}/mobile/api/feed/new?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
   }
 
-  Future<List<VideoDetails>> loadNewFirstUploadsFeed(bool shorts, [int skip = 0]) async {
+  Future<List<VideoDetails>> loadNewFirstUploadsFeed(bool shorts,
+      [int skip = 0]) async {
     return await loadAnyFeed(Uri.parse(
         '${Communicator.tsServer}/mobile/api/feed/first?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
   }
 
-  Future<List<VideoDetails>> loadNewUserFeed(String user, bool shorts, [int skip = 0]) async {
+  Future<List<VideoDetails>> loadNewUserFeed(String user, bool shorts,
+      [int skip = 0]) async {
     return await loadAnyFeed(Uri.parse(
         '${Communicator.tsServer}/mobile/api/feed/user/@$user/?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
   }
 
-  Future<List<VideoDetails>> loadNewCommunityFeed(String community, bool shorts, [int skip = 0]) async {
+  Future<List<VideoDetails>> loadNewCommunityFeed(String community, bool shorts,
+      [int skip = 0]) async {
     return await loadAnyFeed(Uri.parse(
         '${Communicator.tsServer}/mobile/api/feed/community/@$community/?shorts=${shorts ? 'true' : 'false'}&skip=$skip'));
   }
 
-  Future<List<VideoDetails>> loadMyFeedVideos(HiveUserData user) async {
+  Future<List<VideoDetails>> loadMyFeedVideos(HiveUserData user,
+      [bool shorts = false]) async {
     log("Starting my feed videos ${DateTime.now().toIso8601String()}");
-    var cookie = await getValidCookie(user);
-    var request = http.Request(
-        'GET', Uri.parse('${Communicator.tsServer}/mobile/api/feed/my'));
-    Map<String, String> map = {"cookie": cookie};
-    request.headers.addAll(map);
+    var text =
+        '${Communicator.tsServer}/mobile/api/feed/@${user.username ?? 'sagarkothari88'}';
+    if (shorts) {
+      text = '$text?shorts=true';
+    }
+    var request = http.Request('GET', Uri.parse(text));
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
