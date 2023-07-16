@@ -1,3 +1,4 @@
+/*
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/stories/stories_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -130,3 +131,4 @@ class _StoriesFeedScreenState extends State<StoriesFeedScreen> {
     return isLoading ? loadingData() : carousel(userData);
   }
 }
+*/

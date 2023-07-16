@@ -1,11 +1,8 @@
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
-import 'package:acela/src/models/stories/stories_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_info.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:better_player/better_player.dart';
@@ -22,17 +19,15 @@ class StoryPlayer extends StatefulWidget {
     required this.hlsUrl,
     required this.thumbUrl,
     required this.didFinish,
-    required this.item,
+    required this.owner,
+    required this.permlink,
     required this.data,
-    required this.homeFeedItem,
-    required this.isPortrait,
   }) : super(key: key);
   final String playUrl;
   final Function didFinish;
-  final StoriesFeedResponseItem? item;
   final HiveUserData data;
-  final HomeFeedItem? homeFeedItem;
-  final bool isPortrait;
+  final String owner;
+  final String permlink;
   final String thumbUrl;
   final String hlsUrl;
 
@@ -109,17 +104,17 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: Icon(Icons.share),
         onPressed: () {
           Share.share(
-              'https://3speak.tv/watch?v=${widget.item?.owner ?? widget.homeFeedItem?.author ?? ''}/${widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? ''}');
+              'https://3speak.tv/watch?v=${widget.owner}/${widget.permlink}');
         },
       ),
       SizedBox(height: 10),
       IconButton(
         icon: Icon(Icons.info),
         onPressed: () {
-          var screen =
-          VideoDetailsInfoWidget(details: null, item: widget.item);
-          var route = MaterialPageRoute(builder: (c) => screen);
-          Navigator.of(context).push(route);
+          // var screen =
+          // VideoDetailsInfoWidget(details: null, item: widget.item);
+          // var route = MaterialPageRoute(builder: (c) => screen);
+          // Navigator.of(context).push(route);
         },
       ),
       SizedBox(height: 10),
@@ -127,9 +122,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: Icon(Icons.comment),
         onPressed: () {
           var screen = VideoDetailsComments(
-            author: widget.item?.owner ?? widget.homeFeedItem?.author ?? '',
-            permlink:
-            widget.item?.permlink ?? widget.homeFeedItem?.permlink ?? '',
+            author: widget.owner,
+            permlink: widget.permlink,
             rpc: widget.data.rpc,
           );
           var route = MaterialPageRoute(builder: (c) => screen);
@@ -171,13 +165,10 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: CustomCircleAvatar(
           height: 40,
           width: 40,
-          url: server.userOwnerThumb(
-              widget.item?.owner ?? widget.homeFeedItem?.author ?? ''),
+          url: server.userOwnerThumb(widget.owner),
         ),
         onPressed: () {
-          var screen = UserChannelScreen(
-            owner: widget.item?.owner ?? widget.homeFeedItem?.author ?? '',
-          );
+          var screen = UserChannelScreen(owner: widget.owner);
           var route = MaterialPageRoute(builder: (c) => screen);
           Navigator.of(context).push(route);
         },

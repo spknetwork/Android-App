@@ -4,8 +4,11 @@ import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
+import 'package:acela/src/widgets/story_player.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' show get;
+import 'package:wakelock/wakelock.dart';
 
 class TabBasedStoriesScreen extends StatefulWidget {
   const TabBasedStoriesScreen({
@@ -27,6 +30,7 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
   late Future<List<VideoDetails>> loadNew;
   late Future<List<VideoDetails>> loadFirstUploads;
   Future<List<VideoDetails>>? loadMyFeedVideos;
+  CarouselController controller = CarouselController();
 
   var isMenuOpen = false;
 
@@ -73,6 +77,7 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
     if (widget.appData.username != null) {
       loadMyFeedVideos = Communicator().loadMyFeedVideos(widget.appData, true);
     }
+    Wakelock.enable();
   }
 
   Future<List<VideoDetails>> _loadFeed(String url) async {
@@ -88,6 +93,7 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+    Wakelock.disable();
   }
 
   void reloadWithIndex(int index) {
@@ -134,7 +140,7 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
               reloadWithIndex(index);
             });
           }
-          return Center(child: Text('Do something'));
+          return carousel(list);
         } else {
           return LoadingScreen(
             title: 'Loading Data',
@@ -177,7 +183,7 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
               }
             });
           }
-          return Center(child: Text('Do something'));
+          return carousel(list);
         } else {
           return LoadingScreen(
             title: 'Loading Data',
@@ -272,6 +278,43 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
     );
   }
 
+  Widget _fullPost(VideoDetails item) {
+    return StoryPlayer(
+      playUrl: item.getVideoUrl(widget.appData),
+      hlsUrl: item.playUrl,
+      thumbUrl: item.getThumbnail(),
+      data: widget.appData,
+      owner: item.owner,
+      permlink: item.permlink,
+      didFinish: () {
+        setState(() {
+          controller.nextPage();
+        });
+      },
+    );
+  }
+
+  Widget carousel(List<VideoDetails> items) {
+    return Container(
+      child: CarouselSlider(
+        carouselController: controller,
+        options: CarouselOptions(
+          height: MediaQuery.of(context).size.height,
+          enableInfiniteScroll: true,
+          viewportFraction: 1,
+          scrollDirection: Axis.vertical,
+        ),
+        items: items.map((item) {
+          return Builder(
+            builder: (BuildContext context) {
+              return _fullPost(item);
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.appData.username != null && loadMyFeedVideos == null) {
@@ -285,14 +328,6 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
           tabs: myTabs,
           isScrollable: true,
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Image.asset(
-              'assets/branding/three_shorts_icon.png',
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: TabBarView(

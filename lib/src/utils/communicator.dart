@@ -22,7 +22,7 @@ import 'package:http/http.dart' as http;
 
 class Communicator {
   // Production
-  // static const tsServer = "https://studio.3speak.tv";
+  static const tsServer = "https://studio.3speak.tv";
   static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
@@ -38,7 +38,7 @@ class Communicator {
   // static const fsServer = "http://192.168.29.53:1080/files";
 
   // iOS Devices - Local server testing different router
-  static const tsServer = "http://192.168.1.2:13050";
+  // static const tsServer = "http://192.168.1.2:13050";
 
   // static const fsServer = "http://192.168.1.2:1080/files";
 

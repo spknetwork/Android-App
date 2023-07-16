@@ -7,6 +7,7 @@ import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/stories_screen.dart';
+import 'package:acela/src/screens/stories/tab_based_stories.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -96,17 +97,17 @@ class DrawerScreen extends StatelessWidget {
     );
   }
 
-  Widget _shorts(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.video_camera_front_outlined, color: Colors.red),
-      title: const Text("3Speak Shorts"),
-      onTap: () {
-        Navigator.pop(context);
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (c) => const StoriesScreen()));
-      },
-    );
-  }
+  // Widget _shorts(BuildContext context) {
+  //   return ListTile(
+  //     leading: const Icon(Icons.video_camera_front_outlined, color: Colors.red),
+  //     title: const Text("3Speak Shorts"),
+  //     onTap: () {
+  //       Navigator.pop(context);
+  //       Navigator.of(context)
+  //           .push(MaterialPageRoute(builder: (c) => const TabBasedStoriesScreen(appData: widget.)));
+  //     },
+  //   );
+  // }
 
   Widget _drawerHeader(BuildContext context) {
     return DrawerHeader(
@@ -215,8 +216,8 @@ class DrawerScreen extends StatelessWidget {
           _drawerHeader(context),
           user.username == null ? _login(context, user) : _myAccount(context),
           _divider(),
-          _shorts(context),
-          _divider(),
+          // _shorts(context),
+          // _divider(),
           _homeMenu(context),
           _divider(),
           _firstUploads(context),
