@@ -56,6 +56,19 @@ class VideoDetails {
     }
   }
 
+  String rootVideoV2M3U8() {
+    if (video_v2.contains('ipfs')) {
+      // example
+      // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/manifest.m3u8
+      // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
+      // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
+      var url = video_v2.replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
+      log('Root Play url is - $url');
+      return url;
+    }
+    return video_v2;
+  }
+
   String videoV2M3U8(HiveUserData data) {
     if (video_v2.contains('ipfs')) {
       // example

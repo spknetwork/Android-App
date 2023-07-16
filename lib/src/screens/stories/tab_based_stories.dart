@@ -199,17 +199,17 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
       case 0:
         return '@spknetwork.chat';
       case 1:
-        return '@${widget.appData.username ?? 'User'}\'s feed';
+        return '@${widget.appData.username ?? 'User'}\'s feed - 3Shorts';
       case 2:
-        return 'Home feed';
+        return 'Home feed - 3Shorts';
       case 3:
-        return 'Trending feed';
+        return 'Trending feed - 3Shorts';
       case 4:
-        return 'New feed';
+        return 'New feed - 3Shorts';
       case 5:
-        return 'First uploads';
+        return 'First uploads - 3Shorts';
       default:
-        return 'User\'s feed';
+        return 'User\'s feed - 3Shorts';
     }
   }
 
@@ -238,15 +238,10 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
 
   Widget appBarHeader() {
     return ListTile(
-      leading: CircleAvatar(
-        child: ClipOval(
-          child: Image.asset(
-            'assets/ctt-logo.png',
-            height: 40,
-            width: 40,
-          ),
-        ),
-        radius: 20,
+      leading: Image.asset(
+        'assets/branding/three_shorts_icon.png',
+        height: 40,
+        width: 40,
       ),
       title: Text('3Shorts'),
       subtitle: Text(getSubtitle()),
@@ -280,8 +275,8 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
 
   Widget _fullPost(VideoDetails item) {
     return StoryPlayer(
-      playUrl: item.getVideoUrl(widget.appData),
-      hlsUrl: item.playUrl,
+      playUrl: item.videoV2M3U8(widget.appData),
+      hlsUrl: item.rootVideoV2M3U8(),
       thumbUrl: item.getThumbnail(),
       data: widget.appData,
       owner: item.owner,
