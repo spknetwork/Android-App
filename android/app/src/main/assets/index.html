@@ -104,7 +104,7 @@
       }
 
       function customStringEscaping(string) {
-        return string.split("'").join("’").split('"').join("“");
+        return string.replace("’", "'").replace('“', '"');
       }
 
       function buildJSONMetadata(
@@ -150,6 +150,8 @@
               lang: language,
               firstUpload: firstUpload,
               video_v2: videoV2,
+              app: "3speak/Android-App/2.0.0+76",
+              developer: "https://ecency.com/@sagarkothari88",
               sourceMap: [
                 ...sourceMap,
                 {
