@@ -1,17 +1,25 @@
+import 'dart:developer';
 
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
+import 'package:acela/src/screens/my_account/my_account_screen.dart';
+import 'package:acela/src/screens/search/search_screen.dart';
+import 'package:acela/src/screens/settings/settings_screen.dart';
+import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/fab_custom.dart';
 import 'package:acela/src/widgets/fab_overlay.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:acela/src/widgets/retry.dart';
+import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' show get;
 
 class GQLFeedScreen extends StatefulWidget {
@@ -338,6 +346,14 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           tabs: myTabs,
           isScrollable: true,
         ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Image.asset(
+              'assets/branding/three_shorts_icon.png',
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Stack(
@@ -370,6 +386,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     var threeShorts = FabOverItemData(
       displayName: '3Shorts',
       icon: Icons.video_camera_front_outlined,
+      image: 'assets/branding/three_shorts_icon.png',
       onTap: () {
         setState(() {
           isMenuOpen = false;
@@ -382,6 +399,10 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
       onTap: () {
         setState(() {
           isMenuOpen = false;
+          var route = MaterialPageRoute(
+            builder: (context) => const SearchScreen(),
+          );
+          Navigator.of(context).push(route);
         });
       },
     );
@@ -394,6 +415,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           onTap: () {
             setState(() {
               isMenuOpen = false;
+              uploadClicked(widget.appData);
             });
           },
         ),
@@ -407,6 +429,9 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           onTap: () {
             setState(() {
               isMenuOpen = false;
+              var screen = MyAccountScreen(data: widget.appData);
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).push(route);
             });
           },
         ),
@@ -419,11 +444,42 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           onTap: () {
             setState(() {
               isMenuOpen = false;
+              var screen = HiveAuthLoginScreen(appData: widget.appData);
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).push(route);
             });
           },
         ),
       );
     }
+    fabItems.add(
+      FabOverItemData(
+        displayName: 'Important 3Speak Links',
+        icon: Icons.link,
+        onTap: () {
+          setState(() {
+            isMenuOpen = false;
+            var screen = const AboutHomeScreen();
+            var route = MaterialPageRoute(builder: (_) => screen);
+            Navigator.of(context).push(route);
+          });
+        },
+      ),
+    );
+    fabItems.add(
+      FabOverItemData(
+        displayName: 'Settings',
+        icon: Icons.settings,
+        onTap: () {
+          setState(() {
+            isMenuOpen = false;
+            var screen = const SettingsScreen();
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
+          });
+        },
+      ),
+    );
     fabItems.add(
       FabOverItemData(
         displayName: 'Close',
@@ -456,6 +512,128 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           isMenuOpen = false;
         });
       },
+    );
+  }
+
+  void uploadClicked(HiveUserData data) {
+    if (data.username != null && data.postingKey != null) {
+      showBottomSheetForRecordingTypes(data);
+    } else if (data.keychainData != null) {
+      var expiry = data.keychainData!.hasExpiry;
+      log('Expiry is $expiry');
+      try {
+        var longValue = int.tryParse(expiry) ?? 0;
+        var expiryDate = DateTime.fromMillisecondsSinceEpoch(longValue);
+        var nowDate = DateTime.now();
+        log('Expiry Date is $expiryDate, now date is $nowDate');
+        var compareResult = nowDate.compareTo(expiryDate);
+        log('compare result - $compareResult');
+        if (compareResult == -1) {
+          showBottomSheetForRecordingTypes(data);
+        } else {
+          showError('Invalid Session. Please login again.');
+          logout(data);
+        }
+      } catch (e) {
+        showError('Invalid Session. Please login again.');
+        logout(data);
+      }
+    } else {
+      showError('Invalid Session. Please login again.');
+      logout(data);
+    }
+  }
+
+  void showError(String string) {
+    var snackBar = SnackBar(content: Text('Error: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void showBottomSheetForVideoOptions(bool isReel, HiveUserData data) {
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('How do you want to upload?'),
+      androidBorderRadius: 30,
+      actions: <BottomSheetAction>[
+        BottomSheetAction(
+          title: const Text('Camera'),
+          leading: const Icon(Icons.camera_alt),
+          onPressed: (c) {
+            var screen = NewVideoUploadScreen(
+              camera: true,
+              isReel: isReel,
+              data: data,
+            );
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).pop();
+            Navigator.of(context).push(route);
+          },
+        ),
+        BottomSheetAction(
+            title: const Text('Photo Gallery'),
+            leading: const Icon(Icons.photo_library),
+            onPressed: (c) {
+              var screen = NewVideoUploadScreen(
+                camera: false,
+                isReel: isReel,
+                data: data,
+              );
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).pop();
+              Navigator.of(context).push(route);
+            }),
+      ],
+      cancelAction: CancelAction(
+        title: const Text('Cancel'),
+      ),
+    );
+  }
+
+  void showBottomSheetForRecordingTypes(HiveUserData data) {
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('What do you want to upload?'),
+      androidBorderRadius: 30,
+      actions: <BottomSheetAction>[
+        BottomSheetAction(
+          title: const Text('3Speak Short'),
+          leading: const Icon(Icons.camera_outlined),
+          onPressed: (c) {
+            Navigator.of(context).pop();
+            showBottomSheetForVideoOptions(true, data);
+          },
+        ),
+        BottomSheetAction(
+            title: const Text('3Speak Video'),
+            leading: const Icon(Icons.video_collection),
+            onPressed: (c) {
+              Navigator.of(context).pop();
+              showBottomSheetForVideoOptions(false, data);
+            }),
+      ],
+      cancelAction: CancelAction(title: const Text('Cancel')),
+    );
+  }
+
+  void logout(HiveUserData data) async {
+    const storage = FlutterSecureStorage();
+    await storage.delete(key: 'username');
+    await storage.delete(key: 'postingKey');
+    await storage.delete(key: 'cookie');
+    await storage.delete(key: 'hasId');
+    await storage.delete(key: 'hasExpiry');
+    await storage.delete(key: 'hasAuthKey');
+    String resolution = await storage.read(key: 'resolution') ?? '480p';
+    String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+    server.updateHiveUserData(
+      HiveUserData(
+        username: null,
+        postingKey: null,
+        keychainData: null,
+        cookie: null,
+        resolution: resolution,
+        rpc: rpc,
+      ),
     );
   }
 }

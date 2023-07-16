@@ -6,12 +6,14 @@ class FabOverItemData {
   IconData icon;
   Function onTap;
   String? url;
+  String? image;
 
   FabOverItemData({
     required this.displayName,
     required this.icon,
     required this.onTap,
-    this.url
+    this.url,
+    this.image
   });
 }
 
@@ -32,6 +34,8 @@ class FabOverlay extends StatelessWidget {
         width: 40,
         url: data.url!,
       );
+    } else if (data.image != null) {
+      child = Image.asset(data.image!, width: 30, height: 30);
     } else {
       child = Icon(data.icon);
     }
