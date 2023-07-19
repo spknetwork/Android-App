@@ -50,8 +50,8 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
     String durationString = widget.duration != null
         ? " 🕚 ${Utilities.formatTime(widget.duration!.toInt())} "
         : "";
-    String viewsString =
-        widget.views != null ? "👁️ ${widget.views} views" : "";
+    // String viewsString =
+    //     widget.views != null ? "👁️ ${widget.views} views" : "";
     return Stack(
       children: [
         ListTile(
@@ -126,17 +126,6 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
                         style: TextStyle(color: Colors.white)),
                   ),
                 Spacer(),
-                if (viewsString.isNotEmpty)
-                  Container(
-                    padding: EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(viewsString,
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                Spacer(),
                 if (durationString.isNotEmpty)
                   Container(
                     padding: EdgeInsets.all(2),
@@ -198,15 +187,16 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
       future: _fetchHiveInfo,
       builder: (builder, snapshot) {
         if (snapshot.hasError) {
-          return const Text('Error loading hive payout info');
+          return const Text('Error loading votes data');
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data as PayoutInfo;
           String priceAndVotes =
-              "\$ ${data.payout?.toStringAsFixed(3)} · 👍 ${data.upVotes} · 👎 ${data.downVotes}";
+              // "\$ ${data.payout?.toStringAsFixed(3)} · 👍 ${data.upVotes} · 👎 ${data.downVotes}";
+              "👍 ${data.upVotes} · 👎 ${data.downVotes}";
           return Text(priceAndVotes);
         } else {
-          return const Text('Loading hive payout info');
+          return const Text('..Loading..');
         }
       },
     );

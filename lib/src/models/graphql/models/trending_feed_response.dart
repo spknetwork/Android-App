@@ -22,9 +22,11 @@ class GraphQlFeedResponse {
 
 class GraphQlFeedResponseData {
   TrendingFeed? trendingFeed;
+  TrendingFeed? socialFeed;
 
   GraphQlFeedResponseData({
     this.trendingFeed,
+    this.socialFeed,
   });
 
   factory GraphQlFeedResponseData.fromRawJson(String str) => GraphQlFeedResponseData.fromJson(json.decode(str));
@@ -33,10 +35,12 @@ class GraphQlFeedResponseData {
 
   factory GraphQlFeedResponseData.fromJson(Map<String, dynamic> json) => GraphQlFeedResponseData(
     trendingFeed: json["trendingFeed"] == null ? null : TrendingFeed.fromJson(json["trendingFeed"]),
+    socialFeed: json["socialFeed"] == null ? null : TrendingFeed.fromJson(json["socialFeed"]),
   );
 
   Map<String, dynamic> toJson() => {
     "trendingFeed": trendingFeed?.toJson(),
+    "socialFeed": socialFeed?.toJson(),
   };
 }
 
