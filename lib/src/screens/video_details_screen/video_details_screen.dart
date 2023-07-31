@@ -509,13 +509,15 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                   } else {
                     var item = recommendations[index - 3];
                     return NewFeedListItem(
-                      rpc: appData.rpc,
                       thumbUrl: server.resizedImage(item.image),
                       author: item.owner,
                       title: item.title,
                       createdAt: null,
                       duration: null,
                       views: null,
+                      comments: null,
+                      hiveRewards: null,
+                      votes: null,
                       permlink: item.mediaid,
                       onTap: () {
                         _betterPlayerController.pause();

@@ -46,7 +46,7 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
     Tab(icon: Icon(Icons.home)),
     Tab(icon: Icon(Icons.local_fire_department)),
     Tab(icon: Icon(Icons.play_arrow)),
-    Tab(icon: Icon(Icons.emoji_emotions)),
+    Tab(icon: Icon(Icons.looks_one)),
   ];
 
   var urls = [
@@ -323,6 +323,15 @@ class _TabBasedStoriesScreenState extends State<TabBasedStoriesScreen>
           tabs: myTabs,
           isScrollable: true,
         ),
+        actions: widget.appData.username == null
+            ? [
+                IconButton(onPressed: () {
+                  var screen = HiveAuthLoginScreen(appData: widget.appData);
+                  var route = MaterialPageRoute(builder: (c) => screen);
+                  Navigator.of(context).push(route);
+                }, icon: Icon(Icons.person)),
+              ]
+            : [],
       ),
       body: SafeArea(
         child: TabBarView(

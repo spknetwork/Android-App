@@ -4,9 +4,10 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/graphql/gql_communicator.dart';
 import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
-import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feeds_repository.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
@@ -14,7 +15,6 @@ import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/tab_based_stories.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/fab_custom.dart';
 import 'package:acela/src/widgets/fab_overlay.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -23,6 +23,8 @@ import 'package:acela/src/widgets/retry.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:loading_more_list/loading_more_list.dart';
+import 'package:provider/provider.dart';
 
 class GQLFeedScreen extends StatefulWidget {
   const GQLFeedScreen({
@@ -38,25 +40,20 @@ class GQLFeedScreen extends StatefulWidget {
 
 class _GQLFeedScreenState extends State<GQLFeedScreen>
     with SingleTickerProviderStateMixin {
-  late Future<List<VideoDetails>> loadHome;
-  late Future<List<GQLFeedItem>> loadTrending;
-  late Future<List<GQLFeedItem>> loadNew;
-  late Future<List<GQLFeedItem>> loadFirstUploads;
-  Future<List<VideoDetails>>? loadMyFeedVideos;
 
   var isMenuOpen = false;
 
   List<Tab> myTabs() {
     return widget.appData.username != null ? <Tab>[
       Tab(icon: Icon(Icons.person)),
-      Tab(icon: Icon(Icons.home)),
+      // Tab(icon: Icon(Icons.home)),
       Tab(icon: Icon(Icons.local_fire_department)),
       Tab(icon: Icon(Icons.play_arrow)),
       Tab(icon: Icon(Icons.looks_one)),
       Tab(icon: Icon(Icons.handshake)),
       Tab(icon: Icon(Icons.leaderboard)),
     ] : <Tab>[
-      Tab(icon: Icon(Icons.home)),
+      // Tab(icon: Icon(Icons.home)),
       Tab(icon: Icon(Icons.local_fire_department)),
       Tab(icon: Icon(Icons.play_arrow)),
       Tab(icon: Icon(Icons.looks_one)),
@@ -71,19 +68,12 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: 7);
+    _tabController = TabController(vsync: this, length: 6);
     _tabController.addListener(() {
       setState(() {
         currentIndex = _tabController.index;
       });
     });
-    loadHome = Communicator().loadNewHomeFeed(false);
-    loadTrending = GQLCommunicator().getTrendingFeed();
-    loadNew = GQLCommunicator().getFirstUploadsFeed();
-    loadFirstUploads = GQLCommunicator().getFirstUploadsFeed();
-    if (widget.appData.username != null) {
-      loadMyFeedVideos = Communicator().loadMyFeedVideos(widget.appData);
-    }
   }
 
   @override
@@ -92,182 +82,20 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     super.dispose();
   }
 
-  void reloadWithIndex(int index) {
-    setState(() {
-      if (index == 0) {
-        loadHome = Communicator().loadNewHomeFeed(false);
-      } else if (index == 1) {
-        loadTrending = GQLCommunicator().getTrendingFeed();
-      } else if (index == 2) {
-        loadNew = GQLCommunicator().getFirstUploadsFeed();
-      } else if (index == 3) {
-        loadFirstUploads = GQLCommunicator().getFirstUploadsFeed();
-      }
-    });
-  }
-
-  Widget futureBuilderForTrending(int index) {
-    return FutureBuilder(
-      future: (index == 1)
-          ? loadTrending
-          : (index == 2)
-          ? loadNew
-          : loadFirstUploads,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: RetryScreen(
-              error: snapshot.error?.toString() ?? 'Something went wrong',
-              onRetry: () {
-                reloadWithIndex(index);
-              },
-            ),
-          );
-        } else if (snapshot.connectionState == ConnectionState.done) {
-          var list = snapshot.data as List<GQLFeedItem>;
-          if (list.isEmpty) {
-            return noDataFound(false, () {
-              reloadWithIndex(index);
-            });
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              reloadWithIndex(index);
-            },
-            child: ListView.separated(
-              itemBuilder: (c, i) {
-                return NewFeedListItem(
-                  rpc: widget.appData.rpc,
-                  thumbUrl: list[i].spkvideo?.thumbnailUrl ?? '',
-                  author: list[i].author?.username ?? '',
-                  title: list[i].title ?? '',
-                  createdAt: list[i].createdAt ?? DateTime.now(),
-                  duration: list[i].spkvideo?.duration ?? 0.0,
-                  views: 0,
-                  permlink: list[i].permlink ?? '',
-                  onTap: () {},
-                  onUserTap: () {},
-                );
-              },
-              separatorBuilder: (c, i) =>
-              const Divider(color: Colors.transparent),
-              itemCount: list.length,
-            ),
-          );
-        } else {
-          return LoadingScreen(
-            title: 'Loading Data',
-            subtitle: 'Please wait...',
-          );
-        }
-      },
-    );
-  }
-
-  Widget futureBuilderFeed(bool isMyFeed) {
-    return FutureBuilder(
-      future: isMyFeed ? loadMyFeedVideos : loadHome,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: RetryScreen(
-              error: snapshot.error?.toString() ?? 'Something went wrong',
-              onRetry: () {
-                setState(() {
-                  if (widget.appData.username != null && isMyFeed) {
-                    setState(() {
-                      loadMyFeedVideos =
-                          Communicator().loadMyFeedVideos(widget.appData);
-                    });
-                  } else {
-                    setState(() {
-                      loadHome = Communicator().loadNewHomeFeed(false);
-                    });
-                  }
-                });
-              },
-            ),
-          );
-        } else if (snapshot.connectionState == ConnectionState.done) {
-          var list = snapshot.data as List<VideoDetails>;
-          if (list.isEmpty) {
-            return noDataFound(true, () {
-              setState(() {
-                if (widget.appData.username != null && isMyFeed) {
-                  setState(() {
-                    loadMyFeedVideos =
-                        Communicator().loadMyFeedVideos(widget.appData);
-                  });
-                } else {
-                  setState(() {
-                    loadHome = Communicator().loadNewHomeFeed(false);
-                  });
-                }
-              });
-            });
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              setState(() {
-                if (widget.appData.username != null && isMyFeed) {
-                  setState(() {
-                    loadMyFeedVideos =
-                        Communicator().loadMyFeedVideos(widget.appData);
-                  });
-                } else {
-                  setState(() {
-                    loadHome = Communicator().loadNewHomeFeed(false);
-                  });
-                }
-              });
-            },
-            child: ListView.separated(
-              itemBuilder: (c, i) {
-                return NewFeedListItem(
-                  rpc: widget.appData.rpc,
-                  thumbUrl: list[i].getThumbnail(),
-                  author: list[i].owner,
-                  title: list[i].title,
-                  createdAt:
-                  DateTime.tryParse(list[i].created) ?? DateTime.now(),
-                  duration: list[i].duration,
-                  views: list[i].views,
-                  permlink: list[i].permlink,
-                  onTap: () {},
-                  onUserTap: () {},
-                );
-              },
-              separatorBuilder: (c, i) =>
-              const Divider(color: Colors.transparent),
-              itemCount: list.length,
-            ),
-          );
-        } else {
-          return LoadingScreen(
-            title: 'Loading Data',
-            subtitle: 'Please wait...',
-          );
-        }
-      },
-    );
-  }
-
   String getSubtitle() {
     if (widget.appData.username != null) {
       switch (currentIndex) {
         case 0:
           return '@${widget.appData.username ?? 'User'}\'s feed';
         case 1:
-          return 'Home feed';
-        case 2:
           return 'Trending feed';
-        case 3:
+        case 2:
           return 'New feed';
-        case 4:
+        case 3:
           return 'First uploads';
-        case 5:
+        case 4:
           return 'Communities';
-        case 6:
+        case 5:
           return 'Leaderboard';
         default:
           return 'User\'s feed';
@@ -275,16 +103,14 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     } else {
       switch (currentIndex) {
         case 0:
-          return 'Home feed';
-        case 1:
           return 'Trending feed';
-        case 2:
+        case 1:
           return 'New feed';
-        case 3:
+        case 2:
           return 'First uploads';
-        case 4:
+        case 3:
           return 'Communities';
-        case 5:
+        case 4:
           return 'Leaderboard';
         default:
           return 'User\'s feed';
@@ -312,67 +138,10 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     );
   }
 
-  Widget pleaseLogIn() {
-    return Column(
-      children: [
-        Spacer(),
-        Icon(Icons.rss_feed, size: 60),
-        SizedBox(height: 20),
-        Text(
-          'To see videos\nfrom whom you follow,\nplease login.',
-          textAlign: TextAlign.center,
-          style: Theme
-              .of(context)
-              .textTheme
-              .titleMedium,
-        ),
-        SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            var screen = HiveAuthLoginScreen(appData: widget.appData);
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
-          },
-          child: Text('Login'),
-        ),
-        Spacer(),
-      ],
-    );
-  }
-
-  Widget noDataFound(bool isMyFeed, Function retry) {
-    return Column(
-      children: [
-        Spacer(),
-        Icon(Icons.autorenew, size: 60),
-        SizedBox(height: 20),
-        Text(
-          'We did not find anything to show.\nTap on retry to load again.${isMyFeed
-              ? '\nOR Follow more users'
-              : ''}',
-          textAlign: TextAlign.center,
-          style: Theme
-              .of(context)
-              .textTheme
-              .titleMedium,
-        ),
-        SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            retry();
-          },
-          child: Text('Retry'),
-        ),
-        Spacer(),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.appData.username != null && loadMyFeedVideos == null) {
-      loadMyFeedVideos = Communicator().loadMyFeedVideos(widget.appData);
-    }
+    var appData = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
         title: appBarHeader(),
@@ -400,20 +169,19 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
             TabBarView(
                 controller: _tabController,
                 children: widget.appData.username != null ? [
-                  futureBuilderFeed(true),
-                  futureBuilderFeed(false),
-                  futureBuilderForTrending(1),
-                  futureBuilderForTrending(2),
-                  futureBuilderForTrending(3),
+                  HomeScreenFeedList(feedType: HomeScreenFeedType.userFeed, appData: appData),
+                  HomeScreenFeedList(feedType: HomeScreenFeedType.trendingFeed, appData: appData),
+                  HomeScreenFeedList(feedType: HomeScreenFeedType.newUploads, appData: appData),
+                  HomeScreenFeedList(feedType: HomeScreenFeedType.firstUploads, appData: appData),
                   CommunitiesScreen(
                     didSelectCommunity: null,
                     withoutScaffold: true,
                   ),
                   LeaderboardScreen(withoutScaffold: true),
-                ] : [futureBuilderFeed(false),
-                  futureBuilderForTrending(1),
-                  futureBuilderForTrending(2),
-                  futureBuilderForTrending(3),
+                ] : [
+                  HomeScreenFeedList(feedType: HomeScreenFeedType.trendingFeed, appData: appData),
+                  HomeScreenFeedList(feedType: HomeScreenFeedType.newUploads, appData: appData),
+                  HomeScreenFeedList(feedType: HomeScreenFeedType.firstUploads, appData: appData),
                   CommunitiesScreen(
                     didSelectCommunity: null,
                     withoutScaffold: true,

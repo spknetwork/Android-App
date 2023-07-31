@@ -30,7 +30,7 @@ class _CommunitiesScreenState extends State<CommunitiesScreen> {
   Widget _listTile(CommunityItem item) {
     var formatter = NumberFormat();
     var extra =
-        "${item.about}\n\n${formatter.format(item.subscribers)} subscribers\n\$${formatter.format(item.sumPending)} pending rewards\n${formatter.format(item.numAuthors)} active posters";
+        "${item.about}\n\n${formatter.format(item.subscribers)} subscribers\n${formatter.format(item.numAuthors)} active posters";
     return ListTile(
       leading: CustomCircleAvatar(
         width: 60,

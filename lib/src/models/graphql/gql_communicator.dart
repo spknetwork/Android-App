@@ -35,27 +35,35 @@ class GQLCommunicator {
     }
   }
 
-  Future<List<GQLFeedItem>> getTrendingFeed() async {
+  Future<List<GQLFeedItem>> getTrendingFeed(bool isShorts, int skip) async {
     return getGQLFeed(
         'TrendingFeed',
-        "query TrendingFeed {\n  trendingFeed(spkvideo: {only: true}) {\n    items {\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
+        "query TrendingFeed {\n  trendingFeed(spkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n${skip != 0 ? "pagination: {skip: $skip,  limit: 50}" : ""}\n) {\n    items {\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
         true
     );
   }
 
-  Future<List<GQLFeedItem>> getFirstUploadsFeed() async {
+  Future<List<GQLFeedItem>> getFirstUploadsFeed(bool isShorts, int skip) async {
     return getGQLFeed(
         'FirstUploadsFeed',
-        "query FirstUploadsFeed {\n  socialFeed(spkvideo: {only: true, firstUpload: true}, feedOptions: {}) {\n    items {\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
+        "query FirstUploadsFeed {\n  socialFeed(spkvideo: {only: true, firstUpload: true${isShorts ? ", isShort: true" : ""}}, feedOptions: {}\n${skip != 0 ? "pagination: {skip: $skip,  limit: 50}" : ""}\n) {\n    items {\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
         false
     );
   }
 
-  Future<List<GQLFeedItem>> getNewUploadsFeed() async {
+  Future<List<GQLFeedItem>> getNewUploadsFeed(bool isShorts, int skip) async {
     return getGQLFeed(
         'NewUploadsFeed',
-        "query NewUploadsFeed {\n  socialFeed(spkvideo: {only: true}) {\n    items {\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
+        "query NewUploadsFeed {\n  socialFeed(spkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n${skip != 0 ? "pagination: {skip: $skip,  limit: 50}" : ""}\n) {\n    items {\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
         false
+    );
+  }
+
+  Future<List<GQLFeedItem>> getMyFeed(String username, bool isShorts, int skip) async {
+    return getGQLFeed(
+        'MyFeed',
+        "query MyFeed {\n  trendingFeed(\n    spkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n${skip != 0 ? "pagination: {skip: $skip,  limit: 50}" : ""}\n\n    feedOptions: {byFollower: \"$username\"}\n  ) {\n    items {\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
+        true
     );
   }
 }

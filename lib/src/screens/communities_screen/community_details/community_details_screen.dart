@@ -198,7 +198,7 @@ class _CommunityDetailScreenState extends State<CommunityDetailScreen>
   }
 
   String _generateMarkDown(CommunityDetailsResponse data) {
-    return "## About:\n${data.result.about}\n\n## Information:\n${data.result.description}\n\n## Flags:\n${data.result.flagText}\n\n## Total Authors:\n${data.result.numAuthors}\n\n## Subscribers:\n${data.result.subscribers}\n\n## Pending Rewards:\n\$${data.result.sumPending}\n\n## Created At:\n${Utilities.parseAndFormatDateTime(data.result.createdAt)}";
+    return "## About:\n${data.result.about}\n\n## Information:\n${data.result.description}\n\n## Flags:\n${data.result.flagText}\n\n## Total Authors:\n${data.result.numAuthors}\n\n## Subscribers:\n${data.result.subscribers}\n\n## Created At:\n${Utilities.parseAndFormatDateTime(data.result.createdAt)}";
   }
 
   Widget _descriptionMarkDown(String markDown) {

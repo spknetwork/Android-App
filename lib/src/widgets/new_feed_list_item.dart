@@ -1,8 +1,4 @@
-import 'dart:convert';
-
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
@@ -10,7 +6,6 @@ import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:http/http.dart' as http;
 
 class NewFeedListItem extends StatefulWidget {
   const NewFeedListItem({
@@ -21,10 +16,12 @@ class NewFeedListItem extends StatefulWidget {
     required this.thumbUrl,
     required this.author,
     required this.title,
-    required this.rpc,
     required this.permlink,
     required this.onTap,
     required this.onUserTap,
+    required this.comments,
+    required this.votes,
+    required this.hiveRewards,
   }) : super(key: key);
 
   final DateTime? createdAt;
@@ -33,8 +30,10 @@ class NewFeedListItem extends StatefulWidget {
   final String thumbUrl;
   final String author;
   final String title;
-  final String rpc;
   final String permlink;
+  final int? votes;
+  final int? comments;
+  final double? hiveRewards;
   final Function onTap;
   final Function onUserTap;
 
@@ -50,8 +49,6 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
     String durationString = widget.duration != null
         ? " 🕚 ${Utilities.formatTime(widget.duration!.toInt())} "
         : "";
-    // String viewsString =
-    //     widget.views != null ? "👁️ ${widget.views} views" : "";
     return Stack(
       children: [
         ListTile(
@@ -150,61 +147,9 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
     return listTile();
   }
 
-  Future<PayoutInfo>? _fetchHiveInfo;
-
-  Future<PayoutInfo> fetchHiveInfo(
-      String user, String permlink, String hiveApiUrl) async {
-    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
-    request.body = json.encode({
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "bridge.get_discussion",
-      "params": {"author": user, "permlink": permlink, "observer": ""}
-    });
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      var string = await response.stream.bytesToString();
-      var result = HivePostInfo.fromJsonString(string)
-          .result
-          .resultData
-          .where((element) => element.permlink == permlink)
-          .first;
-      var upVotes = result.activeVotes.where((e) => e.rshares > 0).length;
-      var downVotes = result.activeVotes.where((e) => e.rshares < 0).length;
-      return PayoutInfo(
-        payout: result.payout,
-        downVotes: downVotes,
-        upVotes: upVotes,
-      );
-    } else {
-      print(response.reasonPhrase);
-      throw response.reasonPhrase ?? 'Could not load hive payout info';
-    }
-  }
-
   Widget payoutInfo() {
-    return FutureBuilder(
-      future: _fetchHiveInfo,
-      builder: (builder, snapshot) {
-        if (snapshot.hasError) {
-          return const Text('Error loading votes data');
-        } else if (snapshot.hasData &&
-            snapshot.connectionState == ConnectionState.done) {
-          var data = snapshot.data as PayoutInfo;
-          String priceAndVotes =
-              // "\$ ${data.payout?.toStringAsFixed(3)} · 👍 ${data.upVotes} · 👎 ${data.downVotes}";
-              "👍 ${data.upVotes} · 👎 ${data.downVotes}";
-          return Text(priceAndVotes);
-        } else {
-          return const Text('..Loading..');
-        }
-      },
-    );
+    String priceAndVotes = "👍 ${widget.votes ?? 0} · 💬 ${widget.comments}";
+    return Text(priceAndVotes);
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchHiveInfo = fetchHiveInfo(widget.author, widget.permlink, widget.rpc);
-  }
 }
