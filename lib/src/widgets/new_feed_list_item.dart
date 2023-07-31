@@ -1,5 +1,8 @@
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
+import 'package:acela/src/screens/video_details_screen/new_video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
@@ -22,6 +25,8 @@ class NewFeedListItem extends StatefulWidget {
     required this.comments,
     required this.votes,
     required this.hiveRewards,
+    this.item,
+    this.appData,
   }) : super(key: key);
 
   final DateTime? createdAt;
@@ -36,6 +41,8 @@ class NewFeedListItem extends StatefulWidget {
   final double? hiveRewards;
   final Function onTap;
   final Function onUserTap;
+  final GQLFeedItem? item;
+  final HiveUserData? appData;
 
   @override
   State<NewFeedListItem> createState() => _NewFeedListItemState();
@@ -97,13 +104,19 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
           ),
           onTap: () {
             widget.onTap();
-            var viewModel = VideoDetailsViewModel(
-              author: widget.author,
-              permlink: widget.permlink,
-            );
-            var screen = VideoDetailsScreen(vm: viewModel);
-            var route = MaterialPageRoute(builder: (context) => screen);
-            Navigator.of(context).push(route);
+            if (widget.item == null || widget.appData == null) {
+              var viewModel = VideoDetailsViewModel(
+                author: widget.author,
+                permlink: widget.permlink,
+              );
+              var screen = VideoDetailsScreen(vm: viewModel);
+              var route = MaterialPageRoute(builder: (context) => screen);
+              Navigator.of(context).push(route);
+            } else {
+              var screen = NewVideoDetailsScreen(item: widget.item!, appData: widget.appData!);
+              var route = MaterialPageRoute(builder: (context) => screen);
+              Navigator.of(context).push(route);
+            }
           },
         ),
         Column(

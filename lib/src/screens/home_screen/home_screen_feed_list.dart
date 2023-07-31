@@ -5,6 +5,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 enum HomeScreenFeedType { userFeed, trendingFeed, newUploads, firstUploads }
 
@@ -100,6 +101,7 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    var userData = Provider.of<HiveUserData>(context);
     if (isLoading && !firstPageLoaded) {
       return LoadingScreen(title: 'Loading', subtitle: 'Please wait');
     } else if (hasFailed) {
@@ -154,6 +156,8 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
                 permlink: item.permlink ?? '',
                 onTap: () {},
                 onUserTap: () {},
+                item: item,
+                appData: userData,
               );
             },
             itemCount: items.length % 50 == 0 ? items.length + 1 : items.length,

@@ -20,6 +20,16 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
+class VideoSize {
+  double width;
+  double height;
+
+  VideoSize({
+    required this.width,
+    required this.height,
+  });
+}
+
 class Communicator {
   // Production
   static const tsServer = "https://studio.3speak.tv";
@@ -70,7 +80,7 @@ class Communicator {
     }
   }
 
-  Future<double> getAspectRatio(String playUrl) async {
+  Future<VideoSize> getAspectRatio(String playUrl) async {
     var request = http.Request('GET', Uri.parse(playUrl));
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
@@ -91,15 +101,15 @@ class Communicator {
           var width = double.tryParse(comps[0]);
           var height = double.tryParse(comps[1]);
           if (width != null && height != null) {
-            return width / height;
+            return VideoSize(width: width, height: height);
           } else {
-            return 1.777777778;
+            return VideoSize(width: 320, height: 160);
           }
         } else {
-          return 1.777777778;
+          return VideoSize(width: 320, height: 160);
         }
       } else {
-        return 1.777777778;
+        return VideoSize(width: 320, height: 160);
       }
     } else {
       log(response.reasonPhrase.toString());

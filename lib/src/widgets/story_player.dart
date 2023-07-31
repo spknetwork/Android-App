@@ -57,7 +57,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
   void updateRatio() async {
     var ratio = await Communicator().getAspectRatio(widget.hlsUrl);
     setState(() {
-      aspectRatio = ratio;
+      aspectRatio = ratio.width / ratio.height;
       setupPlayer();
     });
   }

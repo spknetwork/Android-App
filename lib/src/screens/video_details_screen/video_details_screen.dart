@@ -144,7 +144,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           var upVotes = data.activeVotes.where((e) => e.rshares > 0).length;
           var downVotes = data.activeVotes.where((e) => e.rshares < 0).length;
           String priceAndVotes =
-              "\$ ${data.payout.toStringAsFixed(3)} · 👍 $upVotes · 👎 $downVotes";
+              "👍 $upVotes · 👎 $downVotes";
           return Container(
             margin: const EdgeInsets.all(10),
             child: Column(
