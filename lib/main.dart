@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
@@ -23,6 +24,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final Future<void> _futureToLoadData;
+
   // late final FirebaseMessaging _messaging;
   // Create storage
 
@@ -63,6 +65,7 @@ class _MyAppState extends State<MyApp> {
             postingKey: null,
             username: null,
             rpc: 'api.hive.blog',
+            loaded: false,
           ),
           child: StreamProvider<bool>.value(
             value: server.theme,
@@ -109,6 +112,7 @@ class _MyAppState extends State<MyApp> {
         cookie: cookie,
         resolution: resolution,
         rpc: rpc,
+        loaded: true,
       ),
     );
   }
@@ -123,7 +127,16 @@ class AcelaApp extends StatelessWidget {
     var userData = Provider.of<HiveUserData>(context);
     return MaterialApp(
       title: 'Acela - 3Speak App',
-      home: GQLFeedScreen(appData: userData),
+      home: userData.loaded
+          ? userData.username != null
+              ? GQLFeedScreen(appData: userData, username: userData.username!)
+              : GQLFeedScreen(appData: userData, username: null)
+          : Scaffold(
+              appBar: AppBar(title: const Text('3Speak')),
+              body: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
       theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
       debugShowCheckedModeBanner: false,
     );

@@ -1,13 +1,10 @@
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/graphql/gql_communicator.dart';
-import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
-import 'package:acela/src/screens/home_screen/home_screen_feeds_repository.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
@@ -17,22 +14,20 @@ import 'package:acela/src/screens/stories/tab_based_stories.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/widgets/fab_custom.dart';
 import 'package:acela/src/widgets/fab_overlay.dart';
-import 'package:acela/src/widgets/loading_screen.dart';
-import 'package:acela/src/widgets/new_feed_list_item.dart';
-import 'package:acela/src/widgets/retry.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:loading_more_list/loading_more_list.dart';
 import 'package:provider/provider.dart';
 
 class GQLFeedScreen extends StatefulWidget {
   const GQLFeedScreen({
     Key? key,
     required this.appData,
+    required this.username,
   });
 
   final HiveUserData appData;
+  final String? username;
 
   @override
   State<GQLFeedScreen> createState() => _GQLFeedScreenState();
@@ -44,7 +39,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   var isMenuOpen = false;
 
   List<Tab> myTabs() {
-    return widget.appData.username != null ? <Tab>[
+    return widget.username != null ? <Tab>[
       Tab(icon: Icon(Icons.person)),
       // Tab(icon: Icon(Icons.home)),
       Tab(icon: Icon(Icons.local_fire_department)),
@@ -68,7 +63,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: 6);
+    _tabController = TabController(vsync: this, length: widget.username != null ? 6 : 5);
     _tabController.addListener(() {
       setState(() {
         currentIndex = _tabController.index;
@@ -83,10 +78,10 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   }
 
   String getSubtitle() {
-    if (widget.appData.username != null) {
+    if (widget.username != null) {
       switch (currentIndex) {
         case 0:
-          return '@${widget.appData.username ?? 'User'}\'s feed';
+          return '@${widget.username ?? 'User'}\'s feed';
         case 1:
           return 'Trending feed';
         case 2:
@@ -168,7 +163,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           children: [
             TabBarView(
                 controller: _tabController,
-                children: widget.appData.username != null ? [
+                children: widget.username != null ? [
                   HomeScreenFeedList(feedType: HomeScreenFeedType.userFeed, appData: appData),
                   HomeScreenFeedList(feedType: HomeScreenFeedType.trendingFeed, appData: appData),
                   HomeScreenFeedList(feedType: HomeScreenFeedType.newUploads, appData: appData),
@@ -224,7 +219,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
       },
     );
     var fabItems = [threeShorts, search];
-    if (widget.appData.username != null) {
+    if (widget.username != null) {
       fabItems.add(
         FabOverItemData(
           displayName: 'Upload',
@@ -242,7 +237,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           displayName: 'My Account',
           icon: Icons.person,
           url:
-          'https://images.hive.blog/u/${widget.appData.username ?? ''}/avatar',
+          'https://images.hive.blog/u/${widget.username ?? ''}/avatar',
           onTap: () {
             setState(() {
               isMenuOpen = false;
@@ -450,6 +445,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         cookie: null,
         resolution: resolution,
         rpc: rpc,
+        loaded: true,
       ),
     );
   }

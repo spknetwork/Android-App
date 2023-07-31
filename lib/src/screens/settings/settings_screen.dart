@@ -57,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             cookie: cookie,
             resolution: optionName,
             rpc: rpc,
+            loaded: true,
             keychainData: hasId != null &&
                     hasId.isNotEmpty &&
                     hasExpiry != null &&
@@ -131,6 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             cookie: user.cookie,
             resolution: user.resolution,
             rpc: serverUrl,
+            loaded: true,
           ),
         );
       },

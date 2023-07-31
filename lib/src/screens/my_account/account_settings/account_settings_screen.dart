@@ -31,6 +31,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         cookie: null,
         resolution: resolution,
         rpc: rpc,
+        loaded: true,
       ),
     );
     Navigator.of(context).pop();

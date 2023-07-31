@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:acela/src/models/graphql/gql_communicator.dart';
 import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -22,7 +24,8 @@ class HomeScreenFeedList extends StatefulWidget {
   State<HomeScreenFeedList> createState() => _HomeScreenFeedListState();
 }
 
-class _HomeScreenFeedListState extends State<HomeScreenFeedList> with AutomaticKeepAliveClientMixin {
+class _HomeScreenFeedListState extends State<HomeScreenFeedList>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -30,33 +33,36 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList> with AutomaticK
   var firstPageLoaded = false;
   var isLoading = false;
   var hasFailed = false;
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     loadFeed(false);
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent && items.length % 50 == 0) {
+        loadFeed(false);
+      }
+    });
   }
 
-  Future<List<GQLFeedItem>> loadWith(bool firstPage) async {
+  Future<List<GQLFeedItem>> loadWith(bool firstPage) {
     try {
       switch (widget.feedType) {
         case HomeScreenFeedType.trendingFeed:
-          return await GQLCommunicator()
+          return GQLCommunicator()
               .getTrendingFeed(false, firstPage ? 0 : items.length);
         case HomeScreenFeedType.newUploads:
-          return await GQLCommunicator()
+          return GQLCommunicator()
               .getNewUploadsFeed(false, firstPage ? 0 : items.length);
         case HomeScreenFeedType.firstUploads:
-          return await GQLCommunicator()
+          return GQLCommunicator()
               .getFirstUploadsFeed(false, firstPage ? 0 : items.length);
         case HomeScreenFeedType.userFeed:
-          return await GQLCommunicator().getMyFeed(
+          return GQLCommunicator().getMyFeed(
               widget.appData.username ?? 'sagarkothari88',
               false,
               firstPage ? 0 : items.length);
-        default:
-          return await GQLCommunicator()
-              .getTrendingFeed(false, firstPage ? 0 : items.length);
       }
     } catch (e) {
       hasFailed = true;
@@ -69,32 +75,39 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList> with AutomaticK
     if (!firstPageLoaded) {
       setState(() {
         isLoading = true;
+        firstPageLoaded = false;
       });
       var newItems = await loadWith(true);
       setState(() {
         items = newItems;
         isLoading = false;
+        firstPageLoaded = true;
       });
     } else {
       setState(() {
         isLoading = true;
+        if (reset) {
+          firstPageLoaded = false;
+        }
       });
       var newItems = await loadWith(reset);
       setState(() {
-        items = newItems;
+        items = items + newItems;
         isLoading = false;
+        firstPageLoaded = true;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    super.build(context);
+    if (isLoading && !firstPageLoaded) {
       return LoadingScreen(title: 'Loading', subtitle: 'Please wait');
     } else if (hasFailed) {
       return RetryScreen(
-        onRetry: () {
-          loadWith(true);
+        onRetry: () async {
+          loadFeed(true);
         },
         error: 'Something went wrong. Try again.',
       );
@@ -103,10 +116,11 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList> with AutomaticK
         return Center(
           child: Column(
             children: [
-              Text('We did not find anything to show.\nTap on Reload button to try again.'),
+              Text(
+                  'We did not find anything to show.\nTap on Reload button to try again.'),
               ElevatedButton(
                 onPressed: () {
-                  loadWith(true);
+                  loadFeed(true);
                 },
                 child: Text('Reload'),
               )
@@ -116,10 +130,18 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList> with AutomaticK
       } else {
         return RefreshIndicator(
           onRefresh: () async {
-            loadWith(true);
+            loadFeed(true);
           },
-          child: ListView.separated(
+          child: ListView.builder(
+            controller: _scrollController,
             itemBuilder: (c, i) {
+              if (items.length == i) {
+                return ListTile(
+                  leading: CircularProgressIndicator(),
+                  title: Text('Loading next page'),
+                  subtitle: Text('Please wait...'),
+                );
+              }
               var item = items[i];
               return NewFeedListItem(
                 thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
@@ -136,8 +158,7 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList> with AutomaticK
                 onUserTap: () {},
               );
             },
-            separatorBuilder: (c, i) => const Divider(),
-            itemCount: items.length,
+            itemCount: items.length % 50 == 0 ? items.length + 1 : items.length,
           ),
         );
       }

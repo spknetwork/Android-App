@@ -353,6 +353,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             cookie: null,
             resolution: resolution,
             rpc: rpc,
+            loaded: true,
           ),
         );
         Navigator.of(context).pop();
@@ -417,6 +418,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             cookie: null,
             resolution: data.resolution,
             rpc: data.rpc,
+            loaded: true,
           ),
         );
         showMessage(
