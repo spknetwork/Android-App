@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:acela/src/models/graphql/gql_communicator.dart';
 import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';

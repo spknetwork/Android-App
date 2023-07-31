@@ -76,7 +76,6 @@ dependencies:
   pretty_qr_code: ^2.0.2
   webview_flutter: ^4.2.0
   wakelock: ^0.6.2
-  loading_more_list: ^5.0.3
 
 dev_dependencies:
   flutter_test:
