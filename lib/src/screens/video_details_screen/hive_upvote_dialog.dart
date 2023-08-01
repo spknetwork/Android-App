@@ -68,7 +68,6 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
             .where((element) => element.voter == widget.username)
             .length >
         0) {
-      // No need of socket because user has already voted.
     } else {
       socket = WebSocketChannel.connect(
         Uri.parse(Communicator.hiveAuthServer),

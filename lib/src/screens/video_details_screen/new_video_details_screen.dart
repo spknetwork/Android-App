@@ -1,13 +1,22 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
+import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
+import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
+import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:share_plus/share_plus.dart';
+import 'package:http/http.dart' as http;
 
 class NewVideoDetailsScreen extends StatefulWidget {
   const NewVideoDetailsScreen({
@@ -26,18 +35,59 @@ class NewVideoDetailsScreen extends StatefulWidget {
 class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   VideoSize? ratio;
   late BetterPlayerController _betterPlayerController;
+  HivePostInfoPostResultBody? postInfo;
 
   @override
   void initState() {
     super.initState();
     Wakelock.enable();
     loadRatio();
+    loadHiveInfo();
   }
 
   @override
   void dispose() {
     super.dispose();
     Wakelock.disable();
+  }
+
+  void loadHiveInfo() async {
+    setState(() {
+      postInfo = null;
+    });
+    var data = await fetchHiveInfoForThisVideo(widget.appData.rpc);
+    setState(() {
+      postInfo = data;
+    });
+  }
+
+  Future<HivePostInfoPostResultBody> fetchHiveInfoForThisVideo(
+      String hiveApiUrl) async {
+    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
+    request.body = json.encode({
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "bridge.get_discussion",
+      "params": {
+        "author": widget.item.author?.username ?? 'sagarkothari88',
+        "permlink": widget.item.permlink ?? 'ctbtwcxbbd',
+        "observer": ""
+      }
+    });
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var result = HivePostInfo.fromJsonString(string)
+          .result
+          .resultData
+          .where((element) =>
+              element.permlink == (widget.item.permlink ?? 'ctbtwcxbbd'))
+          .first;
+      return result;
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase ?? 'Can not load payout info';
+    }
   }
 
   void setupVideo(String url, VideoSize size) {
@@ -87,7 +137,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     debugPrint('position is $position');
     const platform = MethodChannel('com.example.acela/auth');
     await platform.invokeMethod('playFullscreen', {
-      'url': widget.item.spkvideo?.playUrl ?? '',
+      'url': widget.item.videoV2M3U8(widget.appData),
       'seconds': seconds,
     });
   }
@@ -95,7 +145,9 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   Widget _videoPlayerStack(double screenWidth) {
     if (ratio == null) return Container();
     return SizedBox(
-      height: (ratio!.height >= ratio!.width) ? 460 : (ratio!.height * screenWidth / ratio!.width),
+      height: (ratio!.height >= ratio!.width)
+          ? 460.0
+          : (ratio!.height * screenWidth / ratio!.width),
       child: Stack(
         children: [
           BetterPlayer(
@@ -141,6 +193,151 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
   }
 
+  Widget _header() {
+    String timeInString = widget.item.createdAt != null
+        ? "📝 ${timeago.format(widget.item.createdAt!)}"
+        : "";
+    String durationString = widget.item.spkvideo?.duration != null
+        ? " 🕚 ${Utilities.formatTime(widget.item.spkvideo!.duration!.toInt())} "
+        : "";
+    String votes = "👍 ${widget.item.stats?.numVotes ?? 0}";
+    String comments = "💬 ${widget.item.stats?.numComments ?? 0}";
+    var subtitle = [timeInString, durationString, votes, comments]
+        .where((e) => e.isNotEmpty)
+        .join(" · ");
+    return ListTile(
+      leading: InkWell(
+        child: CircleAvatar(
+          child: ClipOval(
+              child: Image.network(
+            'https://images.hive.blog/u/${widget.item.author?.username ?? 'sagarkothari88'}/avatar',
+            height: 40,
+            width: 40,
+          )),
+          radius: 20,
+        ),
+        onTap: () {
+          var screen = UserChannelScreen(
+              owner: widget.item.author?.username ?? "sagarkothari88");
+          var route = MaterialPageRoute(builder: (_) => screen);
+          Navigator.of(context).push(route);
+        },
+      ),
+      title: Text(widget.item.author?.username ?? "sagarkothari88"),
+      subtitle: Text(subtitle),
+    );
+  }
+
+  void upvotePressed() {
+    if (postInfo == null) return;
+    if (widget.appData.username == null) {
+      showAdaptiveActionSheet(
+        context: context,
+        title: const Text('You are not logged in. Please log in to upvote.'),
+        androidBorderRadius: 30,
+        actions: [
+          BottomSheetAction(title: Text('Log in'), leading: Icon(Icons.login), onPressed: (c){}),
+        ],
+        cancelAction: CancelAction(title: const Text('Cancel')),
+      );
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      clipBehavior: Clip.hardEdge,
+      builder: (context) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.4,
+          child: HiveUpvoteDialog(
+            author: widget.item.author?.username ?? 'sagarkothari88',
+            permlink: widget.item.permlink ?? 'ctbtwcxbbd',
+            username: widget.appData.username ?? "",
+            hasKey: widget.appData.keychainData?.hasId ?? "",
+            hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
+            activeVotes: postInfo!.activeVotes,
+            onClose: () {},
+            onDone: () {
+              loadHiveInfo();
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _actionBar() {
+    return ListTile(
+      title: Row(
+        children: [
+          Spacer(),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.info, color: Colors.blue),
+          ),
+          Spacer(),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.notes, color: Colors.blue),
+          ),
+          Spacer(),
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.comment, color: Colors.blue),
+          ),
+          Spacer(),
+          IconButton(
+            onPressed: () {
+              if (postInfo != null) {
+                upvotePressed();
+              }
+            },
+            icon: Icon(Icons.thumb_up, color: Colors.blue),
+          ),
+          Spacer(),
+          IconButton(
+            onPressed: () {
+              Share.share(
+                  'https://3speak.tv/watch?v=${widget.item.author?.username ?? 'sagarkothari88'}/${widget.item.permlink}');
+            },
+            icon: Icon(Icons.share, color: Colors.blue),
+          ),
+          Spacer(),
+        ],
+      ),
+    );
+  }
+
+  Widget _listView(double screenWidth) {
+    if (ratio == null) return Container();
+    var height = (ratio!.height >= ratio!.width)
+        ? 460.0
+        : (ratio!.height * screenWidth / ratio!.width);
+    var text = widget.item.spkvideo?.body ?? 'No content';
+    if (text.length > 100) {
+      text = text.substring(0, 96);
+      text = "$text...";
+    }
+    return ListView.separated(
+      itemBuilder: (c, i) {
+        if (i == 0) {
+          return Container(height: height);
+        } else if (i == 1) {
+          return ListTile(
+            title: Text(widget.item.title ?? 'No title'),
+          );
+        } else if (i == 2) {
+          return _header();
+        } else if (i == 3) {
+          return _actionBar();
+        }
+      },
+      separatorBuilder: (c, i) =>
+          const Divider(height: 0, color: Colors.transparent),
+      itemCount: 4,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
@@ -151,7 +348,12 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
                 title: 'Loading data',
                 subtitle: 'Please wait',
               )
-            : _videoPlayerStack(width),
+            : Stack(
+                children: [
+                  _videoPlayerStack(width),
+                  _listView(width),
+                ],
+              ),
       ),
     );
   }
