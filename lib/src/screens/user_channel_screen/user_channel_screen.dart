@@ -1,5 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_following.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_profile.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_videos.dart';
@@ -22,9 +23,18 @@ class _UserChannelScreenState extends State<UserChannelScreen>
   var currentIndex = 0;
   var videoKey = GlobalKey<UserChannelVideosState>();
 
-  static const List<Tab> tabs = [
-    Tab(text: 'Videos'),
-    Tab(text: 'About'),
+  static List<Tab> tabs = [
+    Tab(
+      icon: Icon(Icons.video_camera_front_outlined),
+    ),
+    Tab(
+      icon: Image.asset(
+        'assets/branding/three_shorts_icon.png',
+        width: 30,
+        height: 30,
+      ),
+    ),
+    Tab(icon: Icon(Icons.info)),
     Tab(text: 'Followers'),
     Tab(text: 'Following'),
   ];
@@ -46,14 +56,14 @@ class _UserChannelScreenState extends State<UserChannelScreen>
     _tabController.dispose();
   }
 
-  Widget _sortButton() {
-    return IconButton(
-      onPressed: () {
-        _showBottomSheet();
-      },
-      icon: const Icon(Icons.sort),
-    );
-  }
+  // Widget _sortButton() {
+  //   return IconButton(
+  //     onPressed: () {
+  //       _showBottomSheet();
+  //     },
+  //     icon: const Icon(Icons.sort),
+  //   );
+  // }
 
   void _showBottomSheet() {
     showAdaptiveActionSheet(
@@ -96,7 +106,7 @@ class _UserChannelScreenState extends State<UserChannelScreen>
             Text(widget.owner)
           ],
         ),
-        actions: currentIndex == 0 ? [_sortButton()] : [],
+        actions: [], //currentIndex == 0 ? [_sortButton()] : [],
         bottom: TabBar(
           controller: _tabController,
           tabs: tabs,
@@ -106,8 +116,16 @@ class _UserChannelScreenState extends State<UserChannelScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          UserChannelVideos(
-              key: videoKey, owner: widget.owner, rpc: appData.rpc),
+          HomeScreenFeedList(
+            appData: appData,
+            feedType: HomeScreenFeedType.userChannelFeed,
+            owner: widget.owner,
+          ),
+          HomeScreenFeedList(
+            appData: appData,
+            feedType: HomeScreenFeedType.userChannelShorts,
+            owner: widget.owner,
+          ),
           UserChannelProfileWidget(owner: widget.owner),
           UserChannelFollowingWidget(owner: widget.owner, isFollowers: true),
           UserChannelFollowingWidget(owner: widget.owner, isFollowers: false),

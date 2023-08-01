@@ -7,17 +7,26 @@ import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-enum HomeScreenFeedType { userFeed, trendingFeed, newUploads, firstUploads }
+enum HomeScreenFeedType {
+  userFeed,
+  trendingFeed,
+  newUploads,
+  firstUploads,
+  userChannelFeed,
+  userChannelShorts,
+}
 
 class HomeScreenFeedList extends StatefulWidget {
   const HomeScreenFeedList({
     Key? key,
     required this.appData,
     required this.feedType,
+    this.owner,
   });
 
   final HiveUserData appData;
   final HomeScreenFeedType feedType;
+  final String? owner;
 
   @override
   State<HomeScreenFeedList> createState() => _HomeScreenFeedListState();
@@ -39,7 +48,9 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
     super.initState();
     loadFeed(false);
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent && items.length % 50 == 0) {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent &&
+          items.length % 50 == 0) {
         loadFeed(false);
       }
     });
@@ -62,6 +73,12 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
               widget.appData.username ?? 'sagarkothari88',
               false,
               firstPage ? 0 : items.length);
+        case HomeScreenFeedType.userChannelFeed:
+          return GQLCommunicator().getUserFeed(widget.owner ?? 'sagarkothari88',
+              false, firstPage ? 0 : items.length);
+        case HomeScreenFeedType.userChannelShorts:
+          return GQLCommunicator().getUserFeed(widget.owner ?? 'sagarkothari88',
+              true, firstPage ? 0 : items.length);
       }
     } catch (e) {
       hasFailed = true;
