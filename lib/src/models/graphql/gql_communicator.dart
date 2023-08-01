@@ -24,9 +24,10 @@ class GQLCommunicator {
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
       var responseData = GraphQlFeedResponse.fromRawJson(string);
-      return (responseData.data?.trendingFeed?.items ?? []).isNotEmpty
+      var items = (responseData.data?.trendingFeed?.items ?? []).isNotEmpty
           ? responseData.data?.trendingFeed?.items ?? []
           : responseData.data?.socialFeed?.items ?? [];
+      return items.where((element) => element.spkvideo != null).toList();
     } else {
       print(response.reasonPhrase);
       throw response.reasonPhrase ?? 'Error occurred';
@@ -60,5 +61,12 @@ class GQLCommunicator {
         'MyFeed',
         "query MyFeed {\n  socialFeed(\n    spkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n${skip != 0 ? "pagination: {skip: $skip,  limit: 50}" : ""}\n\n    feedOptions: {byFollower: \"$username\"}\n  ) {\n    items {\n      created_at\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
         true);
+  }
+
+  Future<List<GQLFeedItem>> getRelated(String author, String permlink) async {
+    return getGQLFeed(
+        'RelatedFeed',
+        "query RelatedFeed {\n  relatedFeed(author: \"$author\", permlink: \"$permlink\") {\n    items {\n      created_at\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
+        false);
   }
 }

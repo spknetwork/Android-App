@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:acela/src/models/graphql/gql_communicator.dart';
 import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -13,6 +14,7 @@ import 'package:acela/src/screens/video_details_screen/video_details_comments.da
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
+import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
@@ -41,18 +43,30 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   late BetterPlayerController _betterPlayerController;
   HivePostInfoPostResultBody? postInfo;
 
+  List<GQLFeedItem> suggestions = [];
+
   @override
   void initState() {
     super.initState();
     Wakelock.enable();
     loadRatio();
     loadHiveInfo();
+    loadSuggestions();
   }
 
   @override
   void dispose() {
     super.dispose();
     Wakelock.disable();
+  }
+
+  void loadSuggestions() async {
+    var items = await GQLCommunicator().getRelated(
+      widget.item.author?.username ?? 'sagarkothari88',
+      widget.item.permlink ?? 'ctbtwcxbbd',);
+    setState(() {
+      suggestions = items;
+    });
   }
 
   void loadHiveInfo() async {
@@ -81,11 +95,12 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
-      var result = HivePostInfo.fromJsonString(string)
+      var result = HivePostInfo
+          .fromJsonString(string)
           .result
           .resultData
           .where((element) =>
-              element.permlink == (widget.item.permlink ?? 'ctbtwcxbbd'))
+      element.permlink == (widget.item.permlink ?? 'ctbtwcxbbd'))
           .first;
       return result;
     } else {
@@ -96,7 +111,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
 
   void setupVideo(String url, VideoSize size) {
     BetterPlayerConfiguration betterPlayerConfiguration =
-        BetterPlayerConfiguration(
+    BetterPlayerConfiguration(
       aspectRatio: size.width / size.height,
       fit: BoxFit.contain,
       autoPlay: true,
@@ -135,7 +150,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   void fullscreenTapped() async {
     _betterPlayerController.pause();
     var position =
-        await _betterPlayerController.videoPlayerController?.position;
+    await _betterPlayerController.videoPlayerController?.position;
     var seconds = position?.inSeconds;
     if (seconds == null) return;
     debugPrint('position is $position');
@@ -207,17 +222,18 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     String votes = "👍 ${widget.item.stats?.numVotes ?? 0}";
     String comments = "💬 ${widget.item.stats?.numComments ?? 0}";
     var subtitle =
-        [timeInString, durationString].where((e) => e.isNotEmpty).join(" · ");
+    [timeInString, durationString].where((e) => e.isNotEmpty).join(" · ");
     subtitle = "$subtitle\n$votes · $comments";
     return ListTile(
       leading: InkWell(
         child: CircleAvatar(
           child: ClipOval(
               child: Image.network(
-            'https://images.hive.blog/u/${widget.item.author?.username ?? 'sagarkothari88'}/avatar',
-            height: 40,
-            width: 40,
-          )),
+                'https://images.hive.blog/u/${widget.item.author?.username ??
+                    'sagarkothari88'}/avatar',
+                height: 40,
+                width: 40,
+              )),
           radius: 20,
         ),
         onTap: () {
@@ -298,7 +314,10 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       clipBehavior: Clip.hardEdge,
       builder: (context) {
         return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.4,
+          height: MediaQuery
+              .of(context)
+              .size
+              .height * 0.4,
           child: HiveUpvoteDialog(
             author: widget.item.author?.username ?? 'sagarkothari88',
             permlink: widget.item.permlink ?? 'ctbtwcxbbd',
@@ -320,7 +339,10 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     var height = (ratio!.height >= ratio!.width)
         ? 460.0
         : (ratio!.height * screenWidth / ratio!.width);
-    var boxHeight = MediaQuery.of(context).size.height - height;
+    var boxHeight = MediaQuery
+        .of(context)
+        .size
+        .height - height;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -389,7 +411,8 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           IconButton(
             onPressed: () {
               Share.share(
-                  'https://3speak.tv/watch?v=${widget.item.author?.username ?? 'sagarkothari88'}/${widget.item.permlink}');
+                  'https://3speak.tv/watch?v=${widget.item.author?.username ??
+                      'sagarkothari88'}/${widget.item.permlink}');
             },
             icon: Icon(Icons.share, color: Colors.blue),
           ),
@@ -422,29 +445,49 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         } else if (i == 3) {
           return _actionBar(screenWidth);
         }
+        var item = suggestions[i - 4];
+        return NewFeedListItem(
+          thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
+          author: item.author?.username ?? '',
+          title: item.title ?? '',
+          createdAt: item.createdAt ?? DateTime.now(),
+          duration: item.spkvideo?.duration ?? 0.0,
+          comments: item.stats?.numComments,
+          hiveRewards: item.stats?.totalHiveReward,
+          votes: item.stats?.numVotes,
+          views: 0,
+          permlink: item.permlink ?? '',
+          onTap: () {},
+          onUserTap: () {},
+          item: item,
+          appData: widget.appData,
+        );
       },
       separatorBuilder: (c, i) =>
-          const Divider(height: 0, color: Colors.transparent),
-      itemCount: 4,
+      const Divider(height: 0, color: Colors.transparent),
+      itemCount: 4 + suggestions.length,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    var width = MediaQuery.of(context).size.width;
+    var width = MediaQuery
+        .of(context)
+        .size
+        .width;
     return Scaffold(
       body: SafeArea(
         child: ratio == null
             ? LoadingScreen(
-                title: 'Loading data',
-                subtitle: 'Please wait',
-              )
+          title: 'Loading data',
+          subtitle: 'Please wait',
+        )
             : Stack(
-                children: [
-                  _listView(width),
-                  _videoPlayerStack(width),
-                ],
-              ),
+          children: [
+            _listView(width),
+            _videoPlayerStack(width),
+          ],
+        ),
       ),
     );
   }
