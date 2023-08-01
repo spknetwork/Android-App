@@ -6,8 +6,10 @@ import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
+import 'package:acela/src/screens/video_details_screen/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
+import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -252,6 +254,20 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       );
       return;
     }
+
+    var screen = HiveCommentDialog(
+      author: widget.item.author?.username ?? 'sagarkothari88',
+      permlink: widget.item.permlink ?? 'ctbtwcxbbd',
+      username: widget.appData.username ?? "",
+      hasKey: widget.appData.keychainData?.hasId ?? "",
+      hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
+      onClose: () {},
+      onDone: () {
+        loadHiveInfo();
+      },
+    );
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (c) => screen));
   }
 
   void upvotePressed() {
@@ -321,6 +337,20 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
   }
 
+  void seeCommentsPressed() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) {
+          return VideoDetailsComments(
+            author: widget.item.author?.username ?? 'sagarkothari88',
+            permlink: widget.item.permlink ?? 'ctbtwcxbbd',
+            rpc: widget.appData.rpc,
+          );
+        },
+      ),
+    );
+  }
+
   Widget _actionBar(double width) {
     return ListTile(
       title: Row(
@@ -334,12 +364,16 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           ),
           Spacer(),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              seeCommentsPressed();
+            },
             icon: Icon(Icons.notes, color: Colors.blue),
           ),
           Spacer(),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              commentPressed();
+            },
             icon: Icon(Icons.comment, color: Colors.blue),
           ),
           Spacer(),
