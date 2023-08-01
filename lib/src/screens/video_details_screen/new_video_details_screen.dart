@@ -4,8 +4,10 @@ import 'dart:io';
 import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
+import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -202,9 +204,9 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         : "";
     String votes = "👍 ${widget.item.stats?.numVotes ?? 0}";
     String comments = "💬 ${widget.item.stats?.numComments ?? 0}";
-    var subtitle = [timeInString, durationString, votes, comments]
-        .where((e) => e.isNotEmpty)
-        .join(" · ");
+    var subtitle =
+        [timeInString, durationString].where((e) => e.isNotEmpty).join(" · ");
+    subtitle = "$subtitle\n$votes · $comments";
     return ListTile(
       leading: InkWell(
         child: CircleAvatar(
@@ -228,6 +230,30 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
   }
 
+  void commentPressed() {
+    if (postInfo == null) return;
+    if (widget.appData.username == null) {
+      showAdaptiveActionSheet(
+        context: context,
+        title: const Text('You are not logged in. Please log in to upvote.'),
+        androidBorderRadius: 30,
+        actions: [
+          BottomSheetAction(
+              title: Text('Log in'),
+              leading: Icon(Icons.login),
+              onPressed: (c) {
+                Navigator.of(c).pop();
+                var screen = HiveAuthLoginScreen(appData: widget.appData);
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(c).push(route);
+              }),
+        ],
+        cancelAction: CancelAction(title: const Text('Cancel')),
+      );
+      return;
+    }
+  }
+
   void upvotePressed() {
     if (postInfo == null) return;
     if (widget.appData.username == null) {
@@ -236,7 +262,15 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         title: const Text('You are not logged in. Please log in to upvote.'),
         androidBorderRadius: 30,
         actions: [
-          BottomSheetAction(title: Text('Log in'), leading: Icon(Icons.login), onPressed: (c){}),
+          BottomSheetAction(
+              title: Text('Log in'),
+              leading: Icon(Icons.login),
+              onPressed: (c) {
+                Navigator.of(c).pop();
+                var screen = HiveAuthLoginScreen(appData: widget.appData);
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(c).push(route);
+              }),
         ],
         cancelAction: CancelAction(title: const Text('Cancel')),
       );
@@ -266,13 +300,36 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
   }
 
-  Widget _actionBar() {
+  void infoPressed(double screenWidth) {
+    var height = (ratio!.height >= ratio!.width)
+        ? 460.0
+        : (ratio!.height * screenWidth / ratio!.width);
+    var boxHeight = MediaQuery.of(context).size.height - height;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      clipBehavior: Clip.hardEdge,
+      builder: (context) {
+        return SizedBox(
+          height: boxHeight,
+          child: NewVideoDetailsInfo(
+            appData: widget.appData,
+            item: widget.item,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _actionBar(double width) {
     return ListTile(
       title: Row(
         children: [
           Spacer(),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              infoPressed(width);
+            },
             icon: Icon(Icons.info, color: Colors.blue),
           ),
           Spacer(),
@@ -329,7 +386,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         } else if (i == 2) {
           return _header();
         } else if (i == 3) {
-          return _actionBar();
+          return _actionBar(screenWidth);
         }
       },
       separatorBuilder: (c, i) =>
@@ -350,8 +407,8 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
               )
             : Stack(
                 children: [
-                  _videoPlayerStack(width),
                   _listView(width),
+                  _videoPlayerStack(width),
                 ],
               ),
       ),
