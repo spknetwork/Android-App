@@ -248,6 +248,11 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
   }
 
+  void showError(String string) {
+    var snackBar = SnackBar(content: Text('Error: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   void commentPressed() {
     if (postInfo == null) return;
     if (widget.appData.username == null) {
@@ -270,7 +275,6 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       );
       return;
     }
-
     var screen = HiveCommentDialog(
       author: widget.item.author?.username ?? 'sagarkothari88',
       permlink: widget.item.permlink ?? 'ctbtwcxbbd',
@@ -307,6 +311,9 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         cancelAction: CancelAction(title: const Text('Cancel')),
       );
       return;
+    }
+    if (postInfo!.activeVotes.map((e) => e.voter).contains(widget.appData.username ?? 'sagarkothari88') == true) {
+      showError('You have already voted for this video');
     }
     showModalBottomSheet(
       context: context,

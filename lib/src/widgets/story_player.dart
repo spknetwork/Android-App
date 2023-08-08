@@ -1,18 +1,24 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
+import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/login/ha_login_screen.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
+import 'package:acela/src/screens/video_details_screen/hive_comment_dialog.dart';
+import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
+import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-
-import '../screens/user_channel_screen/user_channel_screen.dart';
+import 'package:http/http.dart' as http;
 
 class StoryPlayer extends StatefulWidget {
   const StoryPlayer({
@@ -31,6 +37,7 @@ class StoryPlayer extends StatefulWidget {
 
 class _StoryPlayerState extends State<StoryPlayer> {
   late BetterPlayerController _betterPlayerController;
+  HivePostInfoPostResultBody? postInfo;
 
   var aspectRatio = 0.0; // 0.5625
   double? height;
@@ -46,6 +53,47 @@ class _StoryPlayerState extends State<StoryPlayer> {
   void initState() {
     super.initState();
     updateRatio();
+    loadHiveInfo();
+  }
+
+  void loadHiveInfo() async {
+    setState(() {
+      postInfo = null;
+    });
+    var data = await fetchHiveInfoForThisVideo(widget.data.rpc);
+    setState(() {
+      postInfo = data;
+    });
+  }
+
+  Future<HivePostInfoPostResultBody> fetchHiveInfoForThisVideo(
+      String hiveApiUrl) async {
+    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
+    request.body = json.encode({
+      "id": 1,
+      "jsonrpc": "2.0",
+      "method": "bridge.get_discussion",
+      "params": {
+        "author": widget.item.author?.username ?? 'sagarkothari88',
+        "permlink": widget.item.permlink ?? 'ctbtwcxbbd',
+        "observer": ""
+      }
+    });
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var result = HivePostInfo
+          .fromJsonString(string)
+          .result
+          .resultData
+          .where((element) =>
+      element.permlink == (widget.item.permlink ?? 'ctbtwcxbbd'))
+          .first;
+      return result;
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase ?? 'Can not load payout info';
+    }
   }
 
   void updateRatio() async {
@@ -92,19 +140,134 @@ class _StoryPlayerState extends State<StoryPlayer> {
     });
   }
 
+  void showError(String string) {
+    var snackBar = SnackBar(content: Text('Error: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void seeCommentsPressed() {
+    _betterPlayerController.pause();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) {
+          return VideoDetailsComments(
+            author: widget.item.author?.username ?? 'sagarkothari88',
+            permlink: widget.item.permlink ?? 'ctbtwcxbbd',
+            rpc: widget.data.rpc,
+          );
+        },
+      ),
+    );
+  }
+
+  void upvotePressed() {
+    if (postInfo == null) return;
+    if (widget.data.username == null) {
+      _betterPlayerController.pause();
+      showAdaptiveActionSheet(
+        context: context,
+        title: const Text('You are not logged in. Please log in to upvote.'),
+        androidBorderRadius: 30,
+        actions: [
+          BottomSheetAction(
+              title: Text('Log in'),
+              leading: Icon(Icons.login),
+              onPressed: (c) {
+                Navigator.of(c).pop();
+                var screen = HiveAuthLoginScreen(appData: widget.data);
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(c).push(route);
+              }),
+        ],
+        cancelAction: CancelAction(title: const Text('Cancel')),
+      );
+      return;
+    }
+    if (postInfo!.activeVotes.map((e) => e.voter).contains(widget.data.username ?? 'sagarkothari88') == true) {
+      showError('You have already voted for this 3Shorts');
+    }
+    _betterPlayerController.pause();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      clipBehavior: Clip.hardEdge,
+      builder: (context) {
+        return SizedBox(
+          height: MediaQuery
+              .of(context)
+              .size
+              .height * 0.4,
+          child: HiveUpvoteDialog(
+            author: widget.item.author?.username ?? 'sagarkothari88',
+            permlink: widget.item.permlink ?? 'ctbtwcxbbd',
+            username: widget.data.username ?? "",
+            hasKey: widget.data.keychainData?.hasId ?? "",
+            hasAuthKey: widget.data.keychainData?.hasAuthKey ?? "",
+            activeVotes: postInfo!.activeVotes,
+            onClose: () {},
+            onDone: () {
+              loadHiveInfo();
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void commentPressed() {
+    if (postInfo == null) return;
+    if (widget.data.username == null) {
+      _betterPlayerController.pause();
+      showAdaptiveActionSheet(
+        context: context,
+        title: const Text('You are not logged in. Please log in to comment.'),
+        androidBorderRadius: 30,
+        actions: [
+          BottomSheetAction(
+              title: Text('Log in'),
+              leading: Icon(Icons.login),
+              onPressed: (c) {
+                Navigator.of(c).pop();
+                var screen = HiveAuthLoginScreen(appData: widget.data);
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(c).push(route);
+              }),
+        ],
+        cancelAction: CancelAction(title: const Text('Cancel')),
+      );
+      return;
+    }
+    _betterPlayerController.pause();
+    var screen = HiveCommentDialog(
+      author: widget.item.author?.username ?? 'sagarkothari88',
+      permlink: widget.item.permlink ?? 'ctbtwcxbbd',
+      username: widget.data.username ?? "",
+      hasKey: widget.data.keychainData?.hasId ?? "",
+      hasAuthKey: widget.data.keychainData?.hasAuthKey ?? "",
+      onClose: () {},
+      onDone: () {
+        loadHiveInfo();
+      },
+    );
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (c) => screen));
+  }
+
   List<Widget> _fabButtonsOnRight() {
     return [
       IconButton(
-        icon: Icon(Icons.share),
+        icon: Icon(Icons.share, color: Colors.blue),
         onPressed: () {
+          _betterPlayerController.pause();
           Share.share(
               'https://3speak.tv/watch?v=${widget.item.author?.username ?? ''}/${widget.item.permlink ?? ''}');
         },
       ),
       SizedBox(height: 10),
       IconButton(
-        icon: Icon(Icons.info),
+        icon: Icon(Icons.info, color: Colors.blue),
         onPressed: () {
+          _betterPlayerController.pause();
           var screen =
           NewVideoDetailsInfo(
             appData: widget.data,
@@ -114,35 +277,31 @@ class _StoryPlayerState extends State<StoryPlayer> {
           Navigator.of(context).push(route);
         },
       ),
-      SizedBox(height: 10),
       IconButton(
-        icon: Icon(Icons.comment),
+        icon: Icon(Icons.notes, color: Colors.blue),
         onPressed: () {
-          var screen = VideoDetailsComments(
-            author: widget.item.author?.username ?? '',
-            permlink: widget.item.permlink ?? '',
-            rpc: widget.data.rpc,
-          );
-          var route = MaterialPageRoute(builder: (c) => screen);
-          Navigator.of(context).push(route);
+          seeCommentsPressed();
         },
       ),
       SizedBox(height: 10),
-      // IconButton(
-      //   icon: Icon(aspectRatio != 1.777777778
-      //       ? Icons.stay_current_landscape
-      //       : Icons.stay_current_portrait),
-      //   onPressed: () {
-      //     _betterPlayerController.pause();
-      //     setState(() {
-      //       aspectRatio = aspectRatio != 1.777777778 ? 1.777777778 : 0.5625;
-      //       setupPlayer();
-      //     });
-      //   },
-      // ),
-      // SizedBox(height: 10),
       IconButton(
-        icon: Icon(Icons.fullscreen),
+        icon: Icon(Icons.comment, color: Colors.blue),
+        onPressed: () {
+          commentPressed();
+        },
+      ),
+      SizedBox(height: 10),
+      IconButton(
+        onPressed: () {
+          if (postInfo != null) {
+            upvotePressed();
+          }
+        },
+        icon: Icon(Icons.thumb_up, color: Colors.blue),
+      ),
+      SizedBox(height: 10),
+      IconButton(
+        icon: Icon(Icons.fullscreen, color: Colors.blue),
         onPressed: () async {
           _betterPlayerController.pause();
           var position =
@@ -189,7 +348,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
               const Spacer(),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.black26,
+                  color: Colors.black54,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
