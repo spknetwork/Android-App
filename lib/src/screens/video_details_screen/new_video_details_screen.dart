@@ -253,7 +253,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     if (widget.appData.username == null) {
       showAdaptiveActionSheet(
         context: context,
-        title: const Text('You are not logged in. Please log in to upvote.'),
+        title: const Text('You are not logged in. Please log in to comment.'),
         androidBorderRadius: 30,
         actions: [
           BottomSheetAction(

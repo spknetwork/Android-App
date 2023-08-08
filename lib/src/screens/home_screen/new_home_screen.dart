@@ -10,7 +10,7 @@ import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
-import 'package:acela/src/screens/stories/tab_based_stories.dart';
+import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/widgets/fab_custom.dart';
 import 'package:acela/src/widgets/fab_overlay.dart';
@@ -148,7 +148,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         actions: [
           IconButton(
             onPressed: () {
-              var screen = TabBasedStoriesScreen(appData: widget.appData);
+              var screen = GQLStoriesScreen(appData: widget.appData);
               var route = MaterialPageRoute(builder: (c) => screen);
               Navigator.of(context).push(route);
             },
@@ -199,7 +199,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
       onTap: () {
         setState(() {
           isMenuOpen = false;
-          var screen = TabBasedStoriesScreen(appData: widget.appData);
+          var screen = GQLStoriesScreen(appData: widget.appData);
           var route = MaterialPageRoute(builder: (c) => screen);
           Navigator.of(context).push(route);
         });

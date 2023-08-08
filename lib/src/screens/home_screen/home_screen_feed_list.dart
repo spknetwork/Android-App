@@ -118,7 +118,6 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    var userData = Provider.of<HiveUserData>(context);
     if (isLoading && !firstPageLoaded) {
       return LoadingScreen(title: 'Loading', subtitle: 'Please wait');
     } else if (hasFailed) {
@@ -174,7 +173,7 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
                 onTap: () {},
                 onUserTap: () {},
                 item: item,
-                appData: userData,
+                appData: widget.appData,
               );
             },
             itemCount: items.length % 50 == 0 ? items.length + 1 : items.length,

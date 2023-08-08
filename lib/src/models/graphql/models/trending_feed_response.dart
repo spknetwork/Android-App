@@ -144,6 +144,18 @@ class GQLFeedItem {
     }
     return spkvideo?.playUrl ?? '';
   }
+
+  String get hlsUrl {
+    if ((spkvideo?.playUrl ?? '').contains('ipfs')) {
+      // example
+      // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/manifest.m3u8
+      // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
+      // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
+      var url = (spkvideo?.playUrl ?? '').replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
+      return url;
+    }
+    return spkvideo?.playUrl ?? '';
+  }
 }
 
 class GQLFeedItemAuthor {
@@ -304,6 +316,8 @@ class Spkvideo {
   double? duration;
   bool? isShort;
   String? body;
+  int? height;
+  int? width;
 
   Spkvideo({
     this.thumbnailUrl,
@@ -311,6 +325,8 @@ class Spkvideo {
     this.duration,
     this.isShort,
     this.body,
+    this.height,
+    this.width,
   });
 
   factory Spkvideo.fromRawJson(String str) => Spkvideo.fromJson(json.decode(str));
@@ -323,6 +339,8 @@ class Spkvideo {
     duration: json["duration"]?.toDouble(),
     isShort: json["is_short"],
     body: json["body"],
+    height: json["height"],
+    width: json["width"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -331,6 +349,8 @@ class Spkvideo {
     "duration": duration,
     "is_short": isShort,
     "body": body,
+    "width": width,
+    "height": height,
   };
 }
 

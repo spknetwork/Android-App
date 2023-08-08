@@ -1,7 +1,9 @@
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
@@ -15,21 +17,13 @@ import '../screens/user_channel_screen/user_channel_screen.dart';
 class StoryPlayer extends StatefulWidget {
   const StoryPlayer({
     Key? key,
-    required this.playUrl,
-    required this.hlsUrl,
-    required this.thumbUrl,
     required this.didFinish,
-    required this.owner,
-    required this.permlink,
+    required this.item,
     required this.data,
   }) : super(key: key);
-  final String playUrl;
+  final GQLFeedItem item;
   final Function didFinish;
   final HiveUserData data;
-  final String owner;
-  final String permlink;
-  final String thumbUrl;
-  final String hlsUrl;
 
   @override
   _StoryPlayerState createState() => _StoryPlayerState();
@@ -55,7 +49,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
   }
 
   void updateRatio() async {
-    var ratio = await Communicator().getAspectRatio(widget.hlsUrl);
+    var ratio = await Communicator().getAspectRatio(widget.item.hlsUrl);
     setState(() {
       aspectRatio = ratio.width / ratio.height;
       setupPlayer();
@@ -89,7 +83,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      widget.playUrl,
+      widget.item.videoV2M3U8(widget.data),
       videoFormat: BetterPlayerVideoFormat.hls,
     );
     setState(() {
@@ -104,17 +98,20 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: Icon(Icons.share),
         onPressed: () {
           Share.share(
-              'https://3speak.tv/watch?v=${widget.owner}/${widget.permlink}');
+              'https://3speak.tv/watch?v=${widget.item.author?.username ?? ''}/${widget.item.permlink ?? ''}');
         },
       ),
       SizedBox(height: 10),
       IconButton(
         icon: Icon(Icons.info),
         onPressed: () {
-          // var screen =
-          // VideoDetailsInfoWidget(details: null, item: widget.item);
-          // var route = MaterialPageRoute(builder: (c) => screen);
-          // Navigator.of(context).push(route);
+          var screen =
+          NewVideoDetailsInfo(
+            appData: widget.data,
+            item: widget.item,
+          );
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
         },
       ),
       SizedBox(height: 10),
@@ -122,8 +119,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: Icon(Icons.comment),
         onPressed: () {
           var screen = VideoDetailsComments(
-            author: widget.owner,
-            permlink: widget.permlink,
+            author: widget.item.author?.username ?? '',
+            permlink: widget.item.permlink ?? '',
             rpc: widget.data.rpc,
           );
           var route = MaterialPageRoute(builder: (c) => screen);
@@ -155,7 +152,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
           if (seconds == null) return;
           const platform = MethodChannel('com.example.acela/auth');
           await platform.invokeMethod('playFullscreen', {
-            'url': widget.playUrl,
+            'url': widget.item.videoV2M3U8(widget.data),
             'seconds': seconds,
           });
         },
@@ -165,10 +162,10 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: CustomCircleAvatar(
           height: 40,
           width: 40,
-          url: server.userOwnerThumb(widget.owner),
+          url: server.userOwnerThumb(widget.item.author?.username ?? 'sagarkothari88'),
         ),
         onPressed: () {
-          var screen = UserChannelScreen(owner: widget.owner);
+          var screen = UserChannelScreen(owner: widget.item.author?.username ?? 'sagarkothari88');
           var route = MaterialPageRoute(builder: (c) => screen);
           Navigator.of(context).push(route);
         },
