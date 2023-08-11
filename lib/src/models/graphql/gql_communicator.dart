@@ -77,6 +77,13 @@ class GQLCommunicator {
         false);
   }
 
+  Future<List<GQLFeedItem>> getCommunity(String community, bool isShorts, int skip) async {
+    return getGQLFeed(
+        'CommunityFeed',
+        "query CommunityFeed {\n  socialFeed(spkvideo: {only: true ${isShorts ? ", isShort: true" : ""}},\nfeedOptions: { byCommunity: {_eq: \"$community\"} }\n${skip != 0 ? "pagination: {skip: $skip,  limit: 100}" : ""}\n) {\n    items {\n      created_at\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}",
+        false);
+  }
+
   Future<List<GQLFeedItem>> getCTTFeed(int skip) async {
     return getGQLFeed(
         'UserChannelFeed',

@@ -1,6 +1,7 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
+import 'package:acela/src/screens/stories/story_feed_list.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_following.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_profile.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_videos.dart';
@@ -121,10 +122,10 @@ class _UserChannelScreenState extends State<UserChannelScreen>
             feedType: HomeScreenFeedType.userChannelFeed,
             owner: widget.owner,
           ),
-          HomeScreenFeedList(
+          StoryFeedList(
             appData: appData,
-            feedType: HomeScreenFeedType.userChannelShorts,
-            owner: widget.owner,
+            feedType: StoryFeedType.userChannelFeed,
+            username: widget.owner,
           ),
           UserChannelProfileWidget(owner: widget.owner),
           UserChannelFollowingWidget(owner: widget.owner, isFollowers: true),

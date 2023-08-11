@@ -183,7 +183,7 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
         const Spacer(),
         Slider(
           value: sliderValue,
-          min: -1.0,
+          min: 0.1,
           divisions: 40,
           label: '${(sliderValue * 100).round()} %',
           activeColor: sliderValue >= 0.0

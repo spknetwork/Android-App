@@ -15,6 +15,7 @@ enum StoryFeedType {
   trendingFeed,
   newUploads,
   firstUploads,
+  userChannelFeed,
 }
 
 class StoryFeedList extends StatefulWidget {
@@ -22,10 +23,12 @@ class StoryFeedList extends StatefulWidget {
     Key? key,
     required this.appData,
     required this.feedType,
+    this.username,
   });
 
   final StoryFeedType feedType;
   final HiveUserData appData;
+  final String? username;
 
   @override
   State<StoryFeedList> createState() => _StoryFeedListState();
@@ -75,9 +78,9 @@ class _StoryFeedListState extends State<StoryFeedList>
             true,
             firstPage ? 0 : items.length,
           );
-        // case StoryFeedType.userChannelShorts:
-        //   return GQLCommunicator().getUserFeed(widget.owner ?? 'sagarkothari88',
-        //       true, firstPage ? 0 : items.length);
+        case StoryFeedType.userChannelFeed:
+          return GQLCommunicator().getUserFeed(widget.username ?? 'sagarkothari88',
+              true, firstPage ? 0 : items.length);
       }
     } catch (e) {
       hasFailed = true;
