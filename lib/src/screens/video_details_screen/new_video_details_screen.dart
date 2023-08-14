@@ -63,7 +63,9 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   void loadSuggestions() async {
     var items = await GQLCommunicator().getRelated(
       widget.item.author?.username ?? 'sagarkothari88',
-      widget.item.permlink ?? 'ctbtwcxbbd',);
+      widget.item.permlink ?? 'ctbtwcxbbd',
+      widget.appData.language,
+    );
     setState(() {
       suggestions = items;
     });

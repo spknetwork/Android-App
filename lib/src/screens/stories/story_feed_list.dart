@@ -16,6 +16,7 @@ enum StoryFeedType {
   newUploads,
   firstUploads,
   userChannelFeed,
+  community,
 }
 
 class StoryFeedList extends StatefulWidget {
@@ -24,11 +25,13 @@ class StoryFeedList extends StatefulWidget {
     required this.appData,
     required this.feedType,
     this.username,
+    this.community,
   });
 
   final StoryFeedType feedType;
   final HiveUserData appData;
   final String? username;
+  final String? community;
 
   @override
   State<StoryFeedList> createState() => _StoryFeedListState();
@@ -57,30 +60,33 @@ class _StoryFeedListState extends State<StoryFeedList>
       switch (widget.feedType) {
         case StoryFeedType.cttFeed:
           return GQLCommunicator()
-              .getCTTFeed(firstPage ? 0 : items.length);
+              .getCTTFeed(firstPage ? 0 : items.length, widget.appData.language);
         case StoryFeedType.trendingFeed:
           return GQLCommunicator()
-              .getTrendingFeed(true, firstPage ? 0 : items.length);
+              .getTrendingFeed(true, firstPage ? 0 : items.length, widget.appData.language);
         case StoryFeedType.newUploads:
           return GQLCommunicator()
-              .getNewUploadsFeed(true, firstPage ? 0 : items.length);
+              .getNewUploadsFeed(true, firstPage ? 0 : items.length, widget.appData.language);
         case StoryFeedType.firstUploads:
           return GQLCommunicator()
-              .getFirstUploadsFeed(true, firstPage ? 0 : items.length);
+              .getFirstUploadsFeed(true, firstPage ? 0 : items.length, widget.appData.language);
         case StoryFeedType.userFeed:
           return GQLCommunicator().getMyFeed(
               widget.appData.username ?? 'sagarkothari88',
               true,
-              firstPage ? 0 : items.length);
+              firstPage ? 0 : items.length, widget.appData.language);
         case StoryFeedType.userFeed:
           return GQLCommunicator().getMyFeed(
             widget.appData.username ?? 'sagarkothari88',
             true,
-            firstPage ? 0 : items.length,
+            firstPage ? 0 : items.length, widget.appData.language
           );
         case StoryFeedType.userChannelFeed:
           return GQLCommunicator().getUserFeed(widget.username ?? 'sagarkothari88',
-              true, firstPage ? 0 : items.length);
+              true, firstPage ? 0 : items.length, widget.appData.language);
+        case StoryFeedType.community:
+          return GQLCommunicator().getCommunity(widget.community ?? 'hive-181335',
+              true, firstPage ? 0 : items.length, widget.appData.language);
       }
     } catch (e) {
       hasFailed = true;

@@ -66,6 +66,7 @@ class _MyAppState extends State<MyApp> {
             username: null,
             rpc: 'api.hive.blog',
             loaded: false,
+            language: null,
           ),
           child: StreamProvider<bool>.value(
             value: server.theme,
@@ -93,6 +94,7 @@ class _MyAppState extends State<MyApp> {
     String? hasAuthKey = await storage.read(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+    String? lang = await storage.read(key: 'lang');
     server.updateHiveUserData(
       HiveUserData(
         username: username,
@@ -113,6 +115,7 @@ class _MyAppState extends State<MyApp> {
         resolution: resolution,
         rpc: rpc,
         loaded: true,
+        language: lang,
       ),
     );
   }

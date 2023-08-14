@@ -339,6 +339,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         debugPrint("Successful login");
         String resolution = await storage.read(key: 'resolution') ?? '480p';
         String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+        String? lang = await storage.read(key: 'lang');
         await storage.write(key: 'username', value: usernameController.text);
         await storage.write(key: 'postingKey', value: postingKey);
         await storage.delete(key: 'hasId');
@@ -354,6 +355,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             resolution: resolution,
             rpc: rpc,
             loaded: true,
+            language: lang,
           ),
         );
         Navigator.of(context).pop();
@@ -419,6 +421,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             resolution: data.resolution,
             rpc: data.rpc,
             loaded: true,
+            language: data.language,
           ),
         );
         showMessage(

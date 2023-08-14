@@ -14,6 +14,7 @@ enum HomeScreenFeedType {
   firstUploads,
   userChannelFeed,
   userChannelShorts,
+  community
 }
 
 class HomeScreenFeedList extends StatefulWidget {
@@ -22,11 +23,13 @@ class HomeScreenFeedList extends StatefulWidget {
     required this.appData,
     required this.feedType,
     this.owner,
+    this.community,
   });
 
   final HiveUserData appData;
   final HomeScreenFeedType feedType;
   final String? owner;
+  final String? community;
 
   @override
   State<HomeScreenFeedList> createState() => _HomeScreenFeedListState();
@@ -60,25 +63,32 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
     try {
       switch (widget.feedType) {
         case HomeScreenFeedType.trendingFeed:
-          return GQLCommunicator()
-              .getTrendingFeed(false, firstPage ? 0 : items.length);
+          return GQLCommunicator().getTrendingFeed(
+              false, firstPage ? 0 : items.length, widget.appData.language);
         case HomeScreenFeedType.newUploads:
-          return GQLCommunicator()
-              .getNewUploadsFeed(false, firstPage ? 0 : items.length);
+          return GQLCommunicator().getNewUploadsFeed(
+              false, firstPage ? 0 : items.length, widget.appData.language);
         case HomeScreenFeedType.firstUploads:
-          return GQLCommunicator()
-              .getFirstUploadsFeed(false, firstPage ? 0 : items.length);
+          return GQLCommunicator().getFirstUploadsFeed(
+              false, firstPage ? 0 : items.length, widget.appData.language);
         case HomeScreenFeedType.userFeed:
           return GQLCommunicator().getMyFeed(
               widget.appData.username ?? 'sagarkothari88',
               false,
-              firstPage ? 0 : items.length);
+              firstPage ? 0 : items.length,
+              widget.appData.language);
         case HomeScreenFeedType.userChannelFeed:
           return GQLCommunicator().getUserFeed(widget.owner ?? 'sagarkothari88',
-              false, firstPage ? 0 : items.length);
+              false, firstPage ? 0 : items.length, widget.appData.language);
         case HomeScreenFeedType.userChannelShorts:
           return GQLCommunicator().getUserFeed(widget.owner ?? 'sagarkothari88',
-              true, firstPage ? 0 : items.length);
+              true, firstPage ? 0 : items.length, widget.appData.language);
+        case HomeScreenFeedType.community:
+          return GQLCommunicator().getCommunity(
+              widget.community ?? 'hive-181335',
+              true,
+              firstPage ? 0 : items.length,
+              widget.appData.language);
       }
     } catch (e) {
       hasFailed = true;
@@ -132,6 +142,7 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
         return Center(
           child: Column(
             children: [
+              Spacer(),
               Text(
                   'We did not find anything to show.\nTap on Reload button to try again.'),
               ElevatedButton(
@@ -139,7 +150,8 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
                   loadFeed(true);
                 },
                 child: Text('Reload'),
-              )
+              ),
+              Spacer(),
             ],
           ),
         );

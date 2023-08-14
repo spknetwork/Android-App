@@ -23,6 +23,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     await storage.delete(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+    String? lang = await storage.read(key: 'lang');
     server.updateHiveUserData(
       HiveUserData(
         username: null,
@@ -32,6 +33,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         resolution: resolution,
         rpc: rpc,
         loaded: true,
+        language: lang,
       ),
     );
     Navigator.of(context).pop();

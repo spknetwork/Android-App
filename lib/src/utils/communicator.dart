@@ -260,6 +260,7 @@ class Communicator {
               resolution: resolution,
               rpc: rpc,
               loaded: true,
+              language: user.language,
             );
             server.updateHiveUserData(newData);
             return cookie;
@@ -294,6 +295,7 @@ class Communicator {
             resolution: resolution,
             rpc: rpc,
             loaded: true,
+            language: user.language,
           );
           server.updateHiveUserData(newData);
           return await getValidCookie(newData);

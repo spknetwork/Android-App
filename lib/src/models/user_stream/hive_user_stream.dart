@@ -23,6 +23,7 @@ class HiveUserData {
   String? username;
   String? postingKey;
   String? cookie;
+  String? language;
   HiveKeychainData? keychainData;
   String resolution;
   String rpc;
@@ -36,5 +37,6 @@ class HiveUserData {
     required this.resolution,
     required this.rpc,
     required this.loaded,
+    required this.language,
   });
 }
