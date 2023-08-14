@@ -65,7 +65,7 @@ class GQLCommunicator {
   Future<List<GQLFeedItem>> getMyFeed(
       String username, bool isShorts, int skip, String? lang) async {
     var spkVideoQuery = "\nspkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n";
-    var feedOptionsQuery = "\nfeedOptions: { { byFollower: \"$username\" } ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
+    var feedOptionsQuery = "\nfeedOptions: { byFollower: \"$username\"${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
     var paginationQuery = "\npagination: { limit: 50, skip: $skip }\n";
     return getGQLFeed(
         'MyFeed',

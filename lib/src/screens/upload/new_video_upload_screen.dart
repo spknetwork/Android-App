@@ -140,6 +140,17 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
     storage.setItem('uploads', list.toJSONEncodable());
   }
 
+  Future<ImageInfo> getImageInfo(String filePath) async {
+    Image img = Image.file(File(filePath));
+    final c = new Completer<ImageInfo>();
+    img.image
+        .resolve(new ImageConfiguration())
+        .addListener(new ImageStreamListener((ImageInfo i, bool _) {
+      c.complete(i);
+    }));
+    return c.future;
+  }
+
   void videoPickerFunction() async {
     try {
       if (user?.username == null) {
@@ -230,6 +241,14 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           timeTakeDefaultThumbnail = '${diff.inSeconds} seconds';
           didTakeDefaultThumbnail = true;
         });
+
+        var imageInfo = await getImageInfo(thumbPath);
+        var imageHeight = imageInfo.image.height;
+        var imageWidth = imageInfo.image.width;
+        if (imageHeight < imageWidth && widget.isReel) {
+          throw '3Shorts must be in portrait mode only';
+        }
+
         // --- Step 4. Generate Thumbnail
 
         // Step 5. Upload Thumbnail
