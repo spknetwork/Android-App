@@ -82,9 +82,18 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   @override
   void initState() {
     super.initState();
-    tagsController.text = widget.item.tags.isEmpty ? "threespeak,mobile" : widget.item.tags;
-    selectedCommunity = widget.item.community.isEmpty ? widget.item.isReel ? 'hive-151961' : 'hive-181335' : widget.item.community;
-    selectedCommunityVisibleName = widget.item.community.isEmpty ? widget.item.isReel ? 'Three Shorts' : 'Three Speak' : widget.item.community;
+    tagsController.text =
+        widget.item.tags.isEmpty ? "threespeak,mobile" : widget.item.tags;
+    selectedCommunity = widget.item.community.isEmpty
+        ? widget.item.isReel
+            ? 'hive-151961'
+            : 'hive-181335'
+        : widget.item.community;
+    selectedCommunityVisibleName = widget.item.community.isEmpty
+        ? widget.item.isReel
+            ? 'Three Shorts'
+            : 'Three Speak'
+        : widget.item.community;
     socket = WebSocketChannel.connect(
       Uri.parse(Communicator.hiveAuthServer),
     );
@@ -263,15 +272,14 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         });
       } else {
         var v = await Communicator().updateInfo(
-          user: user,
-          videoId: widget.item.id,
-          title: widget.title,
-          description: widget.subtitle,
-          isNsfwContent: isNsfwContent,
-          tags: tags,
-          thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
-          communityID: selectedCommunity
-        );
+            user: user,
+            videoId: widget.item.id,
+            title: widget.title,
+            description: widget.subtitle,
+            isNsfwContent: isNsfwContent,
+            tags: tags,
+            thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
+            communityID: selectedCommunity);
         if (widget.justForEditing) {
           setState(() {
             showMessage('Video details are saved.');
@@ -533,9 +541,9 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   }
 
   Widget _communityPicker() {
-    if (widget.item.isReel) {
-      return Container();
-    }
+    // if (widget.item.isReel) {
+    //   return Container();
+    // }
     return Container(
       margin: EdgeInsets.all(10),
       child: Row(
@@ -697,13 +705,14 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       floatingActionButton: isCompleting
           ? null
           : thumbIpfs.isNotEmpty || widget.item.getThumbnail().isNotEmpty
-              ? FloatingActionButton(
+              ? FloatingActionButton.extended(
+                  label: Text(widget.justForEditing ? 'Save Details' : widget.item.isReel ? 'Publish Video' : 'Publish 3Shorts'),
                   onPressed: () {
                     if (user.username != null) {
                       completeVideo(user);
                     }
                   },
-                  child: const Icon(Icons.save),
+                  icon: Icon(widget.justForEditing ? Icons.save : Icons.post_add),
                 )
               : null,
     );

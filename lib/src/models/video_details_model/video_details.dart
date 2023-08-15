@@ -37,6 +37,7 @@ class VideoDetails {
   final String originalFilename;
   final bool firstUpload;
   final String beneficiaries;
+  final String visible_status;
 
   String getThumbnail() {
     return thumbnail.replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
@@ -120,6 +121,7 @@ class VideoDetails {
     required this.originalFilename,
     required this.firstUpload,
     required this.beneficiaries,
+    required this.visible_status,
   });
 
   factory VideoDetails.fromJsonString(String jsonString) =>
@@ -168,6 +170,7 @@ class VideoDetails {
         firstUpload: asBool(json, 'firstUpload'),
         beneficiaries: asString(json, 'beneficiaries'),
         isReel: asBool(json, 'isReel'),
+        visible_status: asString(json, 'visible_status'),
       );
 
   String toJsonString() => json.encode(toJson());

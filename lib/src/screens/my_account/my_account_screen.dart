@@ -180,14 +180,18 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   }
 
   Widget _videoListItem(VideoDetails item, HiveUserData user) {
+    var desc = item.description.length > 30
+        ? item.description.substring(0, 30)
+        : item.description;
+    desc = "\n${item.visible_status}";
     return ListTile(
       leading: Image.network(
         item.getThumbnail(),
       ),
-      title: Text(item.title),
-      subtitle: Text(item.description.length > 30
-          ? item.description.substring(0, 30)
-          : item.description),
+      title: Text(item.title.length > 30
+          ? item.title.substring(0, 30)
+          : item.title),
+      subtitle: Text(desc),
       trailing: _trailingActionOnVideoListItem(item, user),
       onTap: () {
         if (item.status != 'publish_manual' &&
@@ -210,7 +214,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       itemBuilder: (context, index) {
         if (index == 0) {
           var text = currentIndex == 0
-              ? 'Your uploaded videos are in video encoding process\nCome back soon to publish your videos\nVideos will be published automatically after 1-Jul-2023'
+              ? 'Your uploaded videos are in video encoding process\nCome back soon to publish your videos'
               : currentIndex == 1
                   ? 'Your videos are ready to post\nTap on a video to edit details & publish'
                   : currentIndex == 2
