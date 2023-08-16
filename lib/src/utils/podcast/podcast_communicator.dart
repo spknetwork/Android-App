@@ -32,7 +32,7 @@ class PodCastCommunicator {
       "X-Auth-Date": newUnixTime,
       "X-Auth-Key": apiKey,
       "Authorization": digest.toString(),
-      "User-Agent": "ThreeSpeak/2.0.0+76"
+      "User-Agent": "ThreeSpeak/2.0.0+$newUnixTime"
     };
 
     var uriString = '$baseUrl$path';
