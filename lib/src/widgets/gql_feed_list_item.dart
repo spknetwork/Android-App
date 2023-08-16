@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
+import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';

@@ -1,5 +1,5 @@
-import 'package:acela/src/models/graphql/gql_communicator.dart';
-import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
+import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/widgets/loading_screen.dart';

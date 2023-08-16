@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
+import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:http/http.dart' as http;
 
 class GQLCommunicator {

@@ -1,11 +1,12 @@
-import 'package:acela/src/models/graphql/gql_communicator.dart';
-import 'package:acela/src/models/graphql/models/trending_feed_response.dart';
+import 'dart:developer';
+
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
+import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 enum HomeScreenFeedType {
   userFeed,

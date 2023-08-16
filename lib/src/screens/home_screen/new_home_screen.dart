@@ -8,6 +8,7 @@ import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
+import 'package:acela/src/screens/podcast/podcast_trending.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
@@ -133,6 +134,32 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     );
   }
 
+  IconButton threeShortsActionButton() {
+    return IconButton(
+      onPressed: () {
+        var screen = GQLStoriesScreen(appData: widget.appData);
+        var route = MaterialPageRoute(builder: (c) => screen);
+        Navigator.of(context).push(route);
+      },
+      icon: Image.asset(
+        'assets/branding/three_shorts_icon.png',
+      ),
+    );
+  }
+
+  IconButton podcastsActionButton() {
+    return IconButton(
+      onPressed: () {
+        var screen = PodCastTrendingScreen(appData: widget.appData);
+        var route = MaterialPageRoute(builder: (c) => screen);
+        Navigator.of(context).push(route);
+      },
+      icon: Image.asset(
+        'assets/pod-cast-logo-round.png',
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -146,16 +173,8 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           isScrollable: true,
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              var screen = GQLStoriesScreen(appData: widget.appData);
-              var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).push(route);
-            },
-            icon: Image.asset(
-              'assets/branding/three_shorts_icon.png',
-            ),
-          ),
+          threeShortsActionButton(),
+          podcastsActionButton(),
         ],
       ),
       body: SafeArea(
@@ -192,6 +211,19 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   }
 
   List<FabOverItemData> _fabItems() {
+    var podcast = FabOverItemData(
+      displayName: 'Podcasts',
+      icon: Icons.video_camera_front_outlined,
+      image: 'assets/pod-cast-logo-round.png',
+      onTap: () {
+        setState(() {
+          isMenuOpen = false;
+          var screen = PodCastTrendingScreen(appData: widget.appData);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        });
+      },
+    );
     var threeShorts = FabOverItemData(
       displayName: '3Shorts',
       icon: Icons.video_camera_front_outlined,
@@ -218,7 +250,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         });
       },
     );
-    var fabItems = [threeShorts, search];
+    var fabItems = [podcast, threeShorts, search];
     if (widget.username != null) {
       fabItems.add(
         FabOverItemData(
