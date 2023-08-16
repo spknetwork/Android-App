@@ -27,6 +27,10 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  assets_audio_player:
+    git:
+      url: https://github.com/florent37/Flutter-AssetsAudioPlayer.git
+      ref: master
   adaptive_action_sheet: ^2.0.1
   better_player:
     git:

@@ -41,6 +41,23 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  assets_audio_player:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: master
+      resolved-ref: "7ad3c57c2da431a89c6f156177ab2be1a3ae6aa0"
+      url: "https://github.com/florent37/Flutter-AssetsAudioPlayer.git"
+    source: git
+    version: "3.1.0"
+  assets_audio_player_web:
+    dependency: transitive
+    description:
+      name: assets_audio_player_web
+      sha256: cd37c11df23a8289679c0904f2d3e1f65e6d2bea69d6201536f04e0ac3b2e74f
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   async:
     dependency: transitive
     description:
@@ -913,6 +930,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
+  rxdart:
+    dependency: transitive
+    description:
+      name: rxdart
+      sha256: "0c7c0cedd93788d996e33041ffecda924cc54389199cde4e6a34b440f50044cb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.27.7"
   share_plus:
     dependency: "direct main"
     description:

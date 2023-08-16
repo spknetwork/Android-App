@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
@@ -56,5 +57,10 @@ class PodCastCommunicator {
   Future<TrendingPodCastResponse> getTrendingPodcasts() async {
     var response = await fetchPodCast('podcasts/trending');
     return TrendingPodCastResponse.fromRawJson(response);
+  }
+
+  Future<PodcastEpisodesByFeedResponse> getPodcastEpisodesByFeedId(String feedId) async {
+    var response = await fetchPodCast('/episodes/byfeedid?id=$feedId');
+    return PodcastEpisodesByFeedResponse.fromRawJson(response);
   }
 }
