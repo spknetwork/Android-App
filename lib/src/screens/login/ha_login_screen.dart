@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/login/sign_up_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/crypto_manager.dart';
@@ -346,19 +347,24 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         await storage.delete(key: 'hasExpiry');
         await storage.delete(key: 'hasAuthKey');
         await storage.delete(key: 'cookie');
-        server.updateHiveUserData(
-          HiveUserData(
-            username: usernameController.text,
-            postingKey: postingKey,
-            keychainData: null,
-            cookie: null,
-            resolution: resolution,
-            rpc: rpc,
-            loaded: true,
-            language: lang,
-          ),
+        var data = HiveUserData(
+          username: usernameController.text,
+          postingKey: postingKey,
+          keychainData: null,
+          cookie: null,
+          resolution: resolution,
+          rpc: rpc,
+          loaded: true,
+          language: lang,
         );
+        server.updateHiveUserData(data);
         Navigator.of(context).pop();
+        var screen = GQLFeedScreen(
+          appData: data,
+          username: usernameController.text,
+        );
+        var route = MaterialPageRoute(builder: (c) => screen);
+        Navigator.of(context).pushReplacement(route);
         showMessage(
             'You have successfully logged in as - ${usernameController.text}');
         setState(() {
@@ -408,25 +414,30 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         await storage.write(key: 'hasId', value: tokenData[0]);
         await storage.write(key: 'hasExpiry', value: tokenData[1]);
         await storage.write(key: 'hasAuthKey', value: authKey);
-        server.updateHiveUserData(
-          HiveUserData(
-            username: usernameController.text,
-            postingKey: null,
-            keychainData: HiveKeychainData(
-              hasAuthKey: authKey,
-              hasExpiry: tokenData[1],
-              hasId: tokenData[0],
-            ),
-            cookie: null,
-            resolution: data.resolution,
-            rpc: data.rpc,
-            loaded: true,
-            language: data.language,
+        var newData = HiveUserData(
+          username: usernameController.text,
+          postingKey: null,
+          keychainData: HiveKeychainData(
+            hasAuthKey: authKey,
+            hasExpiry: tokenData[1],
+            hasId: tokenData[0],
           ),
+          cookie: null,
+          resolution: data.resolution,
+          rpc: data.rpc,
+          loaded: true,
+          language: data.language,
         );
+        server.updateHiveUserData(newData);
         showMessage(
             'You have successfully logged in with Hive Auth with user - ${usernameController.text}');
         Navigator.of(context).pop();
+        var screen = GQLFeedScreen(
+          appData: newData,
+          username: usernameController.text,
+        );
+        var route = MaterialPageRoute(builder: (c) => screen);
+        Navigator.of(context).pushReplacement(route);
       }
     } else {
       showMessage(
