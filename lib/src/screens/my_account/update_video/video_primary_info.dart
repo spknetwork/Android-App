@@ -108,8 +108,7 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
         ),
       ),
       body: _body(),
-      floatingActionButton: description.isNotEmpty &&
-              title.isNotEmpty
+      floatingActionButton: description.isNotEmpty && title.isNotEmpty
           ? FloatingActionButton(
               onPressed: () {
                 var screen = VideoDetailsInfo(

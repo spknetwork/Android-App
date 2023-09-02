@@ -85,14 +85,10 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     tagsController.text =
         widget.item.tags.isEmpty ? "threespeak,mobile" : widget.item.tags;
     selectedCommunity = widget.item.community.isEmpty
-        ? widget.item.isReel
-            ? 'hive-151961'
-            : 'hive-181335'
+        ? 'hive-181335'
         : widget.item.community;
     selectedCommunityVisibleName = widget.item.community.isEmpty
-        ? widget.item.isReel
-            ? 'Three Shorts'
-            : 'Three Speak'
+        ? 'Three Speak'
         : widget.item.community;
     socket = WebSocketChannel.connect(
       Uri.parse(Communicator.hiveAuthServer),
@@ -306,8 +302,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               .replaceAll("ipfs://", "")
               .replaceAll("/manifest.m3u8", "");
         }
-        var community = selectedCommunity ??
-            (widget.item.isReel ? 'hive-151961' : 'hive-181335');
+        var community = selectedCommunity;
         final String response = await platform.invokeMethod('newPostVideo', {
           'thumbnail': v.thumbnailValue,
           'video_v2': v.videoValue,
@@ -571,10 +566,10 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                 CustomCircleAvatar(
                   width: 44,
                   height: 44,
-                  url: server.communityIcon(selectedCommunity ?? 'hive-181335'),
+                  url: server.communityIcon(selectedCommunity),
                 ),
                 SizedBox(width: 10),
-                Text(selectedCommunityVisibleName ?? 'Threespeak'),
+                Text(selectedCommunityVisibleName),
               ],
             ),
           ),
@@ -706,7 +701,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           ? null
           : thumbIpfs.isNotEmpty || widget.item.getThumbnail().isNotEmpty
               ? FloatingActionButton.extended(
-                  label: Text(widget.justForEditing ? 'Save Details' : widget.item.isReel ? 'Publish Video' : 'Publish 3Shorts'),
+                  label: Text(widget.justForEditing ? 'Save Details' : 'Publish'),
                   onPressed: () {
                     if (user.username != null) {
                       completeVideo(user);

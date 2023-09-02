@@ -22,7 +22,6 @@ class VideoDetails {
   final bool steemPosted;
   final String status;
   final String playUrl;
-  final bool isReel;
   final String language;
 
   final String thumbnail;
@@ -115,7 +114,6 @@ class VideoDetails {
     this.playUrl = "",
     this.steemPosted = false,
     this.status = "",
-    this.isReel = false,
     required this.video_v2,
     required this.tags,
     required this.originalFilename,
@@ -169,7 +167,6 @@ class VideoDetails {
         originalFilename: asString(json, 'originalFilename'),
         firstUpload: asBool(json, 'firstUpload'),
         beneficiaries: asString(json, 'beneficiaries'),
-        isReel: asBool(json, 'isReel'),
         visible_status: asString(json, 'visible_status'),
       );
 
@@ -193,6 +190,5 @@ class VideoDetails {
         'playUrl': playUrl,
         'steemPosted': steemPosted,
         'status': status,
-        'isReel': isReel,
       };
 }

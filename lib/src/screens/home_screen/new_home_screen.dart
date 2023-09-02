@@ -405,7 +405,6 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           onPressed: (c) {
             var screen = NewVideoUploadScreen(
               camera: true,
-              isReel: isReel,
               data: data,
             );
             var route = MaterialPageRoute(builder: (c) => screen);
@@ -419,7 +418,6 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
             onPressed: (c) {
               var screen = NewVideoUploadScreen(
                 camera: false,
-                isReel: isReel,
                 data: data,
               );
               var route = MaterialPageRoute(builder: (c) => screen);
@@ -434,29 +432,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   }
 
   void showBottomSheetForRecordingTypes(HiveUserData data) {
-    showAdaptiveActionSheet(
-      context: context,
-      title: const Text('What do you want to upload?'),
-      androidBorderRadius: 30,
-      actions: <BottomSheetAction>[
-        BottomSheetAction(
-          title: const Text('3Speak Short'),
-          leading: const Icon(Icons.camera_outlined),
-          onPressed: (c) {
-            Navigator.of(context).pop();
-            showBottomSheetForVideoOptions(true, data);
-          },
-        ),
-        BottomSheetAction(
-            title: const Text('3Speak Video'),
-            leading: const Icon(Icons.video_collection),
-            onPressed: (c) {
-              Navigator.of(context).pop();
-              showBottomSheetForVideoOptions(false, data);
-            }),
-      ],
-      cancelAction: CancelAction(title: const Text('Cancel')),
-    );
+    showBottomSheetForVideoOptions(false, data);
   }
 
   void logout(HiveUserData data) async {

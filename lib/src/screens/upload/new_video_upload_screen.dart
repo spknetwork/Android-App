@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
-import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
@@ -47,11 +46,9 @@ class NewVideoUploadScreen extends StatefulWidget {
   const NewVideoUploadScreen({
     Key? key,
     required this.camera,
-    required this.isReel,
     required this.data,
   }) : super(key: key);
   final bool camera;
-  final bool isReel;
   final HiveUserData data;
 
   @override
@@ -164,17 +161,10 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
       });
 
       final XFile? file;
-      if (widget.isReel) {
-        file = await _picker.pickVideo(
-          source: widget.camera ? ImageSource.camera : ImageSource.gallery,
-          maxDuration: Duration(seconds: 90),
-          preferredCameraDevice: CameraDevice.front,
-        );
-      } else {
-        file = await _picker.pickVideo(
-          source: widget.camera ? ImageSource.camera : ImageSource.gallery,
-        );
-      }
+      file = await _picker.pickVideo(
+        source: widget.camera ? ImageSource.camera : ImageSource.gallery,
+        preferredCameraDevice: CameraDevice.front,
+      );
       if (file != null) {
         setState(() {
           didPickFile = true;
@@ -242,13 +232,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           didTakeDefaultThumbnail = true;
         });
 
-        var imageInfo = await getImageInfo(thumbPath);
-        var imageHeight = imageInfo.image.height;
-        var imageWidth = imageInfo.image.width;
-        if (imageHeight < imageWidth && widget.isReel) {
-          throw '3Shorts must be in portrait mode only';
-        }
-
         // --- Step 4. Generate Thumbnail
 
         // Step 5. Upload Thumbnail
@@ -279,7 +262,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           duration: duration,
           size: fileSize.toDouble(),
           tusFileName: name,
-          isReel: widget.isReel,
         );
         _addItem(originalFileName, file.path);
         log(videoUploadInfo.status);

@@ -82,7 +82,7 @@ class GQLCommunicator {
 
   Future<List<GQLFeedItem>> getUserFeed(String author, bool isShorts, int skip, String? lang) async {
     var spkVideoQuery = "\nspkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n";
-    var feedOptionsQuery = "\nfeedOptions: { { byCreator: \"$author\" } ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
+    var feedOptionsQuery = "\nfeedOptions: { byCreator: { _eq: \"$author\" } ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
     var paginationQuery = "\npagination: { limit: 50, skip: $skip }\n";
     return getGQLFeed(
         'UserChannelFeed',
@@ -91,7 +91,7 @@ class GQLCommunicator {
 
   Future<List<GQLFeedItem>> getCommunity(String community, bool isShorts, int skip, String? lang) async {
     var spkVideoQuery = "\nspkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n";
-    var feedOptionsQuery = "\nfeedOptions: { { byCommunity: \"$community\" } ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
+    var feedOptionsQuery = "\nfeedOptions: { byCommunity: { _eq: \"$community\" } ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
     var paginationQuery = "\npagination: { limit: 50, skip: $skip }\n";
     return getGQLFeed(
         'CommunityFeed',
@@ -100,7 +100,7 @@ class GQLCommunicator {
 
   Future<List<GQLFeedItem>> getCTTFeed(int skip, String? lang) async {
     var spkVideoQuery = "\nspkvideo: {only: true }\n";
-    var feedOptionsQuery = "\nfeedOptions: { { byCreator: \"spknetwork.chat\" } ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
+    var feedOptionsQuery = "\nfeedOptions: { byCreator: { _eq: \"spknetwork.chat\" } ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
     var paginationQuery = "\npagination: { limit: 50, skip: $skip }\n";
     return getGQLFeed(
         'UserChannelFeed',

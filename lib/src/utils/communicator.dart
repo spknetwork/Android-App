@@ -317,7 +317,6 @@ class Communicator {
     required int duration,
     required double size,
     required String tusFileName,
-    required bool isReel,
   }) async {
     var cookie = await getValidCookie(user);
     var request = http.Request(
@@ -329,7 +328,6 @@ class Communicator {
       duration: duration,
       filename: tusFileName,
       owner: user.username ?? '',
-      isReel: isReel,
     ).toJsonString();
     Map<String, String> map = {
       "cookie": cookie,
