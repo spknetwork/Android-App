@@ -61,7 +61,8 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
 
   Widget _futureForLoadingRatio() {
     return FutureBuilder(
-      future: Communicator().getAspectRatio(widget.item.videoV2M3U8(widget.data)),
+      future:
+          Communicator().getAspectRatio(widget.item.videoV2M3U8(widget.data)),
       builder: (builder, snapshot) {
         if (snapshot.hasError) {
           String text =
@@ -69,8 +70,11 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
           return container('Video Preview', Text(text));
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
-          var ratio = snapshot.data as double;
-          setupVideo(widget.item.getVideoUrl(widget.data), ratio);
+          var videoSize = snapshot.data as VideoSize;
+          setupVideo(
+            widget.item.getVideoUrl(widget.data),
+            videoSize.height / videoSize.width,
+          );
           return Scaffold(
             appBar: AppBar(
               title: Text('Video Preview'),

@@ -30,3 +30,39 @@ class ErrorResponse {
   factory ErrorResponse.fromJsonString(String jsonString) =>
       ErrorResponse.fromJson(json.decode(jsonString));
 }
+
+class BeneficiariesJson {
+  final String account;
+  final int weight;
+  final String src;
+
+  BeneficiariesJson({
+    required this.account,
+    required this.weight,
+    required this.src,
+  });
+
+  factory BeneficiariesJson.fromJson(Map<String, dynamic>? json) =>
+      BeneficiariesJson(
+        account: asString(json, 'account'),
+        weight: asInt(json, 'weight'),
+        src: asString(json, 'src'),
+      );
+
+  static List<BeneficiariesJson> fromJsonString(String jsonString) {
+    var list = json.decode(jsonString) as List;
+    var listNew = list
+        .map((e) => BeneficiariesJson.fromJson(e))
+        .toList();
+    return listNew;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'account': account,
+      'weight': weight,
+      'src': src,
+    };
+  }
+
+}

@@ -4,14 +4,16 @@ import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
+import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
-import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
+import 'package:acela/src/screens/my_account/update_video/add_bene_sheet.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,10 +29,12 @@ class VideoDetailsInfo extends StatefulWidget {
     required this.item,
     required this.title,
     required this.subtitle,
+    required this.selectedCommunity,
     required this.justForEditing,
     required this.hasKey,
     required this.hasAuthKey,
     required this.appData,
+    required this.isNsfwContent,
   }) : super(key: key);
   final String hasKey;
   final String hasAuthKey;
@@ -38,7 +42,9 @@ class VideoDetailsInfo extends StatefulWidget {
   final String title;
   final String subtitle;
   final bool justForEditing;
+  final String selectedCommunity;
   final HiveUserData appData;
+  final bool isNsfwContent;
 
   @override
   State<VideoDetailsInfo> createState() => _VideoDetailsInfoState();
@@ -49,7 +55,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var isPickingImage = false;
   var uploadStarted = false;
   var uploadComplete = false;
-  var isNsfwContent = false;
   var thumbIpfs = '';
   var thumbUrl = '';
   var tags = 'threespeak,mobile';
@@ -57,8 +62,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var processText = '';
   TextEditingController tagsController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  late String selectedCommunity; //= 'hive-181335';
-  late String selectedCommunityVisibleName; //= 'Threespeak';
   String? hiveKeychainTransactionId;
   late WebSocketChannel socket;
   var socketClosed = true;
@@ -68,6 +71,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   Timer? ticker;
   var loadingQR = false;
   var shouldShowHiveAuth = false;
+  var powerUp100 = false;
+  late String beneficiaries;
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -82,14 +87,10 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   @override
   void initState() {
     super.initState();
+    beneficiaries =
+    // '[{"account":"${widget.appData.username!}","weight":10000,"src":"publisher"}]';
     tagsController.text =
         widget.item.tags.isEmpty ? "threespeak,mobile" : widget.item.tags;
-    selectedCommunity = widget.item.community.isEmpty
-        ? 'hive-181335'
-        : widget.item.community;
-    selectedCommunityVisibleName = widget.item.community.isEmpty
-        ? 'Three Speak'
-        : widget.item.community;
     socket = WebSocketChannel.connect(
       Uri.parse(Communicator.hiveAuthServer),
     );
@@ -253,9 +254,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       processText = 'Updating video info';
     });
     try {
-      // we wait for 15 seconds to wait for RPC node to have latest blocks
-      // if video is already published, we want to avoid.
-      // await Future.delayed(const Duration(seconds: 15), () {});
       var doesPostNotExist = await Communicator()
           .doesPostNotExist(widget.item.owner, widget.item.permlink, user.rpc);
       if (doesPostNotExist != true) {
@@ -272,10 +270,10 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             videoId: widget.item.id,
             title: widget.title,
             description: widget.subtitle,
-            isNsfwContent: isNsfwContent,
+            isNsfwContent: widget.isNsfwContent,
             tags: tags,
             thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
-            communityID: selectedCommunity);
+            communityID: widget.selectedCommunity);
         if (widget.justForEditing) {
           setState(() {
             showMessage('Video details are saved.');
@@ -302,7 +300,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               .replaceAll("ipfs://", "")
               .replaceAll("/manifest.m3u8", "");
         }
-        var community = selectedCommunity;
         final String response = await platform.invokeMethod('newPostVideo', {
           'thumbnail': v.thumbnailValue,
           'video_v2': v.videoValue,
@@ -318,7 +315,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'bene': v.benes[0],
           'beneW': v.benes[1],
           'postingKey': user.postingKey ?? '',
-          'community': community,
+          'community': widget.selectedCommunity,
           'ipfsHash': ipfsHash,
           'hasKey': user.keychainData?.hasId ?? '',
           'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
@@ -496,7 +493,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
 
   Widget _tagField() {
     return Container(
-      margin: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(left: 10, right: 10),
       child: TextField(
         controller: tagsController,
         decoration: const InputDecoration(
@@ -515,66 +512,116 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     );
   }
 
-  Widget _notSafe() {
+  Widget _rewardType() {
     return Container(
-      margin: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 20),
       child: Row(
         children: [
-          const Text('Is this video NOT SAFE for work?'),
-          const Spacer(),
-          Switch(
-            value: isNsfwContent,
-            onChanged: (newVal) {
-              setState(() {
-                isNsfwContent = newVal;
-              });
-            },
-          )
+          Text('Type:'),
+          Spacer(),
+          SizedBox(
+            width: 250.0,
+            child: CupertinoSegmentedControl(
+              children: {
+                0: Center(
+                  child: Text('50% Power', textAlign: TextAlign.center),
+                ),
+                1: Center(
+                  child: Text('100% Power', textAlign: TextAlign.center),
+                )
+              },
+              selectedColor: Theme.of(context).primaryColor,
+              borderColor: Theme.of(context).primaryColor,
+              groupValue: powerUp100 ? 1 : 0,
+              onValueChanged: (value) {
+                setState(() {
+                  if (value == 0) {
+                    powerUp100 = false;
+                  } else {
+                    powerUp100 = true;
+                  }
+                });
+              },
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _communityPicker() {
-    // if (widget.item.isReel) {
-    //   return Container();
-    // }
+  Widget _beneficiaries() {
     return Container(
-      margin: EdgeInsets.all(10),
-      child: Row(
-        children: [
-          const Text('Post to:'),
-          SizedBox(width: 10),
-          InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (c) => CommunitiesScreen(
-                    withoutScaffold: false,
-                    didSelectCommunity: (name, id) {
-                      setState(() {
-                        selectedCommunity = id;
-                        selectedCommunityVisibleName = name;
-                      });
-                    },
-                  ),
-                ),
-              );
-            },
-            child: Row(
-              children: [
-                CustomCircleAvatar(
-                  width: 44,
-                  height: 44,
-                  url: server.communityIcon(selectedCommunity),
-                ),
-                SizedBox(width: 10),
-                Text(selectedCommunityVisibleName),
-              ],
+      padding: const EdgeInsets.all(10),
+      child: InkWell(
+        onTap: () {
+          beneficiariesBottomSheet();
+        },
+        child: Row(
+          children: [
+            Text('Video Participants:'),
+            Spacer(),
+            Icon(Icons.arrow_drop_down),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void showAlertForAddBene(List<BeneficiariesJson> benes) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return AddBeneSheet(benes: benes, onSave: (name, percent) {
+          benes.add(BeneficiariesJson(account: name, weight: percent, src: ''));
+          var text = json.encode(benes);
+          setState(() {
+            beneficiaries = text;
+          });
+        });
+      },
+    );
+  }
+
+
+  void beneficiariesBottomSheet() {
+    var benes = BeneficiariesJson.fromJsonString(beneficiaries);
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Container(
+            height: 400,
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text('Video Participants'),
+                actions: [
+                  IconButton(onPressed: (){
+                    Navigator.of(context).pop();
+                    showAlertForAddBene(benes);
+                  }, icon: Icon(Icons.add))
+                ],
+              ),
+              body: ListView.separated(
+                itemBuilder: (c, i) {
+                  var percent = '${(benes[i].weight.toDouble() / 100.0).toStringAsFixed(2)} %';
+                  return ListTile(
+                    leading: CustomCircleAvatar(
+                      height: 40,
+                      width: 40,
+                      url: server.userOwnerThumb(benes[i].account),
+                    ),
+                    title: Text(benes[i].account),
+                    subtitle: Text(benes[i].src),
+                    trailing: Text(percent),
+                  );
+                },
+                separatorBuilder: (c, i) => const Divider(),
+                itemCount: benes.length,
+              ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -691,10 +738,10 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _tagField(),
-                _notSafe(),
-                _communityPicker(),
                 _thumbnailPicker(user),
                 const Text('Tap to change video thumbnail'),
+                if (!widget.justForEditing) _rewardType(),
+                if (!widget.justForEditing) _beneficiaries(),
               ],
             ),
       floatingActionButton: isCompleting

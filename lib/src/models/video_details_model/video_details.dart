@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
@@ -39,7 +40,8 @@ class VideoDetails {
   final String visible_status;
 
   String getThumbnail() {
-    return thumbnail.replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
+    return thumbnail.replaceAll(
+        'ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
   }
 
   String getVideoUrl(HiveUserData data) {
@@ -62,7 +64,8 @@ class VideoDetails {
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/manifest.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
-      var url = video_v2.replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
+      var url =
+          video_v2.replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
       log('Root Play url is - $url');
       return url;
     }
@@ -75,7 +78,9 @@ class VideoDetails {
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/manifest.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
-      var url = video_v2.replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/').replaceAll('manifest', '${data.resolution}/index');
+      var url = video_v2
+          .replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/')
+          .replaceAll('manifest', '${data.resolution}/index');
       log('Play url is - $url');
       return url;
     }
@@ -125,21 +130,67 @@ class VideoDetails {
   factory VideoDetails.fromJsonString(String jsonString) =>
       VideoDetails.fromJson(json.decode(jsonString));
 
-  List<String> get benes {
+  List<BeneficiariesJson> get benes {
     if (beneficiaries == "[]") {
-      return ["sagarkothari88", "100"];
+      return [
+        BeneficiariesJson(account: 'sagarkothari88', src: 'mobile', weight: 1),
+        BeneficiariesJson(
+            account: 'spk.beneficiary', src: 'threespeak', weight: 9),
+        BeneficiariesJson(
+            account: 'threespeakleader', src: 'threespeak', weight: 1),
+        BeneficiariesJson(account: owner, src: 'author', weight: 89),
+      ];
     } else {
       try {
-        var array = json.decode(beneficiaries) as List<dynamic>;
-        var list = array.map((e) => e['account']).toList();
-        var amounts = array.map((e) => e['weight']).toList();
-        if (!list.contains('sagarkothari88')) {
-          list.add('sagarkothari88');
-          amounts.add('100');
+        var array = json.decode(beneficiaries) as List<Map<String, dynamic>>;
+        List<BeneficiariesJson> beneficiariesToSet = [];
+        for (var item in array) {
+          var name = item['account'] as String?;
+          var weight = item['weight'] as int?;
+          if (name != null &&
+              weight != null &&
+              (weight / 100) > 1 &&
+              name.toLowerCase() != 'sagarkothari88' &&
+              name.toLowerCase() != 'spk.beneficiary' &&
+              name.toLowerCase() != 'threespeakleader') {
+            beneficiariesToSet.add(
+              BeneficiariesJson(
+                account: name,
+                weight: weight ~/ 100,
+                src: 'participant',
+              ),
+            );
+          }
         }
-        return [list.join(","), amounts.join(",")];
+        var names = beneficiariesToSet.map((e) => e.account).toList();
+        if (!names.contains('sagarkothari88')) {
+          beneficiariesToSet.add(
+            BeneficiariesJson(
+                account: 'sagarkothari88', src: 'mobile', weight: 1),
+          );
+        }
+        if (!names.contains('spk.beneficiary')) {
+          beneficiariesToSet.add(
+            BeneficiariesJson(
+                account: 'spk.beneficiary', src: 'threespeak', weight: 9),
+          );
+        }
+        if (!names.contains('threespeakleader')) {
+          beneficiariesToSet.add(
+            BeneficiariesJson(
+                account: 'threespeakleader', src: 'threespeak', weight: 1),
+          );
+        }
       } catch (e) {
-        return ["sagarkothari88", "100"];
+        return [
+          BeneficiariesJson(
+              account: 'sagarkothari88', src: 'mobile', weight: 1),
+          BeneficiariesJson(
+              account: 'spk.beneficiary', src: 'threespeak', weight: 9),
+          BeneficiariesJson(
+              account: 'threespeakleader', src: 'threespeak', weight: 1),
+          BeneficiariesJson(account: owner, src: 'author', weight: 89),
+        ];
       }
     }
   }

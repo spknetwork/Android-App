@@ -5,6 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
+class VideoLanguage {
+  String name;
+  String code;
+
+  VideoLanguage({
+    required this.name,
+    required this.code,
+  });
+}
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
@@ -14,6 +24,24 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   var res = '480p';
+  var languages = [
+    VideoLanguage(code: "en", name: "English"),
+    VideoLanguage(code: "de", name: "Deutsch"),
+    VideoLanguage(code: "fr", name: "Français"),
+    VideoLanguage(code: "es", name: "Español"),
+    VideoLanguage(code: "nl", name: "Nederlands"),
+    VideoLanguage(code: "ko", name: "한국어"),
+    VideoLanguage(code: "ru", name: "русский"),
+    VideoLanguage(code: "hu", name: "Magyar"),
+    VideoLanguage(code: "ro", name: "Română"),
+    VideoLanguage(code: "cs", name: "čeština"),
+    VideoLanguage(code: "pl", name: "Polskie"),
+    VideoLanguage(code: "in", name: "bahasa Indonesia"),
+    VideoLanguage(code: "bn", name: "বাংলা"),
+    VideoLanguage(code: "it", name: "Italian"),
+    VideoLanguage(code: "he", name: "עִברִית"),
+    VideoLanguage(code: "all", name: "All"),
+  ];
 
   @override
   void initState() {
@@ -106,18 +134,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  BottomSheetAction getLangAction(String optionName, HiveUserData appData) {
+  BottomSheetAction getLangAction(
+    VideoLanguage language,
+    HiveUserData appData,
+  ) {
     return BottomSheetAction(
-      title: Text(optionName),
+      title: Text(language.name),
       onPressed: (context) async {
         Navigator.of(context).pop();
         const storage = FlutterSecureStorage();
-        if (optionName == 'English') {
-          await storage.write(key: 'lang', value: 'en');
-        } else if (optionName == 'Spanish') {
-          await storage.write(key: 'lang', value: 'es');
-        } else {
+        if (language.code == 'all') {
           await storage.delete(key: 'lang');
+          await storage.delete(key: 'lang_display');
+        } else {
+          await storage.write(key: 'lang', value: language.code);
+          await storage.write(key: 'lang_display', value: language.name);
         }
         server.updateHiveUserData(
           HiveUserData(
@@ -127,8 +158,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             resolution: appData.resolution,
             rpc: appData.rpc,
             loaded: true,
-            language: optionName == 'English' ? 'en' : optionName == 'Spanish' ? 'es' : null,
-            keychainData: appData.keychainData
+            language: language.code == 'all' ? null : language.code,
+            keychainData: appData.keychainData,
           ),
         );
       },
@@ -140,21 +171,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       title: const Text('Set Default Language Filter'),
       androidBorderRadius: 30,
-      actions: [
-        getLangAction('English', appData),
-        getLangAction('Spanish', appData),
-        getLangAction('All', appData),
-      ],
+      actions: languages.map((e) => getLangAction(e, appData)).toList(),
       cancelAction: CancelAction(title: const Text('Cancel')),
     );
   }
 
   Widget _changeLanguage(BuildContext context) {
     var data = Provider.of<HiveUserData>(context);
+    var display = languages.where((e) => e.code == data.language).firstOrNull?.name ?? 'All Languages';
     return ListTile(
       leading: const Icon(Icons.language),
       title: const Text("Set Language Filter"),
-      trailing: Text(data.language == 'en' ? 'English Only' : data.language == 'es' ? 'Spanish Only' : 'All Languages'),
+      trailing: Text(display),
       onTap: () {
         tappedLanguage(data);
       },
