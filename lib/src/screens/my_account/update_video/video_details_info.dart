@@ -72,7 +72,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var loadingQR = false;
   var shouldShowHiveAuth = false;
   var powerUp100 = false;
-  late String beneficiaries;
+  late List<BeneficiariesJson> beneficiaries;
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -87,8 +87,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   @override
   void initState() {
     super.initState();
-    beneficiaries =
-    // '[{"account":"${widget.appData.username!}","weight":10000,"src":"publisher"}]';
+    beneficiaries = widget.item.benes;
     tagsController.text =
         widget.item.tags.isEmpty ? "threespeak,mobile" : widget.item.tags;
     socket = WebSocketChannel.connect(
@@ -571,20 +570,23 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return AddBeneSheet(benes: benes, onSave: (name, percent) {
-          benes.add(BeneficiariesJson(account: name, weight: percent, src: ''));
-          var text = json.encode(benes);
-          setState(() {
-            beneficiaries = text;
-          });
-        });
+        return AddBeneSheet(
+          benes: benes,
+          onSave: (newBenes) {
+            setState(() {
+              beneficiaries = newBenes;
+            });
+          },
+        );
       },
     );
   }
 
-
   void beneficiariesBottomSheet() {
-    var benes = BeneficiariesJson.fromJsonString(beneficiaries);
+    var filteredBenes = beneficiaries
+        .where((element) =>
+            element.src != 'ENCODER_PAY' && element.src != 'threespeak')
+        .toList();
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -595,28 +597,38 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               appBar: AppBar(
                 title: Text('Video Participants'),
                 actions: [
-                  IconButton(onPressed: (){
-                    Navigator.of(context).pop();
-                    showAlertForAddBene(benes);
-                  }, icon: Icon(Icons.add))
+                  IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        showAlertForAddBene(beneficiaries);
+                      },
+                      icon: Icon(Icons.add))
                 ],
               ),
               body: ListView.separated(
                 itemBuilder: (c, i) {
-                  var percent = '${(benes[i].weight.toDouble() / 100.0).toStringAsFixed(2)} %';
                   return ListTile(
                     leading: CustomCircleAvatar(
                       height: 40,
                       width: 40,
-                      url: server.userOwnerThumb(benes[i].account),
+                      url: server.userOwnerThumb(filteredBenes[i].account),
                     ),
-                    title: Text(benes[i].account),
-                    subtitle: Text(benes[i].src),
-                    trailing: Text(percent),
+                    title: Text(filteredBenes[i].account),
+                    subtitle: Text(
+                        '${filteredBenes[i].src} ( ${filteredBenes[i].weight} % )'),
+                    trailing: (filteredBenes[i].src == 'participant')
+                        ? IconButton(
+                            onPressed: () {},
+                            icon: Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                          )
+                        : null,
                   );
                 },
                 separatorBuilder: (c, i) => const Divider(),
-                itemCount: benes.length,
+                itemCount: filteredBenes.length,
               ),
             ),
           ),
@@ -748,13 +760,15 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           ? null
           : thumbIpfs.isNotEmpty || widget.item.getThumbnail().isNotEmpty
               ? FloatingActionButton.extended(
-                  label: Text(widget.justForEditing ? 'Save Details' : 'Publish'),
+                  label:
+                      Text(widget.justForEditing ? 'Save Details' : 'Publish'),
                   onPressed: () {
                     if (user.username != null) {
                       completeVideo(user);
                     }
                   },
-                  icon: Icon(widget.justForEditing ? Icons.save : Icons.post_add),
+                  icon:
+                      Icon(widget.justForEditing ? Icons.save : Icons.post_add),
                 )
               : null,
     );

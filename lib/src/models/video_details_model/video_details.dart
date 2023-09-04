@@ -5,6 +5,7 @@ import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
+import 'package:collection/collection.dart';
 
 List<VideoDetails> videoItemsFromString(String string) {
   final jsonList = json.decode(string) as List;
@@ -142,14 +143,12 @@ class VideoDetails {
       ];
     } else {
       try {
-        var array = json.decode(beneficiaries) as List<Map<String, dynamic>>;
+        var array = BeneficiariesJson.fromJsonString(beneficiaries);
         List<BeneficiariesJson> beneficiariesToSet = [];
         for (var item in array) {
-          var name = item['account'] as String?;
-          var weight = item['weight'] as int?;
-          if (name != null &&
-              weight != null &&
-              (weight / 100) > 1 &&
+          var name = item.account;
+          var weight = item.weight;
+          if ((weight / 100) >= 1 &&
               name.toLowerCase() != 'sagarkothari88' &&
               name.toLowerCase() != 'spk.beneficiary' &&
               name.toLowerCase() != 'threespeakleader') {
@@ -157,30 +156,34 @@ class VideoDetails {
               BeneficiariesJson(
                 account: name,
                 weight: weight ~/ 100,
-                src: 'participant',
+                src: item.src,
               ),
             );
           }
         }
-        var names = beneficiariesToSet.map((e) => e.account).toList();
-        if (!names.contains('sagarkothari88')) {
+        if (owner != 'sagarkothari88') {
           beneficiariesToSet.add(
             BeneficiariesJson(
                 account: 'sagarkothari88', src: 'mobile', weight: 1),
           );
         }
-        if (!names.contains('spk.beneficiary')) {
+        beneficiariesToSet.add(
+          BeneficiariesJson(
+              account: 'spk.beneficiary', src: 'threespeak', weight: 9),
+        );
+        beneficiariesToSet.add(
+          BeneficiariesJson(
+              account: 'threespeakleader', src: 'threespeak', weight: 1),
+        );
+        var sum = beneficiariesToSet.map((e) => e.weight).toList().sum;
+        if (sum < 100) {
+          var remaining = 100 - sum;
           beneficiariesToSet.add(
             BeneficiariesJson(
-                account: 'spk.beneficiary', src: 'threespeak', weight: 9),
+                account: owner, src: 'author', weight: remaining),
           );
         }
-        if (!names.contains('threespeakleader')) {
-          beneficiariesToSet.add(
-            BeneficiariesJson(
-                account: 'threespeakleader', src: 'threespeak', weight: 1),
-          );
-        }
+        return beneficiariesToSet;
       } catch (e) {
         return [
           BeneficiariesJson(
