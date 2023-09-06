@@ -9,10 +9,12 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/add_bene_sheet.dart';
+import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
+import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -73,6 +75,25 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   var shouldShowHiveAuth = false;
   var powerUp100 = false;
   late List<BeneficiariesJson> beneficiaries;
+
+  var languages = [
+    VideoLanguage(code: "en", name: "English"),
+    VideoLanguage(code: "de", name: "Deutsch"),
+    VideoLanguage(code: "fr", name: "Français"),
+    VideoLanguage(code: "es", name: "Español"),
+    VideoLanguage(code: "nl", name: "Nederlands"),
+    VideoLanguage(code: "ko", name: "한국어"),
+    VideoLanguage(code: "ru", name: "русский"),
+    VideoLanguage(code: "hu", name: "Magyar"),
+    VideoLanguage(code: "ro", name: "Română"),
+    VideoLanguage(code: "cs", name: "čeština"),
+    VideoLanguage(code: "pl", name: "Polskie"),
+    VideoLanguage(code: "in", name: "bahasa Indonesia"),
+    VideoLanguage(code: "bn", name: "বাংলা"),
+    VideoLanguage(code: "it", name: "Italian"),
+    VideoLanguage(code: "he", name: "עִברִית"),
+  ];
+  var selectedLanguage = VideoLanguage(code: "en", name: "English");
 
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
@@ -618,7 +639,25 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                         '${filteredBenes[i].src} ( ${filteredBenes[i].weight} % )'),
                     trailing: (filteredBenes[i].src == 'participant')
                         ? IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              var currentBenes = beneficiaries;
+                              var author = currentBenes
+                                  .where((e) => e.account == widget.item.owner)
+                                  .firstOrNull;
+                              if (author == null) return;
+                              var otherBenes = currentBenes
+                                  .where((e) =>
+                                      e.src != 'author' &&
+                                      e.account != filteredBenes[i].account)
+                                  .toList();
+                              author.weight =
+                                  author.weight + filteredBenes[i].weight;
+                              otherBenes.add(author);
+                              setState(() {
+                                beneficiaries = otherBenes;
+                              });
+                              Navigator.of(context).pop();
+                            },
                             icon: Icon(
                               Icons.delete,
                               color: Colors.red,
@@ -722,6 +761,37 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     );
   }
 
+  BottomSheetAction getLangAction(VideoLanguage language) {
+    return BottomSheetAction(
+      title: Text(language.name),
+      onPressed: (context) async {
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
+  void tappedLanguage() {
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('Set Default Language Filter'),
+      androidBorderRadius: 30,
+      actions: languages.map((e) => getLangAction(e)).toList(),
+      cancelAction: CancelAction(title: const Text('Cancel')),
+    );
+  }
+
+  Widget _changeLanguage() {
+    var display = selectedLanguage.name;
+    return ListTile(
+      leading: const Icon(Icons.language),
+      title: const Text("Set Language Filter"),
+      trailing: Text(display),
+      onTap: () {
+        tappedLanguage();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = Provider.of<HiveUserData>(context);
@@ -754,6 +824,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                 const Text('Tap to change video thumbnail'),
                 if (!widget.justForEditing) _rewardType(),
                 if (!widget.justForEditing) _beneficiaries(),
+                if (!widget.justForEditing) _changeLanguage(),
               ],
             ),
       floatingActionButton: isCompleting

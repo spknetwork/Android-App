@@ -33,7 +33,7 @@ class ErrorResponse {
 
 class BeneficiariesJson {
   final String account;
-  final int weight;
+  int weight;
   final String src;
 
   BeneficiariesJson({
