@@ -25,9 +25,16 @@ class GQLCommunicator {
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
       var responseData = GraphQlFeedResponse.fromRawJson(string);
-      var items = (responseData.data?.trendingFeed?.items ?? []).isNotEmpty
-          ? responseData.data?.trendingFeed?.items ?? []
-          : responseData.data?.socialFeed?.items ?? [];
+      List<GQLFeedItem> items = [];
+      if ((responseData.data?.trendingFeed?.items ?? []).isNotEmpty) {
+        items = responseData.data?.trendingFeed?.items ?? [];
+      } else if ((responseData.data?.socialFeed?.items ?? []).isNotEmpty) {
+        items = responseData.data?.socialFeed?.items ?? [];
+      } else if ((responseData.data?.relatedFeed?.items ?? []).isNotEmpty) {
+        items = responseData.data?.relatedFeed?.items ?? [];
+      } else if ((responseData.data?.searchFeed?.items ?? []).isNotEmpty) {
+        items = responseData.data?.searchFeed?.items ?? [];
+      }
       return items.where((element) => element.spkvideo != null).toList();
     } else {
       print(response.reasonPhrase);
@@ -87,6 +94,15 @@ class GQLCommunicator {
     return getGQLFeed(
         'UserChannelFeed',
         "query UserChannelFeed {\n  socialFeed($spkVideoQuery$feedOptionsQuery$paginationQuery)\n$dataQuery");
+  }
+
+  Future<List<GQLFeedItem>> getSearchFeed(String term, bool isShorts, int skip, String? lang) async {
+    var spkVideoQuery = "\nsearchTerm: \"${term}\"\nspkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n";
+    var feedOptionsQuery = "\nfeedOptions: { ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
+    var paginationQuery = "\npagination: { limit: 50, skip: $skip }\n";
+    return getGQLFeed(
+        'SearchFeed',
+        "query SearchFeed {\n  searchFeed($spkVideoQuery$feedOptionsQuery$paginationQuery)\n$dataQuery");
   }
 
   Future<List<GQLFeedItem>> getCommunity(String community, bool isShorts, int skip, String? lang) async {
