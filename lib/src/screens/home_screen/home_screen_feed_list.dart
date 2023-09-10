@@ -15,7 +15,8 @@ enum HomeScreenFeedType {
   firstUploads,
   userChannelFeed,
   userChannelShorts,
-  community
+  community,
+  trendingTag,
 }
 
 class HomeScreenFeedList extends StatefulWidget {
@@ -63,6 +64,13 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
   Future<List<GQLFeedItem>> loadWith(bool firstPage) {
     try {
       switch (widget.feedType) {
+        case HomeScreenFeedType.trendingTag:
+          return GQLCommunicator().getTrendingTagFeed(
+            widget.owner ?? 'threespeak',
+            false,
+            firstPage ? 0 : items.length,
+            widget.appData.language,
+          );
         case HomeScreenFeedType.trendingFeed:
           return GQLCommunicator().getTrendingFeed(
               false, firstPage ? 0 : items.length, widget.appData.language);

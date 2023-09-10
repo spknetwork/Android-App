@@ -12,6 +12,7 @@ import 'package:acela/src/screens/podcast/podcast_trending.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
+import 'package:acela/src/screens/trending_tags/trending_tags.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/widgets/fab_custom.dart';
 import 'package:acela/src/widgets/fab_overlay.dart';
@@ -47,14 +48,14 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
       Tab(icon: Icon(Icons.play_arrow)),
       Tab(icon: Icon(Icons.looks_one)),
       Tab(icon: Icon(Icons.handshake)),
-      Tab(icon: Icon(Icons.leaderboard)),
+      Tab(icon: Icon(Icons.tag)),
     ] : <Tab>[
       // Tab(icon: Icon(Icons.home)),
       Tab(icon: Icon(Icons.local_fire_department)),
       Tab(icon: Icon(Icons.play_arrow)),
       Tab(icon: Icon(Icons.looks_one)),
       Tab(icon: Icon(Icons.handshake)),
-      Tab(icon: Icon(Icons.leaderboard)),
+      Tab(icon: Icon(Icons.tag)),
     ];
   }
 
@@ -92,7 +93,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         case 4:
           return 'Communities';
         case 5:
-          return 'Leaderboard';
+          return 'Trending Tags';
         default:
           return 'User\'s feed';
       }
@@ -107,7 +108,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         case 3:
           return 'Communities';
         case 4:
-          return 'Leaderboard';
+          return 'Trending Tags';
         default:
           return 'User\'s feed';
       }
@@ -191,7 +192,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
                     didSelectCommunity: null,
                     withoutScaffold: true,
                   ),
-                  LeaderboardScreen(withoutScaffold: true),
+                  TrendingTagsWidget(),
                 ] : [
                   HomeScreenFeedList(feedType: HomeScreenFeedType.trendingFeed, appData: appData),
                   HomeScreenFeedList(feedType: HomeScreenFeedType.newUploads, appData: appData),
@@ -200,7 +201,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
                     didSelectCommunity: null,
                     withoutScaffold: true,
                   ),
-                  LeaderboardScreen(withoutScaffold: true),
+                  TrendingTagsWidget(),
                 ]
             ),
             _fabContainer()

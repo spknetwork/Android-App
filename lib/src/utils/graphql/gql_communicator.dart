@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:acela/src/models/trending_tags/trending_tags_response.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:http/http.dart' as http;
 
@@ -42,6 +43,28 @@ class GQLCommunicator {
     }
   }
 
+  Future<TrendingTagResponse> getTrendingTags() async {
+    var headers = {
+      'Connection': 'keep-alive',
+      'content-type': 'application/json',
+    };
+    var request = http.Request('POST', Uri.parse(gqlServer));
+    var query = "query TrendingTags {\n  trendingTags(limit: 50) {\n    tags {\n      score\n      tag\n    }\n  }\n}";
+    request.body = json
+        .encode({"query": query, "operationName": "TrendingTags", "extensions": {}});
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      return TrendingTagResponse.fromRawJson(string);
+    } else {
+      print(response.reasonPhrase);
+      throw response.reasonPhrase ?? 'Error occurred';
+    }
+  }
+
   Future<List<GQLFeedItem>> getTrendingFeed(bool isShorts, int skip, String? lang) async {
     var spkVideoQuery = "\nspkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n";
     var feedOptionsQuery = "\nfeedOptions: { ${lang != null ? "byLang: {_eq: \"$lang\"}" : ""} }\n";
@@ -49,6 +72,15 @@ class GQLCommunicator {
     return getGQLFeed(
         'TrendingFeed',
         "query TrendingFeed {\n  trendingFeed($spkVideoQuery$feedOptionsQuery$paginationQuery)\n$dataQuery");
+  }
+
+  Future<List<GQLFeedItem>> getTrendingTagFeed(String tag, bool isShorts, int skip, String? lang) async {
+    var spkVideoQuery = "\nspkvideo: {only: true, firstUpload: true${isShorts ? ", isShort: true" : ""}}\n";
+    var feedOptionsQuery = "\nfeedOptions: { byTag: {_eq: \"$tag\"} \n ${lang != null ? "byLang: {_eq: \"$lang\"}" : ""} }\n";
+    var paginationQuery = "\npagination: { limit: 50, skip: $skip }\n";
+    return getGQLFeed(
+        'TrendingTagFeed',
+        "query TrendingTagFeed {\n  trendingFeed($spkVideoQuery$feedOptionsQuery$paginationQuery)\n$dataQuery");
   }
 
   Future<List<GQLFeedItem>> getFirstUploadsFeed(bool isShorts, int skip, String? lang) async {

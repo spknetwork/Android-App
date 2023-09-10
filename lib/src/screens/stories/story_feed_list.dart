@@ -17,6 +17,7 @@ enum StoryFeedType {
   firstUploads,
   userChannelFeed,
   community,
+  trendingTag,
 }
 
 class StoryFeedList extends StatefulWidget {
@@ -58,6 +59,9 @@ class _StoryFeedListState extends State<StoryFeedList>
   Future<List<GQLFeedItem>> loadWith(bool firstPage) {
     try {
       switch (widget.feedType) {
+        case StoryFeedType.trendingTag:
+          return GQLCommunicator()
+              .getTrendingTagFeed(widget.username ?? 'threespeak', true, firstPage ? 0 : items.length, widget.appData.language);
         case StoryFeedType.cttFeed:
           return GQLCommunicator()
               .getCTTFeed(firstPage ? 0 : items.length, widget.appData.language);
