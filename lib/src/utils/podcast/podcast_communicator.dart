@@ -59,6 +59,11 @@ class PodCastCommunicator {
     return TrendingPodCastResponse.fromRawJson(response);
   }
 
+  Future<TrendingPodCastResponse> getSearchResults(String searchTerm) async {
+    var response = await fetchPodCast('search/byterm?q=$searchTerm');
+    return TrendingPodCastResponse.fromRawJson(response);
+  }
+
   Future<PodcastEpisodesByFeedResponse> getPodcastEpisodesByFeedId(String feedId) async {
     var response = await fetchPodCast('/episodes/byfeedid?id=$feedId');
     return PodcastEpisodesByFeedResponse.fromRawJson(response);

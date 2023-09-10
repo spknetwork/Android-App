@@ -1,5 +1,6 @@
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/podcast/podcast_search.dart';
 import 'package:acela/src/screens/podcast/podcasts_feed.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
@@ -64,6 +65,13 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
           ),
           title: Text('Podcasts'),
         ),
+        actions: [
+          IconButton(onPressed: (){
+              var screen = PodCastSearch(appData: widget.appData);
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).push(route);
+          }, icon: Icon(Icons.search)),
+        ],
       ),
       body: FutureBuilder(
         future: future,
