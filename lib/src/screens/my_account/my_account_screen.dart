@@ -106,7 +106,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   Widget _trailingActionOnVideoListItem(VideoDetails item, HiveUserData user) {
     return item.status == 'published'
         ? const Icon(Icons.check, color: Colors.blueAccent)
-        : item.status == "encoding_failed"
+        : item.status == "encoding_failed" || item.status.toLowerCase() == "deleted"
             ? const Icon(Icons.cancel_outlined, color: Colors.red)
             : item.status == 'publish_manual'
                 ? const Icon(
@@ -183,7 +183,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
     var desc = item.description.length > 30
         ? item.description.substring(0, 30)
         : item.description;
-    desc = "\n${item.visible_status}";
+    // desc = "\n${item.visible_status}";
     return ListTile(
       leading: Image.network(
         item.getThumbnail(),
@@ -195,7 +195,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       trailing: _trailingActionOnVideoListItem(item, user),
       onTap: () {
         if (item.status != 'publish_manual' &&
-            item.status != 'encoding_failed') {
+            item.status != 'encoding_failed' && item.status.toLowerCase() != 'deleted') {
           _showBottomSheet(item);
         } else if (item.status == 'publish_manual') {
           _showBottomSheet(item);
@@ -244,12 +244,12 @@ class _MyAccountScreenState extends State<MyAccountScreen>
     var published = items.where((item) => item.status == 'published').toList();
     var ready = items.where((item) => item.status == 'publish_manual').toList();
     var failed =
-        items.where((item) => item.status == 'encoding_failed').toList();
+        items.where((item) => item.status == 'encoding_failed' || item.status.toLowerCase() == 'Deleted').toList();
     var process = items
         .where((item) =>
             item.status != 'published' &&
             item.status != 'publish_manual' &&
-            item.status != 'encoding_failed')
+            item.status != 'encoding_failed' && item.status.toLowerCase() != 'deleted')
         .toList();
     return TabBarView(
       controller: _tabController,
