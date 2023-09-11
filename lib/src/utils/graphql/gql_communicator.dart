@@ -119,9 +119,10 @@ class GQLCommunicator {
         "query RelatedFeed {\n  relatedFeed($spkVideoQuery$feedOptionsQuery)\n$dataQuery");
   }
 
-  Future<List<GQLFeedItem>> getUserFeed(String author, bool isShorts, int skip, String? lang) async {
+  Future<List<GQLFeedItem>> getUserFeed(List<String> authors, bool isShorts, int skip, String? lang) async {
+    var authorsQuery = "{_in: [${authors.map((e) => '"$e"').join(",")}]}";
     var spkVideoQuery = "\nspkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n";
-    var feedOptionsQuery = "\nfeedOptions: { byCreator: { _eq: \"$author\" } ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
+    var feedOptionsQuery = "\nfeedOptions: { byCreator: $authorsQuery ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
     var paginationQuery = "\npagination: { limit: 50, skip: $skip }\n";
     return getGQLFeed(
         'UserChannelFeed',
@@ -129,7 +130,7 @@ class GQLCommunicator {
   }
 
   Future<List<GQLFeedItem>> getSearchFeed(String term, bool isShorts, int skip, String? lang) async {
-    var spkVideoQuery = "\nsearchTerm: \"${term}\"\nspkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n";
+    var spkVideoQuery = "\nsearchTerm: \"$term\"\nspkvideo: {only: true${isShorts ? ", isShort: true" : ""}}\n";
     var feedOptionsQuery = "\nfeedOptions: { ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
     var paginationQuery = "\npagination: { limit: 50, skip: $skip }\n";
     return getGQLFeed(
@@ -147,8 +148,10 @@ class GQLCommunicator {
   }
 
   Future<List<GQLFeedItem>> getCTTFeed(int skip, String? lang) async {
+    var authors = ["spknetwork.chat", "neopch.ctt", "noakmilo.ctt"];
+    var authorsQuery = "{_in: [${authors.map((e) => '"$e"').join(",")}]}";
     var spkVideoQuery = "\nspkvideo: {only: true }\n";
-    var feedOptionsQuery = "\nfeedOptions: { byCreator: { _eq: \"spknetwork.chat\" } ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
+    var feedOptionsQuery = "\nfeedOptions: { byCreator: $authorsQuery ${lang != null ? ", byLang: {_eq: \"$lang\"}" : ""} }\n";
     var paginationQuery = "\npagination: { limit: 50, skip: $skip }\n";
     return getGQLFeed(
         'UserChannelFeed',

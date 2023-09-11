@@ -1,4 +1,3 @@
-import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/my_account/account_settings/account_settings_screen.dart';

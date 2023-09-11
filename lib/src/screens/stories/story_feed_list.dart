@@ -86,7 +86,7 @@ class _StoryFeedListState extends State<StoryFeedList>
             firstPage ? 0 : items.length, widget.appData.language
           );
         case StoryFeedType.userChannelFeed:
-          return GQLCommunicator().getUserFeed(widget.username ?? 'sagarkothari88',
+          return GQLCommunicator().getUserFeed([widget.username ?? 'sagarkothari88'],
               true, firstPage ? 0 : items.length, widget.appData.language);
         case StoryFeedType.community:
           return GQLCommunicator().getCommunity(widget.community ?? 'hive-181335',

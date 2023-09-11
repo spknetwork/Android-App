@@ -87,10 +87,10 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
               firstPage ? 0 : items.length,
               widget.appData.language);
         case HomeScreenFeedType.userChannelFeed:
-          return GQLCommunicator().getUserFeed(widget.owner ?? 'sagarkothari88',
+          return GQLCommunicator().getUserFeed([widget.owner ?? 'sagarkothari88'],
               false, firstPage ? 0 : items.length, widget.appData.language);
         case HomeScreenFeedType.userChannelShorts:
-          return GQLCommunicator().getUserFeed(widget.owner ?? 'sagarkothari88',
+          return GQLCommunicator().getUserFeed([widget.owner ?? 'sagarkothari88'],
               true, firstPage ? 0 : items.length, widget.appData.language);
         case HomeScreenFeedType.community:
           return GQLCommunicator().getCommunity(

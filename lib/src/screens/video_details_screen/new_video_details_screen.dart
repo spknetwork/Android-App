@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:acela/src/screens/trending_tags/trending_tag_videos.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
@@ -17,6 +19,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
+import 'package:chip_list/chip_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wakelock/wakelock.dart';
@@ -42,6 +45,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   VideoSize? ratio;
   late BetterPlayerController _betterPlayerController;
   HivePostInfoPostResultBody? postInfo;
+  var selectedChip = 0;
 
   List<GQLFeedItem> suggestions = [];
 
@@ -431,6 +435,24 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
   }
 
+  Widget _chipList() {
+    return ChipList(
+      listOfChipNames: widget.item.tags ?? ['threespeak', 'video', 'threeshorts'],
+      activeBgColorList: [Theme.of(context).primaryColor],
+      inactiveBgColorList: [Theme.of(context).primaryColor],
+      activeTextColorList: const [Colors.white],
+      inactiveTextColorList: const [Colors.white],
+      activeBorderColorList: const [Colors.white],
+      listOfChipIndicesCurrentlySeclected: [selectedChip],
+      extraOnToggle: (selected) {
+        var tags = widget.item.tags ?? ['threespeak', 'video', 'threeshorts'];
+        var screen = TrendingTagVideos(tag: tags[selected]);
+        var route = MaterialPageRoute(builder: (c) => screen);
+        Navigator.of(context).push(route);
+      },
+    );
+  }
+
   Widget _listView(double screenWidth) {
     if (ratio == null) return Container();
     var height = (ratio!.height >= ratio!.width)
@@ -453,8 +475,10 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           return _header();
         } else if (i == 3) {
           return _actionBar(screenWidth);
+        } else if (i == 4) {
+          return _chipList();
         }
-        var item = suggestions[i - 4];
+        var item = suggestions[i - 5];
         return NewFeedListItem(
           thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
           author: item.author?.username ?? '',
@@ -474,7 +498,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       },
       separatorBuilder: (c, i) =>
       const Divider(height: 0, color: Colors.transparent),
-      itemCount: 4 + suggestions.length,
+      itemCount: 5 + suggestions.length,
     );
   }
 

@@ -81,6 +81,7 @@ dependencies:
   webview_flutter: ^4.2.0
   wakelock: ^0.6.2
   convert: ^3.1.1
+  chip_list: ^2.4.3+8
 
 dev_dependencies:
   flutter_test:
