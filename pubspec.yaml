@@ -42,7 +42,7 @@ dependencies:
   device_info_plus: ^8.2.2
   elliptic: ^0.3.8
   ffmpeg_kit_flutter: ^5.1.0
-  file_picker: ^5.0.1
+  file_picker: ^5.2.10
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.0.2
@@ -82,6 +82,9 @@ dependencies:
   wakelock: ^0.6.2
   convert: ^3.1.1
   chip_list: ^2.4.3+8
+  get_storage: ^2.1.1
+  flutter_downloader: ^1.11.2
+  
 
 dev_dependencies:
   flutter_test:

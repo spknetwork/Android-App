@@ -1,16 +1,21 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
+import 'package:acela/src/screens/podcast/podcast_controller.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
+  await GetStorage.init();
+  await FlutterDownloader.initialize(debug: true);
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
@@ -54,24 +59,28 @@ class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return OverlaySupport.global(
-      child: futureBuilder(
-        StreamProvider<HiveUserData>.value(
-          value: server.hiveUserData,
-          initialData: HiveUserData(
-            resolution: '480p',
-            keychainData: null,
-            cookie: null,
-            postingKey: null,
-            username: null,
-            rpc: 'api.hive.blog',
-            loaded: false,
-            language: null,
-          ),
-          child: StreamProvider<bool>.value(
-            value: server.theme,
-            initialData: true,
-            child: const AcelaApp(),
+    return ChangeNotifierProvider(
+      lazy: false,
+      create: (context) => PodcastController(),
+      child: OverlaySupport.global(
+        child: futureBuilder(
+          StreamProvider<HiveUserData>.value(
+            value: server.hiveUserData,
+            initialData: HiveUserData(
+              resolution: '480p',
+              keychainData: null,
+              cookie: null,
+              postingKey: null,
+              username: null,
+              rpc: 'api.hive.blog',
+              loaded: false,
+              language: null,
+            ),
+            child: StreamProvider<bool>.value(
+              value: server.theme,
+              initialData: true,
+              child: const AcelaApp(),
+            ),
           ),
         ),
       ),
