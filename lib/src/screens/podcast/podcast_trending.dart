@@ -1,6 +1,7 @@
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/podcast/liked_podcasts.dart';
+import 'package:acela/src/screens/podcast/local_podcast_episode.dart';
 import 'package:acela/src/screens/podcast/podcast_search.dart';
 import 'package:acela/src/screens/podcast/podcasts_feed.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
@@ -53,58 +54,55 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          appBar: AppBar(
-            title: ListTile(
-              leading: Image.asset(
-                'assets/pod-cast-logo-round.png',
-                width: 40,
-                height: 40,
-              ),
-              title: Text('Podcasts'),
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        title: ListTile(
+          leading: Image.asset(
+            'assets/pod-cast-logo-round.png',
+            width: 40,
+            height: 40,
           ),
-          body: Stack(
-            children: [
-              FutureBuilder(
-                future: future,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return RetryScreen(
-                      error: snapshot.error.toString(),
-                      onRetry: () {
-                        setState(() {
-                          future = PodCastCommunicator().getTrendingPodcasts();
-                        });
-                      },
-                    );
-                  } else if (snapshot.connectionState == ConnectionState.done) {
-                    var data = snapshot.data as TrendingPodCastResponse;
-                    var list = data.feeds ?? [];
-                    if (list.isEmpty) {
-                      return RetryScreen(
-                        error: 'No data found.',
-                        onRetry: () {
-                          setState(() {
-                            future = PodCastCommunicator().getTrendingPodcasts();
-                          });
-                        },
-                      );
-                    } else {
-                      return getList(list);
-                    }
-                  } else {
-                    return LoadingScreen(title: 'Loading', subtitle: 'Please wait..');
-                  }
-                },
-              ),
-               _fabContainer()
-            ],
-          ),
+          title: Text('Podcasts'),
         ),
-      ],
+      ),
+      body: Stack(
+        children: [
+          FutureBuilder(
+            future: future,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return RetryScreen(
+                  error: snapshot.error.toString(),
+                  onRetry: () {
+                    setState(() {
+                      future = PodCastCommunicator().getTrendingPodcasts();
+                    });
+                  },
+                );
+              } else if (snapshot.connectionState == ConnectionState.done) {
+                var data = snapshot.data as TrendingPodCastResponse;
+                var list = data.feeds ?? [];
+                if (list.isEmpty) {
+                  return RetryScreen(
+                    error: 'No data found.',
+                    onRetry: () {
+                      setState(() {
+                        future = PodCastCommunicator().getTrendingPodcasts();
+                      });
+                    },
+                  );
+                } else {
+                  return getList(list);
+                }
+              } else {
+                return LoadingScreen(
+                    title: 'Loading', subtitle: 'Please wait..');
+              }
+            },
+          ),
+          _fabContainer()
+        ],
+      ),
     );
   }
 
@@ -136,9 +134,9 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
       onTap: () {
         setState(() {
           isMenuOpen = false;
-            var screen = PodCastSearch(appData: widget.appData);
-                    var route = MaterialPageRoute(builder: (c) => screen);
-                    Navigator.of(context).push(route);
+          var screen = PodCastSearch(appData: widget.appData);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
         });
       },
     );
@@ -149,21 +147,22 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
         setState(() {
           isMenuOpen = false;
           var screen = LikedPodcasts(appData: widget.appData);
-                    var route = MaterialPageRoute(builder: (c) => screen);
-                    Navigator.of(context).push(route);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
         });
       },
     );
     var downloaded = FabOverItemData(
-      displayName: 'Podcast Epidsode Downloaded',
+      displayName: 'Downloaded Podcast Episode',
       icon: Icons.download_rounded,
       onTap: () {
         setState(() {
           isMenuOpen = false;
-          // var route = MaterialPageRoute(
-          //   builder: (context) => const SearchScreen(),
-          // );
-          // Navigator.of(context).push(route);
+          var screen = LocalPodcastEpisode(
+            appData: widget.appData,
+          );
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
         });
       },
     );
@@ -176,7 +175,7 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
         });
       },
     );
-    var fabItems = [downloaded, favourites, search,close];
+    var fabItems = [downloaded, favourites, search, close];
 
     return fabItems;
   }
@@ -211,14 +210,14 @@ class _PodcastFeedItemWidgetState extends State<PodcastFeedItemWidget> {
       subtitle: Text(desc),
       trailing: Visibility(
         visible: widget.showLikeButton,
-        child: IconButton(
-          icon: Icon(isItemPresentLocally(widget.item)
-              ? Icons.favorite
-              : Icons.favorite_border),
-          onPressed: () {
-            storeLikedPodcastLocally(widget.item);
-          },
-        ),
+        child: FavouriteWidget(
+            isLiked: isItemPresentLocally(widget.item),
+            onAdd: () {
+              storeLikedPodcastLocally(widget.item);
+            },
+            onRemove: () {
+              storeLikedPodcastLocally(widget.item);
+            }),
       ),
       onTap: () {
         var screen =
@@ -258,6 +257,58 @@ class _PodcastFeedItemWidgetState extends State<PodcastFeedItemWidget> {
       box.write(key, [item.toJson()]);
     }
     print(box.read(key));
-    setState(() {});
+  }
+}
+
+class FavouriteWidget extends StatefulWidget {
+  const FavouriteWidget(
+      {Key? key,
+      required this.isLiked,
+      required this.onAdd,
+      required this.onRemove,
+      this.iconColor})
+      : super(key: key);
+
+  final bool isLiked;
+  final VoidCallback onAdd;
+  final VoidCallback onRemove;
+  final Color? iconColor;
+
+  @override
+  State<FavouriteWidget> createState() => _FavouriteWidgetState();
+}
+
+class _FavouriteWidgetState extends State<FavouriteWidget> {
+  late bool isLiked;
+  @override
+  void initState() {
+    isLiked = widget.isLiked;
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant FavouriteWidget oldWidget) {
+    isLiked = oldWidget.isLiked;
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border,color: widget.iconColor,),
+      onPressed: () {
+        if (isLiked) {
+          widget.onRemove();
+          setState(() {
+            isLiked = false;
+          });
+        } else {
+          widget.onAdd();
+          setState(() {
+            isLiked = true;
+          });
+        }
+      },
+    );
   }
 }

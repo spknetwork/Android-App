@@ -1,60 +1,48 @@
-import 'dart:async';
-import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
-
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/podcast/podcast_controller.dart';
+import 'package:acela/src/screens/podcast/podcast_trending.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
-import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
-import 'package:better_player/better_player.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class PodcastEpisodePlayer extends StatefulWidget {
-  const PodcastEpisodePlayer({
-    Key? key,
-    required this.episode,
-    required this.didFinish,
-    required this.data,
-  });
+  const PodcastEpisodePlayer(
+      {Key? key,
+      required this.data,
+      required this.podcastEpisodes,
+      this.episodeIndex});
 
-  final PodcastEpisode episode;
-  final Function didFinish;
+  final List<PodcastEpisode> podcastEpisodes;
   final HiveUserData data;
+  final int? episodeIndex;
 
   @override
   State<PodcastEpisodePlayer> createState() => _PodcastEpisodePlayerState();
 }
 
 class _PodcastEpisodePlayerState extends State<PodcastEpisodePlayer> {
-  // late final externalDir;
-  // bool showPlayer = false;
-  // final assetsAudioPlayer = AssetsAudioPlayer();
 
   late final PodcastController podcastController;
+  late PodcastEpisode curentPodcastEpisode;
+  int currentPodcastEpisodeIndex = 0;
+  var play = true;
+  var position = 0.0;
 
   @override
   void initState() {
     super.initState();
+    if (widget.episodeIndex != null) {
+      currentPodcastEpisodeIndex = widget.episodeIndex!;
+    }
+    curentPodcastEpisode = widget.podcastEpisodes[currentPodcastEpisodeIndex];
     podcastController = context.read<PodcastController>();
-    // initDirectory();
-  }
-
-  initDirectory() async {
-    // externalDir = await getExternalStorageDirectory();
-    // setState(() {
-    //   showPlayer = true;
-    //   print(externalDir!.listSync());
-    //   print(externalDir!.listSync()[1].path);
-    //   // assetsAudioPlayer.open(Audio.file(externalDir!.listSync()[1].path));
-    // });
   }
 
   List<Widget> _fabButtonsOnRight() {
@@ -63,7 +51,7 @@ class _PodcastEpisodePlayerState extends State<PodcastEpisodePlayer> {
         icon: Icon(Icons.share, color: Colors.blue),
         onPressed: () {
           // _betterPlayerController.pause();
-          Share.share(widget.episode.guid ?? '');
+          Share.share(curentPodcastEpisode.guid ?? '');
         },
       ),
       SizedBox(height: 10),
@@ -85,30 +73,31 @@ class _PodcastEpisodePlayerState extends State<PodcastEpisodePlayer> {
   }
 
   Widget actionBar() {
-    var duration = widget.episode.duration?.toDouble() ?? 0.0;
-    var pending = duration - position;
-    var pendingText = "${Utilities.formatTime(pending.toInt())}";
-    var leadingText = "${Utilities.formatTime(position.toInt())}";
+    Color iconColor = Colors.blue;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SizedBox(width: 15),
-        Text(leadingText),
-        Spacer(),
-        IconButton(
-          icon: Icon(
-            play ? Icons.pause : Icons.play_arrow,
-            color: Colors.blue,
+        Visibility(
+          visible: widget.podcastEpisodes.length > 0,
+          child: IconButton(
+            onPressed: _playPrevious,
+            icon: Icon(
+              Icons.skip_previous,
+              color: currentPodcastEpisodeIndex == 0
+                  ? iconColor.withOpacity(0.5)
+                  : iconColor,
+            ),
           ),
-          onPressed: () {
-            setState(() {
-              play = !play;
-            });
-          },
         ),
         IconButton(
-          icon: Icon(Icons.info, color: Colors.blue),
+            icon: Icon(
+              play ? Icons.pause : Icons.play_arrow,
+              color: iconColor,
+            ),
+            onPressed: _pausePlayer),
+        IconButton(
+          icon: Icon(Icons.info, color: iconColor),
           onPressed: () {
             // _betterPlayerController.pause();
             // var screen =
@@ -121,83 +110,183 @@ class _PodcastEpisodePlayerState extends State<PodcastEpisodePlayer> {
           },
         ),
         IconButton(
-          icon: Icon(Icons.share, color: Colors.blue),
+          icon: Icon(Icons.share, color: iconColor),
           onPressed: () {
             // _betterPlayerController.pause();
-            Share.share(widget.episode.guid ?? '');
+            Share.share(curentPodcastEpisode.guid ?? '');
           },
         ),
-        DownloadPodcastButton(episode: widget.episode),
-        Spacer(),
-        Text(pendingText),
-        SizedBox(width: 15),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: DownloadPodcastButton(
+            episode: curentPodcastEpisode,
+          ),
+        ),
+        FavouriteWidget(
+          iconColor: iconColor,
+          isLiked: isItemPresentLocally(curentPodcastEpisode), onAdd: (){
+          storeLikedPodcastLocally(curentPodcastEpisode);
+        }, onRemove: (){
+          storeLikedPodcastLocally(curentPodcastEpisode);
+        }),
+        Visibility(
+          visible: widget.podcastEpisodes.length > 1,
+          child: IconButton(
+            onPressed: _playNext,
+            icon: Icon(
+              Icons.skip_next,
+              color: currentPodcastEpisodeIndex ==
+                      widget.podcastEpisodes.length - 1
+                  ? iconColor.withOpacity(0.5)
+                  : iconColor,
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  var play = true;
-  var position = 0.0;
+  bool isItemPresentLocally(PodcastEpisode item) {
+    final box = GetStorage();
+    final String key = 'liked_podcast_episode';
+    if (box.read(key) != null) {
+      List json = box.read(key);
+      int index = json.indexWhere((element) => element['id'] == item.id);
+      return index != -1;
+    } else {
+      return false;
+    }
+  }
+
+  void storeLikedPodcastLocally(PodcastEpisode item) {
+    final box = GetStorage();
+    final String key = 'liked_podcast_episode';
+    if (box.read(key) != null) {
+      List json = box.read(key);
+      int index = json.indexWhere((element) => element['id'] == item.id);
+      if (index == -1) {
+        json.add(item.toJson());
+        box.write(key, json);
+      } else {
+        json.removeWhere((element) => element['id'] == item.id);
+        box.write(key, json);
+      }
+    } else {
+      box.write(key, [item.toJson()]);
+    }
+    print(box.read(key));
+  }
+
+  void _pausePlayer() {
+    setState(() {
+      play = !play;
+    });
+  }
+
+  void _playNext() {
+    if (currentPodcastEpisodeIndex != widget.podcastEpisodes.length - 1) {
+      setState(() {
+        currentPodcastEpisodeIndex++;
+        curentPodcastEpisode =
+            widget.podcastEpisodes[currentPodcastEpisodeIndex];
+      });
+    }
+  }
+
+  void _playPrevious() {
+    if (currentPodcastEpisodeIndex != 0) {
+      setState(() {
+        --currentPodcastEpisodeIndex;
+        curentPodcastEpisode =
+            widget.podcastEpisodes[currentPodcastEpisodeIndex];
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: context
-              .read<PodcastController>()
-              .isOffline(widget.episode.enclosureUrl ?? "")
-          ? AudioWidget.file(
-              path: podcastController
-                  .getOfflineUrl(widget.episode.enclosureUrl ?? ""),
-              play: play,
-              onFinished: () {
-                widget.didFinish();
-              },
-              child: child(context),
-              onReadyToPlay: (duration) {
-                //onReadyToPlay
-              },
-              onPositionChanged: (current, duration) {
-                //onPositionChanged
-                setState(() {
-                  position = current.inSeconds.toDouble();
-                });
-              },
-            )
-          : AudioWidget.network(
-              url: widget.episode.enclosureUrl ?? '',
-              play: play,
-              onFinished: () {
-                widget.didFinish();
-              },
-              child: child(context),
-              onReadyToPlay: (duration) {
-                //onReadyToPlay
-              },
-              onPositionChanged: (current, duration) {
-                //onPositionChanged
-                setState(() {
-                  position = current.inSeconds.toDouble();
-                });
-              },
-            ),
+    return WillPopScope(
+      onWillPop: () async {
+        setState(() {
+      play = false;
+    });
+        return true;
+      },
+      child: SafeArea(child: _playerStatus()),
     );
   }
 
+  Widget _playerStatus() {
+    if (context
+        .read<PodcastController>()
+        .isOffline(curentPodcastEpisode.enclosureUrl ?? "",curentPodcastEpisode.id.toString())) {
+      return AudioWidget.file(
+        path: podcastController
+            .getOfflineUrl(curentPodcastEpisode.enclosureUrl ?? "",curentPodcastEpisode.id.toString()),
+        play: play,
+        // onFinished: _playNext,
+        child: child(context),
+        onReadyToPlay: (duration) {
+          //onReadyToPlay
+        },
+        onPositionChanged: (current, duration) {
+          //onPositionChanged
+          setState(() {
+            position = current.inSeconds.toDouble();
+          });
+        },
+      );
+    } else {
+      return AudioWidget.network(
+        url: curentPodcastEpisode.enclosureUrl ?? '',
+        play: play,
+        // onFinished: _playNext,
+        child: child(context),
+        onReadyToPlay: (duration) {
+          //onReadyToPlay
+        },
+        onPositionChanged: (current, duration) {
+          //onPositionChanged
+          setState(() {
+            position = current.inSeconds.toDouble();
+          });
+        },
+      );
+    }
+  }
+
   Column child(BuildContext context) {
+    var duration = curentPodcastEpisode.duration?.toDouble() ?? 0.0;
+    var pending = duration - position;
+    var pendingText = "${Utilities.formatTime(pending.toInt())}";
+    var leadingText = "${Utilities.formatTime(position.toInt())}";
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.network(widget.episode.image ?? ''),
+        Image.network(curentPodcastEpisode.image ?? ''),
         SizedBox(height: 10),
         Text(
-          widget.episode.title ?? '',
+          curentPodcastEpisode.title ?? '',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         SizedBox(height: 10),
-        Slider(
-          value: (position / (widget.episode.duration?.toDouble() ?? 0.0)),
-          onChanged: (newValue) {},
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          child: Row(
+            children: [
+              Text(leadingText),
+              Expanded(
+                child: Slider(
+                  value: (position /
+                      (curentPodcastEpisode.duration?.toDouble() ?? 0.0)),
+                  onChanged: (newValue) {},
+                ),
+              ),
+              Text(pendingText),
+            ],
+          ),
         ),
         actionBar(),
       ],
@@ -208,8 +297,10 @@ class _PodcastEpisodePlayerState extends State<PodcastEpisodePlayer> {
 enum DownloadStatus { downloading, downloaded, download }
 
 class DownloadPodcastButton extends StatefulWidget {
-  const DownloadPodcastButton({Key? key, required this.episode})
-      : super(key: key);
+  const DownloadPodcastButton({
+    Key? key,
+    required this.episode,
+  }) : super(key: key);
 
   final PodcastEpisode episode;
   @override
@@ -229,16 +320,17 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
     IsolateNameServer.registerPortWithName(
         _port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) {
-      String id = data[0];
+      // String id = data[0];
       // DownloadTaskStatus status = (data[1]);
       int progress = data[2];
       print(progress);
-      if(data[1] == 0 || data[1] == 4 || data[1] == 5){
+      if (data[1] == 0 || data[1] == 4 || data[1] == 5) {
         setState(() {
           status = DownloadStatus.download;
         });
       }
-      if (progress == 100) {
+      if (progress == 100 && status != DownloadStatus.downloaded) {
+        storeOfflinePodcastLocally(widget.episode);
         setState(() {
           status = DownloadStatus.downloaded;
         });
@@ -246,6 +338,19 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
     });
 
     FlutterDownloader.registerCallback(downloadCallback);
+  }
+
+  @override
+  void didUpdateWidget(covariant DownloadPodcastButton oldWidget) {
+    if (oldWidget.episode.id != widget.episode.id) {
+      if (status != DownloadStatus.download) {
+        setState(() {
+          status = DownloadStatus.download;
+        });
+      }
+    }
+    print(podcastController.isOffline(widget.episode.enclosureUrl ?? "",widget.episode.id.toString()));
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -270,25 +375,19 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
   Widget _build(BuildContext context) {
     final iconColor = Colors.blue;
     if (status == DownloadStatus.downloading) {
-      return Padding(
-        padding: const EdgeInsets.only(left : 7.0),
-        child: SizedBox(
-          height: 17,
-          width: 17,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: iconColor,
-          ),
-        ),
-      );
-    } else if (podcastController.isOffline(widget.episode.enclosureUrl ?? "") ||
-        status == DownloadStatus.downloaded) {
-      return Padding(
-        padding: const EdgeInsets.only(left :7.0),
-        child: Icon(
-          Icons.check,
+      return SizedBox(
+        height: 17,
+        width: 17,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
           color: iconColor,
         ),
+      );
+    } else if (podcastController.isOffline(widget.episode.enclosureUrl ?? "",widget.episode.id.toString()) ||
+        status == DownloadStatus.downloaded) {
+      return Icon(
+        Icons.check,
+        color: iconColor,
       );
     } else {
       return IconButton(
@@ -311,11 +410,23 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
     setState(() {
       status = DownloadStatus.downloading;
     });
-    final id = FlutterDownloader.enqueue(
+     FlutterDownloader.enqueue(
         url: url,
         savedDir: savePath,
-        fileName: widget.episode.enclosureUrl!.split('/').last,
+        fileName: podcastController.decodeAudioName(widget.episode.enclosureUrl!,episodeId:widget.episode.id.toString() ),
         showNotification: true,
         openFileFromNotification: true);
+  }
+
+  void storeOfflinePodcastLocally(PodcastEpisode episode) {
+    final box = GetStorage();
+    final String key = 'offline_podcast';
+    if (box.read(key) != null) {
+      List json = box.read(key);
+      json.add(episode.toJson());
+      box.write(key, json);
+    } else {
+      box.write(key, [episode.toJson()]);
+    }
   }
 }

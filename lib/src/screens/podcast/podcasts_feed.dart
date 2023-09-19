@@ -24,48 +24,43 @@ class PodcastFeedScreen extends StatefulWidget {
 }
 
 class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
-
   late Future<PodcastEpisodesByFeedResponse> future;
-  CarouselController controller = CarouselController();
 
   @override
   void initState() {
     super.initState();
-    future = PodCastCommunicator().getPodcastEpisodesByFeedId("${widget.item.id ?? 227573}");
+    future = PodCastCommunicator()
+        .getPodcastEpisodesByFeedId("${widget.item.id ?? 227573}");
   }
 
-  Widget _fullPost(PodcastEpisode item) {
+  Widget _fullPost(List<PodcastEpisode> items) {
     return PodcastEpisodePlayer(
-      episode: item,
+      podcastEpisodes: items,
       data: widget.appData,
-      didFinish: () {
-        setState(() {
-          controller.nextPage();
-        });
-      },
     );
   }
 
-  Widget carousel(List<PodcastEpisode> items) {
-    return Container(
-      child: CarouselSlider(
-        carouselController: controller,
-        options: CarouselOptions(
-          height: MediaQuery.of(context).size.height,
-          enableInfiniteScroll: true,
-          viewportFraction: 1,
-          scrollDirection: Axis.vertical,
-        ),
-        items: items.map((item) {
-          return Builder(
-            builder: (BuildContext context) {
-              return _fullPost(item);
-            },
-          );
-        }).toList(),
-      ),
-    );
-  }
+  // Widget carousel(List<PodcastEpisode> items) {
+  //   return _fullPost(items);
+  //   // Container(
+  //   //   child: CarouselSlider(
+  //   //     carouselController: controller,
+  //   //     options: CarouselOptions(
+  //   //       height: MediaQuery.of(context).size.height,
+  //   //       enableInfiniteScroll: true,
+  //   //       viewportFraction: 1,
+  //   //       scrollDirection: Axis.vertical,
+  //   //     ),
+  //   //     items: items.map((item) {
+  //   //       return Builder(
+  //   //         builder: (BuildContext context) {
+  //   //           return _fullPost(item,items);
+  //   //         },
+  //   //       );
+  //   //     }).toList(),
+  //   //   ),
+  //   // );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +83,8 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
                 error: snapshot.error.toString(),
                 onRetry: () {
                   setState(() {
-                    future = PodCastCommunicator().getPodcastEpisodesByFeedId("${widget.item.id ?? 227573}");
+                    future = PodCastCommunicator().getPodcastEpisodesByFeedId(
+                        "${widget.item.id ?? 227573}");
                   });
                 });
           } else if (snapshot.connectionState == ConnectionState.done) {
@@ -99,11 +95,12 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
                   error: 'No data found.',
                   onRetry: () {
                     setState(() {
-                      future = PodCastCommunicator().getPodcastEpisodesByFeedId("${widget.item.id ?? 227573}");
+                      future = PodCastCommunicator().getPodcastEpisodesByFeedId(
+                          "${widget.item.id ?? 227573}");
                     });
                   });
             } else {
-              return carousel(list);
+              return _fullPost(list);
             }
           } else {
             return LoadingScreen(title: 'Loading', subtitle: 'Please wait..');

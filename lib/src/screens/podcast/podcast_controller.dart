@@ -12,13 +12,17 @@ class PodcastController extends ChangeNotifier {
 
   void init() async {
     externalDir = await getExternalStorageDirectory();
+    for (var item in externalDir.listSync()) {
+      item.delete();
+    }
   }
 
-  bool isOffline(String name) {
+  bool isOffline(String name, String episodeId) {
     if (externalDir != null) {
       print(externalDir.listSync());
       for (var item in externalDir.listSync()) {
-        if (decodeAudioName(item.path) == decodeAudioName(name)) {
+        if (decodeAudioName(item.path,) ==
+            decodeAudioName(name, episodeId:episodeId)) {
           print('offline');
           return true;
         }
@@ -28,16 +32,21 @@ class PodcastController extends ChangeNotifier {
     return false;
   }
 
-  String getOfflineUrl(String url) {
+  String getOfflineUrl(String url, String episodeId) {
     for (var item in externalDir.listSync()) {
-      if (decodeAudioName(item.path) == decodeAudioName(url)) {
+      if (decodeAudioName(item.path) ==
+          decodeAudioName(url, episodeId: episodeId)) {
         return item.path.toString();
       }
     }
     return "";
   }
 
-  String decodeAudioName(String name) {
-    return name.split('/').last;
+  String decodeAudioName(String name, {String? episodeId}) {
+    String decodedName = name.split('/').last;
+    if (episodeId == null) {
+      return decodedName;
+    }
+    return "$episodeId$decodedName";
   }
 }

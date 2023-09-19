@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
 class LikedPodcasts extends StatefulWidget {
-  const LikedPodcasts({Key? key, required this.appData}) : super(key: key);
+  const LikedPodcasts({Key? key, required this.appData})
+      : super(key: key);
 
   final HiveUserData appData;
 
@@ -18,26 +19,29 @@ class _LikedPodcastsState extends State<LikedPodcasts> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Liked Podcasts"),
+        title: Text( "Liked Podcasts"),
       ),
-      body: ListView.separated(
-        itemBuilder: (c, i) {
-          var title = items()[i].title ?? 'No title';
-          var desc = '';
-          desc = "$desc${(items()[i].categories?.values ?? []).join(", ")}";
-          if (items().isEmpty) {
-            return Center(child: Text("Liked Podcasts is Empty"));
-          }
-          return PodcastFeedItemWidget(
-            showLikeButton: false,
-            appData: widget.appData,
-            item: items()[i],
-          );
-        },
-        separatorBuilder: (c, i) => const Divider(height: 0),
-        itemCount: items().length,
-      ),
+      body: items().isEmpty
+          ? Center(
+              child: Text(
+                  "Liked Podcasts is Empty"))
+          : ListView.separated(
+              itemBuilder: (c, i) {
+                var title = items()[i].title ?? 'No title';
+                var desc = '';
+                desc =
+                    "$desc${(items()[i].categories?.values ?? []).join(", ")}";
+                return PodcastFeedItemWidget(
+                  showLikeButton: false,
+                  appData: widget.appData,
+                  item: items()[i],
+                );
+              },
+              separatorBuilder: (c, i) => const Divider(height: 0),
+              itemCount: items().length,
+            ),
     );
+ 
   }
 
   List<PodCastFeedItem> items() {
