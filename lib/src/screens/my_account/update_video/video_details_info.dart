@@ -339,6 +339,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'ipfsHash': ipfsHash,
           'hasKey': user.keychainData?.hasId ?? '',
           'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
+          'newBene': base64.encode(utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
+          'language': selectedLanguage.code,
         });
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
@@ -606,7 +608,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   void beneficiariesBottomSheet() {
     var filteredBenes = beneficiaries
         .where((element) =>
-            element.src != 'ENCODER_PAY' && element.src != 'threespeak')
+            element.src != 'ENCODER_PAY' && element.src != 'mobile' && element.src != 'threespeak')
         .toList();
     showModalBottomSheet(
       context: context,
