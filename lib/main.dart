@@ -1,7 +1,7 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
-import 'package:acela/src/screens/podcast/podcast_controller.dart';
+import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

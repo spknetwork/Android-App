@@ -2,12 +2,10 @@ import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
-import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
-import 'package:acela/src/widgets/podcast_player.dart';
+import 'package:acela/src/screens/podcast/widgets/podcast_player.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 
 class PodcastFeedScreen extends StatefulWidget {
   const PodcastFeedScreen({
@@ -39,29 +37,6 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
       data: widget.appData,
     );
   }
-
-  // Widget carousel(List<PodcastEpisode> items) {
-  //   return _fullPost(items);
-  //   // Container(
-  //   //   child: CarouselSlider(
-  //   //     carouselController: controller,
-  //   //     options: CarouselOptions(
-  //   //       height: MediaQuery.of(context).size.height,
-  //   //       enableInfiniteScroll: true,
-  //   //       viewportFraction: 1,
-  //   //       scrollDirection: Axis.vertical,
-  //   //     ),
-  //   //     items: items.map((item) {
-  //   //       return Builder(
-  //   //         builder: (BuildContext context) {
-  //   //           return _fullPost(item,items);
-  //   //         },
-  //   //       );
-  //   //     }).toList(),
-  //   //   ),
-  //   // );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
