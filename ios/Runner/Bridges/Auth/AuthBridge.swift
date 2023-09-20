@@ -85,6 +85,9 @@ class AuthBridge {
 						let ipfsHash = arguments["ipfsHash"] as? String,
 						let hasKey = arguments["hasKey"] as? String,
 						let hasAuthKey = arguments["hasAuthKey"] as? String,
+						let newBene = arguments["newBene"] as? String,
+						let language = arguments["language"] as? String,
+						let powerUp = arguments["powerUp"] as? Bool,
 						let acela = acela
 					else {
 						result(FlutterMethodNotImplemented)
@@ -108,7 +111,10 @@ class AuthBridge {
 						community: community,
 						ipfsHash: ipfsHash,
 						hasKey: hasKey,
-						hasAuthkey: hasAuthKey
+						hasAuthkey: hasAuthKey,
+						newBene: newBene,
+						language: language,
+						powerUp: powerUp
 					) { response in
 						result(response)
 					}

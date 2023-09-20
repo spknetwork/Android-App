@@ -332,13 +332,16 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'size': v.size,
           'originalFilename': v.originalFilename,
           'firstUpload': v.firstUpload,
-          'bene': v.benes[0],
-          'beneW': v.benes[1],
+          'bene': '',
+          'beneW': '',
           'postingKey': user.postingKey ?? '',
           'community': widget.selectedCommunity,
           'ipfsHash': ipfsHash,
           'hasKey': user.keychainData?.hasId ?? '',
           'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
+          'newBene': base64.encode(utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
+          'language': selectedLanguage.code,
+          'powerUp': powerUp100,
         });
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
@@ -606,7 +609,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   void beneficiariesBottomSheet() {
     var filteredBenes = beneficiaries
         .where((element) =>
-            element.src != 'ENCODER_PAY' && element.src != 'threespeak')
+            element.src != 'ENCODER_PAY' && element.src != 'mobile' && element.src != 'threespeak')
         .toList();
     showModalBottomSheet(
       context: context,
@@ -618,7 +621,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               appBar: AppBar(
                 title: Text('Video Participants'),
                 actions: [
-                  IconButton(
+                  if (beneficiaries.length < 8) IconButton(
                       onPressed: () {
                         Navigator.of(context).pop();
                         showAlertForAddBene(beneficiaries);
@@ -765,7 +768,10 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
     return BottomSheetAction(
       title: Text(language.name),
       onPressed: (context) async {
-        Navigator.of(context).pop();
+        setState(() {
+          selectedLanguage = language;
+          Navigator.of(context).pop();
+        });
       },
     );
   }

@@ -57,6 +57,10 @@ class BeneficiariesJson {
     return listNew;
   }
 
+  static String toJsonString(List<BeneficiariesJson> data) {
+    return json.encode(data);
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'account': account,

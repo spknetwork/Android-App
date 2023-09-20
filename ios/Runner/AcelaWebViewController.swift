@@ -35,6 +35,11 @@ class AcelaWebViewController: UIViewController {
 		else { return }
 		let dir = url.deletingLastPathComponent()
 		webView?.loadFileURL(url, allowingReadAccessTo: dir)
+#if DEBUG
+		if #available(iOS 16.4, *) {
+			self.webView?.isInspectable = true
+		}
+#endif
 	}
 
 	func validatePostingKey(
@@ -111,11 +116,14 @@ class AcelaWebViewController: UIViewController {
 		ipfsHash: String,
 		hasKey: String,
 		hasAuthkey: String,
+		newBene: String,
+		language: String,
+		powerUp: Bool,
 		handler: @escaping (String) -> Void
 	) {
 		postVideoHandler = handler
 		OperationQueue.main.addOperation {
-			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', 'en', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)', '\(community)', '\(ipfsHash)', '\(hasKey)', '\(hasAuthkey)');")
+			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', '\(language)', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)', '\(community)', '\(ipfsHash)', '\(hasKey)', '\(hasAuthkey)', '\(newBene)', \(powerUp ? "true" : "false"));")
 		}
 	}
 

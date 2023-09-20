@@ -54,6 +54,8 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
+  - flutter_downloader (0.0.1):
+    - Flutter
   - flutter_secure_storage (6.0.0):
     - Flutter
   - FYVideoCompressor (0.0.8)
@@ -121,6 +123,7 @@ DEPENDENCIES:
   - ffmpeg_kit_flutter (from `.symlinks/plugins/ffmpeg_kit_flutter/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
+  - flutter_downloader (from `.symlinks/plugins/flutter_downloader/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - FYVideoCompressor
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
@@ -166,6 +169,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
+  flutter_downloader:
+    :path: ".symlinks/plugins/flutter_downloader/ios"
   flutter_secure_storage:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
   image_picker_ios:
@@ -203,6 +208,7 @@ SPEC CHECKSUMS:
   ffmpeg_kit_flutter: 17e9f35a4ec996ac55051c20be05240f2a0b53e8
   file_picker: ce3938a0df3cc1ef404671531facef740d03f920
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  flutter_downloader: b7301ae057deadd4b1650dc7c05375f10ff12c39
   flutter_secure_storage: 23fc622d89d073675f2eaa109381aefbcf5a49be
   FYVideoCompressor: 33a2cdea0ed4daef332077d69388e6ccc0e7d0c3
   GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4

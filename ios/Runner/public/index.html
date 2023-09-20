@@ -1,522 +1,538 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="3Speak Acela" />
-    <title>3Speak Acela</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <!-- <script src="./hive.min.js"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
-      integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
-    <script>
-      const HAS_SERVER = "wss://hive-auth.arcange.eu";
-      const HAS_APP_DATA = {
-        name: "3Speak Mobile iOS App",
-        description: "3Speak Mobile iOS App with HAS Integration",
-      };
-      const app_key = uuidv4();
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="3Speak" />
+  <title>3Speak</title>
+</head>
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<!-- <script src="./hive.min.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
+        integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+<script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+<script>
+  const HAS_SERVER = "wss://hive-auth.arcange.eu";
+  const HAS_APP_DATA = {
+    name: "3Speak Mobile Android App",
+    description: "3Speak Mobile Android App with HAS Integration",
+  };
+  const app_key = uuidv4();
 
-      function validateHiveKey(accountName, postingKey) {
-        console.log("In here before async");
-        hive.api
-          .getAccountsAsync([accountName])
-          .then(function (accounts) {
-            console.log("In here after async");
-            console.log("Accounts: ", accounts);
-            const pubWif = accounts[0].posting.key_auths[0][0];
-            console.log("PubWif: ", pubWif);
-            const Valid = hive.auth.wifIsValid(postingKey, pubWif);
-            console.log(`is valid ${Valid}`);
-            replyToNative({
-              type: "validateHiveKey",
-              valid: Valid,
-              accountName: accountName,
-              error: "",
-              data: "",
-            });
-          })
-          .catch(function (err) {
-            console.log("Error: ", err);
-            replyToNative({
-              type: "validateHiveKey",
-              valid: false,
-              accountName: accountName,
-              error: err.message,
-              data: "",
-            });
-          });
-      }
+  function validateHiveKey(accountName, postingKey) {
+    console.log("In here before async");
+    hive.api
+      .getAccountsAsync([accountName])
+      .then(function (accounts) {
+        console.log("In here after async");
+        console.log("Accounts: ", accounts);
+        const pubWif = accounts[0].posting.key_auths[0][0];
+        console.log("PubWif: ", pubWif);
+        const Valid = hive.auth.wifIsValid(postingKey, pubWif);
+        console.log(`is valid ${Valid}`);
+        replyToNative({
+          type: "validateHiveKey",
+          valid: Valid,
+          accountName: accountName,
+          error: "",
+          data: "",
+        });
+      })
+      .catch(function (err) {
+        console.log("Error: ", err);
+        replyToNative({
+          type: "validateHiveKey",
+          valid: false,
+          accountName: accountName,
+          error: err.message,
+          data: "",
+        });
+      });
+  }
 
-      function decryptMemo(accountName, postingKey, encrypted) {
-        console.log("In here before async");
-        hive.api
-          .getAccountsAsync([accountName])
-          .then(function (accounts) {
-            console.log("In here after async");
-            console.log("Accounts: ", accounts);
-            const pubWif = accounts[0].posting.key_auths[0][0];
-            console.log("PubWif: ", pubWif);
-            const Valid = hive.auth.wifIsValid(postingKey, pubWif);
-            console.log(`is valid ${Valid}`);
-            let decrypted = hive.memo.decode(postingKey, encrypted);
-            replyToNative({
-              type: "decryptedMemo",
-              accountName: accountName,
-              decrypted: decrypted,
-              error: "",
-              data: "",
-            });
-          })
-          .catch(function (err) {
-            console.log("Error: ", err);
-            replyToNative({
-              type: "decryptedMemo",
-              accountName: accountName,
-              decrypted: "",
-              error: err.message,
-            });
-          });
-      }
+  function decryptMemo(accountName, postingKey, encrypted) {
+    console.log("In here before async");
+    hive.api
+      .getAccountsAsync([accountName])
+      .then(function (accounts) {
+        console.log("In here after async");
+        console.log("Accounts: ", accounts);
+        const pubWif = accounts[0].posting.key_auths[0][0];
+        console.log("PubWif: ", pubWif);
+        const Valid = hive.auth.wifIsValid(postingKey, pubWif);
+        console.log(`is valid ${Valid}`);
+        let decrypted = hive.memo.decode(postingKey, encrypted);
+        replyToNative({
+          type: "decryptedMemo",
+          accountName: accountName,
+          decrypted: decrypted,
+          error: "",
+          data: "",
+        });
+      })
+      .catch(function (err) {
+        console.log("Error: ", err);
+        replyToNative({
+          type: "decryptedMemo",
+          accountName: accountName,
+          decrypted: "",
+          error: err.message,
+        });
+      });
+  }
 
-      function processTags(tags) {
-        const fallback = ["threespeak", "video"];
-        const processed = [];
-        for (let tag of tags) {
-          tag = tag.toLowerCase().trim();
-          if (!tag.startsWith("hive-") && tag.length >= 3) {
-            tag = tag.replace(/[^a-z0-9]/g, "");
-            if (!processed.includes(tag) && tag.length >= 3) {
-              processed.push(tag);
-            }
-          }
+  function processTags(tags) {
+    const fallback = ["threespeak", "video"];
+    const processed = [];
+    for (let tag of tags) {
+      tag = tag.toLowerCase().trim();
+      if (!tag.startsWith("hive-") && tag.length >= 3) {
+        tag = tag.replace(/[^a-z0-9]/g, "");
+        if (!processed.includes(tag) && tag.length >= 3) {
+          processed.push(tag);
         }
-        return processed.length === 0 ? fallback : processed;
       }
+    }
+    return processed.length === 0 ? fallback : processed;
+  }
 
-      function customStringEscaping(string) {
-        return string.replace("’", "'").replace("“", '"');
-      }
+  function customStringEscaping(string) {
+    return string.replace("’", "'").replace('“', '"');
+  }
 
-      function buildJSONMetadata(
-        thumbnail,
-        videoV2,
-        description,
-        title,
-        tags,
-        author,
-        permlink,
-        duration,
-        size,
-        file,
-        language,
-        firstUpload,
-        cdn
-      ) {
-        // 2. set the sourceMap
-        const sourceMap = [];
-        if (videoV2 !== undefined) {
-          sourceMap.push({
-            type: "video",
-            url: videoV2,
-            format: "m3u8",
-          });
-        }
-        let escapedVideoDescription = customStringEscaping(description);
-        let escapedVideoTitle = customStringEscaping(title);
-        return {
-          tags: processTags(tags.split(",")),
-          app: "3speak/0.3.0",
-          type: "3speak/video",
-          image: [thumbnail],
-          video: {
-            info: {
-              platform: "3speak",
-              title: escapedVideoTitle,
-              author: author,
-              permlink: permlink,
-              duration: duration,
-              filesize: size,
-              file: file,
-              lang: language,
-              firstUpload: firstUpload,
-              video_v2: videoV2,
-              app: "3speak/iOS-App/2.0.0+76",
-              developer: "https://ecency.com/@sagarkothari88",
-              sourceMap: [
-                ...sourceMap,
-                {
-                  type: "thumbnail",
-                  url: thumbnail,
-                },
-              ],
-            },
-            content: {
-              description: escapedVideoDescription,
-              tags: processTags(tags.split(",")),
-            },
-          },
-        };
-      }
-
-      function renderTemplate(baseThumbUrl, owner, permlink, description) {
-        const PostTemplate =
-          "<center>\n\n" +
-          "[![](@@@thumbnail@@@)](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)\n\n" +
-          "▶️ [Watch on 3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)\n\n" +
-          "</center>\n\n" +
-          "---\n\n" +
-          "@@@description@@@\n\n" +
-          "---\n\n" +
-          "▶️ [3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)";
-        return PostTemplate.replace(/@@@thumbnail@@@/g, baseThumbUrl)
-          .replace(/@@@author@@@/g, owner)
-          .replace(/@@@permlink@@@/g, permlink)
-          .replace(/@@@description@@@/g, description);
-      }
-
-      function videoObjectForBody(description, thumbnail, owner, permlink) {
-        let escapedVideoDescription = customStringEscaping(description);
-        return {
-          baseThumbUrl: thumbnail,
-          owner: owner,
+  function buildJSONMetadata(
+    thumbnail,
+    videoV2,
+    description,
+    title,
+    tags,
+    author,
+    permlink,
+    duration,
+    size,
+    file,
+    language,
+    firstUpload,
+    cdn
+  ) {
+    // 2. set the sourceMap
+    const sourceMap = [];
+    if (videoV2 !== undefined) {
+      sourceMap.push({
+        type: "video",
+        url: videoV2,
+        format: "m3u8",
+      });
+    }
+    let escapedVideoDescription = customStringEscaping(description);
+    let escapedVideoTitle = customStringEscaping(title);
+    const processedTags = processTags(tags.split(","));
+    return {
+      tags: processedTags,
+      app: "3speak/0.3.0",
+      type: "3speak/video",
+      image: [thumbnail],
+      video: {
+        info: {
+          platform: "3speak",
+          title: escapedVideoTitle,
+          author: author,
           permlink: permlink,
+          duration: duration,
+          filesize: size,
+          file: file,
+          lang: language,
+          firstUpload: firstUpload,
+          video_v2: videoV2,
+          app: "3speak/0.3.0",
+          mobile_app: "3speak/iOS-App/2.1.0+78",
+          developer: "https://hive.blog/@sagarkothari88",
+          sourceMap: [
+            ...sourceMap,
+            {
+              type: "thumbnail",
+              url: thumbnail,
+            },
+          ],
+        },
+        content: {
           description: escapedVideoDescription,
-        };
-      }
+          tags: processedTags,
+        },
+      },
+    };
+  }
 
-      function buildPublishCustomJson(
-        owner,
-        permlink,
-        language,
-        duration,
-        title
-      ) {
-        return [
-          "custom_json",
-          {
-            required_posting_auths: [owner],
-            required_auths: [],
-            id: "3speak-publish",
-            json: JSON.stringify({
-              author: owner,
-              permlink: permlink,
-              category: "general",
-              language: language,
-              duration: duration,
-              title: title,
-            }),
-          },
-        ];
-      }
+  function renderTemplate(baseThumbUrl, owner, permlink, description) {
+    const PostTemplate =
+      "<center>\n\n" +
+      "[![](@@@thumbnail@@@)](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)\n\n" +
+      "▶️ [Watch on 3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)\n\n" +
+      "</center>\n\n" +
+      "---\n\n" +
+      "@@@description@@@\n\n" +
+      "---\n\n" +
+      "▶️ [3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)";
+    return PostTemplate.replace(/@@@thumbnail@@@/g, baseThumbUrl)
+      .replace(/@@@author@@@/g, owner)
+      .replace(/@@@permlink@@@/g, permlink)
+      .replace(/@@@description@@@/g, description);
+  }
 
-      function newPostVideo(
-        thumbnail,
-        videoV2,
-        dDescription,
-        dTitle,
-        tags,
-        author,
-        permlink,
-        duration,
-        size,
-        file,
-        language,
-        firstUpload,
-        benes,
-        powerUp,
-        postingKey,
-        community,
-        ipfsHash,
-        hasKey,
+  function videoObjectForBody(description, thumbnail, owner, permlink) {
+    let escapedVideoDescription = customStringEscaping(description);
+    return {
+      baseThumbUrl: thumbnail,
+      owner: owner,
+      permlink: permlink,
+      description: escapedVideoDescription,
+    };
+  }
+
+  function buildPublishCustomJson(
+    owner,
+    permlink,
+    language,
+    duration,
+    title
+  ) {
+    return [
+      "custom_json",
+      {
+        required_posting_auths: [owner],
+        required_auths: [],
+        id: "3speak-publish",
+        json: JSON.stringify({
+          author: owner,
+          permlink: permlink,
+          category: "general",
+          language: language,
+          duration: duration,
+          title: title,
+        }),
+      },
+    ];
+  }
+
+  function newPostVideo(
+    thumbnail,
+    videoV2,
+    dDescription,
+    dTitle,
+    tags,
+    author,
+    permlink,
+    duration,
+    size,
+    file,
+    language,
+    firstUpload,
+    benes,
+    beneWeights,
+    postingKey,
+    community,
+    ipfsHash,
+    hasKey,
+    hasAuthKey,
+    dNewBene,
+    powerUp,
+  ) {
+    let description = atob(dDescription);
+    description = decodeURIComponent(escape(description));
+    // description = `${description}\nIPFS HASH: ${ipfsHash}`;
+    let title = atob(dTitle);
+    title = decodeURIComponent(escape(title));
+    let newBene = atob(dNewBene);
+    newBene = decodeURIComponent(escape(newBene));
+    newBene = JSON.parse(newBene);
+    let jsonMetaData = buildJSONMetadata(
+      thumbnail,
+      videoV2,
+      description,
+      title,
+      tags,
+      author,
+      permlink,
+      duration,
+      size,
+      file,
+      language,
+      firstUpload
+    );
+    let customJson = buildPublishCustomJson(
+      author,
+      permlink,
+      language,
+      duration,
+      title
+    );
+    newBene.sort((a, b) => {
+      let fa = a.account.toLowerCase(),
+        fb = b.account.toLowerCase();
+      if (fa < fb) return -1;
+      if (fa > fb) return 1;
+      return 0;
+    });
+    for (let i = 0; i < newBene.length; i++) {
+      newBene[i].weight = newBene[i].weight * 100;
+    }
+    let benefactor_global = [[0, { beneficiaries: newBene }]];
+    let comment_options = [
+      "comment_options",
+      {
+        author: author,
+        permlink: permlink,
+        allow_votes: true,
+        max_accepted_payout: "100000.000 SBD",
+        percent_hbd: powerUp ? 0 : 10000,
+        allow_curation_rewards: true,
+        extensions: benefactor_global,
+      },
+    ];
+    let videoObject = videoObjectForBody(
+      description,
+      thumbnail,
+      author,
+      permlink
+    );
+    let body = renderTemplate(
+      videoObject.baseThumbUrl,
+      videoObject.owner,
+      videoObject.permlink,
+      videoObject.description
+    );
+    hive.broadcast.updateOperations();
+    const operations = [];
+    operations.push([
+      "comment",
+      {
+        parent_author: "",
+        parent_permlink: community,
+        author: author,
+        permlink: permlink,
+        title: title.substr(0, 254),
+        body: body,
+        json_metadata: JSON.stringify(jsonMetaData),
+      },
+    ]);
+    operations.push(comment_options);
+    operations.push(customJson);
+    console.log(`operations are ${JSON.stringify(operations)}`);
+    performOperations(
+      operations,
+      "postVideo",
+      author,
+      postingKey,
+      hasKey,
+      hasAuthKey
+    );
+  }
+
+  function performOperations(
+    operations,
+    operationName,
+    username,
+    postingKey,
+    hasKey,
+    hasAuthKey
+  ) {
+    if (
+      hasKey !== undefined &&
+      hasAuthKey !== undefined &&
+      hasKey.length > 0 &&
+      hasAuthKey.length > 0
+    ) {
+      const sign_data = {
+        key_type: "posting",
+        ops: operations,
+        broadcast: true,
+        nonce: Date.now(),
+      };
+      const data = CryptoJS.AES.encrypt(
+        JSON.stringify(sign_data),
         hasAuthKey
-      ) {
-        let description = atob(dDescription);
-        description = decodeURIComponent(escape(description));
-        // description = `${description}\nIPFS HASH: ${ipfsHash}`;
-        let title = atob(dTitle);
-        title = decodeURIComponent(escape(title));
-        let jsonMetaData = buildJSONMetadata(
-          thumbnail,
-          videoV2,
-          description,
-          title,
-          tags,
-          author,
-          permlink,
-          duration,
-          size,
-          file,
-          language,
-          firstUpload
-        );
-        let customJson = buildPublishCustomJson(
-          author,
-          permlink,
-          language,
-          duration,
-          title
-        );
-        var beneficiaries = JSON.parse(benes);
-        let benefactor_global = [[0, { beneficiaries: beneficiaries }]];
-        let comment_options = [
-          "comment_options",
-          {
-            author: author,
-            permlink: permlink,
-            allow_votes: true,
-            max_accepted_payout: "100000.000 SBD",
-            percent_hbd: powerUp ? 0 : 10000,
-            allow_curation_rewards: true,
-            extensions: benefactor_global,
-          },
-        ];
-        let videoObject = videoObjectForBody(
-          description,
-          thumbnail,
-          author,
-          permlink
-        );
-        let body = renderTemplate(
-          videoObject.baseThumbUrl,
-          videoObject.owner,
-          videoObject.permlink,
-          videoObject.description
-        );
-        hive.broadcast.updateOperations();
-        const operations = [];
-        operations.push([
-          "comment",
-          {
-            parent_author: "",
-            parent_permlink: community,
-            author: author,
-            permlink: permlink,
-            title: title.substr(0, 254),
-            body: body,
-            json_metadata: JSON.stringify(jsonMetaData),
-          },
-        ]);
-        operations.push(comment_options);
-        operations.push(customJson);
-        console.log(`operations are ${JSON.stringify(operations)}`);
-        performOperations(
-          operations,
-          "postVideo",
-          author,
-          postingKey,
-          hasKey,
-          hasAuthKey
-        );
+      ).toString();
+      replyToNative({
+        type: operationName,
+        valid: true,
+        username: username,
+        error: "",
+        data: data,
+      });
+    } else {
+      async function tryPublish(operations, key) {
+        try {
+          return hive.broadcast.sendAsync({ operations }, { posting: key });
+        } catch (e) {
+          return e;
+        }
       }
-
-      function performOperations(
-        operations,
-        operationName,
-        username,
-        postingKey,
-        hasKey,
-        hasAuthKey
-      ) {
-        if (
-          hasKey !== undefined &&
-          hasAuthKey !== undefined &&
-          hasKey.length > 0 &&
-          hasAuthKey.length > 0
-        ) {
-          const sign_data = {
-            key_type: "posting",
-            ops: operations,
-            broadcast: true,
-            nonce: Date.now(),
-          };
-          const data = CryptoJS.AES.encrypt(
-            JSON.stringify(sign_data),
-            hasAuthKey
-          ).toString();
+      tryPublish(operations, postingKey)
+        .then((result) => {
           replyToNative({
             type: operationName,
             valid: true,
             username: username,
             error: "",
-            data: data,
+            data: "",
           });
-        } else {
-          async function tryPublish(operations, key) {
-            try {
-              return hive.broadcast.sendAsync({ operations }, { posting: key });
-            } catch (e) {
-              return e;
-            }
-          }
-          tryPublish(operations, postingKey)
-            .then((result) => {
-              replyToNative({
-                type: operationName,
-                valid: true,
-                username: username,
-                error: "",
-                data: "",
-              });
-            })
-            .catch((error) => {
-              console.error(error);
-              replyToNative({
-                type: operationName,
-                valid: false,
-                username: username,
-                error: error.message,
-                data: "",
-              });
-            });
-        }
-      }
-
-      function voteContent(
-        user,
-        author,
-        permlink,
-        weight,
-        postingKey,
-        hasKey,
-        hasAuthKey
-      ) {
-        let op = [
-          "vote",
-          {
-            voter: user,
-            author: author,
-            permlink: permlink,
-            weight: parseInt(weight),
-          },
-        ];
-        performOperations(
-          [op],
-          "voteContent",
-          user,
-          postingKey,
-          hasKey,
-          hasAuthKey
-        );
-      }
-
-      function commentOnContent(
-        user,
-        author,
-        permlink,
-        comment,
-        postingKey,
-        hasKey,
-        hasAuthKey
-      ) {
-        let description = atob(comment);
-        console.log(description);
-        description = decodeURIComponent(escape(description));
-        console.log(description);
-        let permlink2 = new Date()
-          .toISOString()
-          .replace(/[^a-zA-Z0-9]+/g, "")
-          .toLowerCase();
-        permlink2 = `re-${user}-${permlink2}`;
-        console.log(permlink2);
-        let op = [
-          "comment",
-          {
-            parent_author: author,
-            parent_permlink: permlink,
-            author: user,
-            permlink: permlink2,
-            title: "",
-            body: description,
-            json_metadata: JSON.stringify({
-              tags: [
-                "threespeak",
-                "ios",
-                "android",
-                "mobile",
-                "app",
-                "spknetwork",
-                "sagarkothari88",
-                "comment",
-                "reply",
-              ],
-              app: "3speak/0.3.0",
-              format: "markdown+html",
-            }),
-          },
-        ];
-        performOperations(
-          [op],
-          "commentOnContent",
-          user,
-          postingKey,
-          hasKey,
-          hasAuthKey
-        );
-      }
-
-      function getRedirectUriData(uname) {
-        username = uname.toLowerCase();
-        const auth_data = {
-          app: HAS_APP_DATA,
-          token: undefined,
-          challenge: undefined,
-        };
-        auth_key = uuidv4();
-        const data = CryptoJS.AES.encrypt(
-          JSON.stringify(auth_data),
-          auth_key
-        ).toString();
-        const payload = { data: data, authKey: auth_key };
-        const payloadData = JSON.stringify(payload);
-        replyToNative({
-          type: "getRedirectUriData",
-          valid: true,
-          username: uname,
-          error: "",
-          data: payloadData,
-        });
-      }
-
-      function getDecryptedHASToken(username, authKey, data) {
-        try {
-          // Try to decrypt and parse payload data
-          const decryptedData = JSON.parse(
-            CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
-          );
-          const token = decryptedData.token;
-          const expire = decryptedData.expire;
+        })
+        .catch((error) => {
+          console.error(error);
           replyToNative({
-            type: "getDecryptedHASToken",
-            valid: true,
-            username: username,
-            error: "",
-            data: `${token},${expire}`,
-          });
-        } catch (e) {
-          replyToNative({
-            type: "getDecryptedHASToken",
+            type: operationName,
             valid: false,
-            accountName: username,
-            error: e.message,
+            username: username,
+            error: error.message,
+            data: "",
           });
-        }
-      }
+        });
+    }
+  }
 
-      function replyToNative(result) {
-        console.log(`Result is ${JSON.stringify(result)}`);
-        window.webkit.messageHandlers.acela.postMessage(result);
-        // Android.postMessage(JSON.stringify(result));
-      }
-    </script>
-  </body>
+  function voteContent(
+    user,
+    author,
+    permlink,
+    weight,
+    postingKey,
+    hasKey,
+    hasAuthKey
+  ) {
+    let op = [
+      "vote",
+      {
+        voter: user,
+        author: author,
+        permlink: permlink,
+        weight: parseInt(weight),
+      },
+    ];
+    performOperations(
+      [op],
+      "voteContent",
+      user,
+      postingKey,
+      hasKey,
+      hasAuthKey
+    );
+  }
+
+  function commentOnContent(
+    user,
+    author,
+    permlink,
+    comment,
+    postingKey,
+    hasKey,
+    hasAuthKey
+  ) {
+    let description = atob(comment);
+    console.log(description);
+    description = decodeURIComponent(escape(description));
+    console.log(description);
+    let permlink2 = new Date()
+      .toISOString()
+      .replace(/[^a-zA-Z0-9]+/g, "")
+      .toLowerCase();
+    permlink2 = `re-${user}-${permlink2}`;
+    console.log(permlink2);
+    let op = [
+      "comment",
+      {
+        parent_author: author,
+        parent_permlink: permlink,
+        author: user,
+        permlink: permlink2,
+        title: "",
+        body: description,
+        json_metadata: JSON.stringify({
+          tags: [
+            "threespeak",
+            "ios",
+            "android",
+            "mobile",
+            "app",
+            "spknetwork",
+            "sagarkothari88",
+            "comment",
+            "reply",
+          ],
+          app: "3speak/0.3.0",
+          format: "markdown+html",
+        }),
+      },
+    ];
+    performOperations(
+      [op],
+      "commentOnContent",
+      user,
+      postingKey,
+      hasKey,
+      hasAuthKey
+    );
+  }
+
+  function getRedirectUriData(uname) {
+    username = uname.toLowerCase();
+    const auth_data = {
+      app: HAS_APP_DATA,
+      token: undefined,
+      challenge: undefined,
+    };
+    auth_key = uuidv4();
+    const data = CryptoJS.AES.encrypt(
+      JSON.stringify(auth_data),
+      auth_key
+    ).toString();
+    const payload = { data: data, authKey: auth_key };
+    const payloadData = JSON.stringify(payload);
+    replyToNative({
+      type: "getRedirectUriData",
+      valid: true,
+      username: uname,
+      error: "",
+      data: payloadData,
+    });
+  }
+
+  function getDecryptedHASToken(username, authKey, data) {
+    try {
+      // Try to decrypt and parse payload data
+      const decryptedData = JSON.parse(
+        CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
+      );
+      const token = decryptedData.token;
+      const expire = decryptedData.expire;
+      replyToNative({
+        type: "getDecryptedHASToken",
+        valid: true,
+        username: username,
+        error: "",
+        data: `${token},${expire}`,
+      });
+    } catch (e) {
+      replyToNative({
+        type: "getDecryptedHASToken",
+        valid: false,
+        accountName: username,
+        error: e.message,
+      });
+    }
+  }
+
+  function replyToNative(result) {
+    console.log(`Result is ${JSON.stringify(result)}`);
+    window.webkit.messageHandlers.acela.postMessage(result);
+    // Android.postMessage(JSON.stringify(result));
+  }
+</script>
+</body>
 </html>

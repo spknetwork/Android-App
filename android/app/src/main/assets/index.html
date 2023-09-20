@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="description" content="3Speak" />
-  <title>3Speak</title>
-</head>
-<body>
-<noscript>You need to enable JavaScript to run this app.</noscript>
-<!-- <script src="./hive.min.js"></script> -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
-<script
-        src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
-        integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
-></script>
-<script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
-<script>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="3Speak" />
+    <title>3Speak</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <!-- <script src="./hive.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
+      integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+    <script>
       const HAS_SERVER = "wss://hive-auth.arcange.eu";
       const HAS_APP_DATA = {
         name: "3Speak Mobile Android App",
@@ -133,8 +133,9 @@
         }
         let escapedVideoDescription = customStringEscaping(description);
         let escapedVideoTitle = customStringEscaping(title);
+        const processedTags = processTags(tags.split(","));
         return {
-          tags: processTags(tags.split(",")),
+          tags: processedTags,
           app: "3speak/0.3.0",
           type: "3speak/video",
           image: [thumbnail],
@@ -150,8 +151,9 @@
               lang: language,
               firstUpload: firstUpload,
               video_v2: videoV2,
-              app: "3speak/Android-App/2.0.0+76",
-              developer: "https://ecency.com/@sagarkothari88",
+              app: "3speak/0.3.0",
+              mobile_app: "3speak/Android-App/2.1.0+78",
+              developer: "https://hive.blog/@sagarkothari88",
               sourceMap: [
                 ...sourceMap,
                 {
@@ -162,21 +164,22 @@
             },
             content: {
               description: escapedVideoDescription,
-              tags: processTags(tags.split(",")),
+              tags: processedTags,
             },
           },
         };
       }
 
       function renderTemplate(baseThumbUrl, owner, permlink, description) {
-        const PostTemplate = "<center>\n\n" +
-"[![](@@@thumbnail@@@)](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)\n\n" +
-"▶️ [Watch on 3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)\n\n" +
-"</center>\n\n" +
-"---\n\n" +
-"@@@description@@@\n\n" +
-"---\n\n" +
-"▶️ [3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)";
+        const PostTemplate =
+          "<center>\n\n" +
+          "[![](@@@thumbnail@@@)](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)\n\n" +
+          "▶️ [Watch on 3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)\n\n" +
+          "</center>\n\n" +
+          "---\n\n" +
+          "@@@description@@@\n\n" +
+          "---\n\n" +
+          "▶️ [3Speak](https://3speak.tv/watch?v=@@@author@@@/@@@permlink@@@)";
         return PostTemplate.replace(/@@@thumbnail@@@/g, baseThumbUrl)
           .replace(/@@@author@@@/g, owner)
           .replace(/@@@permlink@@@/g, permlink)
@@ -237,13 +240,18 @@
         community,
         ipfsHash,
         hasKey,
-        hasAuthKey
+        hasAuthKey,
+        dNewBene,
+        powerUp,
       ) {
         let description = atob(dDescription);
         description = decodeURIComponent(escape(description));
         // description = `${description}\nIPFS HASH: ${ipfsHash}`;
         let title = atob(dTitle);
         title = decodeURIComponent(escape(title));
+        let newBene = atob(dNewBene);
+        newBene = decodeURIComponent(escape(newBene));
+        newBene = JSON.parse(newBene);
         let jsonMetaData = buildJSONMetadata(
           thumbnail,
           videoV2,
@@ -265,118 +273,66 @@
           duration,
           title
         );
-        let newBen = [
-          { account: "threespeakleader", weight: 100 },
-          { account: "spk.beneficiary", weight: 850 },
+        newBene.sort((a, b) => {
+          let fa = a.account.toLowerCase(),
+            fb = b.account.toLowerCase();
+          if (fa < fb) return -1;
+          if (fa > fb) return 1;
+          return 0;
+        });
+        for (let i = 0; i < newBene.length; i++) {
+          newBene[i].weight = newBene[i].weight * 100;
+        }
+        let benefactor_global = [[0, { beneficiaries: newBene }]];
+        let comment_options = [
+          "comment_options",
+          {
+            author: author,
+            permlink: permlink,
+            allow_votes: true,
+            max_accepted_payout: "100000.000 SBD",
+            percent_hbd: powerUp ? 0 : 10000,
+            allow_curation_rewards: true,
+            extensions: benefactor_global,
+          },
         ];
-        hive.api
-          .getAccountsAsync([author])
-          .then(function (accounts) {
-            const account = accounts[0];
-            if (account && account.json_metadata) {
-              let json = JSON.parse(account.json_metadata);
-              if (json.beneficiaries) {
-                if (Array.isArray(json.beneficiaries)) {
-                  let benefactors = json.beneficiaries
-                    .filter((x) => x.name !== "spk.delegation")
-                    .filter((x) => x.name && x.label);
-                  for (let bene of benefactors) {
-                    switch (bene.label) {
-                      case "referrer":
-                        newBen.push({
-                          account: bene.name,
-                          weight: bene.weight,
-                        });
-                        break;
-                      case "provider":
-                        newBen.push({
-                          account: bene.name,
-                          weight: bene.weight,
-                        });
-                        break;
-                      case "creator":
-                        newBen.push({
-                          account: bene.name,
-                          weight: bene.weight,
-                        });
-                        break;
-                    }
-                  }
-                }
-              }
-            }
-            benes.split(",").forEach((string, index) => {
-              const value = parseInt(beneWeights.split(",")[index]);
-              newBen.push({ account: string, weight: value });
-            });
-            newBen.sort((a, b) => {
-              let fa = a.account.toLowerCase(),
-                fb = b.account.toLowerCase();
-              if (fa < fb) return -1;
-              if (fa > fb) return 1;
-              return 0;
-            });
-            let benefactor_global = [[0, { beneficiaries: newBen }]];
-            let comment_options = [
-              "comment_options",
-              {
-                author: author,
-                permlink: permlink,
-                allow_votes: true,
-                max_accepted_payout: "100000.000 SBD",
-                percent_hbd: 10000,
-                allow_curation_rewards: true,
-                extensions: benefactor_global,
-              },
-            ];
-            let videoObject = videoObjectForBody(
-              description,
-              thumbnail,
-              author,
-              permlink
-            );
-            let body = renderTemplate(
-              videoObject.baseThumbUrl,
-              videoObject.owner,
-              videoObject.permlink,
-              videoObject.description
-            );
-            hive.broadcast.updateOperations();
-            const operations = [];
-            operations.push([
-              "comment",
-              {
-                parent_author: "",
-                parent_permlink: community,
-                author: author,
-                permlink: permlink,
-                title: title.substr(0, 254),
-                body: body,
-                json_metadata: JSON.stringify(jsonMetaData),
-              },
-            ]);
-            operations.push(comment_options);
-            operations.push(customJson);
-            console.log(`operations are ${JSON.stringify(operations)}`);
-            performOperations(
-              operations,
-              "postVideo",
-              author,
-              postingKey,
-              hasKey,
-              hasAuthKey
-            );
-          })
-          .catch(function (err) {
-            console.error(err);
-            replyToNative({
-              type: "postVideo",
-              valid: false,
-              username: author,
-              error: err.message,
-              data: "",
-            });
-          });
+        let videoObject = videoObjectForBody(
+          description,
+          thumbnail,
+          author,
+          permlink
+        );
+        let body = renderTemplate(
+          videoObject.baseThumbUrl,
+          videoObject.owner,
+          videoObject.permlink,
+          videoObject.description
+        );
+        hive.broadcast.updateOperations();
+        const operations = [];
+        operations.push([
+          "comment",
+          {
+            parent_author: "",
+            parent_permlink: community,
+            author: author,
+            permlink: permlink,
+            title: title.substr(0, 254),
+            body: body,
+            json_metadata: JSON.stringify(jsonMetaData),
+          },
+        ]);
+        operations.push(comment_options);
+        operations.push(customJson);
+        console.log(`operations are ${JSON.stringify(operations)}`);
+        performOperations(
+          operations,
+          "postVideo",
+          author,
+          postingKey,
+          hasKey,
+          hasAuthKey
+        );
       }
 
       function performOperations(
@@ -397,7 +353,7 @@
             key_type: "posting",
             ops: operations,
             broadcast: true,
-            nonce: Date.now()
+            nonce: Date.now(),
           };
           const data = CryptoJS.AES.encrypt(
             JSON.stringify(sign_data),
@@ -578,5 +534,5 @@
         Android.postMessage(JSON.stringify(result));
       }
     </script>
-</body>
+  </body>
 </html>

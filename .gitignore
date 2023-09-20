@@ -5,6 +5,9 @@ android/app/release/app-release.aab
 android/.idea/**
 android/.idea
 .env
+.flutter-plugins-dependencies
+.flutter-plugins
+
 
 # Xcode
 #
