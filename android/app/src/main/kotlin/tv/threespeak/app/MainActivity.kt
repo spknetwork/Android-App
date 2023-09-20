@@ -79,6 +79,7 @@ class MainActivity : FlutterActivity() {
             val url = call.argument<String?>("url")
             val newBene = call.argument<String?>("newBene")
             val language = call.argument<String?>("language")
+            val powerUp = call.argument<Boolean?>("powerUp")
 
             val data = call.argument<String?>("data")
             if (call.method == "playFullscreen" && url != null && seconds != null) {
@@ -103,10 +104,10 @@ class MainActivity : FlutterActivity() {
                 && description != null && title != null && tags != null && username != null
                 && permlink != null && duration != null && size != null && originalFilename != null
                 && firstUpload != null && bene != null && beneW != null && community != null
-                && ipfsHash != null && newBene != null && language != null
+                && ipfsHash != null && newBene != null && language != null && powerUp != null
             ) {
                 webView?.evaluateJavascript(
-                    "newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', 'en', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash', '$hasKey', '$hasAuthkey', '$newBene');",
+                    "newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', '$language', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash', '$hasKey', '$hasAuthkey', '$newBene', $powerUp);",
                     null
                 )
             } else if (call.method == "voteContent" && user != null && author != null

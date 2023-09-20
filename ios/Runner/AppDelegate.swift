@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
 import AVKit
+import flutter_downloader
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -8,6 +9,7 @@ import AVKit
 	let authBridge = AuthBridge()
 	let encoderBridge = EncoderBridge()
 	let hasBridge = HASBridge()
+
 	override func application(
 		_ application: UIApplication,
 		didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -22,6 +24,12 @@ import AVKit
 		hasBridge.initiate(controller: controller, window: window, acela: acela)
 
 		GeneratedPluginRegistrant.register(with: self)
+		FlutterDownloaderPlugin.setPluginRegistrantCallback({ registry in
+			if (!registry.hasPlugin("FlutterDownloaderPlugin")) {
+				FlutterDownloaderPlugin.register(with: registry.registrar(forPlugin: "FlutterDownloaderPlugin")!)
+			}
+		})
+
 		return super.application(application, didFinishLaunchingWithOptions: launchOptions)
 	}
 

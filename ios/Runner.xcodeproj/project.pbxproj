@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		1B07DB412ABAD91A004AFB4E /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B07DB402ABAD90F004AFB4E /* libsqlite3.tbd */; };
+		1B07DB422ABAD91A004AFB4E /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B07DB402ABAD90F004AFB4E /* libsqlite3.tbd */; };
 		1B24F3CC282EC1F600256625 /* VideoEncoderSizes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B24F3CB282EC1F600256625 /* VideoEncoderSizes.swift */; };
 		1B24F3CF282EC27300256625 /* EncoderBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B24F3CE282EC27300256625 /* EncoderBridge.swift */; };
 		1B6A5097281E206800480755 /* AcelaWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6A5096281E206800480755 /* AcelaWebViewController.swift */; };
@@ -40,6 +42,7 @@
 /* Begin PBXFileReference section */
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		1B07DB402ABAD90F004AFB4E /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		1B24F3CB282EC1F600256625 /* VideoEncoderSizes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoEncoderSizes.swift; sourceTree = "<group>"; };
 		1B24F3CE282EC27300256625 /* EncoderBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncoderBridge.swift; sourceTree = "<group>"; };
 		1B6A5096281E206800480755 /* AcelaWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcelaWebViewController.swift; sourceTree = "<group>"; };
@@ -71,6 +74,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B07DB422ABAD91A004AFB4E /* libsqlite3.tbd in Frameworks */,
+				1B07DB412ABAD91A004AFB4E /* libsqlite3.tbd in Frameworks */,
 				23F3017383FF2D45A9FFE1B2 /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -126,6 +131,7 @@
 		5EF66C9F588A8934CC38BF1D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1B07DB402ABAD90F004AFB4E /* libsqlite3.tbd */,
 				900CC1210BBABA2901A394FB /* Pods_Runner.framework */,
 			);
 			name = Frameworks;
@@ -409,7 +415,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 2.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.acela;
@@ -437,6 +443,7 @@
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 3Speak.tv;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -499,7 +506,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 2.0.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -552,7 +559,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 2.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.acela;
@@ -582,6 +589,7 @@
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 3Speak.tv;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -613,6 +621,7 @@
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 3Speak.tv;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
