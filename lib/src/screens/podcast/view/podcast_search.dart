@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
-import 'package:acela/src/screens/podcast/podcasts_feed.dart';
+import 'package:acela/src/screens/podcast/view/podcast_trending.dart';
+import 'package:acela/src/screens/podcast/view/podcasts_feed.dart';
+import 'package:acela/src/screens/podcast/widgets/podcast_feed_item.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
 import 'package:flutter/material.dart';
 
@@ -55,18 +57,11 @@ class _PodCastSearchState extends State<PodCastSearch> {
         // title = "$title by ${items[i].author ?? ''}";
         var desc = ''; // items[i].description ?? '';
         desc = "$desc${(items[i].categories?.values ?? []).join(", ")}";
-        return ListTile(
-          dense: true,
-          leading: Image.network(items[i].image ?? ''),
-          title: Text(title),
-          subtitle: Text(desc),
-          onTap: () {
-            var screen =
-            PodcastFeedScreen(appData: widget.appData, item: items[i]);
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
-          },
+        return PodcastFeedItemWidget(
+          appData: widget.appData,
+          item: items[i],
         );
+
       },
       separatorBuilder: (c, i) => const Divider(height: 0),
       itemCount: items.length,
