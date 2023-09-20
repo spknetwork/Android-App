@@ -17,9 +17,7 @@ class PodcastController extends ChangeNotifier {
 
   void init() async {
     externalDir = await getExternalStorageDirectory();
-    for (var item in externalDir.listSync()) {
-      item.delete();
-    }
+
   }
 
   bool isOffline(String name, String episodeId) {
