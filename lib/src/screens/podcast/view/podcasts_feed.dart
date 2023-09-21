@@ -39,19 +39,19 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: ListTile(
-            leading: Image.network(
-              widget.item.image ?? '',
-              width: 40,
-              height: 40,
-            ),
-            title: Text(widget.item.title ?? 'No Title'),
+    return Scaffold(
+      appBar: AppBar(
+        title: ListTile(
+          leading: Image.network(
+            widget.item.image ?? '',
+            width: 40,
+            height: 40,
           ),
+          title: Text(widget.item.title ?? 'No Title'),
         ),
-        body: FutureBuilder(
+      ),
+      body: SafeArea(
+        child: FutureBuilder(
           future: future,
           builder: (context, snapshot) {
             if (snapshot.hasError) {

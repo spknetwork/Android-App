@@ -51,19 +51,19 @@ class LocalPodcastEpisode extends StatelessWidget {
           PodcastEpisode item = items[index];
           return ListTile(
             onTap: () {
-              var screen = SafeArea(
-                child: Scaffold(
-                  appBar: AppBar(
-                    title: ListTile(
-                      leading: Image.network(
-                        item.image ?? '',
-                        width: 40,
-                        height: 40,
-                      ),
-                      title: Text(item.title ?? 'No Title'),
+              var screen = Scaffold(
+                appBar: AppBar(
+                  title: ListTile(
+                    leading: Image.network(
+                      item.image ?? '',
+                      width: 40,
+                      height: 40,
                     ),
+                    title: Text(item.title ?? 'No Title'),
                   ),
-                  body: PodcastEpisodePlayer(
+                ),
+                body: SafeArea(
+                  child: PodcastEpisodePlayer(
                       episodeIndex: index, data: appData, podcastEpisodes: items),
                 ),
               );

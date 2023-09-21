@@ -82,16 +82,13 @@ class AboutHomeScreen extends StatelessWidget {
                   'https://peakd.com/hive-112019/@spknetwork/spk-network-funding-proposal-rhnv7e'));
             },
           ),
-          Visibility(
-            visible: defaultTargetPlatform == TargetPlatform.iOS,
-            child: ListTile(
-              leading: const Icon(Icons.phone_iphone),
-              title: const Text('Share 3Speak iOS App with others'),
-              onTap: () {
-                Share.share(
-                  'https://apps.apple.com/us/app/3speak/id1614771373');
-              },
-            ),
+          ListTile(
+            leading: const Icon(Icons.phone_iphone),
+            title: const Text('Share 3Speak iOS App with others'),
+            onTap: () {
+              Share.share(
+                'https://apps.apple.com/us/app/3speak/id1614771373');
+            },
           ),
           Visibility(
             visible: defaultTargetPlatform == TargetPlatform.android,
