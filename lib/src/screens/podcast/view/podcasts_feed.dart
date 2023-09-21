@@ -50,37 +50,39 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
           title: Text(widget.item.title ?? 'No Title'),
         ),
       ),
-      body: FutureBuilder(
-        future: future,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return RetryScreen(
-                error: snapshot.error.toString(),
-                onRetry: () {
-                  setState(() {
-                    future = PodCastCommunicator().getPodcastEpisodesByFeedId(
-                        "${widget.item.id ?? 227573}");
-                  });
-                });
-          } else if (snapshot.connectionState == ConnectionState.done) {
-            var data = snapshot.data as PodcastEpisodesByFeedResponse;
-            var list = data.items ?? [];
-            if (list.isEmpty) {
+      body: SafeArea(
+        child: FutureBuilder(
+          future: future,
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
               return RetryScreen(
-                  error: 'No data found.',
+                  error: snapshot.error.toString(),
                   onRetry: () {
                     setState(() {
                       future = PodCastCommunicator().getPodcastEpisodesByFeedId(
                           "${widget.item.id ?? 227573}");
                     });
                   });
+            } else if (snapshot.connectionState == ConnectionState.done) {
+              var data = snapshot.data as PodcastEpisodesByFeedResponse;
+              var list = data.items ?? [];
+              if (list.isEmpty) {
+                return RetryScreen(
+                    error: 'No data found.',
+                    onRetry: () {
+                      setState(() {
+                        future = PodCastCommunicator().getPodcastEpisodesByFeedId(
+                            "${widget.item.id ?? 227573}");
+                      });
+                    });
+              } else {
+                return _fullPost(list);
+              }
             } else {
-              return _fullPost(list);
+              return LoadingScreen(title: 'Loading', subtitle: 'Please wait..');
             }
-          } else {
-            return LoadingScreen(title: 'Loading', subtitle: 'Please wait..');
-          }
-        },
+          },
+        ),
       ),
     );
   }

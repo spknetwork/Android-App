@@ -62,8 +62,10 @@ class LocalPodcastEpisode extends StatelessWidget {
                     title: Text(item.title ?? 'No Title'),
                   ),
                 ),
-                body: PodcastEpisodePlayer(
-                    episodeIndex: index, data: appData, podcastEpisodes: items),
+                body: SafeArea(
+                  child: PodcastEpisodePlayer(
+                      episodeIndex: index, data: appData, podcastEpisodes: items),
+                ),
               );
               var route = MaterialPageRoute(builder: (c) => screen);
               Navigator.of(context).push(route);
