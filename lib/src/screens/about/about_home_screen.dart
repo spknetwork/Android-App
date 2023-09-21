@@ -1,7 +1,9 @@
 import 'package:acela/src/screens/about/about_faq.dart';
 import 'package:acela/src/screens/about/about_us.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutHomeScreen extends StatelessWidget {
@@ -80,29 +82,39 @@ class AboutHomeScreen extends StatelessWidget {
                   'https://peakd.com/hive-112019/@spknetwork/spk-network-funding-proposal-rhnv7e'));
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.phone_iphone),
-            title: const Text('Download iOS App'),
-            onTap: () {
-              launchUrl(
-                  Uri.parse('https://apps.apple.com/us/app/3speak/id1614771373'));
-            },
+          Visibility(
+            visible: defaultTargetPlatform == TargetPlatform.iOS,
+            child: ListTile(
+              leading: const Icon(Icons.phone_iphone),
+              title: const Text('Share 3Speak iOS App with others'),
+              onTap: () {
+                Share.share(
+                  'https://apps.apple.com/us/app/3speak/id1614771373');
+              },
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.android),
-            title: const Text('Download Android App'),
-            onTap: () {
-              launchUrl(Uri.parse(
-                  'https://play.google.com/store/apps/details?id=tv.threespeak.app'));
-            },
+          Visibility(
+            visible: defaultTargetPlatform == TargetPlatform.android,
+            child: ListTile(
+              leading: const Icon(Icons.android),
+              title: const Text('Share 3Speak Android App with others'),
+              onTap: () {
+                Share.share(
+                  'https://play.google.com/store/apps/details?id=tv.threespeak.app');
+              },
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.check_box_outline_blank),
-            title: const Text('Download Android App via DropBox'),
-            onTap: () {
-              launchUrl(Uri.parse(
-                  'https://www.dropbox.com/sh/a0q5u7l3j9ygzty/AABAqtxnLrPBYbk4q5H9BBWja?dl=0'));
-            },
+          Visibility(
+            visible: defaultTargetPlatform == TargetPlatform.android,
+            child: ListTile(
+              leading: const Icon(Icons.check_box_outline_blank),
+              title: const Text(
+                  'Share 3Speak Android App dropbox-download-link with others'),
+              onTap: () {
+                Share.share(
+                  'https://www.dropbox.com/sh/a0q5u7l3j9ygzty/AABAqtxnLrPBYbk4q5H9BBWja?dl=0');
+              },
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.developer_mode),

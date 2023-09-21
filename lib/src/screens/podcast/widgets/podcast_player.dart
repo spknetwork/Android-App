@@ -8,6 +8,7 @@ import 'package:acela/src/screens/podcast/widgets/podcast_player_widgets/podcast
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -301,12 +302,17 @@ class _PodcastEpisodePlayerState extends State<PodcastEpisodePlayer> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.network(curentPodcastEpisode.image ?? ''),
+        Container(
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.45),
+            child: Image.network(curentPodcastEpisode.image ?? '')),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10),
           child: Text(
             curentPodcastEpisode.title ?? '',
             textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),

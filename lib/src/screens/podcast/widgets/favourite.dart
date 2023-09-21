@@ -31,7 +31,7 @@ class _FavouriteWidgetState extends State<FavouriteWidget> {
 
   @override
   void didUpdateWidget(covariant FavouriteWidget oldWidget) {
-    isLiked = oldWidget.isLiked;
+    isLiked = widget.isLiked;
     super.didUpdateWidget(oldWidget);
   }
 

@@ -51,19 +51,21 @@ class LocalPodcastEpisode extends StatelessWidget {
           PodcastEpisode item = items[index];
           return ListTile(
             onTap: () {
-              var screen = Scaffold(
-                appBar: AppBar(
-                  title: ListTile(
-                    leading: Image.network(
-                      item.image ?? '',
-                      width: 40,
-                      height: 40,
+              var screen = SafeArea(
+                child: Scaffold(
+                  appBar: AppBar(
+                    title: ListTile(
+                      leading: Image.network(
+                        item.image ?? '',
+                        width: 40,
+                        height: 40,
+                      ),
+                      title: Text(item.title ?? 'No Title'),
                     ),
-                    title: Text(item.title ?? 'No Title'),
                   ),
+                  body: PodcastEpisodePlayer(
+                      episodeIndex: index, data: appData, podcastEpisodes: items),
                 ),
-                body: PodcastEpisodePlayer(
-                    episodeIndex: index, data: appData, podcastEpisodes: items),
               );
               var route = MaterialPageRoute(builder: (c) => screen);
               Navigator.of(context).push(route);
