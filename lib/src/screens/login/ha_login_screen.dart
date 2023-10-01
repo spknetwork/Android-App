@@ -339,7 +339,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       if (resultingKey == publicKey) {
         debugPrint("Successful login");
         String resolution = await storage.read(key: 'resolution') ?? '480p';
-        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+        String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
         String? lang = await storage.read(key: 'lang');
         await storage.write(key: 'username', value: usernameController.text);
         await storage.write(key: 'postingKey', value: postingKey);

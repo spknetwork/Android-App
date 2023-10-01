@@ -77,7 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         String? hasExpiry = await storage.read(key: 'hasExpiry');
         String? hasAuthKey = await storage.read(key: 'hasAuthKey');
         String? cookie = await storage.read(key: 'cookie');
-        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+        String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
         String? lang = await storage.read(key: 'lang');
         server.updateHiveUserData(
           HiveUserData(
@@ -227,7 +227,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void showBottomSheetForServer(HiveUserData user) {
     var list = [
-      'api.hive.blog',
+      'hive-api.web3telekom.xyz',
       'api.deathwing.me',
       'hive-api.arcange.eu',
       'hived.emre.sh',

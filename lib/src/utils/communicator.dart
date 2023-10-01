@@ -52,7 +52,7 @@ class Communicator {
 
   // static const fsServer = "http://192.168.1.2:1080/files";
 
-  // static const hiveApiUrl = 'api.hive.blog';
+  // static const hiveApiUrl = 'hive-api.web3telekom.xyz';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
   static const hiveAuthServer = 'wss://hive-auth.arcange.eu';
 
@@ -251,7 +251,7 @@ class Communicator {
             const storage = FlutterSecureStorage();
             await storage.write(key: 'cookie', value: cookie);
             String resolution = await storage.read(key: 'resolution') ?? '480p';
-            String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+            String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
             var newData = HiveUserData(
               username: user.username,
               postingKey: user.postingKey,
@@ -286,7 +286,7 @@ class Communicator {
           const storage = FlutterSecureStorage();
           await storage.delete(key: 'cookie');
           String resolution = await storage.read(key: 'resolution') ?? '480p';
-          String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+          String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
           var newData = HiveUserData(
             username: user.username,
             postingKey: user.postingKey,
