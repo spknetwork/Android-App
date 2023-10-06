@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:acela/src/models/podcast/podcast_categories_response.dart';
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:convert/convert.dart';
@@ -57,6 +58,21 @@ class PodCastCommunicator {
   Future<TrendingPodCastResponse> getTrendingPodcasts() async {
     var response = await fetchPodCast('podcasts/trending');
     return TrendingPodCastResponse.fromRawJson(response);
+  }
+
+  Future<TrendingPodCastResponse> getRecentPodcasts() async {
+    var response = await fetchPodCast('recent/feeds');
+    return TrendingPodCastResponse.fromRawJson(response);
+  }
+
+  Future<List<PodcastCategory>> getCategories(int categoryId) async {
+    var response = await fetchPodCast('recent/feeds?max=30&cat=$categoryId');
+    return PodcastCategoriesResponse.fromRawJson(response).feeds ?? [];
+  }
+
+  Future<List<PodcastCategory>> getFeedsByCategory() async {
+    var response = await fetchPodCast('categories/list');
+    return PodcastCategoriesResponse.fromRawJson(response).feeds ?? [];
   }
 
   Future<TrendingPodCastResponse> getSearchResults(String searchTerm) async {
