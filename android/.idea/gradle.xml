@@ -4,8 +4,9 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <option name="testRunner" value="GRADLE" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+        <option name="gradleJvm" value="Embedded JDK" />
         <option name="modules">
           <set>
             <option value="$USER_HOME$/.pub-cache/git/Flutter-AssetsAudioPlayer-7ad3c57c2da431a89c6f156177ab2be1a3ae6aa0/android" />
@@ -22,6 +23,7 @@
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.0.27/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_android-10.2.1/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/share_plus-6.3.4/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/sqflite-2.3.0/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_android-6.0.35/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/video_compress-3.1.2/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/video_player_android-2.4.8/android" />
