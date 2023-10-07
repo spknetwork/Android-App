@@ -298,6 +298,8 @@ class _PodcastEpisodePlayerState extends State<PodcastEpisodePlayer> {
     var pending = duration - position;
     var pendingText = "${Utilities.formatTime(pending.toInt())}";
     var leadingText = "${Utilities.formatTime(position.toInt())}";
+    double min = 0;
+    double max = curentPodcastEpisode.duration?.toDouble() ?? 0.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -326,9 +328,9 @@ class _PodcastEpisodePlayerState extends State<PodcastEpisodePlayer> {
                 child: Slider(
                   activeColor: Colors.white,
                   inactiveColor: Colors.white38,
-                  min: 0,
-                  max: curentPodcastEpisode.duration?.toDouble() ?? 0.0,
-                  value: (position),
+                  min: min,
+                  max: max,
+                  value: (position.clamp(min, max)),
                   onChanged: (newValue) {
                     setState(() {
                       position = newValue;

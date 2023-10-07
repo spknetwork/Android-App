@@ -18,7 +18,9 @@ class PodcastCategoryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(categoryName)),
+      appBar: AppBar(title: ListTile(
+        minLeadingWidth: 0,
+        title: Text(categoryName),subtitle: Text("Podcasts under $categoryName category"),)),
       body: PodcastFeedsBody(
           future: PodCastCommunicator().getFeedsByCategory(categoryId),
           appData: appData),

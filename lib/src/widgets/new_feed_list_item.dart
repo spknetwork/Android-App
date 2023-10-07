@@ -6,6 +6,7 @@ import 'package:acela/src/screens/video_details_screen/new_video_details_screen.
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
+import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -61,19 +62,21 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
         ListTile(
           tileColor: Colors.black,
           contentPadding: EdgeInsets.zero,
-          title: Image.network(
-            widget.thumbUrl,
-            fit: BoxFit.cover,
-            height: 230,
+          title: CachedImage(
+            imageUrl: widget.thumbUrl,
+            imageHeight: 230,
           ),
           subtitle: ListTile(
             contentPadding: EdgeInsets.all(2),
             dense: true,
             leading: InkWell(
-              child: CustomCircleAvatar(
-                width: 40,
-                height: 40,
-                url: server.userOwnerThumb(widget.author),
+              child: ClipOval(
+                child: CachedImage(
+                  imageHeight: 40,
+                  imageWidth: 40,
+                  loadingIndicatorSize: 25,
+                  imageUrl: server.userOwnerThumb(widget.author),
+                ),
               ),
               onTap: () {
                 widget.onUserTap();
@@ -113,7 +116,8 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
               var route = MaterialPageRoute(builder: (context) => screen);
               Navigator.of(context).push(route);
             } else {
-              var screen = NewVideoDetailsScreen(item: widget.item!, appData: widget.appData!);
+              var screen = NewVideoDetailsScreen(
+                  item: widget.item!, appData: widget.appData!);
               var route = MaterialPageRoute(builder: (context) => screen);
               Navigator.of(context).push(route);
             }
@@ -164,5 +168,4 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
     String priceAndVotes = "👍 ${widget.votes ?? 0} · 💬 ${widget.comments}";
     return Text(priceAndVotes);
   }
-
 }
