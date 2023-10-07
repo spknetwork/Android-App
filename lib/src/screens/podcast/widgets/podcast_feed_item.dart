@@ -3,6 +3,7 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
 import 'package:acela/src/screens/podcast/view/podcasts_feed.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
+import 'package:acela/src/widgets/cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,13 +32,17 @@ class _PodcastFeedItemWidgetState extends State<PodcastFeedItemWidget> {
     final podcastController = context.read<PodcastController>();
     return ListTile(
       dense: true,
-      leading: Image.network(widget.item.image ?? ''),
+      leading: CachedImage(imageUrl: widget.item.image,
+      imageHeight: 48,
+      imageWidth: 48,
+      loadingIndicatorSize: 25,),
       title: Text(title),
       subtitle: Text(desc),
       trailing: Visibility(
         visible: widget.showLikeButton,
         child: FavouriteWidget(
-            isLiked: podcastController.isLikedPodcastPresentLocally(widget.item),
+            isLiked:
+                podcastController.isLikedPodcastPresentLocally(widget.item),
             onAdd: () {
               podcastController.storeLikedPodcastLocally(widget.item);
             },

@@ -65,12 +65,12 @@ class PodCastCommunicator {
     return TrendingPodCastResponse.fromRawJson(response);
   }
 
-  Future<List<PodcastCategory>> getCategories(int categoryId) async {
+  Future<TrendingPodCastResponse> getFeedsByCategory(int categoryId) async {
     var response = await fetchPodCast('recent/feeds?max=30&cat=$categoryId');
-    return PodcastCategoriesResponse.fromRawJson(response).feeds ?? [];
+    return TrendingPodCastResponse.fromRawJson(response);
   }
 
-  Future<List<PodcastCategory>> getFeedsByCategory() async {
+  Future<List<PodcastCategory>> getCategories() async {
     var response = await fetchPodCast('categories/list');
     return PodcastCategoriesResponse.fromRawJson(response).feeds ?? [];
   }

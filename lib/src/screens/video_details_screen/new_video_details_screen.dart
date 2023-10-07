@@ -15,6 +15,7 @@ import 'package:acela/src/screens/video_details_screen/new_video_details_info.da
 import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
+import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
@@ -101,12 +102,11 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
-      var result = HivePostInfo
-          .fromJsonString(string)
+      var result = HivePostInfo.fromJsonString(string)
           .result
           .resultData
           .where((element) =>
-      element.permlink == (widget.item.permlink ?? 'ctbtwcxbbd'))
+              element.permlink == (widget.item.permlink ?? 'ctbtwcxbbd'))
           .first;
       return result;
     } else {
@@ -117,7 +117,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
 
   void setupVideo(String url, VideoSize size) {
     BetterPlayerConfiguration betterPlayerConfiguration =
-    BetterPlayerConfiguration(
+        BetterPlayerConfiguration(
       aspectRatio: size.width / size.height,
       fit: BoxFit.contain,
       autoPlay: true,
@@ -156,7 +156,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   void fullscreenTapped() async {
     _betterPlayerController.pause();
     var position =
-    await _betterPlayerController.videoPlayerController?.position;
+        await _betterPlayerController.videoPlayerController?.position;
     var seconds = position?.inSeconds;
     if (seconds == null) return;
     debugPrint('position is $position');
@@ -228,19 +228,17 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     String votes = "👍 ${widget.item.stats?.numVotes ?? 0}";
     String comments = "💬 ${widget.item.stats?.numComments ?? 0}";
     var subtitle =
-    [timeInString, durationString].where((e) => e.isNotEmpty).join(" · ");
+        [timeInString, durationString].where((e) => e.isNotEmpty).join(" · ");
     subtitle = "$subtitle\n$votes · $comments";
     return ListTile(
       leading: InkWell(
-        child: CircleAvatar(
-          child: ClipOval(
-              child: Image.network(
-                'https://images.hive.blog/u/${widget.item.author?.username ??
-                    'sagarkothari88'}/avatar',
-                height: 40,
-                width: 40,
-              )),
-          radius: 20,
+        child: ClipOval(
+          child: CachedImage(
+            imageUrl:
+                'https://images.hive.blog/u/${widget.item.author?.username ?? 'sagarkothari88'}/avatar',
+            imageHeight: 40,
+            imageWidth: 40,
+          ),
         ),
         onTap: () {
           var screen = UserChannelScreen(
@@ -292,8 +290,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         loadHiveInfo();
       },
     );
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (c) => screen));
+    Navigator.of(context).push(MaterialPageRoute(builder: (c) => screen));
   }
 
   void upvotePressed() {
@@ -318,7 +315,10 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       );
       return;
     }
-    if (postInfo!.activeVotes.map((e) => e.voter).contains(widget.appData.username ?? 'sagarkothari88') == true) {
+    if (postInfo!.activeVotes
+            .map((e) => e.voter)
+            .contains(widget.appData.username ?? 'sagarkothari88') ==
+        true) {
       showError('You have already voted for this video');
     }
     showModalBottomSheet(
@@ -327,10 +327,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       clipBehavior: Clip.hardEdge,
       builder: (context) {
         return SizedBox(
-          height: MediaQuery
-              .of(context)
-              .size
-              .height * 0.4,
+          height: MediaQuery.of(context).size.height * 0.4,
           child: HiveUpvoteDialog(
             author: widget.item.author?.username ?? 'sagarkothari88',
             permlink: widget.item.permlink ?? 'ctbtwcxbbd',
@@ -352,10 +349,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     var height = (ratio!.height >= ratio!.width)
         ? 460.0
         : (ratio!.height * screenWidth / ratio!.width);
-    var boxHeight = MediaQuery
-        .of(context)
-        .size
-        .height - height;
+    var boxHeight = MediaQuery.of(context).size.height - height;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -424,8 +418,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           IconButton(
             onPressed: () {
               Share.share(
-                  'https://3speak.tv/watch?v=${widget.item.author?.username ??
-                      'sagarkothari88'}/${widget.item.permlink}');
+                  'https://3speak.tv/watch?v=${widget.item.author?.username ?? 'sagarkothari88'}/${widget.item.permlink}');
             },
             icon: Icon(Icons.share, color: Colors.blue),
           ),
@@ -437,7 +430,8 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
 
   Widget _chipList() {
     return ChipList(
-      listOfChipNames: widget.item.tags ?? ['threespeak', 'video', 'threeshorts'],
+      listOfChipNames:
+          widget.item.tags ?? ['threespeak', 'video', 'threeshorts'],
       activeBgColorList: [Theme.of(context).primaryColor],
       inactiveBgColorList: [Theme.of(context).primaryColor],
       activeTextColorList: const [Colors.white],
@@ -497,30 +491,27 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         );
       },
       separatorBuilder: (c, i) =>
-      const Divider(height: 0, color: Colors.transparent),
+          const Divider(height: 0, color: Colors.transparent),
       itemCount: 5 + suggestions.length,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    var width = MediaQuery
-        .of(context)
-        .size
-        .width;
+    var width = MediaQuery.of(context).size.width;
     return Scaffold(
       body: SafeArea(
         child: ratio == null
             ? LoadingScreen(
-          title: 'Loading data',
-          subtitle: 'Please wait',
-        )
+                title: 'Loading data',
+                subtitle: 'Please wait',
+              )
             : Stack(
-          children: [
-            _listView(width),
-            _videoPlayerStack(width),
-          ],
-        ),
+                children: [
+                  _listView(width),
+                  _videoPlayerStack(width),
+                ],
+              ),
       ),
     );
   }
