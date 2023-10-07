@@ -1,12 +1,13 @@
+import 'package:acela/src/models/podcast/podcast_categories_response.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/podcast/view/liked_podcasts.dart';
 import 'package:acela/src/screens/podcast/view/local_podcast_episode.dart';
 import 'package:acela/src/screens/podcast/view/podcast_search.dart';
+import 'package:acela/src/screens/podcast/widgets/podcast_categories_body.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_feed_item.dart';
+import 'package:acela/src/screens/podcast/widgets/podcast_feeds_body.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
-import 'package:acela/src/widgets/loading_screen.dart';
-import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
 import '../../../widgets/fab_custom.dart';
 import '../../../widgets/fab_overlay.dart';
@@ -25,12 +26,17 @@ class PodCastTrendingScreen extends StatefulWidget {
 
 class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
   bool isMenuOpen = false;
-  late Future<TrendingPodCastResponse> future;
+  late Future<TrendingPodCastResponse> trendingFeeds;
+  late Future<TrendingPodCastResponse> recentFeeds;
+  late Future<List<PodcastCategory>> categories;
+  final PodCastCommunicator podCastCommunicator = PodCastCommunicator();
 
   @override
   void initState() {
     super.initState();
-    future = PodCastCommunicator().getTrendingPodcasts();
+    trendingFeeds = podCastCommunicator.getTrendingPodcasts();
+    recentFeeds = podCastCommunicator.getRecentPodcasts();
+    categories = podCastCommunicator.getCategories();
   }
 
   Widget getList(List<PodCastFeedItem> items) {
@@ -48,54 +54,42 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: ListTile(
-          leading: Image.asset(
-            'assets/pod-cast-logo-round.png',
-            width: 40,
-            height: 40,
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: ListTile(
+            leading: Image.asset(
+              'assets/pod-cast-logo-round.png',
+              width: 40,
+              height: 40,
+            ),
+            title: Text('Podcasts'),
           ),
-          title: Text('Podcasts'),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: 'Trending'),
+              Tab(text: 'Categories'),
+              Tab(text: 'Recent'),
+            ],
+          ),
         ),
-      ),
-      body: Stack(
-        children: [
-          FutureBuilder(
-            future: future,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return RetryScreen(
-                  error: snapshot.error.toString(),
-                  onRetry: () {
-                    setState(() {
-                      future = PodCastCommunicator().getTrendingPodcasts();
-                    });
-                  },
-                );
-              } else if (snapshot.connectionState == ConnectionState.done) {
-                var data = snapshot.data as TrendingPodCastResponse;
-                var list = data.feeds ?? [];
-                if (list.isEmpty) {
-                  return RetryScreen(
-                    error: 'No data found.',
-                    onRetry: () {
-                      setState(() {
-                        future = PodCastCommunicator().getTrendingPodcasts();
-                      });
-                    },
-                  );
-                } else {
-                  return getList(list);
-                }
-              } else {
-                return LoadingScreen(
-                    title: 'Loading', subtitle: 'Please wait..');
-              }
-            },
-          ),
-          _fabContainer()
-        ],
+        body: Stack(
+          children: [
+            TabBarView(
+              children: [
+                PodcastFeedsBody(
+                    future: trendingFeeds, appData: widget.appData),
+                PodcastCategoriesBody(
+                  appData: widget.appData,
+                  future: categories,
+                ),
+                PodcastFeedsBody(future: recentFeeds, appData: widget.appData),
+              ],
+            ),
+            _fabContainer()
+          ],
+        ),
       ),
     );
   }
@@ -174,4 +168,3 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
     return fabItems;
   }
 }
-

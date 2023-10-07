@@ -31,13 +31,20 @@ class _PodcastFeedItemWidgetState extends State<PodcastFeedItemWidget> {
     final podcastController = context.read<PodcastController>();
     return ListTile(
       dense: true,
-      leading: Image.network(widget.item.image ?? ''),
+      leading: Image.network(
+        widget.item.image ?? '',
+        height: 48,
+        width: 48,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const SizedBox(height: 48,width: 48,),
+      ),
       title: Text(title),
       subtitle: Text(desc),
       trailing: Visibility(
         visible: widget.showLikeButton,
         child: FavouriteWidget(
-            isLiked: podcastController.isLikedPodcastPresentLocally(widget.item),
+            isLiked:
+                podcastController.isLikedPodcastPresentLocally(widget.item),
             onAdd: () {
               podcastController.storeLikedPodcastLocally(widget.item);
             },
