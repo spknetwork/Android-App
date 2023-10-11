@@ -3,14 +3,19 @@ import 'dart:developer';
 
 import 'package:acela/src/models/trending_tags/trending_tags_response.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class GQLCommunicator {
-  static const gqlServer = "https://union.us-02.infra.3speak.tv/api/v2/graphql";
+  static const defaultGQLServer = "threespeak-union-graph-ql.sagarkothari88.one";
+  // static const gqlServer = "https://union.us-02.infra.3speak.tv/api/v2/graphql";
   static const dataQuery = "{\n    items {\n      created_at\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}";
 
   Future<List<GQLFeedItem>> getGQLFeed(
       String operation, String query) async {
+    const storage = FlutterSecureStorage();
+    String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+    String gqlServer = "https://$union/api/v2/graphql";
     var headers = {
       'Connection': 'keep-alive',
       'content-type': 'application/json',
@@ -48,6 +53,9 @@ class GQLCommunicator {
       'Connection': 'keep-alive',
       'content-type': 'application/json',
     };
+    const storage = FlutterSecureStorage();
+    String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+    String gqlServer = "https://$union/api/v2/graphql";
     var request = http.Request('POST', Uri.parse(gqlServer));
     var query = "query TrendingTags {\n  trendingTags(limit: 50) {\n    tags {\n      score\n      tag\n    }\n  }\n}";
     request.body = json

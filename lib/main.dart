@@ -2,6 +2,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -73,6 +74,7 @@ class _MyAppState extends State<MyApp> {
               postingKey: null,
               username: null,
               rpc: 'hive-api.web3telekom.xyz',
+              union: GQLCommunicator.defaultGQLServer,
               loaded: false,
               language: null,
             ),
@@ -103,6 +105,7 @@ class _MyAppState extends State<MyApp> {
     String? hasAuthKey = await storage.read(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+    String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
     String? lang = await storage.read(key: 'lang');
     server.updateHiveUserData(
       HiveUserData(
@@ -123,6 +126,7 @@ class _MyAppState extends State<MyApp> {
         cookie: cookie,
         resolution: resolution,
         rpc: rpc,
+        union: union,
         loaded: true,
         language: lang,
       ),

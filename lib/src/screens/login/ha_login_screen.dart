@@ -9,6 +9,7 @@ import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/login/sign_up_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/crypto_manager.dart';
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -340,6 +341,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         debugPrint("Successful login");
         String resolution = await storage.read(key: 'resolution') ?? '480p';
         String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+        String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
         String? lang = await storage.read(key: 'lang');
         await storage.write(key: 'username', value: usernameController.text);
         await storage.write(key: 'postingKey', value: postingKey);
@@ -354,6 +356,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           cookie: null,
           resolution: resolution,
           rpc: rpc,
+          union: union,
           loaded: true,
           language: lang,
         );
@@ -425,6 +428,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           cookie: null,
           resolution: data.resolution,
           rpc: data.rpc,
+          union: data.union,
           loaded: true,
           language: data.language,
         );

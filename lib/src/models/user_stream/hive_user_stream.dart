@@ -27,6 +27,7 @@ class HiveUserData {
   HiveKeychainData? keychainData;
   String resolution;
   String rpc;
+  String union;
   bool loaded;
 
   HiveUserData({
@@ -36,6 +37,7 @@ class HiveUserData {
     required this.cookie,
     required this.resolution,
     required this.rpc,
+    required this.union,
     required this.loaded,
     required this.language,
   });

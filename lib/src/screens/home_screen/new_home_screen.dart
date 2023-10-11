@@ -14,6 +14,7 @@ import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
 import 'package:acela/src/screens/trending_tags/trending_tags.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/widgets/fab_custom.dart';
 import 'package:acela/src/widgets/fab_overlay.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
@@ -446,6 +447,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     await storage.delete(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+    String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
     String? lang = await storage.read(key: 'lang');
     server.updateHiveUserData(
       HiveUserData(
@@ -455,6 +457,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         cookie: null,
         resolution: resolution,
         rpc: rpc,
+        union: union,
         loaded: true,
         language: lang,
       ),

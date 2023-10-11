@@ -15,6 +15,7 @@ import 'package:acela/src/models/video_upload/does_post_exists.dart';
 import 'package:acela/src/models/video_upload/video_upload_complete_request.dart';
 import 'package:acela/src/models/video_upload/video_upload_login_response.dart';
 import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -252,10 +253,12 @@ class Communicator {
             await storage.write(key: 'cookie', value: cookie);
             String resolution = await storage.read(key: 'resolution') ?? '480p';
             String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+            String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
             var newData = HiveUserData(
               username: user.username,
               postingKey: user.postingKey,
               keychainData: user.keychainData,
+              union: union,
               cookie: cookie,
               resolution: resolution,
               rpc: rpc,
@@ -287,6 +290,7 @@ class Communicator {
           await storage.delete(key: 'cookie');
           String resolution = await storage.read(key: 'resolution') ?? '480p';
           String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+          String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
           var newData = HiveUserData(
             username: user.username,
             postingKey: user.postingKey,
@@ -294,6 +298,7 @@ class Communicator {
             cookie: null,
             resolution: resolution,
             rpc: rpc,
+            union: union,
             loaded: true,
             language: user.language,
           );
