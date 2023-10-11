@@ -1,5 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -78,6 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         String? hasAuthKey = await storage.read(key: 'hasAuthKey');
         String? cookie = await storage.read(key: 'cookie');
         String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+        String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
         String? lang = await storage.read(key: 'lang');
         server.updateHiveUserData(
           HiveUserData(
@@ -86,6 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             cookie: cookie,
             resolution: optionName,
             rpc: rpc,
+            union: union,
             loaded: true,
             language: lang,
             keychainData: hasId != null &&
@@ -157,6 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             cookie: appData.cookie,
             resolution: appData.resolution,
             rpc: appData.rpc,
+            union: appData.union,
             loaded: true,
             language: language.code == 'all' ? null : language.code,
             keychainData: appData.keychainData,
@@ -216,6 +220,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             keychainData: user.keychainData,
             cookie: user.cookie,
             resolution: user.resolution,
+            union: user.union,
             rpc: serverUrl,
             loaded: true,
             language: user.language,
@@ -265,6 +270,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  BottomSheetAction getActionForUnionIndexer(String serverUrl, HiveUserData user) {
+    return BottomSheetAction(
+      title: Text(serverUrl),
+      onPressed: (context) async {
+        Navigator.of(context).pop();
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'union', value: serverUrl);
+        server.updateHiveUserData(
+          HiveUserData(
+            username: user.username,
+            postingKey: user.postingKey,
+            keychainData: user.keychainData,
+            cookie: user.cookie,
+            resolution: user.resolution,
+            union: user.union,
+            rpc: serverUrl,
+            loaded: true,
+            language: user.language,
+          ),
+        );
+      },
+    );
+  }
+
+  void showBottomSheetForUnionIndexer(HiveUserData user) {
+    var list = [
+      'union.us-02.infra.3speak.tv',
+      'threespeak-union-graph-ql.sagarkothari88.one',
+    ].map((e) => getActionForUnionIndexer(e, user)).toList();
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('Select Union Indexer API Node'),
+      androidBorderRadius: 30,
+      actions: list,
+      cancelAction: CancelAction(
+        title: const Text(
+          'Cancel',
+          style: TextStyle(color: Colors.deepOrange),
+        ),
+      ),
+    );
+  }
+
+  Widget _unionIndexer(BuildContext context, HiveUserData user) {
+    return ListTile(
+      leading: const Icon(Icons.computer),
+      title: const Text("Change Union Indexer API Node"),
+      subtitle: Text(user.rpc),
+      onTap: () {
+        showBottomSheetForUnionIndexer(user);
+      },
+    );
+  }
+
   Widget _drawerMenu(BuildContext context, HiveUserData user) {
     return ListView(
       children: [
@@ -274,7 +333,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _divider(),
         _video(context),
         _divider(),
-        _rpc(context, user)
+        _rpc(context, user),
+        _divider(),
+        _unionIndexer(context, user),
+        _divider(),
       ],
     );
   }
