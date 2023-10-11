@@ -22,19 +22,22 @@ class CachedImage extends StatelessWidget {
       height: imageHeight,
       width: imageWidth,
       fit: imageHeight != null ? BoxFit.cover : null,
-      progressIndicatorBuilder: (context, url, downloadProgress) =>imageHeight !=null ?
-           Center(
+      progressIndicatorBuilder: (context, url, downloadProgress) =>
+          imageHeight != null
+              ? Center(
                   child: SizedBox(
-                      height: loadingIndicatorSize ?? 50,
-                      width: loadingIndicatorSize ?? 50,
-                      child: CircularProgressIndicator(
-                        value: downloadProgress.progress,
-                        strokeWidth: 1.5,
-                      )),
-                ) : CircularProgressIndicator(
-                        value: downloadProgress.progress,
-                        strokeWidth: 1.5,
-                      ) ,
+                    height: loadingIndicatorSize ?? 50,
+                    width: loadingIndicatorSize ?? 50,
+                    child: CircularProgressIndicator(
+                      value: downloadProgress.progress,
+                      strokeWidth: 1.5,
+                    ),
+                  ),
+                )
+              : CircularProgressIndicator(
+                  value: downloadProgress.progress,
+                  strokeWidth: 1.5,
+                ),
       errorWidget: (context, url, error) => Image.asset(
         'assets/ctt-logo.png',
         height: imageHeight,

@@ -47,7 +47,7 @@ class _PodcastFeedsBodyState extends State<PodcastFeedsBody> {
           );
         } else if (snapshot.connectionState == ConnectionState.done) {
           var data = snapshot.data as TrendingPodCastResponse;
-          var list = data.feeds ?? [];
+          List<PodCastFeedItem> list = data.feeds != null && data.feeds!.isNotEmpty ? data.feeds! : data.items != null && data.items!.isNotEmpty ? data.items! : [];
           if (list.isEmpty) {
             return RetryScreen(
               error: 'No data found.',

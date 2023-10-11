@@ -4,6 +4,7 @@ import 'dart:convert';
 class TrendingPodCastResponse {
   String? status;
   List<PodCastFeedItem>? feeds;
+  List<PodCastFeedItem>? items;
   int? count;
   dynamic max;
   int? since;
@@ -12,6 +13,7 @@ class TrendingPodCastResponse {
   TrendingPodCastResponse({
     this.status,
     this.feeds,
+    this.items,
     this.count,
     this.max,
     this.since,
@@ -20,25 +22,15 @@ class TrendingPodCastResponse {
 
   factory TrendingPodCastResponse.fromRawJson(String str) => TrendingPodCastResponse.fromJson(json.decode(str));
 
-  String toRawJson() => json.encode(toJson());
-
   factory TrendingPodCastResponse.fromJson(Map<String, dynamic> json) => TrendingPodCastResponse(
     status: json["status"],
     feeds: json["feeds"] == null ? [] : List<PodCastFeedItem>.from(json["feeds"]!.map((x) => PodCastFeedItem.fromJson(x))),
+    items: json["items"] == null ? [] : List<PodCastFeedItem>.from(json["items"]!.map((x) => PodCastFeedItem.fromJson(x))),
     count: json["count"],
     max: json["max"],
     since: json["since"],
     description: json["description"],
   );
-
-  Map<String, dynamic> toJson() => {
-    "status": status,
-    "feeds": feeds == null ? [] : List<dynamic>.from(feeds!.map((x) => x.toJson())),
-    "count": count,
-    "max": max,
-    "since": since,
-    "description": description,
-  };
 }
 
 class PodCastFeedItem {
@@ -48,12 +40,22 @@ class PodCastFeedItem {
   String? description;
   String? author;
   String? image;
+  String? feedImage;
   String? artwork;
   int? newestItemPublishTime;
   int? itunesId;
   int? trendScore;
   String? language;
-  Map<String, String>? categories;
+
+  String? get networkImage {
+    if (image != null && image!.isNotEmpty) {
+      return image;
+    }
+    if (feedImage != null && feedImage!.isNotEmpty) {
+      return feedImage;
+    }
+    return null;
+  }
 
   PodCastFeedItem({
     this.id,
@@ -62,17 +64,18 @@ class PodCastFeedItem {
     this.description,
     this.author,
     this.image,
+    this.feedImage,
     this.artwork,
     this.newestItemPublishTime,
     this.itunesId,
     this.trendScore,
     this.language,
-    this.categories,
+    // this.categories,
   });
 
   factory PodCastFeedItem.fromRawJson(String str) => PodCastFeedItem.fromJson(json.decode(str));
 
-  String toRawJson() => json.encode(toJson());
+  // String toRawJson() => json.encode(toJson());
 
   factory PodCastFeedItem.fromJson(Map<String, dynamic> json) => PodCastFeedItem(
     id: json["id"],
@@ -81,12 +84,13 @@ class PodCastFeedItem {
     description: json["description"],
     author: json["author"],
     image: json["image"],
+    feedImage: json["feedImage"],
     artwork: json["artwork"],
     newestItemPublishTime: json["newestItemPublishTime"],
     itunesId: json["itunesId"],
     trendScore: json["trendScore"],
     language: json["language"],
-    categories: Map.from(json["categories"]!).map((k, v) => MapEntry<String, String>(k, v)),
+    // categories: json["categories"] != null ? Map.from(json["categories"]!).map((k, v) => MapEntry<String, String>(k, v)) : null,
   );
 
   Map<String, dynamic> toJson() => {
@@ -96,11 +100,12 @@ class PodCastFeedItem {
     "description": description,
     "author": author,
     "image": image,
+    "feedImage": feedImage,
     "artwork": artwork,
     "newestItemPublishTime": newestItemPublishTime,
     "itunesId": itunesId,
     "trendScore": trendScore,
     "language": language,
-    "categories": Map.from(categories!).map((k, v) => MapEntry<String, dynamic>(k, v)),
+    // "categories": Map.from(categories!).map((k, v) => MapEntry<String, dynamic>(k, v)),
   };
 }

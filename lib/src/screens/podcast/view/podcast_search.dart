@@ -56,7 +56,7 @@ class _PodCastSearchState extends State<PodCastSearch> {
         var title = items[i].title ?? 'No title';
         // title = "$title by ${items[i].author ?? ''}";
         var desc = ''; // items[i].description ?? '';
-        desc = "$desc${(items[i].categories?.values ?? []).join(", ")}";
+        // desc = "$desc${(items[i].categories?.values ?? []).join(", ")}";
         return PodcastFeedItemWidget(
           appData: widget.appData,
           item: items[i],

@@ -43,7 +43,7 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
       appBar: AppBar(
         title: ListTile(
           leading: Image.network(
-            widget.item.image ?? '',
+            widget.item.networkImage ?? '',
             width: 40,
             height: 40,
           ),

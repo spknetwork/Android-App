@@ -28,14 +28,16 @@ class _PodcastFeedItemWidgetState extends State<PodcastFeedItemWidget> {
   Widget build(BuildContext context) {
     var title = widget.item.title ?? 'No title';
     var desc = '';
-    desc = "$desc${(widget.item.categories?.values ?? []).join(", ")}";
+    // desc = "$desc${(widget.item.categories?.values ?? []).join(", ")}";
     final podcastController = context.read<PodcastController>();
     return ListTile(
       dense: true,
-      leading: CachedImage(imageUrl: widget.item.image,
-      imageHeight: 48,
-      imageWidth: 48,
-      loadingIndicatorSize: 25,),
+      leading: CachedImage(
+        imageUrl: widget.item.networkImage,
+        imageHeight: 48,
+        imageWidth: 48,
+        loadingIndicatorSize: 25,
+      ),
       title: Text(title),
       subtitle: Text(desc),
       trailing: Visibility(

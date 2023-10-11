@@ -24,19 +24,35 @@ class PodCastTrendingScreen extends StatefulWidget {
   State<PodCastTrendingScreen> createState() => _PodCastTrendingScreenState();
 }
 
-class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
+class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> with SingleTickerProviderStateMixin {
   bool isMenuOpen = false;
   late Future<TrendingPodCastResponse> trendingFeeds;
   late Future<TrendingPodCastResponse> recentFeeds;
+  late Future<TrendingPodCastResponse> liveFeeds;
   late Future<List<PodcastCategory>> categories;
   final PodCastCommunicator podCastCommunicator = PodCastCommunicator();
+  late TabController _tabController;
+  var currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        currentIndex = _tabController.index;
+      });
+    });
     trendingFeeds = podCastCommunicator.getTrendingPodcasts();
     recentFeeds = podCastCommunicator.getRecentPodcasts();
     categories = podCastCommunicator.getCategories();
+    liveFeeds = podCastCommunicator.getLivePodcasts();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _tabController.dispose();
   }
 
   Widget getList(List<PodCastFeedItem> items) {
@@ -54,8 +70,15 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var text = currentIndex == 0
+        ? 'Trending Podcasts'
+        : currentIndex == 1
+        ? 'Explore Podcasts by Categories'
+        : currentIndex == 2
+        ? 'Recent Podcasts & Episodes'
+        : 'Live Podcasts';
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: ListTile(
@@ -65,18 +88,22 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
               height: 40,
             ),
             title: Text('Podcasts'),
+            subtitle: Text(text),
           ),
           bottom: TabBar(
+            controller: _tabController,
             tabs: [
-              Tab(text: 'Trending'),
-              Tab(text: 'Categories'),
-              Tab(text: 'Recent'),
+              Tab(icon: const Icon(Icons.trending_up)),
+              Tab(icon: const Icon(Icons.category)),
+              Tab(icon: const Icon(Icons.history)),
+              Tab(icon: const Icon(Icons.live_tv)),
             ],
           ),
         ),
         body: Stack(
           children: [
             TabBarView(
+              controller: _tabController,
               children: [
                 PodcastFeedsBody(
                     future: trendingFeeds, appData: widget.appData),
@@ -85,6 +112,7 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> {
                   future: categories,
                 ),
                 PodcastFeedsBody(future: recentFeeds, appData: widget.appData),
+                PodcastFeedsBody(future: liveFeeds, appData: widget.appData),
               ],
             ),
             _fabContainer()

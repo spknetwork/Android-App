@@ -60,6 +60,16 @@ class PodCastCommunicator {
     return TrendingPodCastResponse.fromRawJson(response);
   }
 
+  Future<TrendingPodCastResponse> getLivePodcasts() async {
+    var response = await fetchPodCast('episodes/live');
+    try {
+      return TrendingPodCastResponse.fromRawJson(response);
+    } catch (e) {
+      log('Error is - ${e.toString()}');
+      rethrow;
+    }
+  }
+
   Future<TrendingPodCastResponse> getRecentPodcasts() async {
     var response = await fetchPodCast('recent/feeds');
     return TrendingPodCastResponse.fromRawJson(response);
