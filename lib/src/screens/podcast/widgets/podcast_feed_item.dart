@@ -53,10 +53,13 @@ class _PodcastFeedItemWidgetState extends State<PodcastFeedItemWidget> {
             }),
       ),
       onTap: () {
-        var screen =
-            PodcastFeedScreen(appData: widget.appData, item: widget.item);
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).push(route);
+        final podcastController =context.read<PodcastController>();
+        podcastController.setPodcastFeedItem( widget.item);
+        podcastController.miniPodcastPlayerController.animateToHeight(height: MediaQuery.of(context).size.height);
+        // var screen =
+        //     PodcastFeedScreen(appData: widget.appData, item: widget.item);
+        // var route = MaterialPageRoute(builder: (c) => screen);
+        // Navigator.of(context).push(route);
       },
     );
   }

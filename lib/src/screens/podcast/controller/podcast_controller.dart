@@ -2,6 +2,7 @@ import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:miniplayer/miniplayer.dart';
 import 'package:path_provider/path_provider.dart';
 
 class PodcastController extends ChangeNotifier {
@@ -11,13 +12,28 @@ class PodcastController extends ChangeNotifier {
   final String _offlinePodcastLocalKey = 'offline_podcast';
   var externalDir;
 
+  late double screenHeight;
+  bool firstTimeOpening = true;
+  final MiniplayerController miniPodcastPlayerController =
+      MiniplayerController();
+  PodCastFeedItem? podCastFeedItem;
+
   PodcastController() {
     init();
   }
 
   void init() async {
     externalDir = await getExternalStorageDirectory();
+  }
 
+  void setPodcastFeedItem(PodCastFeedItem item) {
+    bool shouldOpenPlayer = podCastFeedItem == null;
+    podCastFeedItem = item;
+    notifyListeners();
+    if (shouldOpenPlayer) {
+      miniPodcastPlayerController.animateToHeight(height: screenHeight);
+    }
+    notifyListeners();
   }
 
   bool isOffline(String name, String episodeId) {
@@ -142,10 +158,12 @@ class PodcastController extends ChangeNotifier {
     }
   }
 
-  //retrieve the single podcast episodes for liked or offline 
-  List<PodcastEpisode> likedOrOfflinepodcastEpisodes({required bool isOffline}) {
+  //retrieve the single podcast episodes for liked or offline
+  List<PodcastEpisode> likedOrOfflinepodcastEpisodes(
+      {required bool isOffline}) {
     final box = GetStorage();
-    final String key = isOffline ? _offlinePodcastLocalKey : _likedPodcastEpisodeLocalKey;
+    final String key =
+        isOffline ? _offlinePodcastLocalKey : _likedPodcastEpisodeLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
       List<PodcastEpisode> items =
