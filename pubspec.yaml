@@ -85,6 +85,8 @@ dependencies:
   get_storage: ^2.1.1
   flutter_downloader: ^1.11.2
   cached_network_image: ^3.3.0
+  audio_service: ^0.18.12
+  just_audio: ^0.9.35
   
 
 dev_dependencies:

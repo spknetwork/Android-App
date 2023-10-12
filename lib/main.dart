@@ -12,12 +12,26 @@ import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:audio_service/audio_service.dart';
+
+import 'src/widgets/audio_player/touch_controls.dart';
+
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
   await GetStorage.init();
   await FlutterDownloader.initialize(debug: true);
+  GetAudioPlayer getAudioPlayer = GetAudioPlayer();
+  getAudioPlayer.audioHandler = await AudioService.init(
+    builder: () => AudioPlayerHandlerImpl(),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.ryanheise.myapp.channel.audio',
+      androidNotificationChannelName: 'Audio playback',
+      androidNotificationOngoing: true,
+    ),
+  );
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 }
 
@@ -105,7 +119,8 @@ class _MyAppState extends State<MyApp> {
     String? hasAuthKey = await storage.read(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
-    String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+    String union =
+        await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
     String? lang = await storage.read(key: 'lang');
     server.updateHiveUserData(
       HiveUserData(

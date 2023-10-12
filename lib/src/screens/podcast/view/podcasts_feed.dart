@@ -2,6 +2,7 @@ import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
+import 'package:acela/src/widgets/audio_player/new_pod_cast_epidose_player.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_player.dart';
 import 'package:acela/src/widgets/retry.dart';
@@ -32,11 +33,13 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
   }
 
   Widget _fullPost(List<PodcastEpisode> items) {
-    return PodcastEpisodePlayer(
-      podcastEpisodes: items,
-      data: widget.appData,
-    );
+    return NewPodcastEpidosePlayer();
+    // return PodcastEpisodePlayer(
+    //   podcastEpisodes: items,
+    //   data: widget.appData,
+    // );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,8 +74,9 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
                     error: 'No data found.',
                     onRetry: () {
                       setState(() {
-                        future = PodCastCommunicator().getPodcastEpisodesByFeedId(
-                            "${widget.item.id ?? 227573}");
+                        future = PodCastCommunicator()
+                            .getPodcastEpisodesByFeedId(
+                                "${widget.item.id ?? 227573}");
                       });
                     });
               } else {
