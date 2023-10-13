@@ -284,8 +284,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             keychainData: user.keychainData,
             cookie: user.cookie,
             resolution: user.resolution,
-            union: user.union,
-            rpc: serverUrl,
+            union: serverUrl,
+            rpc: user.rpc,
             loaded: true,
             language: user.language,
           ),
@@ -317,7 +317,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListTile(
       leading: const Icon(Icons.computer),
       title: const Text("Change Union Indexer API Node"),
-      subtitle: Text(user.rpc),
+      subtitle: Text(user.union),
       onTap: () {
         showBottomSheetForUnionIndexer(user);
       },
