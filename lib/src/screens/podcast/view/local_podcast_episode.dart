@@ -2,6 +2,10 @@ import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_player.dart';
+import 'package:acela/src/widgets/audio_player/new_pod_cast_epidose_player.dart';
+import 'package:acela/src/widgets/audio_player/touch_controls.dart';
+import 'package:acela/src/widgets/cached_image.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -30,11 +34,13 @@ class LocalPodcastEpisode extends StatelessWidget {
             episodePlayerView(
                 podcastController.likedOrOfflinepodcastEpisodes(
                     isOffline: true),
-                context,true),
+                context,
+                true),
             episodePlayerView(
                 podcastController.likedOrOfflinepodcastEpisodes(
                     isOffline: false),
-                context,false)
+                context,
+                false)
           ],
         ),
       ),
@@ -44,28 +50,40 @@ class LocalPodcastEpisode extends StatelessWidget {
   Widget episodePlayerView(
       List<PodcastEpisode> items, BuildContext context, bool isOffline) {
     if (items.isEmpty)
-      return Center(child: Text("${isOffline ? "Offline" : "Liked"} Podcast Episode is Empty"));
+      return Center(
+          child: Text(
+              "${isOffline ? "Offline" : "Liked"} Podcast Episode is Empty"));
     else
       return ListView.separated(
         itemBuilder: (c, index) {
           PodcastEpisode item = items[index];
           return ListTile(
             onTap: () {
+              GetAudioPlayer audioPlayer = GetAudioPlayer();
+              audioPlayer.audioHandler.updateQueue([]);
+              audioPlayer.audioHandler.addQueueItems(items
+                  .map((e) => MediaItem(
+                      id: e.enclosureUrl ?? "",
+                      title: e.title ?? "",
+                      artUri: Uri.parse(e.image ?? ""),
+                      duration: Duration(seconds: e.duration ?? 0)))
+                  .toList());
+
               var screen = Scaffold(
                 appBar: AppBar(
                   title: ListTile(
-                    leading: Image.network(
-                      item.image ?? '',
-                      width: 40,
-                      height: 40,
+                    leading: CachedImage(
+                      imageUrl:item.image ?? '',
+                      imageHeight: 40,
+                      imageWidth: 40,
                     ),
                     title: Text(item.title ?? 'No Title'),
                   ),
                 ),
                 body: SafeArea(
-                  child: PodcastEpisodePlayer(
-                      episodeIndex: index, data: appData, podcastEpisodes: items),
-                ),
+                    child: NewPodcastEpidosePlayer(
+                  podcastEpisodes: items,
+                )),
               );
               var route = MaterialPageRoute(builder: (c) => screen);
               Navigator.of(context).push(route);

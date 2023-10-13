@@ -3,9 +3,12 @@ import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
 import 'package:acela/src/widgets/audio_player/new_pod_cast_epidose_player.dart';
+import 'package:acela/src/widgets/audio_player/touch_controls.dart';
+import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_player.dart';
 import 'package:acela/src/widgets/retry.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 
 class PodcastFeedScreen extends StatefulWidget {
@@ -33,11 +36,20 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
   }
 
   Widget _fullPost(List<PodcastEpisode> items) {
-    return NewPodcastEpidosePlayer();
-    // return PodcastEpisodePlayer(
-    //   podcastEpisodes: items,
-    //   data: widget.appData,
-    // );
+    GetAudioPlayer audioPlayer = GetAudioPlayer();
+    audioPlayer.audioHandler.updateQueue([]);
+    print(audioPlayer.audioHandler.queue.value.length);
+    audioPlayer.audioHandler.addQueueItems(items
+        .map((e) => MediaItem(
+            id: e.enclosureUrl ?? "",
+            title: e.title ?? "",
+            artUri: Uri.parse(e.image ?? ""),
+            duration: Duration(seconds: e.duration ?? 0)))
+        .toList());
+
+    return NewPodcastEpidosePlayer(
+      podcastEpisodes: items,
+    );
   }
 
   @override
@@ -45,10 +57,10 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
     return Scaffold(
       appBar: AppBar(
         title: ListTile(
-          leading: Image.network(
-            widget.item.networkImage ?? '',
-            width: 40,
-            height: 40,
+          leading: CachedImage(
+            imageUrl: widget.item.networkImage ?? '',
+            imageHeight: 40,
+            imageWidth: 40,
           ),
           title: Text(widget.item.title ?? 'No Title'),
         ),
