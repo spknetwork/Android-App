@@ -74,5 +74,9 @@
 	<string>All files have been downloaded</string>
 	<key>FDMaximumConcurrentTasks</key>
 	<string>5</string>
+	<key>UIBackgroundModes</key>
+  	<array>
+    <string>audio</string>
+  <	/array>
 </dict>
 </plist>
