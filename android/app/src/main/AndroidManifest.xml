@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -11,6 +12,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" android:requiredFeature="true" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
         android:name="${applicationName}"
@@ -63,6 +65,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+            <service android:name="com.ryanheise.audioservice.AudioService"
+                    android:foregroundServiceType="mediaPlayback"
+                    android:exported="true" tools:ignore="Instantiatable">
+                    <intent-filter>
+                        <action android:name="android.media.browse.MediaBrowserService" />
+                    </intent-filter>
+            </service>
+
+            <receiver android:name="com.ryanheise.audioservice.MediaButtonReceiver"
+                    android:exported="true" tools:ignore="Instantiatable">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MEDIA_BUTTON" />
+                    </intent-filter>
+            </receiver> 
         <!--
  Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java

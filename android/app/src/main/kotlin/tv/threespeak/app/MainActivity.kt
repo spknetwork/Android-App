@@ -20,9 +20,10 @@ import com.google.gson.Gson
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import com.ryanheise.audioservice.AudioServiceActivity;
 
 
-class MainActivity : FlutterActivity() {
+class MainActivity : AudioServiceActivity() {
     var webView: WebView? = null
     var result: MethodChannel.Result? = null
 
