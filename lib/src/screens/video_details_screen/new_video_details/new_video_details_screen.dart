@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
-
+import 'package:acela/src/screens/podcast/widgets/favourite.dart';
 import 'package:acela/src/screens/trending_tags/trending_tag_videos.dart';
+import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
@@ -381,6 +381,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   Widget _actionBar(double width) {
+    final VideoFavoriteProvider provider = VideoFavoriteProvider();
     return ListTile(
       title: Row(
         children: [
@@ -423,6 +424,16 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             icon: Icon(Icons.share, color: Colors.blue),
           ),
           Spacer(),
+          FavouriteWidget(
+              iconColor: Colors.blue,
+              isLiked:
+                  provider.isLikedVideoPresentLocally(widget.item),
+              onAdd: () {
+                provider.storeLikedVideoLocally(widget.item);
+              },
+              onRemove: () {
+                provider.storeLikedVideoLocally(widget.item);
+              })
         ],
       ),
     );
@@ -447,7 +458,9 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
   }
 
-  Widget _listView(double screenWidth) {
+  Widget _listView(
+    double screenWidth,
+  ) {
     if (ratio == null) return Container();
     var height = (ratio!.height >= ratio!.width)
         ? 460.0
