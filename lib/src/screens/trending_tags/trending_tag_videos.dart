@@ -1,6 +1,8 @@
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
+import 'package:acela/src/screens/podcast/widgets/favourite.dart';
 import 'package:acela/src/screens/stories/story_feed_list.dart';
+import 'package:acela/src/screens/trending_tags/tag_favourite_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +18,8 @@ class TrendingTagVideos extends StatefulWidget {
   State<TrendingTagVideos> createState() => _TrendingTagVideosState();
 }
 
-class _TrendingTagVideosState extends State<TrendingTagVideos> with SingleTickerProviderStateMixin {
+class _TrendingTagVideosState extends State<TrendingTagVideos>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   var currentIndex = 0;
   static List<Tab> tabs = [
@@ -52,17 +55,28 @@ class _TrendingTagVideosState extends State<TrendingTagVideos> with SingleTicker
   @override
   Widget build(BuildContext context) {
     var appData = Provider.of<HiveUserData>(context);
+    var provider = TagFavoriteProvider();
     return Scaffold(
       appBar: AppBar(
         title: ListTile(
           leading: const Icon(Icons.tag),
           title: Text(widget.tag),
         ),
-        bottom:  TabBar(
+        bottom: TabBar(
           controller: _tabController,
           tabs: tabs,
           isScrollable: true,
         ),
+        actions: [
+          FavouriteWidget(
+              isLiked: provider.isTagPresentLocally(widget.tag),
+              onAdd: () {
+                provider.storeLikedTagLocally(widget.tag);
+              },
+              onRemove: () {
+                provider.storeLikedTagLocally(widget.tag);
+              })
+        ],
       ),
       body: TabBarView(
         controller: _tabController,

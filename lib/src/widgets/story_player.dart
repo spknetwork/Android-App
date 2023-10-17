@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/screens/podcast/widgets/favourite.dart';
+import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -82,12 +84,11 @@ class _StoryPlayerState extends State<StoryPlayer> {
     http.StreamedResponse response = await request.send();
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
-      var result = HivePostInfo
-          .fromJsonString(string)
+      var result = HivePostInfo.fromJsonString(string)
           .result
           .resultData
           .where((element) =>
-      element.permlink == (widget.item.permlink ?? 'ctbtwcxbbd'))
+              element.permlink == (widget.item.permlink ?? 'ctbtwcxbbd'))
           .first;
       return result;
     } else {
@@ -183,7 +184,10 @@ class _StoryPlayerState extends State<StoryPlayer> {
       );
       return;
     }
-    if (postInfo!.activeVotes.map((e) => e.voter).contains(widget.data.username ?? 'sagarkothari88') == true) {
+    if (postInfo!.activeVotes
+            .map((e) => e.voter)
+            .contains(widget.data.username ?? 'sagarkothari88') ==
+        true) {
       showError('You have already voted for this 3Shorts');
     }
     _betterPlayerController.pause();
@@ -193,10 +197,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
       clipBehavior: Clip.hardEdge,
       builder: (context) {
         return SizedBox(
-          height: MediaQuery
-              .of(context)
-              .size
-              .height * 0.4,
+          height: MediaQuery.of(context).size.height * 0.4,
           child: HiveUpvoteDialog(
             author: widget.item.author?.username ?? 'sagarkothari88',
             permlink: widget.item.permlink ?? 'ctbtwcxbbd',
@@ -249,12 +250,21 @@ class _StoryPlayerState extends State<StoryPlayer> {
         loadHiveInfo();
       },
     );
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (c) => screen));
+    Navigator.of(context).push(MaterialPageRoute(builder: (c) => screen));
   }
 
   List<Widget> _fabButtonsOnRight() {
+    final VideoFavoriteProvider provider = VideoFavoriteProvider();
     return [
+      FavouriteWidget(
+          iconColor: Colors.blue,
+          isLiked: provider.isLikedVideoPresentLocally(widget.item,isShorts: true),
+          onAdd: () {
+            provider.storeLikedVideoLocally(widget.item,isShorts: true);
+          },
+          onRemove: () {
+            provider.storeLikedVideoLocally(widget.item,isShorts: true);
+          }),
       IconButton(
         icon: Icon(Icons.share, color: Colors.blue),
         onPressed: () {
@@ -268,8 +278,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: Icon(Icons.info, color: Colors.blue),
         onPressed: () {
           _betterPlayerController.pause();
-          var screen =
-          NewVideoDetailsInfo(
+          var screen = NewVideoDetailsInfo(
             appData: widget.data,
             item: widget.item,
           );
@@ -321,10 +330,12 @@ class _StoryPlayerState extends State<StoryPlayer> {
         icon: CustomCircleAvatar(
           height: 40,
           width: 40,
-          url: server.userOwnerThumb(widget.item.author?.username ?? 'sagarkothari88'),
+          url: server
+              .userOwnerThumb(widget.item.author?.username ?? 'sagarkothari88'),
         ),
         onPressed: () {
-          var screen = UserChannelScreen(owner: widget.item.author?.username ?? 'sagarkothari88');
+          var screen = UserChannelScreen(
+              owner: widget.item.author?.username ?? 'sagarkothari88');
           var route = MaterialPageRoute(builder: (c) => screen);
           Navigator.of(context).push(route);
         },

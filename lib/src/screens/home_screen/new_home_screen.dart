@@ -4,6 +4,7 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
+import 'package:acela/src/screens/favourites/user_favourites.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
 import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
@@ -320,6 +321,20 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           setState(() {
             isMenuOpen = false;
             var screen = const SettingsScreen();
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
+          });
+        },
+      ),
+    );
+     fabItems.add(
+      FabOverItemData(
+        displayName: 'Favourites',
+        icon: Icons.favorite,
+        onTap: () {
+          setState(() {
+            isMenuOpen = false;
+            var screen = const UserFavourites();
             var route = MaterialPageRoute(builder: (c) => screen);
             Navigator.of(context).push(route);
           });

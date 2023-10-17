@@ -1,9 +1,8 @@
+import 'package:acela/src/screens/stories/story_feed_body.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
-import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
-import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:acela/src/widgets/story_player.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -127,38 +126,6 @@ class _StoryFeedListState extends State<StoryFeedList>
     }
   }
 
-  Widget _fullPost(GQLFeedItem item) {
-    return StoryPlayer(
-      item: item,
-      data: widget.appData,
-      didFinish: () {
-        setState(() {
-          controller.nextPage();
-        });
-      },
-    );
-  }
-
-  Widget carousel(List<GQLFeedItem> items) {
-    return Container(
-      child: CarouselSlider(
-        carouselController: controller,
-        options: CarouselOptions(
-          height: MediaQuery.of(context).size.height,
-          enableInfiniteScroll: true,
-          viewportFraction: 1,
-          scrollDirection: Axis.vertical,
-        ),
-        items: items.map((item) {
-          return Builder(
-            builder: (BuildContext context) {
-              return _fullPost(item);
-            },
-          );
-        }).toList(),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +158,7 @@ class _StoryFeedListState extends State<StoryFeedList>
           ),
         );
       } else {
-        return carousel(items);
+        return StoryFeedDataBody(items: items,appData: widget.appData,controller: controller,);
       }
     }
   }
