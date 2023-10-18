@@ -2,9 +2,12 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:upgrader/upgrader.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class VideoLanguage {
   String name;
@@ -78,8 +81,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         String? hasExpiry = await storage.read(key: 'hasExpiry');
         String? hasAuthKey = await storage.read(key: 'hasAuthKey');
         String? cookie = await storage.read(key: 'cookie');
-        String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
-        String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+        String rpc =
+            await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+        String union = await storage.read(key: 'union') ??
+            GQLCommunicator.defaultGQLServer;
         String? lang = await storage.read(key: 'lang');
         server.updateHiveUserData(
           HiveUserData(
@@ -180,9 +185,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _appVersion(BuildContext context) {
+    final String? appCurrentVersion =
+        Upgrader.sharedInstance.currentInstalledVersion();
+    final String? newAvailableVersion =
+        Upgrader.sharedInstance.currentAppStoreVersion();
+    return ListTile(
+      leading: const Icon(Icons.app_settings_alt_sharp),
+      title: Text("Current Version $appCurrentVersion"),
+      subtitle: Text("Latest Version $newAvailableVersion"),
+      trailing: Visibility(
+        visible: appCurrentVersion !=appCurrentVersion,
+        child: TextButton(
+          onPressed: () async {
+            String url = "";
+            if (defaultTargetPlatform == TargetPlatform.android) {
+              url = "https://play.google.com/store/apps/details?id=tv.threespeak.app";
+            } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+              url = "https://apps.apple.com/us/app/3speak/id1614771373";
+            }
+            if (await canLaunchUrl(Uri.parse(url))) {
+              launchUrl(Uri.parse(url));
+            }
+          },
+          child: Text("Update"),
+        ),
+      ),
+    );
+  }
+
   Widget _changeLanguage(BuildContext context) {
     var data = Provider.of<HiveUserData>(context);
-    var display = languages.where((e) => e.code == data.language).firstOrNull?.name ?? 'All Languages';
+    var display =
+        languages.where((e) => e.code == data.language).firstOrNull?.name ??
+            'All Languages';
     return ListTile(
       leading: const Icon(Icons.language),
       title: const Text("Set Language Filter"),
@@ -270,7 +306,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  BottomSheetAction getActionForUnionIndexer(String serverUrl, HiveUserData user) {
+  BottomSheetAction getActionForUnionIndexer(
+      String serverUrl, HiveUserData user) {
     return BottomSheetAction(
       title: Text(serverUrl),
       onPressed: (context) async {
@@ -336,6 +373,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _rpc(context, user),
         _divider(),
         _unionIndexer(context, user),
+        _divider(),
+        _appVersion(context),
         _divider(),
       ],
     );

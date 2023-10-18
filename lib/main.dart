@@ -13,9 +13,9 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:upgrader/upgrader.dart';
 
 import 'src/widgets/audio_player/touch_controls.dart';
-
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
@@ -31,6 +31,8 @@ Future<void> main() async {
     ),
   );
   WidgetsFlutterBinding.ensureInitialized();
+  // await Upgrader.clearSavedSettings(); // for debugging
+  await Upgrader.sharedInstance.initialize();
 
   runApp(const MyApp());
 }

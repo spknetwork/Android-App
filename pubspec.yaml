@@ -87,6 +87,7 @@ dependencies:
   cached_network_image: ^3.3.0
   audio_service: ^0.18.12
   just_audio: ^0.9.35
+  upgrader: ^6.5.0
   
 
 dev_dependencies:
