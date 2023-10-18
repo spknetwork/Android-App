@@ -19,9 +19,9 @@ class VideoDetailsComments extends StatefulWidget {
 }
 
 class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
-  late Future<List<NewHiveComment>> _loadComments;
+  late Future<List<VideoCommentModel>> _loadComments;
 
-  Future<List<NewHiveComment>> loadComments(String author, String permlink) async {
+  Future<List<VideoCommentModel>> loadComments(String author, String permlink) async {
       return await GQLCommunicator.getHiveComments(author,permlink);
     
   }
@@ -32,7 +32,7 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
     _loadComments = loadComments(widget.author, widget.permlink);
   }
 
-  Widget commentsListView(List<NewHiveComment> data) {
+  Widget commentsListView(List<VideoCommentModel> data) {
     return Container(
       margin: const EdgeInsets.only(top: 10, bottom: 10),
       child: ListView.separated(
@@ -70,7 +70,7 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
               null);
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
-          var data = snapshot.data! as List<NewHiveComment>;
+          var data = snapshot.data! as List<VideoCommentModel>;
           return _container(commentsListView(data), data.length);
         } else {
           return _container(

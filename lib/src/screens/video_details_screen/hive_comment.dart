@@ -9,34 +9,15 @@ import 'package:url_launcher/url_launcher.dart';
 
 class HiveCommentWidget extends StatefulWidget {
   const HiveCommentWidget({Key? key, required this.comment}) : super(key: key);
-  final NewHiveComment comment;
+  final VideoCommentModel comment;
 
   @override
   State<HiveCommentWidget> createState() => _HiveCommentWidgetState();
 }
 
 class _HiveCommentWidgetState extends State<HiveCommentWidget> {
-  var isHidden = false;
-  var expanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-  //   isHidden = (widget.comment.authorReputation ?? 0) < 0 ||
-  //       (widget.comment.netRshares ?? 0) < 0;
-  }
 
   Widget _comment(String text) {
-    if (isHidden) {
-      if (expanded) {
-        return Text(text);
-      } else {
-        return Text(
-          '--- HIDDEN ---',
-          style: TextStyle(color: Colors.grey),
-        );
-      }
-    }
     return MarkdownBody(
       data: Utilities.removeAllHtmlTags(text),
       shrinkWrap: true,
@@ -46,8 +27,8 @@ class _HiveCommentWidgetState extends State<HiveCommentWidget> {
     );
   }
 
-  Widget _listTile() {
-    var item = widget.comment;
+  Widget _listTile(VideoCommentModel comment,bool isPadded) {
+    var item =comment;
     var userThumb = server.userOwnerThumb(item.author.username);
     var author = item.author.username;
     var body = item.body;
@@ -56,7 +37,7 @@ class _HiveCommentWidgetState extends State<HiveCommentWidget> {
         item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
     var text =
         "👤  $author  👍  $votes     $timeInString";
-    var depth = (item.children!.isNotEmpty ? 50.0 : 0.2 * 25.0);
+    var depth = (isPadded ? 50.0 : 0.2 * 25.0);
     double width = MediaQuery.of(context).size.width - 70 - depth;
     return ListTile(
       title: Row(
@@ -83,17 +64,20 @@ class _HiveCommentWidgetState extends State<HiveCommentWidget> {
       ),
       onTap: () {
         print("Tapped");
-        if (isHidden) {
-          setState(() {
-            expanded = !expanded;
-          });
-        }
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return _listTile();
+    return Column(
+      children: [
+        _listTile(widget.comment,false),
+        Visibility(
+          visible : widget.comment.children!.isNotEmpty,
+          child:Column(children: List.generate(widget.comment.children!.length, (index) =>  _listTile(widget.comment.children![index],true)),)
+         ),
+      ],
+    );
   }
 }

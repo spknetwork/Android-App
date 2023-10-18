@@ -1,81 +1,62 @@
-// To parse this JSON data, do
-//
-//     final postFeedModel = postFeedModelFromJson(jsonString);
-
 import 'dart:convert';
 
-class HiveCommentData {
-  final Data data;
+class GQLHiveCommentReponse {
+  final GQLHiveCommentReponseData data;
 
-  HiveCommentData({
+  GQLHiveCommentReponse({
     required this.data,
   });
 
-  factory HiveCommentData.fromRawJson(String str) =>
-      HiveCommentData.fromJson(json.decode(str));
+  factory GQLHiveCommentReponse.fromRawJson(String str) =>
+      GQLHiveCommentReponse.fromJson(json.decode(str));
 
-  String toRawJson(HiveCommentData data) => json.encode(data.toJson());
-
-  factory HiveCommentData.fromJson(Map<String, dynamic> json) =>
-      HiveCommentData(
-        data: Data.fromJson(json["data"]),
+  factory GQLHiveCommentReponse.fromJson(Map<String, dynamic> json) =>
+      GQLHiveCommentReponse(
+        data: GQLHiveCommentReponseData.fromJson(json["data"]),
       );
-
-  Map<String, dynamic> toJson() => {
-        "data": data.toJson(),
-      };
 }
 
-class Data {
-  final SocialPost socialPost;
+class GQLHiveCommentReponseData {
+  final CommentSocialPostModel socialPost;
 
-  Data({
+  GQLHiveCommentReponseData({
     required this.socialPost,
   });
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-        socialPost: SocialPost.fromJson(json["socialPost"]),
+  factory GQLHiveCommentReponseData.fromJson(Map<String, dynamic> json) => GQLHiveCommentReponseData(
+        socialPost: CommentSocialPostModel.fromJson(json["socialPost"]),
       );
-
-  Map<String, dynamic> toJson() => {
-        "socialPost": socialPost.toJson(),
-      };
 }
 
-class SocialPost {
-  final List<NewHiveComment>? children;
+class CommentSocialPostModel {
+  final List<VideoCommentModel>? children;
   final String? body;
 
-  SocialPost({
+  CommentSocialPostModel({
     required this.children,
     required this.body,
   });
 
-  factory SocialPost.fromJson(Map<String, dynamic> json) => SocialPost(
-        children:json["children"]!=null ? List<NewHiveComment>.from(
+  factory CommentSocialPostModel.fromJson(Map<String, dynamic> json) => CommentSocialPostModel(
+        children:json["children"]!=null ? List<VideoCommentModel>.from(
             json["children"].map((x) {
               if(x!=null){
-                return NewHiveComment.fromJson(x);
+                return VideoCommentModel.fromJson(x);
               }
             })) : [],
         body: json["body"],
       );
-
-  Map<String, dynamic> toJson() => {
-        "children": List<dynamic>.from(children!.map((x) => x.toJson())),
-        "body": body,
-      };
 }
 
-class NewHiveComment {
+class VideoCommentModel {
   final String? body;
   final String permlink;
   final DateTime? createdAt;
-  final Author author;
-  final Stats? stats;
-  final List<NewHiveComment>? children;
+  final VideoCommentAuthorModel author;
+  final VideoCommentStatsModel? stats;
+  final List<VideoCommentModel>? children;
 
-  NewHiveComment({
+  VideoCommentModel({
     required this.body,
     required this.permlink,
     required this.createdAt,
@@ -84,59 +65,41 @@ class NewHiveComment {
     required this.children,
   });
 
-  factory NewHiveComment.fromJson(Map<String, dynamic> json) => NewHiveComment(
+  factory VideoCommentModel.fromJson(Map<String, dynamic> json) => VideoCommentModel(
         body: json["body"],
         permlink: json["permlink"],
         createdAt: DateTime.parse(json["created_at"]),
-        author: Author.fromJson(json["author"]),
-        stats: Stats.fromJson(json["stats"]),
-        children:json["children"]!=null ? List<NewHiveComment>.from(json["children"].map((x) {
+        author: VideoCommentAuthorModel.fromJson(json["author"]),
+        stats: VideoCommentStatsModel.fromJson(json["stats"]),
+        children:json["children"]!=null ? List<VideoCommentModel>.from(json["children"].map((x) {
           if (x != null) {
-            return NewHiveComment.fromJson(x);
+            return VideoCommentModel.fromJson(x);
           }
         })) : [],
       );
-
-  Map<String, dynamic> toJson() => {
-        "body": body,
-        "permlink": permlink,
-        "created_at": createdAt?.toIso8601String(),
-        "author": author.toJson(),
-        "stats": stats?.toJson(),
-        "children": children == null
-            ? []
-            : List<dynamic>.from(children!.map((x) => x.toJson())),
-      };
 }
 
-class Author {
+class VideoCommentAuthorModel {
   final String username;
 
-  Author({
+  VideoCommentAuthorModel({
     required this.username,
   });
 
-  factory Author.fromJson(Map<String, dynamic> json) => Author(
+  factory VideoCommentAuthorModel.fromJson(Map<String, dynamic> json) => VideoCommentAuthorModel(
         username: json["username"],
       );
 
-  Map<String, dynamic> toJson() => {
-        "username": username,
-      };
 }
 
-class Stats {
+class VideoCommentStatsModel {
   final int? numVotes;
 
-  Stats({
+  VideoCommentStatsModel({
     required this.numVotes,
   });
 
-  factory Stats.fromJson(Map<String, dynamic> json) => Stats(
+  factory VideoCommentStatsModel.fromJson(Map<String, dynamic> json) => VideoCommentStatsModel(
         numVotes: json["num_votes"] ?? 0,
       );
-
-  Map<String, dynamic> toJson() => {
-        "num_votes": numVotes,
-      };
 }

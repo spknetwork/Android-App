@@ -188,33 +188,19 @@ class GQLCommunicator {
         "query UserChannelFeed {\n  socialFeed($spkVideoQuery$feedOptionsQuery$paginationQuery)\n$dataQuery");
   }
 
-  static Future<List<NewHiveComment>> getHiveComments(String userName,String permLink) async {
+  static Future<List<VideoCommentModel>> getHiveComments(String userName,String permLink) async {
     try{
     var headers = {
-      'Accept-Language': 'en-US,en;q=0.9',
       'Connection': 'keep-alive',
-      'Origin': 'https://union.us-02.infra.3speak.tv',
-      'Referer':
-          'https://union.us-02.infra.3speak.tv/api/v2/graphql?query=query+MyQuery+%7B%0A++socialPost%28author%3A+%22$userName%22%2C+permlink%3A+%22$permLink%22%29+%7B%0A++++...+on+HivePost+%7B%0A++++++children+%7B%0A++++++++...+on+HivePost+%7B%0A++++++++++body%0A++++++++++permlink%0A%09++created_at%0A++++++++++author+%7B%0A++++++++++++username%0A++++++++++%7D%0Astats+%7B%0A++++++++++num_votes%0A++++++++%7D%0A++++++++++children+%7B%0A++++++++++++...+on+HivePost+%7B%0A++++++++++++++body%0A++++++++++++++permlink%0A%09++++++created_at%0A++++++++++++++author+%7B%0A++++++++++++++++username%0A++++++++++++++%7D%0Astats+%7B%0A++++++++++num_votes%0A++++++++%7D%0A++++++++++++%7D%0A++++++++++++children+%7B%0A++++++++++++++++...+on+HivePost+%7B%0A++++++++++++++++++++++body%0A+++++++++++++++++++++++permlink%0A%09++%09+++++++created_at%0A++++++++++++++++++++++author+%7B%0A++++++++++++++++++++username%0A++++++++++++++++++++++%7D%0Astats+%7B%0A++++++++++num_votes%0A++++++++%7D%0A++++++++++++++++%7D%0A+++++++++++++%7D%0A++++++++++%7D%0A++++++++%7D%0A++++++%7D%0A++++++body%0A++++%7D%0A++%7D%0A%7D',
-      'Sec-Fetch-Dest': 'empty',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Site': 'same-origin',
-      'User-Agent':
-          'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Mobile Safari/537.36',
-      'accept':
-          'application/graphql-response+json, application/json, multipart/mixed',
       'content-type': 'application/json',
-      'sec-ch-ua':
-          '"Chromium";v="118", "Google Chrome";v="118", "Not=A?Brand";v="99"',
-      'sec-ch-ua-mobile': '?1',
-      'sec-ch-ua-platform': '"Android"'
+
     };
     var request = http.Request('POST',
         Uri.parse('https://union.us-02.infra.3speak.tv/api/v2/graphql'));
     request.body = json.encode({
       "query":
-          "query MyQuery {\n  socialPost(author: \"$userName\", permlink: \"$permLink\") {\n    ... on HivePost {\n      children {\n        ... on HivePost {\n          body\n          permlink\n          created_at\n          author {\n            username\n          }\n          stats {\n            num_votes\n          }\n          children {\n            ... on HivePost {\n              body\n              permlink\n              created_at\n              author {\n                username\n              }\n              stats {\n                num_votes\n              }\n            }\n            children {\n              ... on HivePost {\n                body\n                permlink\n                created_at\n                author {\n                  username\n                }\n                stats {\n                  num_votes\n                }\n              }\n            }\n          }\n        }\n      }\n      body\n    }\n  }\n}",
-      "operationName": "MyQuery",
+          "query GetComments {\n  socialPost(author: \"$userName\", permlink: \"$permLink\") {\n    ... on HivePost {\n      children {\n        ... on HivePost {\n          body\n          permlink\n          created_at\n          author {\n            username\n          }\n          stats {\n            num_votes\n          }\n          children {\n            ... on HivePost {\n              body\n              permlink\n              created_at\n              author {\n                username\n              }\n              stats {\n                num_votes\n              }\n            }\n            children {\n              ... on HivePost {\n                body\n                permlink\n                created_at\n                author {\n                  username\n                }\n                stats {\n                  num_votes\n                }\n              }\n            }\n          }\n        }\n      }\n      body\n    }\n  }\n}",
+      "operationName": "GetComments",
       "extensions": {}
     });
     request.headers.addAll(headers);
@@ -223,7 +209,7 @@ class GQLCommunicator {
 
     if (response.statusCode == 200) {
       var string = await response.stream.bytesToString();
-      return HiveCommentData.fromRawJson(string).data.socialPost.children  ?? [];
+      return GQLHiveCommentReponse.fromRawJson(string).data.socialPost.children  ?? [];
     } else {
       throw response.reasonPhrase ?? 'Error occurred';
     }
