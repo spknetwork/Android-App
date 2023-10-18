@@ -22,6 +22,7 @@ import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:upgrader/upgrader.dart';
 
 class GQLFeedScreen extends StatefulWidget {
   const GQLFeedScreen({
@@ -39,26 +40,27 @@ class GQLFeedScreen extends StatefulWidget {
 
 class _GQLFeedScreenState extends State<GQLFeedScreen>
     with SingleTickerProviderStateMixin {
-
   var isMenuOpen = false;
 
   List<Tab> myTabs() {
-    return widget.username != null ? <Tab>[
-      Tab(icon: Icon(Icons.person)),
-      // Tab(icon: Icon(Icons.home)),
-      Tab(icon: Icon(Icons.local_fire_department)),
-      Tab(icon: Icon(Icons.play_arrow)),
-      Tab(icon: Icon(Icons.looks_one)),
-      Tab(icon: Icon(Icons.handshake)),
-      Tab(icon: Icon(Icons.tag)),
-    ] : <Tab>[
-      // Tab(icon: Icon(Icons.home)),
-      Tab(icon: Icon(Icons.local_fire_department)),
-      Tab(icon: Icon(Icons.play_arrow)),
-      Tab(icon: Icon(Icons.looks_one)),
-      Tab(icon: Icon(Icons.handshake)),
-      Tab(icon: Icon(Icons.tag)),
-    ];
+    return widget.username != null
+        ? <Tab>[
+            Tab(icon: Icon(Icons.person)),
+            // Tab(icon: Icon(Icons.home)),
+            Tab(icon: Icon(Icons.local_fire_department)),
+            Tab(icon: Icon(Icons.play_arrow)),
+            Tab(icon: Icon(Icons.looks_one)),
+            Tab(icon: Icon(Icons.handshake)),
+            Tab(icon: Icon(Icons.tag)),
+          ]
+        : <Tab>[
+            // Tab(icon: Icon(Icons.home)),
+            Tab(icon: Icon(Icons.local_fire_department)),
+            Tab(icon: Icon(Icons.play_arrow)),
+            Tab(icon: Icon(Icons.looks_one)),
+            Tab(icon: Icon(Icons.handshake)),
+            Tab(icon: Icon(Icons.tag)),
+          ];
   }
 
   late TabController _tabController;
@@ -67,7 +69,8 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: widget.username != null ? 6 : 5);
+    _tabController =
+        TabController(vsync: this, length: widget.username != null ? 6 : 5);
     _tabController.addListener(() {
       setState(() {
         currentIndex = _tabController.index;
@@ -163,51 +166,71 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     var appData = Provider.of<HiveUserData>(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: appBarHeader(),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: myTabs(),
-          isScrollable: true,
-        ),
-        actions: [
-          threeShortsActionButton(),
-          podcastsActionButton(),
-        ],
-      ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            TabBarView(
-                controller: _tabController,
-                children: widget.username != null ? [
-                  HomeScreenFeedList(feedType: HomeScreenFeedType.userFeed, appData: appData),
-                  HomeScreenFeedList(feedType: HomeScreenFeedType.trendingFeed, appData: appData),
-                  HomeScreenFeedList(feedType: HomeScreenFeedType.newUploads, appData: appData),
-                  HomeScreenFeedList(feedType: HomeScreenFeedType.firstUploads, appData: appData),
-                  CommunitiesScreen(
-                    didSelectCommunity: null,
-                    withoutScaffold: true,
-                  ),
-                  TrendingTagsWidget(),
-                ] : [
-                  HomeScreenFeedList(feedType: HomeScreenFeedType.trendingFeed, appData: appData),
-                  HomeScreenFeedList(feedType: HomeScreenFeedType.newUploads, appData: appData),
-                  HomeScreenFeedList(feedType: HomeScreenFeedType.firstUploads, appData: appData),
-                  CommunitiesScreen(
-                    didSelectCommunity: null,
-                    withoutScaffold: true,
-                  ),
-                  TrendingTagsWidget(),
-                ]
-            ),
-            _fabContainer()
+    return UpgradeAlert(
+      upgrader: Upgrader(
+        // debugDisplayAlways: true, // for debugging
+        showIgnore: false,
+        showReleaseNotes: false),
+      child: Scaffold(
+        appBar: AppBar(
+          title: appBarHeader(),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: myTabs(),
+            isScrollable: true,
+          ),
+          actions: [
+            threeShortsActionButton(),
+            podcastsActionButton(),
           ],
+        ),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              TabBarView(
+                  controller: _tabController,
+                  children: widget.username != null
+                      ? [
+                          HomeScreenFeedList(
+                              feedType: HomeScreenFeedType.userFeed,
+                              appData: appData),
+                          HomeScreenFeedList(
+                              feedType: HomeScreenFeedType.trendingFeed,
+                              appData: appData),
+                          HomeScreenFeedList(
+                              feedType: HomeScreenFeedType.newUploads,
+                              appData: appData),
+                          HomeScreenFeedList(
+                              feedType: HomeScreenFeedType.firstUploads,
+                              appData: appData),
+                          CommunitiesScreen(
+                            didSelectCommunity: null,
+                            withoutScaffold: true,
+                          ),
+                          TrendingTagsWidget(),
+                        ]
+                      : [
+                          HomeScreenFeedList(
+                              feedType: HomeScreenFeedType.trendingFeed,
+                              appData: appData),
+                          HomeScreenFeedList(
+                              feedType: HomeScreenFeedType.newUploads,
+                              appData: appData),
+                          HomeScreenFeedList(
+                              feedType: HomeScreenFeedType.firstUploads,
+                              appData: appData),
+                          CommunitiesScreen(
+                            didSelectCommunity: null,
+                            withoutScaffold: true,
+                          ),
+                          TrendingTagsWidget(),
+                        ]),
+              _fabContainer()
+            ],
+          ),
         ),
       ),
     );
@@ -271,8 +294,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         FabOverItemData(
           displayName: 'My Account',
           icon: Icons.person,
-          url:
-          'https://images.hive.blog/u/${widget.username ?? ''}/avatar',
+          url: 'https://images.hive.blog/u/${widget.username ?? ''}/avatar',
           onTap: () {
             setState(() {
               isMenuOpen = false;
@@ -327,7 +349,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         },
       ),
     );
-     fabItems.add(
+    fabItems.add(
       FabOverItemData(
         displayName: 'Favourites',
         icon: Icons.favorite,
@@ -462,7 +484,8 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     await storage.delete(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
-    String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+    String union =
+        await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
     String? lang = await storage.read(key: 'lang');
     server.updateHiveUserData(
       HiveUserData(
