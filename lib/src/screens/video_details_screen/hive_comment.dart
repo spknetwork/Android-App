@@ -1,5 +1,5 @@
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
+import 'package:acela/src/models/hive_comments/new_hive_comment/new_hive_comment.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class HiveCommentWidget extends StatefulWidget {
   const HiveCommentWidget({Key? key, required this.comment}) : super(key: key);
-  final HiveComment comment;
+  final NewHiveComment comment;
 
   @override
   State<HiveCommentWidget> createState() => _HiveCommentWidgetState();
@@ -22,8 +22,8 @@ class _HiveCommentWidgetState extends State<HiveCommentWidget> {
   @override
   void initState() {
     super.initState();
-    isHidden = (widget.comment.authorReputation ?? 0) < 0 ||
-        (widget.comment.netRshares ?? 0) < 0;
+  //   isHidden = (widget.comment.authorReputation ?? 0) < 0 ||
+  //       (widget.comment.netRshares ?? 0) < 0;
   }
 
   Widget _comment(String text) {
@@ -48,17 +48,15 @@ class _HiveCommentWidgetState extends State<HiveCommentWidget> {
 
   Widget _listTile() {
     var item = widget.comment;
-    var userThumb = server.userOwnerThumb(item.author);
-    var author = item.author;
+    var userThumb = server.userOwnerThumb(item.author.username);
+    var author = item.author.username;
     var body = item.body;
-    var upVotes = item.activeVotes.where((e) => e.percent > 0).length;
-    var downVotes = item.activeVotes.where((e) => e.percent < 0).length;
-    var payout = item.pendingPayoutValue.replaceAll(" HBD", "");
+    var votes = item.stats!.numVotes!;
     var timeInString =
         item.createdAt != null ? "📆 ${timeago.format(item.createdAt!)}" : "";
     var text =
-        "👤  $author  👍  $upVotes  👎  $downVotes  💰  $payout  $timeInString";
-    var depth = (item.depth * 25.0) - 25;
+        "👤  $author  👍  $votes     $timeInString";
+    var depth = (item.children!.isNotEmpty ? 50.0 : 0.2 * 25.0);
     double width = MediaQuery.of(context).size.width - 70 - depth;
     return ListTile(
       title: Row(
@@ -72,7 +70,7 @@ class _HiveCommentWidgetState extends State<HiveCommentWidget> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _comment(body),
+                _comment(body ?? ""),
                 Container(margin: const EdgeInsets.only(bottom: 10)),
                 Text(
                   text,

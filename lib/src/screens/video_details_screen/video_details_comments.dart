@@ -1,8 +1,7 @@
-import 'package:acela/src/models/hive_comments/request/hive_comment_request.dart';
-import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
+import 'package:acela/src/models/hive_comments/new_hive_comment/new_hive_comment.dart';
 import 'package:acela/src/screens/video_details_screen/hive_comment.dart';
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class VideoDetailsComments extends StatefulWidget {
   const VideoDetailsComments({
@@ -20,32 +19,11 @@ class VideoDetailsComments extends StatefulWidget {
 }
 
 class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
-  late Future<List<HiveComment>> _loadComments;
+  late Future<List<NewHiveComment>> _loadComments;
 
-  Future<List<HiveComment>> loadComments(String author, String permlink) async {
-    var client = http.Client();
-    var body =
-        hiveCommentRequestToJson(HiveCommentRequest.from([author, permlink]));
-    var rpc = 'https://${widget.rpc}';
-    var response = await client.post(Uri.parse(rpc), body: body);
-    if (response.statusCode == 200) {
-      var hiveCommentsResponse = hiveCommentsFromString(response.body);
-      var comments = hiveCommentsResponse.result;
-      for (var i = 0; i < comments.length; i++) {
-        if (comments[i].children > 0) {
-          if (comments
-              .where((e) => e.parentPermlink == comments[i].permlink)
-              .isEmpty) {
-            var newComments =
-                await loadComments(comments[i].author, comments[i].permlink);
-            comments.insertAll(i + 1, newComments);
-          }
-        }
-      }
-      return comments;
-    } else {
-      throw "Status code is ${response.statusCode}";
-    }
+  Future<List<NewHiveComment>> loadComments(String author, String permlink) async {
+      return await GQLCommunicator.getHiveComments(author,permlink);
+    
   }
 
   @override
@@ -54,7 +32,7 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
     _loadComments = loadComments(widget.author, widget.permlink);
   }
 
-  Widget commentsListView(List<HiveComment> data) {
+  Widget commentsListView(List<NewHiveComment> data) {
     return Container(
       margin: const EdgeInsets.only(top: 10, bottom: 10),
       child: ListView.separated(
@@ -92,7 +70,7 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
               null);
         } else if (snapshot.hasData &&
             snapshot.connectionState == ConnectionState.done) {
-          var data = snapshot.data! as List<HiveComment>;
+          var data = snapshot.data! as List<NewHiveComment>;
           return _container(commentsListView(data), data.length);
         } else {
           return _container(

@@ -426,8 +426,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           Spacer(),
           FavouriteWidget(
               iconColor: Colors.blue,
-              isLiked:
-                  provider.isLikedVideoPresentLocally(widget.item),
+              isLiked: provider.isLikedVideoPresentLocally(widget.item),
               onAdd: () {
                 provider.storeLikedVideoLocally(widget.item);
               },
