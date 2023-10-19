@@ -195,12 +195,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: Text("Current Version $appCurrentVersion"),
       subtitle: Text("Latest Version $newAvailableVersion"),
       trailing: Visibility(
-        visible: appCurrentVersion !=appCurrentVersion,
+        visible: appCurrentVersion != appCurrentVersion,
         child: TextButton(
           onPressed: () async {
             String url = "";
             if (defaultTargetPlatform == TargetPlatform.android) {
-              url = "https://play.google.com/store/apps/details?id=tv.threespeak.app";
+              url =
+                  "https://play.google.com/store/apps/details?id=tv.threespeak.app";
             } else if (defaultTargetPlatform == TargetPlatform.iOS) {
               url = "https://apps.apple.com/us/app/3speak/id1614771373";
             }
