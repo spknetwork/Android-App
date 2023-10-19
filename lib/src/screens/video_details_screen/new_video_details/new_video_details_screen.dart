@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
 import 'package:acela/src/screens/trending_tags/trending_tag_videos.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
@@ -293,6 +294,93 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     Navigator.of(context).push(MaterialPageRoute(builder: (c) => screen));
   }
 
+  void showVoters() {
+    List<String> voters = [];
+    bool currentUserPresentInVoters = false;
+    if (postInfo != null) {
+      if (widget.appData.username != null) {
+        int userNameInVotesIndex = postInfo!.activeVotes
+            .indexWhere((element) => element.voter == widget.appData.username);
+        if (userNameInVotesIndex != -1) {
+          currentUserPresentInVoters = true;
+          voters.add(widget.appData.username!);
+          for (int i = 0; i < postInfo!.activeVotes.length; i++) {
+            if (i != userNameInVotesIndex) {
+              voters.add(postInfo!.activeVotes[i].voter);
+            }
+          }
+        } else {
+          postInfo!.activeVotes.forEach((element) {
+            voters.add(element.voter);
+          });
+        }
+      } else {
+        postInfo!.activeVotes.forEach((element) {
+          voters.add(element.voter);
+        });
+      }
+    }
+    postInfo!.activeVotes.forEach((element) {
+      print(element.voter);
+    });
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Column(
+          children: [
+            AppBar(
+              title: Text("Voters (${voters.length})"),
+              actions: [
+                IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      upvotePressed();
+                    },
+                    icon: Icon(
+                      Icons.thumb_up_sharp,
+                      color: isUserVoted() ? Colors.blue : Colors.grey,
+                    ))
+              ],
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                itemCount: voters.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    minLeadingWidth: 0,
+                    dense: true,
+                    minVerticalPadding: 0,
+                    leading: Container(
+                      height: 30,
+                      width: 30,
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: NetworkImage(
+                            server.userOwnerThumb(voters[index]),
+                          ),
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      voters[index],
+                      style: TextStyle(
+                          color: index == 0 && currentUserPresentInVoters
+                              ? Colors.blue
+                              : null),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void upvotePressed() {
     if (postInfo == null) return;
     if (widget.appData.username == null) {
@@ -410,10 +498,11 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           IconButton(
             onPressed: () {
               if (postInfo != null) {
-                upvotePressed();
+                showVoters();
               }
             },
-            icon: Icon(Icons.thumb_up, color: Colors.blue),
+            icon: Icon(Icons.thumb_up,
+                color: isUserVoted() ? Colors.blue : Colors.grey),
           ),
           Spacer(),
           IconButton(
@@ -436,6 +525,19 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         ],
       ),
     );
+  }
+
+  bool isUserVoted() {
+    if (widget.appData.username != null) {
+      if (postInfo != null && postInfo!.activeVotes.isNotEmpty) {
+        int index = postInfo!.activeVotes
+            .indexWhere((element) => element.voter == widget.appData.username);
+        if (index != -1) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   Widget _chipList() {
