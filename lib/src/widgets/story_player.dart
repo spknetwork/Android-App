@@ -17,6 +17,7 @@ import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -327,11 +328,31 @@ class _StoryPlayerState extends State<StoryPlayer> {
       ),
       SizedBox(height: 10),
       IconButton(
-        icon: CustomCircleAvatar(
-          height: 40,
-          width: 40,
-          url: server
-              .userOwnerThumb(widget.item.author?.username ?? 'sagarkothari88'),
+        icon: ClipOval(
+          child: CachedNetworkImage(
+            height: 40,
+            width: 40,
+            imageUrl: server
+                .userOwnerThumb(widget.item.author?.username ?? 'sagarkothari88'),
+            progressIndicatorBuilder: (context, url, progress) => Container(
+              padding: EdgeInsets.all(8),
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.blue)
+              ),
+              child: CircularProgressIndicator(strokeWidth: 1,),
+            ),
+            errorWidget: (context, url, error) => Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.blue)
+              ),
+            ),
+          ),
         ),
         onPressed: () {
           var screen = UserChannelScreen(
