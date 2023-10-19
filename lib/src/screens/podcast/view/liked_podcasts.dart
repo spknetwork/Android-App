@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LikedPodcasts extends StatefulWidget {
-  const LikedPodcasts({Key? key, required this.appData,this.showAppBar = true}) : super(key: key);
+  const LikedPodcasts({Key? key, required this.appData, this.showAppBar = true,this.filterOnlyRssPodcasts = false})
+      : super(key: key);
 
   final HiveUserData appData;
   final bool showAppBar;
+  final bool filterOnlyRssPodcasts;
 
   @override
   State<LikedPodcasts> createState() => _LikedPodcastsState();
@@ -19,11 +21,13 @@ class _LikedPodcastsState extends State<LikedPodcasts> {
   @override
   Widget build(BuildContext context) {
     final List<PodCastFeedItem> items =
-        context.read<PodcastController>().getLikedPodcast();
+        context.read<PodcastController>().getLikedPodcast(filterOnlyRssPodcasts: widget.filterOnlyRssPodcasts);
     return Scaffold(
-      appBar:widget.showAppBar ? AppBar(
-        title: Text("Liked Podcasts"),
-      ) : null,
+      appBar: widget.showAppBar
+          ? AppBar(
+              title: Text("Liked Podcasts"),
+            )
+          : null,
       body: items.isEmpty
           ? Center(child: Text("Liked Podcasts is Empty"))
           : ListView.separated(

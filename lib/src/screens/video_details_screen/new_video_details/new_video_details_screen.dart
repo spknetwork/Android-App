@@ -514,6 +514,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           ),
           Spacer(),
           FavouriteWidget(
+              toastType: "Video",
               iconColor: Colors.blue,
               isLiked: provider.isLikedVideoPresentLocally(widget.item),
               onAdd: () {

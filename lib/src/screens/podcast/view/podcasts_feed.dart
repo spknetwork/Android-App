@@ -31,8 +31,7 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
   @override
   void initState() {
     super.initState();
-    future = PodCastCommunicator()
-        .getPodcastEpisodesByFeedId("${widget.item.id ?? 227573}");
+    future =loadPodCastEpisode();
   }
 
   Widget _fullPost(List<PodcastEpisode> items) {
@@ -74,8 +73,7 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
                   error: snapshot.error.toString(),
                   onRetry: () {
                     setState(() {
-                      future = PodCastCommunicator().getPodcastEpisodesByFeedId(
-                          "${widget.item.id ?? 227573}");
+                      future = loadPodCastEpisode();
                     });
                   });
             } else if (snapshot.connectionState == ConnectionState.done) {
@@ -86,9 +84,7 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
                     error: 'No data found.',
                     onRetry: () {
                       setState(() {
-                        future = PodCastCommunicator()
-                            .getPodcastEpisodesByFeedId(
-                                "${widget.item.id ?? 227573}");
+                        future = loadPodCastEpisode();
                       });
                     });
               } else {
@@ -101,5 +97,14 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
         ),
       ),
     );
+  }
+
+  Future<PodcastEpisodesByFeedResponse> loadPodCastEpisode() {
+    if (widget.item.rssUrl != null) {
+      return PodCastCommunicator().getPodcastEpisodesByRss(widget.item.rssUrl!);
+    } else {
+      return PodCastCommunicator()
+          .getPodcastEpisodesByFeedId("${widget.item.id ?? 227573}");
+    }
   }
 }

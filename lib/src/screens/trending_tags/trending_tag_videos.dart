@@ -69,6 +69,7 @@ class _TrendingTagVideosState extends State<TrendingTagVideos>
         ),
         actions: [
           FavouriteWidget(
+            toastType: "Tag",
               isLiked: provider.isTagPresentLocally(widget.tag),
               onAdd: () {
                 provider.storeLikedTagLocally(widget.tag);

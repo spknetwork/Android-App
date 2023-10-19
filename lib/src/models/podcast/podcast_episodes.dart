@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:dart_rss/dart_rss.dart';
+
 class PodcastEpisodesByFeedResponse {
   String? status;
   List<dynamic>? liveItems;
@@ -41,7 +43,7 @@ class PodcastEpisodesByFeedResponse {
 }
 
 class PodcastEpisode {
-  int? id;
+  String? id;
   String? title;
   String? link;
   String? description;
@@ -72,7 +74,7 @@ class PodcastEpisode {
   String toRawJson() => json.encode(toJson());
 
   factory PodcastEpisode.fromJson(Map<String, dynamic> json) => PodcastEpisode(
-    id: json["id"],
+    id: json["id"].toString(),
     title: json["title"],
     link: json["link"],
     description: json["description"],
@@ -83,6 +85,20 @@ class PodcastEpisode {
     episode: json["episode"],
     image: json["image"],
     guid: json["guid"],
+  );
+
+  factory PodcastEpisode.fromRss(RssItem rssItem) => PodcastEpisode(
+    id: rssItem.guid,
+    title: rssItem.title,
+    link: rssItem.link,
+    description: rssItem.description,
+    datePublished:null,
+    datePublishedPretty: rssItem.pubDate,
+    enclosureUrl: rssItem.enclosure?.url,
+    duration: rssItem.itunes?.duration?.inSeconds,
+    episode: rssItem.itunes?.episode,
+    image: rssItem.itunes?.image?.href,
+    guid: rssItem.guid,
   );
 
   Map<String, dynamic> toJson() => {

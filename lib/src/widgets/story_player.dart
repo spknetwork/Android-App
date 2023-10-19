@@ -258,6 +258,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
     final VideoFavoriteProvider provider = VideoFavoriteProvider();
     return [
       FavouriteWidget(
+          toastType: "Video Short",
           iconColor: Colors.blue,
           isLiked: provider.isLikedVideoPresentLocally(widget.item,isShorts: true),
           onAdd: () {

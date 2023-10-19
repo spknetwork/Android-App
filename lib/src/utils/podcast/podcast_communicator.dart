@@ -5,6 +5,7 @@ import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
+import 'package:dart_rss/domain/rss_feed.dart';
 import 'dart:developer';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -93,5 +94,21 @@ class PodCastCommunicator {
   Future<PodcastEpisodesByFeedResponse> getPodcastEpisodesByFeedId(String feedId) async {
     var response = await fetchPodCast('/episodes/byfeedid?id=$feedId');
     return PodcastEpisodesByFeedResponse.fromRawJson(response);
+  }
+
+  Future<PodCastFeedItem> getPodcastFeedByRss(String rssUrl) async {
+    final client = http.Client();
+      final response =
+          await client.get(Uri.parse(rssUrl));
+      RssFeed result = RssFeed.parse(response.body);
+    return PodCastFeedItem.fromRss(result,rssUrl);
+  }
+
+  Future<PodcastEpisodesByFeedResponse> getPodcastEpisodesByRss(String rssUrl) async {
+    final client = http.Client();
+      final response =
+          await client.get(Uri.parse(rssUrl));
+      RssFeed result = RssFeed.parse(response.body);
+    return PodcastEpisodesByFeedResponse(items:result.items.map((e) => PodcastEpisode.fromRss(e)).toList());
   }
 }

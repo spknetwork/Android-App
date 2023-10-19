@@ -17,7 +17,6 @@ class PodcastController extends ChangeNotifier {
 
   void init() async {
     externalDir = await getExternalStorageDirectory();
-
   }
 
   bool isOffline(String name, String episodeId) {
@@ -56,12 +55,18 @@ class PodcastController extends ChangeNotifier {
   }
 
   //retrieve liked podcast from local
-  List<PodCastFeedItem> getLikedPodcast() {
+  List<PodCastFeedItem> getLikedPodcast({bool filterOnlyRssPodcasts = false}) {
     final String key = _likedPodcastLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
-      List<PodCastFeedItem> items =
-          json.map((e) => PodCastFeedItem.fromJson(e)).toList();
+      List<PodCastFeedItem> items = [];
+      for (var item in json) {
+        if (!filterOnlyRssPodcasts) {
+          items.add(PodCastFeedItem.fromJson(item));
+        } else if (item['rssUrl'] != null) {
+          items.add(PodCastFeedItem.fromJson(item));
+        }
+      }
       return items;
     } else {
       return [];
@@ -96,6 +101,7 @@ class PodcastController extends ChangeNotifier {
     } else {
       box.write(key, [item.toJson()]);
     }
+    notifyListeners();
     print(box.read(key));
   }
 
@@ -142,10 +148,12 @@ class PodcastController extends ChangeNotifier {
     }
   }
 
-  //retrieve the single podcast episodes for liked or offline 
-  List<PodcastEpisode> likedOrOfflinepodcastEpisodes({required bool isOffline}) {
+  //retrieve the single podcast episodes for liked or offline
+  List<PodcastEpisode> likedOrOfflinepodcastEpisodes(
+      {required bool isOffline}) {
     final box = GetStorage();
-    final String key = isOffline ? _offlinePodcastLocalKey : _likedPodcastEpisodeLocalKey;
+    final String key =
+        isOffline ? _offlinePodcastLocalKey : _likedPodcastEpisodeLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
       List<PodcastEpisode> items =

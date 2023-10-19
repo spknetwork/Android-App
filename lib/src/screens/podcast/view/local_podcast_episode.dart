@@ -61,19 +61,16 @@ class LocalPodcastEpisode extends StatelessWidget {
             onTap: () {
               GetAudioPlayer audioPlayer = GetAudioPlayer();
               audioPlayer.audioHandler.updateQueue([]);
-              audioPlayer.audioHandler.addQueueItems(items
-                  .map((e) => MediaItem(
-                      id: e.enclosureUrl ?? "",
-                      title: e.title ?? "",
-                      artUri: Uri.parse(e.image ?? ""),
-                      duration: Duration(seconds: e.duration ?? 0)))
-                  .toList());
-
+              audioPlayer.audioHandler.addQueueItem(MediaItem(
+                  id: item.enclosureUrl ?? "",
+                  title: item.title ?? "",
+                  artUri: Uri.parse(item.image ?? ""),
+                  duration: Duration(seconds: item.duration ?? 0)));
               var screen = Scaffold(
                 appBar: AppBar(
                   title: ListTile(
                     leading: CachedImage(
-                      imageUrl:item.image ?? '',
+                      imageUrl: item.image ?? '',
                       imageHeight: 40,
                       imageWidth: 40,
                     ),
@@ -82,7 +79,7 @@ class LocalPodcastEpisode extends StatelessWidget {
                 ),
                 body: SafeArea(
                     child: NewPodcastEpidosePlayer(
-                  podcastEpisodes: items,
+                  podcastEpisodes: [item],
                 )),
               );
               var route = MaterialPageRoute(builder: (c) => screen);

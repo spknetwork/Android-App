@@ -1,6 +1,8 @@
 
 import 'dart:convert';
 
+import 'package:dart_rss/dart_rss.dart';
+
 class TrendingPodCastResponse {
   String? status;
   List<PodCastFeedItem>? feeds;
@@ -34,8 +36,9 @@ class TrendingPodCastResponse {
 }
 
 class PodCastFeedItem {
-  int? id;
+  String? id;
   String? url;
+  String? rssUrl;
   String? title;
   String? description;
   String? author;
@@ -60,6 +63,7 @@ class PodCastFeedItem {
   PodCastFeedItem({
     this.id,
     this.url,
+    this.rssUrl,
     this.title,
     this.description,
     this.author,
@@ -78,9 +82,10 @@ class PodCastFeedItem {
   // String toRawJson() => json.encode(toJson());
 
   factory PodCastFeedItem.fromJson(Map<String, dynamic> json) => PodCastFeedItem(
-    id: json["id"],
+    id: json["id"].toString(),
     url: json["url"],
     title: json["title"],
+    rssUrl: json['rssUrl'],
     description: json["description"],
     author: json["author"],
     image: json["image"],
@@ -93,9 +98,21 @@ class PodCastFeedItem {
     // categories: json["categories"] != null ? Map.from(json["categories"]!).map((k, v) => MapEntry<String, String>(k, v)) : null,
   );
 
+  factory PodCastFeedItem.fromRss(RssFeed rssFeed,String rssUrl) => PodCastFeedItem(
+    id:rssUrl,
+    rssUrl:rssUrl,
+    title: rssFeed.title,
+    description: rssFeed.description,
+    author: rssFeed.author,
+    image: rssFeed.image?.url,
+    feedImage:  rssFeed.image?.url,
+    language: rssFeed.language
+  );
+
   Map<String, dynamic> toJson() => {
     "id": id,
     "url": url,
+    'rssUrl':rssUrl,
     "title": title,
     "description": description,
     "author": author,
