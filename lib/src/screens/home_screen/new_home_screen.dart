@@ -6,7 +6,6 @@ import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/favourites/user_favourites.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
-import 'package:acela/src/screens/leaderboard_screen/leaderboard_screen.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/podcast/view/podcast_trending.dart';
@@ -172,8 +171,9 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     return UpgradeAlert(
       upgrader: Upgrader(
         // debugDisplayAlways: true, // for debugging
-        showIgnore: false,
-        showReleaseNotes: false),
+        showIgnore: true,
+        showReleaseNotes: true,
+      ),
       child: Scaffold(
         appBar: AppBar(
           title: appBarHeader(),
