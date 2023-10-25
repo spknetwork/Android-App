@@ -31,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   var languages = [
     VideoLanguage(code: "en", name: "English"),
     VideoLanguage(code: "de", name: "Deutsch"),
+    VideoLanguage(code: "pt", name: "Portuguese"),
     VideoLanguage(code: "fr", name: "Français"),
     VideoLanguage(code: "es", name: "Español"),
     VideoLanguage(code: "nl", name: "Nederlands"),
@@ -195,12 +196,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: Text("Current Version $appCurrentVersion"),
       subtitle: Text("Latest Version $newAvailableVersion"),
       trailing: Visibility(
-        visible: appCurrentVersion !=appCurrentVersion,
+        visible: appCurrentVersion != appCurrentVersion,
         child: TextButton(
           onPressed: () async {
             String url = "";
             if (defaultTargetPlatform == TargetPlatform.android) {
-              url = "https://play.google.com/store/apps/details?id=tv.threespeak.app";
+              url =
+                  "https://play.google.com/store/apps/details?id=tv.threespeak.app";
             } else if (defaultTargetPlatform == TargetPlatform.iOS) {
               url = "https://apps.apple.com/us/app/3speak/id1614771373";
             }

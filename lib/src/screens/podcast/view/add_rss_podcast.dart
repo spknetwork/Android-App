@@ -25,6 +25,12 @@ class _AddRssPodcastState extends State<AddRssPodcast> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: ListTile(
+          title: const Text('Add a Podcast'),
+          subtitle: const Text('By entering RSS URL of a Podcast'),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15.0),
         child: isAdding ? _loadingBody() : _body(),
@@ -122,13 +128,15 @@ class _AddRssPodcastState extends State<AddRssPodcast> {
 
   void showSnackBar(String message) {
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      backgroundColor: Colors.black,
-      content: Text(
-        message,
-        style: TextStyle(color: Colors.white),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.black,
+        content: Text(
+          message,
+          style: TextStyle(color: Colors.white),
+        ),
+        duration: Duration(seconds: 3),
       ),
-      duration: Duration(seconds: 3),
-    ));
+    );
   }
 }
