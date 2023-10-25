@@ -196,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: Text("Current Version $appCurrentVersion"),
       subtitle: Text("Latest Version $newAvailableVersion"),
       trailing: Visibility(
-        visible: appCurrentVersion != appCurrentVersion,
+        visible: appCurrentVersion != newAvailableVersion,
         child: TextButton(
           onPressed: () async {
             String url = "";
