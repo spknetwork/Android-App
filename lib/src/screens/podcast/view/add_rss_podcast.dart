@@ -27,54 +27,73 @@ class _AddRssPodcastState extends State<AddRssPodcast> {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15.0),
-        child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 60.0, bottom: 30),
-            child: Icon(
-              Icons.podcasts,
-              size: 60,
-            ),
-          ),
-          Text(
-            "Add podcast by RSS feed",
-            style: TextStyle(fontSize: 18),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          Text(
-            "To add a podcast to your favourites by RSS feed, paste the full RSS URL in the field",
-            style: TextStyle(fontSize: 14, color: Colors.white54),
-            textAlign: TextAlign.center,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 25),
-            child: TextField(
-              controller: textEditingController,
-              decoration: InputDecoration(
-                  fillColor: Colors.grey.shade800,
-                  filled: true,
-                  hintText: "Enter URL",
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none),
-            ),
-          ),
-          SizedBox(
-            width: 120,
-            child: TextButton(
-                style: TextButton.styleFrom(backgroundColor: Colors.blue),
-                onPressed: onAdd,
-                child: Text(
-                  isAdding ? "Adding" : "Add",
-                  style: const TextStyle(color: Colors.white),
-                )),
-          )
-        ]),
+        child: isAdding ? _loadingBody() : _body(),
       ),
     );
+  }
+
+  Column _loadingBody() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Center(
+          child: CircularProgressIndicator(),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 15.0),
+          child: Text("Adding please wait..."),
+        )
+      ],
+    );
+  }
+
+  Column _body() {
+    return Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.only(top: 60.0, bottom: 30),
+        child: Icon(
+          Icons.podcasts,
+          size: 60,
+        ),
+      ),
+      Text(
+        "Add podcast by RSS feed",
+        style: TextStyle(fontSize: 18),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(
+        height: 8,
+      ),
+      Text(
+        "To add a podcast to your favourites by RSS feed, paste the full RSS URL in the field",
+        style: TextStyle(fontSize: 14, color: Colors.white54),
+        textAlign: TextAlign.center,
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 25),
+        child: TextField(
+          controller: textEditingController,
+          decoration: InputDecoration(
+              fillColor: Colors.grey.shade800,
+              filled: true,
+              hintText: "Enter URL",
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              disabledBorder: InputBorder.none),
+        ),
+      ),
+      SizedBox(
+        width: 120,
+        child: TextButton(
+            style: TextButton.styleFrom(backgroundColor: Colors.blue),
+            onPressed: onAdd,
+            child: Text(
+              "Add",
+              style: const TextStyle(color: Colors.white),
+            )),
+      )
+    ]);
   }
 
   void onAdd() async {
@@ -90,6 +109,7 @@ class _AddRssPodcastState extends State<AddRssPodcast> {
           controller.storeLikedPodcastLocally(item);
         }
         Navigator.pop(context);
+        showSnackBar("Podcast ${item.title} is Added");
       } catch (e) {
         setState(() {
           isAdding = false;

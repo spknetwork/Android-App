@@ -6,7 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LikedPodcasts extends StatefulWidget {
-  const LikedPodcasts({Key? key, required this.appData, this.showAppBar = true,this.filterOnlyRssPodcasts = false})
+  const LikedPodcasts(
+      {Key? key,
+      required this.appData,
+      this.showAppBar = true,
+      this.filterOnlyRssPodcasts = false})
       : super(key: key);
 
   final HiveUserData appData;
@@ -20,27 +24,56 @@ class LikedPodcasts extends StatefulWidget {
 class _LikedPodcastsState extends State<LikedPodcasts> {
   @override
   Widget build(BuildContext context) {
-    final List<PodCastFeedItem> items =
-        context.read<PodcastController>().getLikedPodcast(filterOnlyRssPodcasts: widget.filterOnlyRssPodcasts);
+    final List<PodCastFeedItem> items = context
+        .read<PodcastController>()
+        .getLikedPodcast(filterOnlyRssPodcasts: widget.filterOnlyRssPodcasts);
     return Scaffold(
       appBar: widget.showAppBar
           ? AppBar(
-              title: Text("Liked Podcasts"),
+              title: Text(widget.filterOnlyRssPodcasts ? "RSS Podcasts is empty" : "Liked Podcasts"),
             )
           : null,
       body: items.isEmpty
           ? Center(child: Text("Liked Podcasts is Empty"))
           : ListView.separated(
               itemBuilder: (c, i) {
-                return PodcastFeedItemWidget(
-                  showLikeButton: false,
-                  appData: widget.appData,
-                  item: items[i],
-                );
+                return widget.filterOnlyRssPodcasts
+                    ? Dismissible(
+                        key: Key(items[i].id!),
+                        background: Center(child: Text("Delete")),
+                        onDismissed: (direction) {
+                          context
+                              .read<PodcastController>()
+                              .storeLikedPodcastLocally(items[i]);
+                          showSnackBar("Podcast ${items[i].title} is removed");
+                        },
+                        child: PodcastFeedItemWidget(
+                          showLikeButton: false,
+                          appData: widget.appData,
+                          item: items[i],
+                        ),
+                      )
+                    : PodcastFeedItemWidget(
+                        showLikeButton: false,
+                        appData: widget.appData,
+                        item: items[i],
+                      );
               },
               separatorBuilder: (c, i) => const Divider(height: 0),
               itemCount: items.length,
             ),
     );
+  }
+
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: Colors.black,
+      content: Text(
+        message,
+        style: TextStyle(color: Colors.white),
+      ),
+      duration: Duration(seconds: 3),
+    ));
   }
 }
