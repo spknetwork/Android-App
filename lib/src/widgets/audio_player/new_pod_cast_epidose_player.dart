@@ -97,17 +97,35 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
                 Padding(
                   padding: const EdgeInsets.symmetric(
                       vertical: 15.0, horizontal: 10),
-                  child: Text(
-                    mediaItem.title,
-                    textAlign: TextAlign.center,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge,
+                  child: Column(
+                    children: [
+                      Text(
+                        mediaItem.title,
+                        textAlign: TextAlign.center,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      // Text(
+                      //   timeago.format(
+                      //     DateTime.parse(
+                      //         currentPodcastEpisode.datePublishedPretty!),
+                      //   ),
+                      // ),
+                      Text(
+                        currentPodcastEpisode.datePublishedPretty.toString(),
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ],
                   ),
                 ),
                 userToolbar(),
                 Padding(
-                  padding: const EdgeInsets.only(left: 15,right: 15,bottom: 5),
+                  padding:
+                      const EdgeInsets.only(left: 15, right: 15, bottom: 5),
                   child: StreamBuilder<PositionData>(
                     stream: _positionDataStream,
                     builder: (context, snapshot) {
@@ -192,6 +210,11 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
               podcastController
                   .storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
             }),
+        IconButton(
+            onPressed: () {
+              _onTapPodcastHistory();
+            },
+            icon: Icon(Icons.list,color: iconColor,),)
       ],
     );
   }
@@ -208,6 +231,46 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
             child: PodcastInfoDescroption(
                 title: currentPodcastEpisode.title,
                 description: currentPodcastEpisode.description));
+      },
+    );
+  }
+
+  void _onTapPodcastHistory() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      clipBehavior: Clip.hardEdge,
+      isDismissible: true,
+      builder: (context) {
+        return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: ListView.builder(
+              itemCount: widget.podcastEpisodes.length,
+              itemBuilder: (context, index) {
+                PodcastEpisode item = widget.podcastEpisodes[index];
+                return ListTile(
+                  onTap: () {
+                    _audioHandler.skipToQueueItem(index);
+                    setState(() {
+                      currentPodcastIndex = index;
+                      currentPodcastEpisode = item;
+                      Navigator.pop(context);
+                    });
+                  },
+                  trailing: Icon(Icons.play_circle_outline_outlined),
+                  leading: CachedImage(
+                    imageUrl: item.image,
+                    imageHeight: 48,
+                    imageWidth: 48,
+                    loadingIndicatorSize: 25,
+                  ),
+                  title: Text(
+                    item.title!,
+                    style: TextStyle(fontSize: 14),
+                  ),
+                );
+              },
+            ));
       },
     );
   }
@@ -285,7 +348,9 @@ class ControlButtons extends StatelessWidget {
               return SizedBox(
                 width: 40.0,
                 height: 40.0,
-                child: const CircularProgressIndicator(strokeWidth: 2.5,),
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                ),
               );
             } else if (playing != true) {
               return GestureDetector(
