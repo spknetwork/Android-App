@@ -21,18 +21,17 @@ class PodcastController extends ChangeNotifier {
 
   bool isOffline(String name, String episodeId) {
     if (externalDir != null) {
-      print(externalDir.listSync());
       for (var item in externalDir.listSync()) {
         if (decodeAudioName(
               item.path,
             ) ==
             decodeAudioName(name, episodeId: episodeId)) {
-          print('offline');
+          // print('offline');
           return true;
         }
       }
     }
-    print('online');
+    // print('online');
     return false;
   }
 
@@ -48,6 +47,11 @@ class PodcastController extends ChangeNotifier {
 
   String decodeAudioName(String name, {String? episodeId}) {
     String decodedName = name.split('/').last;
+    String target = ".mp3";
+    int index = decodedName.indexOf(target);
+    if (index != -1) {
+      decodedName = decodedName.substring(0, index + target.length);
+    }
     if (episodeId == null) {
       return decodedName;
     }
@@ -102,7 +106,6 @@ class PodcastController extends ChangeNotifier {
       box.write(key, [item.toJson()]);
     }
     notifyListeners();
-    print(box.read(key));
   }
 
   //check if the liked podcast single episode is present locally
@@ -133,7 +136,6 @@ class PodcastController extends ChangeNotifier {
     } else {
       box.write(key, [item.toJson()]);
     }
-    print(box.read(key));
   }
 
   //after downloaing a podcast episode store it locally
@@ -161,6 +163,27 @@ class PodcastController extends ChangeNotifier {
       return items;
     } else {
       return [];
+    }
+  }
+
+  void deleteOfflinePodcastEpisode(PodcastEpisode episode) {
+    if (externalDir != null) {
+      for (int i = 0; i < externalDir.listSync().length; i++) {
+        var item = externalDir.listSync()[i];
+        if (decodeAudioName(
+              item.path,
+            ) ==
+            decodeAudioName(episode.enclosureUrl ?? "",
+                episodeId: episode.id)) {
+          externalDir.listSync()[i].delete();
+          final String key = _offlinePodcastLocalKey;
+          if (box.read(key) != null) {
+            List json = box.read(key);
+            json.removeWhere((element) => element['id'] == episode.id);
+            box.write(key, json);
+          }
+        }
+      }
     }
   }
 }
