@@ -1,6 +1,8 @@
 import 'package:acela/src/models/podcast/podcast_categories_response.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
+import 'package:acela/src/screens/podcast/view/add_rss_podcast.dart';
 import 'package:acela/src/screens/podcast/view/liked_podcasts.dart';
 import 'package:acela/src/screens/podcast/view/local_podcast_episode.dart';
 import 'package:acela/src/screens/podcast/view/podcast_search.dart';
@@ -9,6 +11,8 @@ import 'package:acela/src/screens/podcast/widgets/podcast_feed_item.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_feeds_body.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../../widgets/fab_custom.dart';
 import '../../../widgets/fab_overlay.dart';
 
@@ -24,7 +28,8 @@ class PodCastTrendingScreen extends StatefulWidget {
   State<PodCastTrendingScreen> createState() => _PodCastTrendingScreenState();
 }
 
-class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> with SingleTickerProviderStateMixin {
+class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
+    with SingleTickerProviderStateMixin {
   bool isMenuOpen = false;
   late Future<TrendingPodCastResponse> trendingFeeds;
   late Future<TrendingPodCastResponse> recentFeeds;
@@ -37,7 +42,7 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> with Sing
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() {
       setState(() {
         currentIndex = _tabController.index;
@@ -73,12 +78,14 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> with Sing
     var text = currentIndex == 0
         ? 'Trending Podcasts'
         : currentIndex == 1
-        ? 'Explore Podcasts by Categories'
-        : currentIndex == 2
-        ? 'Recent Podcasts & Episodes'
-        : 'Live Podcasts';
+            ? "RSS Podcasts"
+            : currentIndex == 2
+                ? 'Explore Podcasts by Categories'
+                : currentIndex == 3
+                    ? 'Recent Podcasts & Episodes'
+                    : 'Live Podcasts';
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: ListTile(
@@ -94,11 +101,23 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> with Sing
             controller: _tabController,
             tabs: [
               Tab(icon: const Icon(Icons.trending_up)),
+              Tab(icon: const Icon(FontAwesomeIcons.rss)),
               Tab(icon: const Icon(Icons.category)),
               Tab(icon: const Icon(Icons.history)),
               Tab(icon: const Icon(Icons.live_tv)),
             ],
           ),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => AddRssPodcast(),
+                    ),
+                  );
+                },
+                icon: Icon(Icons.add))
+          ],
         ),
         body: Stack(
           children: [
@@ -107,6 +126,15 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen> with Sing
               children: [
                 PodcastFeedsBody(
                     future: trendingFeeds, appData: widget.appData),
+                Consumer<PodcastController>(
+                  builder: (context, myType, child) {
+                    return LikedPodcasts(
+                      appData: widget.appData,
+                      showAppBar: false,
+                      filterOnlyRssPodcasts: true,
+                    );
+                  },
+                ),
                 PodcastCategoriesBody(
                   appData: widget.appData,
                   future: categories,

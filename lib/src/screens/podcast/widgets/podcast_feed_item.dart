@@ -43,6 +43,7 @@ class _PodcastFeedItemWidgetState extends State<PodcastFeedItemWidget> {
       trailing: Visibility(
         visible: widget.showLikeButton,
         child: FavouriteWidget(
+          toastType: "Podcast",
             isLiked:
                 podcastController.isLikedPodcastPresentLocally(widget.item),
             onAdd: () {

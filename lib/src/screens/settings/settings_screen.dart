@@ -31,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   var languages = [
     VideoLanguage(code: "en", name: "English"),
     VideoLanguage(code: "de", name: "Deutsch"),
+    VideoLanguage(code: "pt", name: "Portuguese"),
     VideoLanguage(code: "fr", name: "Français"),
     VideoLanguage(code: "es", name: "Español"),
     VideoLanguage(code: "nl", name: "Nederlands"),

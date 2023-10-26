@@ -179,6 +179,7 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
           episode: currentPodcastEpisode,
         ),
         FavouriteWidget(
+            toastType: "Podcast Episode",
             disablePadding: true,
             iconColor: iconColor,
             isLiked: podcastController

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class FavouriteWidget extends StatefulWidget {
   const FavouriteWidget(
       {Key? key,
@@ -8,7 +7,8 @@ class FavouriteWidget extends StatefulWidget {
       required this.onAdd,
       required this.onRemove,
       this.iconColor,
-      this.disablePadding = false})
+      this.disablePadding = false,
+      required this.toastType})
       : super(key: key);
 
   final bool isLiked;
@@ -16,6 +16,7 @@ class FavouriteWidget extends StatefulWidget {
   final VoidCallback onRemove;
   final Color? iconColor;
   final bool disablePadding;
+  final String toastType;
 
   @override
   State<FavouriteWidget> createState() => _FavouriteWidgetState();
@@ -39,7 +40,7 @@ class _FavouriteWidgetState extends State<FavouriteWidget> {
   Widget build(BuildContext context) {
     return IconButton(
       constraints: widget.disablePadding ? BoxConstraints() : null,
-          padding: widget.disablePadding ? EdgeInsets.zero : null,
+      padding: widget.disablePadding ? EdgeInsets.zero : null,
       icon: Icon(
         isLiked ? Icons.favorite : Icons.favorite_border,
         color: widget.iconColor,
@@ -50,13 +51,30 @@ class _FavouriteWidgetState extends State<FavouriteWidget> {
           setState(() {
             isLiked = false;
           });
+          showSnackBar(false);
         } else {
           widget.onAdd();
           setState(() {
             isLiked = true;
           });
+          showSnackBar(true);
         }
       },
     );
+  }
+
+  void showSnackBar(bool isAdding) {
+    final String message = isAdding
+        ? "is added to your favourites"
+        : "is removed from your favourites";
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: Colors.black,
+      content: Text(
+        'The ${widget.toastType} $message',
+        style: TextStyle(color: Colors.white),
+      ),
+      duration: Duration(seconds: 3),
+    ));
   }
 }
