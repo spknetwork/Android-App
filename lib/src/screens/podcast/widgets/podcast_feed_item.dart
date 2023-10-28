@@ -39,7 +39,7 @@ class _PodcastFeedItemWidgetState extends State<PodcastFeedItemWidget> {
         loadingIndicatorSize: 25,
       ),
       title: Text(title),
-      subtitle: Text(desc),
+      subtitle: Text(widget.item.author ?? ""),
       trailing: Visibility(
         visible: widget.showLikeButton,
         child: FavouriteWidget(

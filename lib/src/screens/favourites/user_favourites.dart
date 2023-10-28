@@ -3,6 +3,7 @@ import 'package:acela/src/screens/favourites/favourite_shorts_body.dart';
 import 'package:acela/src/screens/favourites/favourite_tags_body.dart';
 import 'package:acela/src/screens/favourites/favourite_video_body.dart';
 import 'package:acela/src/screens/podcast/view/liked_podcasts.dart';
+import 'package:acela/src/screens/podcast/view/local_podcast_episode.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +24,7 @@ class _UserFavouritesState extends State<UserFavourites>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     _tabController.addListener(() {
       setState(() {
         currentIndex = _tabController.index;
@@ -40,18 +41,11 @@ class _UserFavouritesState extends State<UserFavourites>
   @override
   Widget build(BuildContext context) {
     var appData = Provider.of<HiveUserData>(context);
-    var text = currentIndex == 0
-        ? 'Videos'
-        : currentIndex == 1
-            ? 'Shorts'
-            : currentIndex == 2
-                ? 'Tags'
-                : 'Podcasts';
     return Scaffold(
       appBar: AppBar(
         title: ListTile(
           title: Text('Favourites'),
-          subtitle: Text(text),
+          subtitle: Text(appBarSubtitle()),
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -60,7 +54,8 @@ class _UserFavouritesState extends State<UserFavourites>
             Tab(icon: const Icon(Icons.video_library_rounded)),
             Tab(icon: const Icon(Icons.tag)),
             Tab(icon: const Icon(Icons.podcasts)),
-            Tab(icon: const Icon(FontAwesomeIcons.rss)),
+            Tab(icon: const Icon(Icons.queue_music_rounded)),
+            Tab(icon: const Icon(FontAwesomeIcons.download)),
           ],
         ),
       ),
@@ -74,12 +69,28 @@ class _UserFavouritesState extends State<UserFavourites>
           appData: appData,
           showAppBar: false,
         ),
-        LikedPodcasts(
-          appData: appData,
-          showAppBar: false,
-          filterOnlyRssPodcasts: true,
-        )
+        LocalEpisodeListView(isOffline: false),
+        LocalEpisodeListView(isOffline: true),
       ]),
     );
+  }
+
+  String appBarSubtitle() {
+    switch (currentIndex) {
+      case 0:
+        return "Videos";
+      case 1:
+        return "Shorts";
+      case 2:
+        return "Tags";
+      case 3:
+        return "Podcasts";
+      case 4:
+        return "Podcast Episode";
+      case 5:
+        return "Offline Podcast Episode";
+      default:
+        return "";
+    }
   }
 }

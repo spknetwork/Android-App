@@ -211,10 +211,14 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
                   .storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
             }),
         IconButton(
-            onPressed: () {
-              _onTapPodcastHistory();
-            },
-            icon: Icon(Icons.list,color: iconColor,),)
+          onPressed: () {
+            _onTapPodcastHistory();
+          },
+          icon: Icon(
+            Icons.list,
+            color: iconColor,
+          ),
+        )
       ],
     );
   }
