@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -7,6 +5,7 @@ import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
+import 'package:inview_notifier_list/inview_notifier_list.dart';
 
 enum HomeScreenFeedType {
   userFeed,
@@ -47,12 +46,36 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
   var isLoading = false;
   var hasFailed = false;
   final _scrollController = ScrollController();
+  int inViewIndex = 0;
+  bool viewOnStart = true;
+  bool viewOnEnd = false;
 
   @override
   void initState() {
     super.initState();
     loadFeed(false);
     _scrollController.addListener(() {
+      if (_scrollController.offset == 0) {
+        if (!viewOnStart) {
+          setState(() {
+            viewOnStart = true;
+            _setInViewIndex(0);
+          });
+        }
+      } else {
+        if (viewOnStart) {
+          setState(() {
+            viewOnStart = false;
+          });
+        }
+      }
+      if (_scrollController.offset !=
+          _scrollController.position.maxScrollExtent) {}
+      if (viewOnEnd) {
+        setState(() {
+          viewOnEnd = false;
+        });
+      }
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent &&
           items.length % 50 == 0) {
@@ -87,11 +110,17 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
               firstPage ? 0 : items.length,
               widget.appData.language);
         case HomeScreenFeedType.userChannelFeed:
-          return GQLCommunicator().getUserFeed([widget.owner ?? 'sagarkothari88'],
-              false, firstPage ? 0 : items.length, widget.appData.language);
+          return GQLCommunicator().getUserFeed(
+              [widget.owner ?? 'sagarkothari88'],
+              false,
+              firstPage ? 0 : items.length,
+              widget.appData.language);
         case HomeScreenFeedType.userChannelShorts:
-          return GQLCommunicator().getUserFeed([widget.owner ?? 'sagarkothari88'],
-              true, firstPage ? 0 : items.length, widget.appData.language);
+          return GQLCommunicator().getUserFeed(
+              [widget.owner ?? 'sagarkothari88'],
+              true,
+              firstPage ? 0 : items.length,
+              widget.appData.language);
         case HomeScreenFeedType.community:
           return GQLCommunicator().getCommunity(
               widget.community ?? 'hive-181335',
@@ -166,41 +195,81 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
         );
       } else {
         return RefreshIndicator(
-          onRefresh: () async {
-            loadFeed(true);
-          },
-          child: ListView.builder(
-            controller: _scrollController,
-            itemBuilder: (c, i) {
-              if (items.length == i) {
-                return ListTile(
-                  leading: CircularProgressIndicator(),
-                  title: Text('Loading next page'),
-                  subtitle: Text('Please wait...'),
-                );
-              }
-              var item = items[i];
-              return NewFeedListItem(
-                thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
-                author: item.author?.username ?? '',
-                title: item.title ?? '',
-                createdAt: item.createdAt ?? DateTime.now(),
-                duration: item.spkvideo?.duration ?? 0.0,
-                comments: item.stats?.numComments,
-                hiveRewards: item.stats?.totalHiveReward,
-                votes: item.stats?.numVotes,
-                views: 0,
-                permlink: item.permlink ?? '',
-                onTap: () {},
-                onUserTap: () {},
-                item: item,
-                appData: widget.appData,
-              );
+            onRefresh: () async {
+              loadFeed(true);
             },
-            itemCount: items.length % 50 == 0 ? items.length + 1 : items.length,
-          ),
-        );
+            child: InViewNotifierList(
+              scrollDirection: Axis.vertical,
+              controller: _scrollController,
+              initialInViewIds: ['0'],
+              isInViewPortCondition: (double deltaTop, double deltaBottom,
+                  double viewPortDimension) {
+                return deltaTop < (0.5 * viewPortDimension) &&
+                    deltaBottom > (0.5 * viewPortDimension);
+              },
+              itemCount:
+                  items.length % 50 == 0 ? items.length + 1 : items.length,
+              onListEndReached: () {
+                if (!viewOnEnd) {
+                  setState(() {
+                    viewOnEnd = true;
+                  });
+                }
+
+                _setInViewIndex(items.length - 1);
+              },
+              builder: (context, index) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return InViewNotifierWidget(
+                      id: '$index',
+                      builder: (context, isInView, child) {
+                        if (isInView && !viewOnStart && !viewOnEnd) {
+                          _setInViewIndex(index);
+                        }
+                        if (items.length == index) {
+                          return ListTile(
+                            leading: CircularProgressIndicator(),
+                            title: Text('Loading next page'),
+                            subtitle: Text('Please wait...'),
+                          );
+                        }
+                        var item = items[index];
+                        return NewFeedListItem(
+                          key: ValueKey(index),
+                          showVideo: index == inViewIndex,
+                          thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
+                          author: item.author?.username ?? '',
+                          title: item.title ?? '',
+                          createdAt: item.createdAt ?? DateTime.now(),
+                          duration: item.spkvideo?.duration ?? 0.0,
+                          comments: item.stats?.numComments,
+                          hiveRewards: item.stats?.totalHiveReward,
+                          votes: item.stats?.numVotes,
+                          views: 0,
+                          permlink: item.permlink ?? '',
+                          onTap: () {},
+                          onUserTap: () {},
+                          item: item,
+                          appData: widget.appData,
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ));
       }
     }
+  }
+
+  void _setInViewIndex(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (inViewIndex != index) {
+        setState(() {
+          inViewIndex = index;
+        });
+      }
+    });
   }
 }
