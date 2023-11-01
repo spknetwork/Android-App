@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/screens/podcast/widgets/favourite.dart';
+import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
@@ -29,7 +31,8 @@ class NewFeedListItem extends StatefulWidget {
       required this.hiveRewards,
       this.item,
       this.appData,
-      this.showVideo = false})
+      this.showVideo = false,
+      this.onFavouriteRemoved})
       : super(key: key);
 
   final DateTime? createdAt;
@@ -47,6 +50,7 @@ class NewFeedListItem extends StatefulWidget {
   final GQLFeedItem? item;
   final HiveUserData? appData;
   final bool showVideo;
+  final VoidCallback? onFavouriteRemoved;
 
   @override
   State<NewFeedListItem> createState() => _NewFeedListItemState();
@@ -54,6 +58,7 @@ class NewFeedListItem extends StatefulWidget {
 
 class _NewFeedListItemState extends State<NewFeedListItem> {
   BetterPlayerController? _betterPlayerController;
+  final VideoFavoriteProvider favoriteProvider = VideoFavoriteProvider();
 
   @override
   void initState() {
@@ -122,7 +127,7 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
         ListTile(
           tileColor: Colors.black,
           contentPadding: EdgeInsets.zero,
-          title: widget.showVideo && _betterPlayerController!=null
+          title: widget.showVideo && _betterPlayerController != null
               ? SizedBox(
                   height: 230,
                   child: BetterPlayer(
@@ -157,6 +162,7 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
               child: Text(widget.title),
             ),
             subtitle: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 InkWell(
                   child: Text('👤 ${widget.author}'),
@@ -167,8 +173,44 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
                     Navigator.of(context).push(route);
                   },
                 ),
-                SizedBox(width: 10),
-                payoutInfo(),
+                Spacer(),
+                Icon(
+                  Icons.thumb_up_sharp,
+                  size: 15,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 1.0),
+                  child: Text('  ${widget.votes ?? 0}'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 1.5, left: 15),
+                  child: Icon(
+                    Icons.comment,
+                    size: 15,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 1.0),
+                  child: Text('  ${widget.comments}'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, top: 1.0, right: 5),
+                  child: FavouriteWidget(
+                      alignment: Alignment.topCenter,
+                      disablePadding: true,
+                      iconSize: 15,
+                      isLiked: favoriteProvider
+                          .isLikedVideoPresentLocally(widget.item!),
+                      onAdd: () {
+                        favoriteProvider.storeLikedVideoLocally(widget.item!);
+                      },
+                      onRemove: () {
+                        favoriteProvider.storeLikedVideoLocally(widget.item!,forceRemove: true);
+                        if (widget.onFavouriteRemoved != null)
+                          widget.onFavouriteRemoved!();
+                      },
+                      toastType: 'Video'),
+                )
               ],
             ),
           ),
@@ -232,10 +274,5 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
   @override
   Widget build(BuildContext context) {
     return listTile();
-  }
-
-  Widget payoutInfo() {
-    String priceAndVotes = "👍 ${widget.votes ?? 0} · 💬 ${widget.comments}";
-    return Text(priceAndVotes);
   }
 }

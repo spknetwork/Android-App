@@ -30,15 +30,14 @@ class _LikedPodcastsState extends State<LikedPodcasts> {
     return Scaffold(
       appBar: widget.showAppBar
           ? AppBar(
-              title: Text(widget.filterOnlyRssPodcasts ? "RSS Podcasts is empty" : "Liked Podcasts"),
+              title: Text("Liked Podcasts"),
             )
           : null,
       body: items.isEmpty
-          ? Center(child: Text("Liked Podcasts is Empty"))
+          ? Center(child: Text(widget.filterOnlyRssPodcasts ? "RSS Podcasts is empty" : "Liked Podcasts is Empty"))
           : ListView.separated(
               itemBuilder: (c, i) {
-                return widget.filterOnlyRssPodcasts
-                    ? Dismissible(
+                return Dismissible(
                         key: Key(items[i].id!),
                         background: Center(child: Text("Delete")),
                         onDismissed: (direction) {
@@ -52,11 +51,6 @@ class _LikedPodcastsState extends State<LikedPodcasts> {
                           appData: widget.appData,
                           item: items[i],
                         ),
-                      )
-                    : PodcastFeedItemWidget(
-                        showLikeButton: false,
-                        appData: widget.appData,
-                        item: items[i],
                       );
               },
               separatorBuilder: (c, i) => const Divider(height: 0),

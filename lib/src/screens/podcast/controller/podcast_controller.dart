@@ -121,12 +121,12 @@ class PodcastController extends ChangeNotifier {
   }
 
   //sotre the single podcast episode locally if user likes it
-  void storeLikedPodcastEpisodeLocally(PodcastEpisode item) {
+  void storeLikedPodcastEpisodeLocally(PodcastEpisode item,{bool forceRemove=false}) {
     final String key = _likedPodcastEpisodeLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
       int index = json.indexWhere((element) => element['id'] == item.id);
-      if (index == -1) {
+      if (index == -1 && !forceRemove) {
         json.add(item.toJson());
         box.write(key, json);
       } else {

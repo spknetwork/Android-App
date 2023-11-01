@@ -13,13 +13,21 @@ class FavouriteTagsBody extends StatelessWidget {
         ? ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) {
-              return ListTile(
-                onTap: () {
-                  var screen = TrendingTagVideos(tag: items[index]);
-                  var route = MaterialPageRoute(builder: (c) => screen);
-                  Navigator.of(context).push(route);
+              String tag = items[index];
+              return Dismissible(
+                key: Key(tag),
+                background: Center(child: Text("Delete")),
+                onDismissed: (direction) {
+                  dataProvider.storeLikedTagLocally(tag, forceRemove: true);
                 },
-                title: Text(items[index]),
+                child: ListTile(
+                  onTap: () {
+                    var screen = TrendingTagVideos(tag: tag);
+                    var route = MaterialPageRoute(builder: (c) => screen);
+                    Navigator.of(context).push(route);
+                  },
+                  title: Text(tag),
+                ),
               );
             },
           )

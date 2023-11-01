@@ -57,15 +57,17 @@ class LocalEpisodeListView extends StatelessWidget {
       return ListView.separated(
         itemBuilder: (c, index) {
           PodcastEpisode item = items[index];
-          return isOffline
-              ? Dismissible(
-                  key: Key(item.id.toString()),
-                  background: Center(child: Text("Delete")),
-                  onDismissed: (direction) {
-                    controller.deleteOfflinePodcastEpisode(item);
-                  },
-                  child: podcastEpisodeListItem(item, context, controller))
-              : podcastEpisodeListItem(item, context, controller);
+          return Dismissible(
+              key: Key(item.id.toString()),
+              background: Center(child: Text("Delete")),
+              onDismissed: (direction) {
+                if (isOffline) {
+                  controller.deleteOfflinePodcastEpisode(item);
+                } else {
+                  controller.storeLikedPodcastEpisodeLocally(item,forceRemove: true);
+                }
+              },
+              child: podcastEpisodeListItem(item, context, controller));
         },
         separatorBuilder: (c, i) => const Divider(height: 0),
         itemCount: items.length,
@@ -77,7 +79,8 @@ class LocalEpisodeListView extends StatelessWidget {
     String url = item.enclosureUrl ?? "";
     if (isOffline) {
       url =
-          Uri.parse(controller.getOfflineUrl(item.enclosureUrl ?? "", item.id!)).path;
+          Uri.parse(controller.getOfflineUrl(item.enclosureUrl ?? "", item.id!))
+              .path;
     }
     return ListTile(
       onTap: () {

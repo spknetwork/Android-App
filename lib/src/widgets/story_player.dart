@@ -29,10 +29,12 @@ class StoryPlayer extends StatefulWidget {
     required this.didFinish,
     required this.item,
     required this.data,
+    this.onRemoveFavouriteCallback,
   }) : super(key: key);
   final GQLFeedItem item;
   final Function didFinish;
   final HiveUserData data;
+  final VoidCallback? onRemoveFavouriteCallback;
 
   @override
   _StoryPlayerState createState() => _StoryPlayerState();
@@ -260,12 +262,14 @@ class _StoryPlayerState extends State<StoryPlayer> {
       FavouriteWidget(
           toastType: "Video Short",
           iconColor: Colors.blue,
-          isLiked: provider.isLikedVideoPresentLocally(widget.item,isShorts: true),
+          isLiked:
+              provider.isLikedVideoPresentLocally(widget.item, isShorts: true),
           onAdd: () {
-            provider.storeLikedVideoLocally(widget.item,isShorts: true);
+            provider.storeLikedVideoLocally(widget.item, isShorts: true);
           },
           onRemove: () {
-            provider.storeLikedVideoLocally(widget.item,isShorts: true);
+            provider.storeLikedVideoLocally(widget.item, isShorts: true);
+            if(widget.onRemoveFavouriteCallback!=null) widget.onRemoveFavouriteCallback!();
           }),
       IconButton(
         icon: Icon(Icons.share, color: Colors.blue),
@@ -333,25 +337,25 @@ class _StoryPlayerState extends State<StoryPlayer> {
           child: CachedNetworkImage(
             height: 40,
             width: 40,
-            imageUrl: server
-                .userOwnerThumb(widget.item.author?.username ?? 'sagarkothari88'),
+            imageUrl: server.userOwnerThumb(
+                widget.item.author?.username ?? 'sagarkothari88'),
             progressIndicatorBuilder: (context, url, progress) => Container(
               padding: EdgeInsets.all(8),
               height: 40,
               width: 40,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.blue)
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.blue)),
+              child: CircularProgressIndicator(
+                strokeWidth: 1,
               ),
-              child: CircularProgressIndicator(strokeWidth: 1,),
             ),
             errorWidget: (context, url, error) => Container(
               height: 40,
               width: 40,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.blue)
-              ),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.blue)),
             ),
           ),
         ),
