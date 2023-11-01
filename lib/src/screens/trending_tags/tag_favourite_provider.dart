@@ -28,13 +28,13 @@ class TagFavoriteProvider {
   }
 
   //sotre the single podcast episode locally if user likes it
-  void storeLikedTagLocally(String tag) {
+  void storeLikedTagLocally(String tag,{bool forceRemove = false}) {
     final String key = _tagLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
       int index =
           json.indexWhere((element) => element == tag);
-      if (index == -1) {
+      if (index == -1 && !forceRemove) {
         json.add(tag);
         box.write(key, json);
       } else {

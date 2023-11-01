@@ -14,6 +14,7 @@ import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
 import 'package:acela/src/screens/trending_tags/trending_tags.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
+import 'package:acela/src/screens/upload/podcast/podcast_upload_screen.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/widgets/fab_custom.dart';
 import 'package:acela/src/widgets/fab_overlay.dart';
@@ -305,6 +306,19 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           },
         ),
       );
+      //     fabItems.add(
+      //   FabOverItemData(
+      //     displayName: 'podcast upload',
+      //     icon: Icons.upload,
+      //     onTap: () {
+      //       setState(() {
+      //         isMenuOpen = false;
+      //         var route = MaterialPageRoute(builder: (c) => PodcastUploadScreen( data: widget.appData));
+      //       Navigator.of(context).push(route);
+      //       });
+      //     },
+      //   ),
+      // );
     } else {
       fabItems.add(
         FabOverItemData(

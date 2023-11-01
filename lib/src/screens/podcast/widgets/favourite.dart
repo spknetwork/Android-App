@@ -7,6 +7,8 @@ class FavouriteWidget extends StatefulWidget {
       required this.onAdd,
       required this.onRemove,
       this.iconColor,
+      this.iconSize,
+      this.alignment,
       this.disablePadding = false,
       required this.toastType})
       : super(key: key);
@@ -17,6 +19,8 @@ class FavouriteWidget extends StatefulWidget {
   final Color? iconColor;
   final bool disablePadding;
   final String toastType;
+  final double? iconSize;
+  final Alignment? alignment;
 
   @override
   State<FavouriteWidget> createState() => _FavouriteWidgetState();
@@ -39,10 +43,12 @@ class _FavouriteWidgetState extends State<FavouriteWidget> {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      alignment:widget.alignment ,
       constraints: widget.disablePadding ? BoxConstraints() : null,
       padding: widget.disablePadding ? EdgeInsets.zero : null,
       icon: Icon(
         isLiked ? Icons.favorite : Icons.favorite_border,
+        size: widget.iconSize,
         color: widget.iconColor,
       ),
       onPressed: () {

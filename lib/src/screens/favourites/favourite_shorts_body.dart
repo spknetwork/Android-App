@@ -17,15 +17,20 @@ class FavouriteShortsBody extends StatefulWidget {
 
 class _FavouriteShortsBodyState extends State<FavouriteShortsBody> {
   final CarouselController controller = CarouselController();
-
+  final VideoFavoriteProvider dataProvider = VideoFavoriteProvider();
+  
   @override
   Widget build(BuildContext context) {
-    final VideoFavoriteProvider dataProvider = VideoFavoriteProvider();
     final List<GQLFeedItem> shorts =
         dataProvider.getLikedVideos(isShorts: true);
     return shorts.isNotEmpty
         ? StoryFeedDataBody(
-            items: shorts, appData: widget.appData, controller: controller)
+            onRemoveFavouriteCallback: () {
+              setState(() {});
+            },
+            items: shorts,
+            appData: widget.appData,
+            controller: controller)
         : Center(
             child: Text("No favourite shorts found"),
           );

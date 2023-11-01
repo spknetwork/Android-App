@@ -7,7 +7,7 @@ class VideoFavoriteProvider {
   final String _shortsVideoLocalKey = 'liked_shorts_video';
 
   List<GQLFeedItem> getLikedVideos({bool isShorts = false}) {
-    final String key =!isShorts ? _likedVideoLocalKey : _shortsVideoLocalKey;
+    final String key = !isShorts ? _likedVideoLocalKey : _shortsVideoLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
       List<GQLFeedItem> items =
@@ -19,7 +19,7 @@ class VideoFavoriteProvider {
   }
 
   //check if the liked podcast single episode is present locally
-  bool isLikedVideoPresentLocally(GQLFeedItem item,{bool isShorts = false}) {
+  bool isLikedVideoPresentLocally(GQLFeedItem item, {bool isShorts = false}) {
     final String key = !isShorts ? _likedVideoLocalKey : _shortsVideoLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
@@ -32,14 +32,14 @@ class VideoFavoriteProvider {
   }
 
   //sotre the single podcast episode locally if user likes it
-  void storeLikedVideoLocally(GQLFeedItem item,{bool isShorts = false}) {
+  void storeLikedVideoLocally(GQLFeedItem item, {bool isShorts = false,bool forceRemove = false}) {
     final String key = !isShorts ? _likedVideoLocalKey : _shortsVideoLocalKey;
     final String identifier = '${item.author?.username}/${item.permlink}';
     if (box.read(key) != null) {
       List json = box.read(key);
       int index =
           json.indexWhere((element) => checkUniqueId(identifier, element));
-      if (index == -1) {
+      if (index == -1 && !forceRemove) {
         json.add(item.toJson());
         box.write(key, json);
       } else {

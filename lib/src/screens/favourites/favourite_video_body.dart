@@ -4,20 +4,29 @@ import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/widgets/new_feed_list_item.dart';
 import 'package:flutter/material.dart';
 
-class FavouriteVideoBody extends StatelessWidget {
+class FavouriteVideoBody extends StatefulWidget {
   const FavouriteVideoBody({Key? key, required this.appData}) : super(key: key);
 
   final HiveUserData appData;
 
   @override
+  State<FavouriteVideoBody> createState() => _FavouriteVideoBodyState();
+}
+
+class _FavouriteVideoBodyState extends State<FavouriteVideoBody> {
+  final VideoFavoriteProvider dataProvider = VideoFavoriteProvider();
+
+  @override
   Widget build(BuildContext context) {
-    final VideoFavoriteProvider dataProvider = VideoFavoriteProvider();
     List<GQLFeedItem> items = dataProvider.getLikedVideos();
     return items.isNotEmpty
         ? ListView.builder(
             itemBuilder: (c, i) {
               var item = items[i];
               return NewFeedListItem(
+                  onFavouriteRemoved: () {
+                    setState(() {});
+                  },
                   thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
                   author: item.author?.username ?? '',
                   title: item.title ?? '',
@@ -31,7 +40,7 @@ class FavouriteVideoBody extends StatelessWidget {
                   onTap: () {},
                   onUserTap: () {},
                   item: item,
-                  appData: appData);
+                  appData: widget.appData);
             },
             itemCount: items.length % 50 == 0 ? items.length + 1 : items.length,
           )
