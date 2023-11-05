@@ -651,7 +651,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
             return container(widget.vm.author, Text(text));
           } else if (snapshot.hasData &&
               snapshot.connectionState == ConnectionState.done) {
-            var ratio = snapshot.data as double;
+            var size = snapshot.data as VideoSize;
+            var ratio = size.width / size.height;
             setupVideo(data.getVideoUrl(userData), ratio);
             return Scaffold(
               body: SafeArea(
