@@ -270,6 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void showBottomSheetForServer(HiveUserData user) {
     var list = [
+      'api.hive.blog',
       'hive-api.web3telekom.xyz',
       'api.deathwing.me',
       'hive-api.arcange.eu',

@@ -43,7 +43,7 @@ class AuthBridge {
 					player.play()
 					window?.rootViewController?.present(controller, animated: true)
 					result("done")
-				case "validate":
+				case "validateHiveKey":
 					guard
 						let arguments = call.arguments as? NSDictionary,
 						let username = arguments ["username"] as? String,

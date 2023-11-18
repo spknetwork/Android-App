@@ -56,10 +56,6 @@ dependencies:
   overlay_support: ^2.0.1
   provider: ^6.0.2
   share_plus: ^6.3.4
-  steemdart_ecc:
-    git:
-      url: https://github.com/anpigon/steemdart_ecc
-      ref: master
   timeago: ^3.1.0
   tus_client: ^1.0.2
   url_launcher: ^6.0.20

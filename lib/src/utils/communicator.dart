@@ -62,23 +62,26 @@ class Communicator {
     String post,
     String hiveApiUrl,
   ) async {
-    var request = http.Request('POST', Uri.parse('https://$hiveApiUrl'));
-    request.body = json.encode({
-      "id": 1,
-      "jsonrpc": "2.0",
-      "method": "bridge.get_discussion",
-      "params": {"author": user, "permlink": post, "observer": user}
-    });
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode == 200) {
-      var responseBody = await response.stream.bytesToString();
-      var data = DoesPostExistsResponse.fromJsonString(responseBody);
-      var error = data.error?.data ?? "";
-      return error.contains("does not exist");
-    } else {
-      log(response.reasonPhrase.toString());
-      throw response.reasonPhrase.toString();
-    }
+    var response = await http.post(
+      Uri.parse('https://$hiveApiUrl'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "bridge.get_discussion",
+        "params": {
+          "author": user,
+          "permlink": post,
+          "observer": user,
+        }
+      }),
+    );
+    var resultString = response.body;
+    var data = DoesPostExistsResponse.fromJsonString(resultString);
+    var error = data.error?.data ?? "";
+    return error.contains("does not exist");
   }
 
   Future<VideoSize> getAspectRatio(String playUrl) async {
@@ -252,8 +255,10 @@ class Communicator {
             const storage = FlutterSecureStorage();
             await storage.write(key: 'cookie', value: cookie);
             String resolution = await storage.read(key: 'resolution') ?? '480p';
-            String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
-            String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+            String rpc =
+                await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+            String union = await storage.read(key: 'union') ??
+                GQLCommunicator.defaultGQLServer;
             var newData = HiveUserData(
               username: user.username,
               postingKey: user.postingKey,
@@ -289,8 +294,10 @@ class Communicator {
           const storage = FlutterSecureStorage();
           await storage.delete(key: 'cookie');
           String resolution = await storage.read(key: 'resolution') ?? '480p';
-          String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
-          String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+          String rpc =
+              await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+          String union = await storage.read(key: 'union') ??
+              GQLCommunicator.defaultGQLServer;
           var newData = HiveUserData(
             username: user.username,
             postingKey: user.postingKey,

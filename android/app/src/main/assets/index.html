@@ -17,8 +17,25 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
+    <script src="https://unpkg.com/@hiveio/dhive@latest/dist/dhive.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
     <script>
+      const client = new dhive.Client([
+        "https://api.hive.blog",
+        "https://hive-api.web3telekom.xyz",
+        "https://api.deathwing.me",
+        "https://hive-api.arcange.eu",
+        "https://hived.emre.sh",
+        "https://api.openhive.network",
+        "https://rpc.ausbit.dev",
+        "https://anyx.io",
+        "https://techcoderx.com",
+        "https://api.hive.blue",
+        "https://api.pharesim.me",
+        "https://hived.privex.io",
+        "https://hive.roelandp.nl",
+      ]);
+
       const HAS_SERVER = "wss://hive-auth.arcange.eu";
       const HAS_APP_DATA = {
         name: "3Speak Mobile Android App",
@@ -104,7 +121,7 @@
       }
 
       function customStringEscaping(string) {
-        return string.replace("’", "'").replace('“', '"');
+        return string.replace("’", "'").replace("“", '"');
       }
 
       function buildJSONMetadata(
@@ -242,7 +259,7 @@
         hasKey,
         hasAuthKey,
         dNewBene,
-        powerUp,
+        powerUp
       ) {
         let description = atob(dDescription);
         description = decodeURIComponent(escape(description));

@@ -90,7 +90,7 @@ class MainActivity : AudioServiceActivity() {
                 bundle.putInt("seconds", seconds)
                 intent.putExtras(bundle);
                 startActivity(intent)
-            } else if (call.method == "validate" && username != null && postingKey != null) {
+            } else if (call.method == "validateHiveKey" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
             } else if (call.method == "encryptedToken" && username != null
                 && postingKey != null && encryptedToken != null

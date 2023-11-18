@@ -8,7 +8,6 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/login/sign_up_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
-import 'package:acela/src/utils/crypto_manager.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
 import 'package:flutter/material.dart';
@@ -334,14 +333,18 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       isLoading = true;
     });
     try {
-      var publicKey = await Communicator()
-          .getPublicKey(usernameController.text, appData.rpc);
-      var resultingKey = CryptoManager().privToPub(postingKey);
-      if (resultingKey == publicKey) {
+      final String response = await platform.invokeMethod('validateHiveKey', {
+        'username': usernameController.text,
+        'postingKey': postingKey,
+      });
+      var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
+      if (bridgeResponse.valid) {
         debugPrint("Successful login");
         String resolution = await storage.read(key: 'resolution') ?? '480p';
-        String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
-        String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+        String rpc =
+            await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+        String union = await storage.read(key: 'union') ??
+            GQLCommunicator.defaultGQLServer;
         String? lang = await storage.read(key: 'lang');
         await storage.write(key: 'username', value: usernameController.text);
         await storage.write(key: 'postingKey', value: postingKey);
