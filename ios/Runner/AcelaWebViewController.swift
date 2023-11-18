@@ -42,7 +42,7 @@ class AcelaWebViewController: UIViewController {
 #endif
 	}
 
-	func validatePostingKey(
+ 	func validatePostingKey(
 		username: String,
 		postingKey: String,
 		handler: @escaping (String) -> Void
@@ -170,14 +170,8 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 		switch type {
 			case "validateHiveKey":
 				guard
-					let isValid = dict["valid"] as? Bool,
-					let accountName = dict["accountName"] as? String,
-					let error = dict["error"] as? String,
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
-				debugPrint("Is it valid? \(isValid ? "TRUE" : "FALSE")")
-				debugPrint("account name is \(accountName)")
-				debugPrint("Error is \(error)")
 				postingKeyValidationHandler?(response)
 			case "decryptedMemo":
 				guard

@@ -333,6 +333,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       isLoading = true;
     });
     try {
+      var platform = MethodChannel('com.example.acela/auth');
       final String response = await platform.invokeMethod('validateHiveKey', {
         'username': usernameController.text,
         'postingKey': postingKey,
