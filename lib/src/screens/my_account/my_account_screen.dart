@@ -56,12 +56,12 @@ class _MyAccountScreenState extends State<MyAccountScreen>
 
   AppBar _appBar(String username) {
     var text = currentIndex == 0
-        ? 'Videos - in Encoding Process'
+        ? 'Videos in Encoding'
         : currentIndex == 1
-            ? 'Videos - Ready to post'
+            ? 'Ready to post Videos'
             : currentIndex == 2
-                ? 'Videos - Already posted'
-                : 'Videos - failed to encode';
+                ? 'Posted Videos'
+                : 'Failed Videos';
     return AppBar(
       title: ListTile(
         leading: CustomCircleAvatar(

@@ -89,7 +89,7 @@ class _MyAppState extends State<MyApp> {
               cookie: null,
               postingKey: null,
               username: null,
-              rpc: 'hive-api.web3telekom.xyz',
+              rpc: 'api.hive.blog',
               union: GQLCommunicator.defaultGQLServer,
               loaded: false,
               language: null,
@@ -120,7 +120,7 @@ class _MyAppState extends State<MyApp> {
     String? hasExpiry = await storage.read(key: 'hasExpiry');
     String? hasAuthKey = await storage.read(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
-    String rpc = await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+    String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
     String union =
         await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
     String? lang = await storage.read(key: 'lang');

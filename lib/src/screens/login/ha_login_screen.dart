@@ -343,7 +343,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         debugPrint("Successful login");
         String resolution = await storage.read(key: 'resolution') ?? '480p';
         String rpc =
-            await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+            await storage.read(key: 'rpc') ?? 'api.hive.blog';
         String union = await storage.read(key: 'union') ??
             GQLCommunicator.defaultGQLServer;
         String? lang = await storage.read(key: 'lang');

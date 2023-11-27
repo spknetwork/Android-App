@@ -53,7 +53,7 @@ class Communicator {
 
   // static const fsServer = "http://192.168.1.2:1080/files";
 
-  // static const hiveApiUrl = 'hive-api.web3telekom.xyz';
+  // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
   static const hiveAuthServer = 'wss://hive-auth.arcange.eu';
 
@@ -256,7 +256,7 @@ class Communicator {
             await storage.write(key: 'cookie', value: cookie);
             String resolution = await storage.read(key: 'resolution') ?? '480p';
             String rpc =
-                await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+                await storage.read(key: 'rpc') ?? 'api.hive.blog';
             String union = await storage.read(key: 'union') ??
                 GQLCommunicator.defaultGQLServer;
             var newData = HiveUserData(
@@ -295,7 +295,7 @@ class Communicator {
           await storage.delete(key: 'cookie');
           String resolution = await storage.read(key: 'resolution') ?? '480p';
           String rpc =
-              await storage.read(key: 'rpc') ?? 'hive-api.web3telekom.xyz';
+              await storage.read(key: 'rpc') ?? 'api.hive.blog';
           String union = await storage.read(key: 'union') ??
               GQLCommunicator.defaultGQLServer;
           var newData = HiveUserData(
