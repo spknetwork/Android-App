@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 
 class GQLCommunicator {
   static const defaultGQLServer =
-      "threespeak-union-graph-ql.sagarkothari88.one";
+      "union.us-02.infra.3speak.tv";
   // static const gqlServer = "https://union.us-02.infra.3speak.tv/api/v2/graphql";
   static const dataQuery =
       "{\n    items {\n      created_at\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}";

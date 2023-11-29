@@ -90,12 +90,12 @@ class _AddRssPodcastState extends State<AddRssPodcast> {
         ),
       ),
       SizedBox(
-        width: 120,
+        width: 125,
         child: TextButton(
             style: TextButton.styleFrom(backgroundColor: Colors.blue),
             onPressed: onAdd,
             child: Text(
-              "Add",
+              "Add RSS feed",
               style: const TextStyle(color: Colors.white),
             )),
       )

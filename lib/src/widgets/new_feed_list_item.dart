@@ -56,8 +56,11 @@ class NewFeedListItem extends StatefulWidget {
   State<NewFeedListItem> createState() => _NewFeedListItemState();
 }
 
-class _NewFeedListItemState extends State<NewFeedListItem> {
+class _NewFeedListItemState extends State<NewFeedListItem>
+    with AutomaticKeepAliveClientMixin {
   BetterPlayerController? _betterPlayerController;
+  Duration? initialStartDuration;
+  bool skippedToInitialDuartion = false;
   final VideoFavoriteProvider favoriteProvider = VideoFavoriteProvider();
 
   @override
@@ -74,6 +77,9 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
       _initVideo();
     } else if (oldWidget.showVideo && !widget.showVideo) {
       if (_betterPlayerController != null) {
+        skippedToInitialDuartion = false;
+        _betterPlayerController!.videoPlayerController!
+            .removeListener(_videoPlayerListener);
         _betterPlayerController!.dispose();
         _betterPlayerController = null;
       }
@@ -113,6 +119,29 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
 
   void _initVideo() async {
     setupVideo(widget.item!.videoV2M3U8(widget.appData!));
+    _betterPlayerController!.setVolume(0.0);
+    _betterPlayerController!.videoPlayerController!
+        .addListener(_videoPlayerListener);
+  }
+
+  _videoPlayerListener() {
+    if (_betterPlayerController!.videoPlayerController != null &&
+        _betterPlayerController!.videoPlayerController!.value.initialized) {
+      if (!skippedToInitialDuartion) {
+        skippedToInitialDuartion = true;
+        if (initialStartDuration != null) {
+          Duration totalDuration =
+              _betterPlayerController!.videoPlayerController!.value.duration!;
+          if (totalDuration != initialStartDuration) {
+            _betterPlayerController!.seekTo(initialStartDuration!).then(
+                (value) =>
+                    _betterPlayerController!.videoPlayerController!.play());
+          }
+        }
+      }
+      initialStartDuration =
+          _betterPlayerController!.videoPlayerController!.value.position;
+    }
   }
 
   Widget listTile() {
@@ -194,22 +223,27 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
                   child: Text('  ${widget.comments}'),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 10, top: 1.0, right: 5),
-                  child: FavouriteWidget(
-                      alignment: Alignment.topCenter,
-                      disablePadding: true,
-                      iconSize: 15,
-                      isLiked: favoriteProvider
-                          .isLikedVideoPresentLocally(widget.item!),
-                      onAdd: () {
-                        favoriteProvider.storeLikedVideoLocally(widget.item!);
-                      },
-                      onRemove: () {
-                        favoriteProvider.storeLikedVideoLocally(widget.item!,forceRemove: true);
-                        if (widget.onFavouriteRemoved != null)
-                          widget.onFavouriteRemoved!();
-                      },
-                      toastType: 'Video'),
+                  padding: const EdgeInsets.only(left: 10, top: 2.0, right: 5),
+                  child: SizedBox(
+                    height: 15,
+                    width: 25,
+                    child: FavouriteWidget(
+                        alignment: Alignment.topCenter,
+                        disablePadding: true,
+                        iconSize: 15,
+                        isLiked: favoriteProvider
+                            .isLikedVideoPresentLocally(widget.item!),
+                        onAdd: () {
+                          favoriteProvider.storeLikedVideoLocally(widget.item!);
+                        },
+                        onRemove: () {
+                          favoriteProvider.storeLikedVideoLocally(widget.item!,
+                              forceRemove: true);
+                          if (widget.onFavouriteRemoved != null)
+                            widget.onFavouriteRemoved!();
+                        },
+                        toastType: 'Video'),
+                  ),
                 )
               ],
             ),
@@ -273,6 +307,10 @@ class _NewFeedListItemState extends State<NewFeedListItem> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return listTile();
   }
+
+  @override
+  bool get wantKeepAlive => initialStartDuration != null;
 }
