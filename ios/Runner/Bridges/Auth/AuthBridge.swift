@@ -43,6 +43,15 @@ class AuthBridge {
 					player.play()
 					window?.rootViewController?.present(controller, animated: true)
 					result("done")
+				case "getHTMLStringForContent":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let string = arguments ["string"] as? String
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					self?.getHtml(string: string, result: result)
 				case "validateHiveKey":
 					guard
 						let arguments = call.arguments as? NSDictionary,
@@ -157,6 +166,18 @@ class AuthBridge {
 				default: debugPrint("do nothing")
 			}
 		})
+	}
+
+	private func getHtml(string: String, result: @escaping FlutterResult) {
+		guard let acela = acela else {
+			result(FlutterError(code: "ERROR",
+													message: "Error setting up Hive",
+													details: nil))
+			return
+		}
+		acela.getHtml(string: string) { response in
+			result(response)
+		}
 	}
 
 	private func authenticate(username: String, postingKey: String, result: @escaping FlutterResult) {

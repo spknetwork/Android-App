@@ -270,6 +270,15 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   }
 
   void completeVideo(HiveUserData user) async {
+    const platform = MethodChannel('com.example.acela/auth');
+    const markdownText = "### This is Header 3.\nThis is some *bold* text.\n------\nThis is sep.\nThis is emoji 🤣\nThis is @sagarkothari88 user on hive.";
+    var markdownTextData = base64.encode(utf8.encode(markdownText));
+    final String markdownTextDataResponse = await platform.invokeMethod('getHTMLStringForContent', {
+      'string': markdownTextData,
+    });
+    var bridgeResponseForMarkDown = LoginBridgeResponse.fromJsonString(markdownTextDataResponse);
+    var resultedString = utf8.decode(base64.decode(bridgeResponseForMarkDown.data ?? ""));
+    log('Hive content renderer based string is as follows.\n$resultedString');
     setState(() {
       isCompleting = true;
       processText = 'Updating video info';
@@ -307,7 +316,6 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           return;
         }
         await Future.delayed(const Duration(seconds: 1), () {});
-        const platform = MethodChannel('com.example.acela/auth');
         var title = base64.encode(utf8.encode(widget.title));
         var description = widget.subtitle;
         // if (!(description.contains(Communicator.suffixText))) {

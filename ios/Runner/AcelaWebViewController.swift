@@ -24,6 +24,7 @@ class AcelaWebViewController: UIViewController {
 	var getDecryptedHASTokenHandler: ((String) -> Void)? = nil
 	var voteContentHandler: ((String) -> Void)? = nil
 	var commentOnContentHandler: ((String) -> Void)? = nil
+	var getHtmlHandler: ((String) -> Void)? = nil
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -35,11 +36,18 @@ class AcelaWebViewController: UIViewController {
 		else { return }
 		let dir = url.deletingLastPathComponent()
 		webView?.loadFileURL(url, allowingReadAccessTo: dir)
-#if DEBUG
+//#if DEBUG
 		if #available(iOS 16.4, *) {
 			self.webView?.isInspectable = true
 		}
-#endif
+//#endif
+	}
+
+	func getHtml(string: String, handler: @escaping (String) -> Void) {
+		getHtmlHandler = handler
+		OperationQueue.main.addOperation {
+			self.webView?.evaluateJavaScript("getHTMLStringForContent('\(string)');")
+		}
 	}
 
  	func validatePostingKey(
@@ -223,6 +231,11 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
 				commentOnContentHandler?(response)
+			case "getHTMLStringForContent":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				getHtmlHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}
