@@ -81,6 +81,7 @@ class MainActivity : AudioServiceActivity() {
             val newBene = call.argument<String?>("newBene")
             val language = call.argument<String?>("language")
             val powerUp = call.argument<Boolean?>("powerUp")
+            val string = call.argument<String?>("string")
 
             val data = call.argument<String?>("data")
             if (call.method == "playFullscreen" && url != null && seconds != null) {
@@ -92,6 +93,8 @@ class MainActivity : AudioServiceActivity() {
                 startActivity(intent)
             } else if (call.method == "validateHiveKey" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
+            } else if (call.method == "getHTMLStringForContent" && string != null) {
+                webView?.evaluateJavascript("getHTMLStringForContent('$string');", null)
             } else if (call.method == "encryptedToken" && username != null
                 && postingKey != null && encryptedToken != null
             ) {
@@ -189,6 +192,9 @@ class WebAppInterface(private val mContext: Context) {
             JSBridgeAction.VOTE_CONTENT.value -> {
                 main.result?.success(message)
             }
+            JSBridgeAction.GET_HTML.value -> {
+                main.result?.success(message)
+            }
         }
     }
 }
@@ -205,4 +211,5 @@ enum class JSBridgeAction(val value: String) {
     GET_DECRYPTED_HAS_TOKEN("getDecryptedHASToken"),
     COMMENT_ON_CONTENT("commentOnContent"),
     VOTE_CONTENT("voteContent"),
+    GET_HTML("getHTMLStringForContent"),
 }

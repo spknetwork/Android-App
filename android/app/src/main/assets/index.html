@@ -17,31 +17,36 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
-    <script src="https://unpkg.com/@hiveio/dhive@latest/dist/dhive.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+    <script src="https://unpkg.com/@hiveio/content-renderer"></script>
     <script>
-      const client = new dhive.Client([
-        "https://api.hive.blog",
-        "https://api.hive.blog",
-        "https://api.deathwing.me",
-        "https://hive-api.arcange.eu",
-        "https://hived.emre.sh",
-        "https://api.openhive.network",
-        "https://rpc.ausbit.dev",
-        "https://anyx.io",
-        "https://techcoderx.com",
-        "https://api.hive.blue",
-        "https://api.pharesim.me",
-        "https://hived.privex.io",
-        "https://hive.roelandp.nl",
-      ]);
-
-      const HAS_SERVER = "wss://hive-auth.arcange.eu";
-      const HAS_APP_DATA = {
-        name: "3Speak Mobile Android App",
-        description: "3Speak Mobile Android App with HAS Integration",
-      };
-      const app_key = uuidv4();
+      function getHTMLStringForContent(string) {
+        const renderer = new HiveContentRenderer.DefaultRenderer({
+          baseUrl: "https://hive.blog/",
+          breaks: true,
+          skipSanitization: false,
+          allowInsecureScriptTags: false,
+          addNofollowToLinks: true,
+          doNotShowImages: false,
+          ipfsPrefix: "",
+          assetsWidth: 320,
+          assetsHeight: 246,
+          imageProxyFn: (url) => url,
+          usertagUrlFn: (account) => "/@" + account,
+          hashtagUrlFn: (hashtag) => "/trending/" + hashtag,
+          isLinkSafeFn: (url) => true,
+        });
+        const description = atob(string);
+        const result = renderer.render(description);
+        const base64String = btoa(result);
+        replyToNative({
+          type: "getHTMLStringForContent",
+          valid: true,
+          accountName: "",
+          error: "",
+          data: base64String,
+        });
+      }
 
       function validateHiveKey(accountName, postingKey) {
         console.log("In here before async");
@@ -169,7 +174,7 @@
               firstUpload: firstUpload,
               video_v2: videoV2,
               app: "3speak/0.3.0",
-              mobile_app: "3speak/Android-App/2.1.1+80",
+              mobile_app: "3speak/iOS-App/2.1.1+80",
               developer: "https://hive.blog/@sagarkothari88",
               sourceMap: [
                 ...sourceMap,
@@ -499,6 +504,10 @@
 
       function getRedirectUriData(uname) {
         username = uname.toLowerCase();
+        const HAS_APP_DATA = {
+          name: "3Speak Mobile Android App",
+          description: "3Speak Mobile Android App with HAS Integration",
+        };
         const auth_data = {
           app: HAS_APP_DATA,
           token: undefined,
@@ -546,7 +555,6 @@
       }
 
       function replyToNative(result) {
-        console.log(`Result is ${JSON.stringify(result)}`);
         // window.webkit.messageHandlers.acela.postMessage(result);
         Android.postMessage(JSON.stringify(result));
       }

@@ -439,7 +439,7 @@
 				CURRENT_PROJECT_VERSION = 83;
 				DEVELOPMENT_TEAM = 58LRY57FMK;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NUMBER = 84;
+				FLUTTER_BUILD_NUMBER = 85;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 3Speak.tv;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
@@ -448,7 +448,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.2;
+				MARKETING_VERSION = 2.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.acela;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -585,7 +585,7 @@
 				CURRENT_PROJECT_VERSION = 83;
 				DEVELOPMENT_TEAM = 58LRY57FMK;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NUMBER = 84;
+				FLUTTER_BUILD_NUMBER = 85;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 3Speak.tv;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
@@ -594,7 +594,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.2;
+				MARKETING_VERSION = 2.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.acela;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -617,7 +617,7 @@
 				CURRENT_PROJECT_VERSION = 83;
 				DEVELOPMENT_TEAM = 58LRY57FMK;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NUMBER = 84;
+				FLUTTER_BUILD_NUMBER = 85;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 3Speak.tv;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
@@ -626,7 +626,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.2;
+				MARKETING_VERSION = 2.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.acela;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
