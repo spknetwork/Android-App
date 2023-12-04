@@ -88,7 +88,9 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
       length: 5,
       child: Scaffold(
         appBar: AppBar(
+          leadingWidth: 30,
           title: ListTile(
+            contentPadding: EdgeInsets.zero,
             leading: Image.asset(
               'assets/pod-cast-logo-round.png',
               width: 40,
@@ -107,17 +109,6 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
               Tab(icon: const Icon(Icons.live_tv)),
             ],
           ),
-          actions: [
-            IconButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => AddRssPodcast(),
-                    ),
-                  );
-                },
-                icon: Icon(Icons.add))
-          ],
         ),
         body: Stack(
           children: [
@@ -126,15 +117,7 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
               children: [
                 PodcastFeedsBody(
                     future: trendingFeeds, appData: widget.appData),
-                Consumer<PodcastController>(
-                  builder: (context, myType, child) {
-                    return LikedPodcasts(
-                      appData: widget.appData,
-                      showAppBar: false,
-                      filterOnlyRssPodcasts: true,
-                    );
-                  },
-                ),
+                _rssPodcastTab(context),
                 PodcastCategoriesBody(
                   appData: widget.appData,
                   future: categories,
@@ -147,6 +130,45 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Column _rssPodcastTab(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 10.0, left: 15, right: 15),
+          child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(4)))),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AddRssPodcast(),
+                  ),
+                );
+              },
+              child: Text(
+                "Follow a podcast by url",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                ),
+              )),
+        ),
+        Expanded(
+          child: Consumer<PodcastController>(
+            builder: (context, myType, child) {
+              return LikedPodcasts(
+                appData: widget.appData,
+                showAppBar: false,
+                filterOnlyRssPodcasts: true,
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

@@ -34,7 +34,7 @@ class _LikedPodcastsState extends State<LikedPodcasts> {
             )
           : null,
       body: items.isEmpty
-          ? Center(child: Text(widget.filterOnlyRssPodcasts ? "RSS Podcasts is empty" : "Liked Podcasts is Empty"))
+          ? Center(child: Text(widget.filterOnlyRssPodcasts ? "" : "Liked Podcasts is Empty"))
           : ListView.separated(
               itemBuilder: (c, i) {
                 return Dismissible(

@@ -3,6 +3,7 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:upgrader/upgrader.dart';
 
 import 'src/widgets/audio_player/touch_controls.dart';
@@ -33,8 +35,17 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // await Upgrader.clearSavedSettings(); // for debugging
   await Upgrader.sharedInstance.initialize();
-
-  runApp(const MyApp());
+  if (kDebugMode) {
+    runApp(const MyApp());
+  } else {
+    String dsn = dotenv.get('SENTRY_KEY');
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = dsn;
+      },
+      appRunner: () => runApp(MyApp()),
+    );
+  }
 }
 
 class MyApp extends StatefulWidget {

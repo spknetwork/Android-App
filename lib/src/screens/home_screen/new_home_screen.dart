@@ -181,7 +181,6 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           bottom: TabBar(
             controller: _tabController,
             tabs: myTabs(),
-            isScrollable: true,
           ),
           actions: [
             threeShortsActionButton(),

@@ -43,6 +43,7 @@ class StoryPlayer extends StatefulWidget {
 class _StoryPlayerState extends State<StoryPlayer> {
   late BetterPlayerController _betterPlayerController;
   HivePostInfoPostResultBody? postInfo;
+  bool controlsVisible = false;
 
   var aspectRatio = 0.0; // 0.5625
   double? height;
@@ -51,6 +52,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
   @override
   void dispose() {
     super.dispose();
+    _betterPlayerController.removeEventsListener(controlsVisibilityListenener);
     _betterPlayerController.dispose();
   }
 
@@ -120,10 +122,10 @@ class _StoryPlayerState extends State<StoryPlayer> {
       autoDispose: true,
       expandToFill: true,
       controlsConfiguration: BetterPlayerControlsConfiguration(
-        showControls: false,
-        showControlsOnInitialize: false,
-        enableFullscreen: false,
-      ),
+          showControls: true,
+          showControlsOnInitialize: false,
+          enableFullscreen: false,
+          enableMute: true),
       showPlaceholderUntilPlay: true,
       allowedScreenSleep: false,
       eventListener: (event) {
@@ -142,6 +144,27 @@ class _StoryPlayerState extends State<StoryPlayer> {
       _betterPlayerController = BetterPlayerController(config);
       _betterPlayerController.setupDataSource(dataSource);
     });
+    _betterPlayerController.addEventsListener(controlsVisibilityListenener);
+  }
+
+  void controlsVisibilityListenener(BetterPlayerEvent p0) {
+    if (p0.betterPlayerEventType ==
+        BetterPlayerEventType.controlsVisible) {
+      if (!controlsVisible) {
+        setState(() {
+          controlsVisible = true;
+        });
+      }
+    } else {
+      if (p0.betterPlayerEventType ==
+          BetterPlayerEventType.controlsHiddenEnd) {
+        if (controlsVisible) {
+          setState(() {
+            controlsVisible = false;
+          });
+        }
+      }
+    }
   }
 
   void showError(String string) {
@@ -269,7 +292,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
           },
           onRemove: () {
             provider.storeLikedVideoLocally(widget.item, isShorts: true);
-            if(widget.onRemoveFavouriteCallback!=null) widget.onRemoveFavouriteCallback!();
+            if (widget.onRemoveFavouriteCallback != null)
+              widget.onRemoveFavouriteCallback!();
           }),
       IconButton(
         icon: Icon(Icons.share, color: Colors.blue),
@@ -380,20 +404,23 @@ class _StoryPlayerState extends State<StoryPlayer> {
               : BetterPlayer(
                   controller: _betterPlayerController,
                 ),
-          Row(
-            children: [
-              const Spacer(),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.black54,
+          Visibility(
+            visible: !controlsVisible,
+            child: Row(
+              children: [
+                const Spacer(),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: _fabButtonsOnRight(),
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: _fabButtonsOnRight(),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
