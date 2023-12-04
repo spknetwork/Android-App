@@ -434,24 +434,14 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   void infoPressed(double screenWidth) {
-    var height = (ratio!.height >= ratio!.width)
-        ? 460.0
-        : (ratio!.height * screenWidth / ratio!.width);
-    var boxHeight = MediaQuery.of(context).size.height - height;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      clipBehavior: Clip.hardEdge,
-      builder: (context) {
-        return SizedBox(
-          height: boxHeight,
-          child: NewVideoDetailsInfo(
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => NewVideoDetailsInfo(
             appData: widget.appData,
             item: widget.item,
           ),
-        );
-      },
-    );
+        ));
   }
 
   void seeCommentsPressed() {
