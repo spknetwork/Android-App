@@ -150,7 +150,7 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
                 );
               },
               child: Text(
-                "Follow a podcast by url",
+                "Follow a podcast by URL",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
