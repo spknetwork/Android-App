@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:acela/src/models/hive_comments/new_hive_comment/new_hive_comment.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -29,7 +30,7 @@ class HiveCommentDialog extends StatefulWidget {
   final String permlink;
   final String hasKey;
   final String hasAuthKey;
-  final Function onDone;
+  final Function(VideoCommentModel? comment) onDone;
   final Function onClose;
 
   @override
@@ -126,8 +127,17 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
             Future.delayed(const Duration(seconds: 6), () {
               if (mounted) {
                 setState(() {
+                  VideoCommentModel addedComment = VideoCommentModel(
+                      createdAt: DateTime.now(),
+                      author: VideoCommentAuthorModel(username: widget.author),
+                      permlink: widget.permlink,
+                      body: textController.text,
+                      stats: VideoCommentStatsModel(
+                        numVotes: 0,
+                      ),
+                      children: []);
                   isCommenting = false;
-                  widget.onDone();
+                  widget.onDone(addedComment);
                   Navigator.of(context).pop();
                 });
               }
@@ -221,12 +231,22 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
           loadingQR = true;
           var jsonData = json.encode(socketData);
           socket.sink.add(jsonData);
-        } else if (response.error.isEmpty){
+        } else if (response.error.isEmpty) {
           Future.delayed(const Duration(seconds: 6), () {
             if (mounted) {
               setState(() {
                 isCommenting = false;
-                widget.onDone();
+                VideoCommentModel addedComment = VideoCommentModel(
+                    createdAt: DateTime.now(),
+                    author: VideoCommentAuthorModel(username: widget.author),
+                    permlink: widget.permlink,
+                    body: textController.text,
+                    stats: VideoCommentStatsModel(
+                      numVotes: 0,
+                    ),
+                    children: []);
+                widget.onDone(addedComment);
+                showMessage('Comment published successfully');
                 Navigator.of(context).pop();
               });
             }
@@ -329,8 +349,13 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
     return Scaffold(
       appBar: AppBar(
         title: ListTile(
+          contentPadding: EdgeInsets.zero,
           title: Text("Add Comment"),
-          subtitle: Text("@${widget.author}/${widget.permlink}"),
+          subtitle: Text(
+            "@${widget.author}/${widget.permlink}",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         actions: isCommenting || text.length == 0 || qrCode != null
             ? []

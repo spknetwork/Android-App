@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
@@ -10,6 +12,7 @@ import 'package:acela/src/screens/video_details_screen/video_details_view_model.
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:http/http.dart' as http;
 
@@ -84,7 +87,7 @@ class _GQLFeedListItemWidgetState extends State<GQLFeedListItemWidget> {
               author: author,
               permlink: widget.gqlFeedItem.permlink ?? '',
             );
-            var screen = VideoDetailsScreen(vm: viewModel);
+            var screen = NewVideoDetailsInfo(appData: context.read<HiveUserData>(),item: widget.gqlFeedItem,);
             var route = MaterialPageRoute(builder: (context) => screen);
             Navigator.of(context).push(route);
           },

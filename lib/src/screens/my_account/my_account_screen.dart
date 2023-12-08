@@ -4,6 +4,7 @@ import 'package:acela/src/screens/my_account/account_settings/account_settings_s
 import 'package:acela/src/screens/my_account/update_thumb/update_thumb_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/screens/my_account/video_preview.dart';
+import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -63,14 +64,27 @@ class _MyAccountScreenState extends State<MyAccountScreen>
                 ? 'Posted Videos'
                 : 'Failed Videos';
     return AppBar(
+      leadingWidth: 30,
       title: ListTile(
-        leading: CustomCircleAvatar(
-          height: 36,
-          width: 36,
-          url: 'https://images.hive.blog/u/$username/avatar',
+        contentPadding: EdgeInsets.zero,
+        leading: GestureDetector(
+          onTap: () {
+            var screen = UserChannelScreen(owner: username);
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
+          },
+          child: CustomCircleAvatar(
+            height: 36,
+            width: 36,
+            url: 'https://images.hive.blog/u/$username/avatar',
+          ),
         ),
-        title: Text(username),
-        subtitle: Text(text),
+        title: Text(
+          username,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
       bottom: TabBar(
         controller: _tabController,
@@ -105,7 +119,8 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   Widget _trailingActionOnVideoListItem(VideoDetails item, HiveUserData user) {
     return item.status == 'published'
         ? const Icon(Icons.check, color: Colors.blueAccent)
-        : item.status == "encoding_failed" || item.status.toLowerCase() == "deleted"
+        : item.status == "encoding_failed" ||
+                item.status.toLowerCase() == "deleted"
             ? const Icon(Icons.cancel_outlined, color: Colors.red)
             : item.status == 'publish_manual'
                 ? const Icon(
@@ -144,6 +159,24 @@ class _MyAccountScreenState extends State<MyAccountScreen>
           },
         ),
       );
+      actions.add(
+        BottomSheetAction(
+          title: Text('Delete Video'),
+          onPressed: (context) async {
+            Navigator.of(context).pop();
+            showSnackBar('Deleting...', seconds: 60);
+            bool result = await Communicator().deleteVideo(item.permlink, widget.data);
+            hideSnackBar();
+            if (result) {
+              setState(() {
+                loadVideos = Communicator().loadVideos(widget.data);
+              });
+            } else {
+              showSnackBar("Something went wrong");
+            }
+          },
+        ),
+      );
     }
     if (item.status == 'publish_manual') {
       actions.add(BottomSheetAction(
@@ -178,6 +211,19 @@ class _MyAccountScreenState extends State<MyAccountScreen>
     );
   }
 
+  void showSnackBar(String message, {int seconds = 3}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Deleting..."),
+        duration: Duration(seconds: seconds),
+      ),
+    );
+  }
+
+  void hideSnackBar() {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  }
+
   Widget _videoListItem(VideoDetails item, HiveUserData user) {
     var desc = item.description.length > 30
         ? item.description.substring(0, 30)
@@ -187,14 +233,14 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       leading: Image.network(
         item.getThumbnail(),
       ),
-      title: Text(item.title.length > 30
-          ? item.title.substring(0, 30)
-          : item.title),
+      title: Text(
+          item.title.length > 30 ? item.title.substring(0, 30) : item.title),
       subtitle: Text(desc),
       trailing: _trailingActionOnVideoListItem(item, user),
       onTap: () {
         if (item.status != 'publish_manual' &&
-            item.status != 'encoding_failed' && item.status.toLowerCase() != 'deleted') {
+            item.status != 'encoding_failed' &&
+            item.status.toLowerCase() != 'deleted') {
           _showBottomSheet(item);
         } else if (item.status == 'publish_manual') {
           _showBottomSheet(item);
@@ -242,13 +288,17 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   Widget _videosList(List<VideoDetails> items, HiveUserData user) {
     var published = items.where((item) => item.status == 'published').toList();
     var ready = items.where((item) => item.status == 'publish_manual').toList();
-    var failed =
-        items.where((item) => item.status == 'encoding_failed' || item.status.toLowerCase() == 'Deleted').toList();
+    var failed = items
+        .where((item) =>
+            item.status == 'encoding_failed' ||
+            item.status.toLowerCase() == 'Deleted')
+        .toList();
     var process = items
         .where((item) =>
             item.status != 'published' &&
             item.status != 'publish_manual' &&
-            item.status != 'encoding_failed' && item.status.toLowerCase() != 'deleted')
+            item.status != 'encoding_failed' &&
+            item.status.toLowerCase() != 'deleted')
         .toList();
     return TabBarView(
       controller: _tabController,

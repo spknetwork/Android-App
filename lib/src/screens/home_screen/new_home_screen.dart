@@ -136,32 +136,61 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         },
       ),
       title: Text('3Speak.tv'),
-      subtitle: Text(getSubtitle()),
-    );
-  }
-
-  IconButton threeShortsActionButton() {
-    return IconButton(
-      onPressed: () {
-        var screen = GQLStoriesScreen(appData: widget.appData);
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).push(route);
-      },
-      icon: Image.asset(
-        'assets/branding/three_shorts_icon.png',
+      subtitle: Text(
+        getSubtitle(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  IconButton podcastsActionButton() {
-    return IconButton(
-      onPressed: () {
-        var screen = PodCastTrendingScreen(appData: widget.appData);
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).push(route);
-      },
-      icon: Image.asset(
-        'assets/pod-cast-logo-round.png',
+  SizedBox threeShortsActionButton() {
+    return SizedBox(
+      width: 35,
+      child: IconButton(
+        onPressed: () {
+          var screen = GQLStoriesScreen(appData: widget.appData);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        },
+        icon: Image.asset(
+          'assets/branding/three_shorts_icon.png',
+          height: 25,
+          width: 25,
+        ),
+      ),
+    );
+  }
+
+  SizedBox podcastsActionButton() {
+    return SizedBox(
+      width: 35,
+      child: IconButton(
+        onPressed: () {
+          var screen = PodCastTrendingScreen(appData: widget.appData);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        },
+        icon: Image.asset(
+          'assets/pod-cast-logo-round.png',
+          height: 25,
+          width: 25,
+        ),
+      ),
+    );
+  }
+
+  SizedBox searchIconButton() {
+    return SizedBox(
+      width: 40,
+      child: IconButton(
+        onPressed: () {
+          var route = MaterialPageRoute(
+            builder: (context) => const SearchScreen(),
+          );
+          Navigator.of(context).push(route);
+        },
+        icon: Icon(Icons.search),
       ),
     );
   }
@@ -183,6 +212,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
             tabs: myTabs(),
           ),
           actions: [
+            searchIconButton(),
             threeShortsActionButton(),
             podcastsActionButton(),
           ],

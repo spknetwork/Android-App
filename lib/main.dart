@@ -1,4 +1,5 @@
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
@@ -87,9 +88,15 @@ class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      lazy: false,
-      create: (context) => PodcastController(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (context) => PodcastController(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => VideoSettingProvider())
+      ],
       child: OverlaySupport.global(
         child: futureBuilder(
           StreamProvider<HiveUserData>.value(
@@ -181,7 +188,7 @@ class AcelaApp extends StatelessWidget {
                 child: CircularProgressIndicator(),
               ),
             ),
-      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      theme: isDarkMode ? ThemeData.dark().copyWith(scaffoldBackgroundColor: Colors.black) : ThemeData.light(),
       debugShowCheckedModeBanner: false,
     );
   }

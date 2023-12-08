@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
 import 'package:acela/src/screens/trending_tags/trending_tag_videos.dart';
+import 'package:acela/src/screens/video_details_screen/comment/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
@@ -10,10 +12,9 @@ import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
-import 'package:acela/src/screens/video_details_screen/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
+import 'package:acela/src/screens/video_details_screen/comment/video_details_comments.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/cached_image.dart';
@@ -24,6 +25,7 @@ import 'package:better_player/better_player.dart';
 import 'package:chip_list/chip_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:share_plus/share_plus.dart';
@@ -62,6 +64,8 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
 
   @override
   void dispose() {
+    _betterPlayerController.videoPlayerController!
+        .removeListener(_videoPlayerListener);
     super.dispose();
     Wakelock.disable();
   }
@@ -145,13 +149,34 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     _betterPlayerController.setupDataSource(dataSource);
   }
 
+  void _videoPlayerListener() {
+    final videoSettingProvider = context.read<VideoSettingProvider>();
+    if (_betterPlayerController.videoPlayerController != null &&
+        _betterPlayerController.videoPlayerController!.value.initialized) {
+      if (_betterPlayerController.videoPlayerController!.value.volume == 0.0 &&
+          !videoSettingProvider.isMuted) {
+        videoSettingProvider.changeMuteStatus(true);
+      } else if (_betterPlayerController.videoPlayerController!.value.volume !=
+              0.0 &&
+          videoSettingProvider.isMuted) {
+        videoSettingProvider.changeMuteStatus(false);
+      }
+    }
+  }
+
   void loadRatio() async {
+    final videoSettingProvider = context.read<VideoSettingProvider>();
     var info = await Communicator()
         .getAspectRatio(widget.item.videoV2M3U8(widget.appData));
     setState(() {
       ratio = info;
       setupVideo(widget.item.videoV2M3U8(widget.appData), info);
     });
+    if (videoSettingProvider.isMuted) {
+      _betterPlayerController.setVolume(0.0);
+    }
+    _betterPlayerController.videoPlayerController!
+        .addListener(_videoPlayerListener);
   }
 
   void fullscreenTapped() async {
@@ -256,42 +281,6 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  void commentPressed() {
-    if (postInfo == null) return;
-    if (widget.appData.username == null) {
-      showAdaptiveActionSheet(
-        context: context,
-        title: const Text('You are not logged in. Please log in to comment.'),
-        androidBorderRadius: 30,
-        actions: [
-          BottomSheetAction(
-              title: Text('Log in'),
-              leading: Icon(Icons.login),
-              onPressed: (c) {
-                Navigator.of(c).pop();
-                var screen = HiveAuthLoginScreen(appData: widget.appData);
-                var route = MaterialPageRoute(builder: (c) => screen);
-                Navigator.of(c).push(route);
-              }),
-        ],
-        cancelAction: CancelAction(title: const Text('Cancel')),
-      );
-      return;
-    }
-    var screen = HiveCommentDialog(
-      author: widget.item.author?.username ?? 'sagarkothari88',
-      permlink: widget.item.permlink ?? 'ctbtwcxbbd',
-      username: widget.appData.username ?? "",
-      hasKey: widget.appData.keychainData?.hasId ?? "",
-      hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
-      onClose: () {},
-      onDone: () {
-        loadHiveInfo();
-      },
-    );
-    Navigator.of(context).push(MaterialPageRoute(builder: (c) => screen));
   }
 
   void showVoters() {
@@ -412,22 +401,18 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      clipBehavior: Clip.hardEdge,
       builder: (context) {
-        return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.4,
-          child: HiveUpvoteDialog(
-            author: widget.item.author?.username ?? 'sagarkothari88',
-            permlink: widget.item.permlink ?? 'ctbtwcxbbd',
-            username: widget.appData.username ?? "",
-            hasKey: widget.appData.keychainData?.hasId ?? "",
-            hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
-            activeVotes: postInfo!.activeVotes,
-            onClose: () {},
-            onDone: () {
-              loadHiveInfo();
-            },
-          ),
+        return HiveUpvoteDialog(
+          author: widget.item.author?.username ?? 'sagarkothari88',
+          permlink: widget.item.permlink ?? 'ctbtwcxbbd',
+          username: widget.appData.username ?? "",
+          hasKey: widget.appData.keychainData?.hasId ?? "",
+          hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
+          activeVotes: postInfo!.activeVotes,
+          onClose: () {},
+          onDone: () {
+            loadHiveInfo();
+          },
         );
       },
     );
@@ -452,6 +437,8 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             author: widget.item.author?.username ?? 'sagarkothari88',
             permlink: widget.item.permlink ?? 'ctbtwcxbbd',
             rpc: widget.appData.rpc,
+            appData: widget.appData,
+            item: widget.item,
           );
         },
       ),
@@ -474,13 +461,6 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           IconButton(
             onPressed: () {
               seeCommentsPressed();
-            },
-            icon: Icon(Icons.notes, color: Colors.blue),
-          ),
-          Spacer(),
-          IconButton(
-            onPressed: () {
-              commentPressed();
             },
             icon: Icon(Icons.comment, color: Colors.blue),
           ),

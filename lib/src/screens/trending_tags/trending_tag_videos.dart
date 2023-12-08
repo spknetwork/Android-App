@@ -65,7 +65,6 @@ class _TrendingTagVideosState extends State<TrendingTagVideos>
         bottom: TabBar(
           controller: _tabController,
           tabs: tabs,
-          isScrollable: true,
         ),
         actions: [
           FavouriteWidget(
