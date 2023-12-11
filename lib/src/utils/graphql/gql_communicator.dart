@@ -6,6 +6,7 @@ import 'package:acela/src/models/trending_tags/trending_tags_response.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 
 class GQLCommunicator {
   static const defaultGQLServer =
@@ -188,27 +189,24 @@ class GQLCommunicator {
         "query UserChannelFeed {\n  socialFeed($spkVideoQuery$feedOptionsQuery$paginationQuery)\n$dataQuery");
   }
 
-  static Future<List<VideoCommentModel>> getHiveComments(String userName,String permLink) async {
+   Future<List<VideoCommentModel>> getHiveComments(String userName,String permLink) async {
     try{
     var headers = {
       'Connection': 'keep-alive',
       'content-type': 'application/json',
 
     };
-    var request = http.Request('POST',
-        Uri.parse('https://union.us-02.infra.3speak.tv/api/v2/graphql'));
-    request.body = json.encode({
+    var body = json.encode({
       "query":
           "query GetComments {\n  socialPost(author: \"$userName\", permlink: \"$permLink\") {\n    ... on HivePost {\n      children {\n        ... on HivePost {\n          body\n          permlink\n          created_at\n          author {\n            username\n          }\n          stats {\n            num_votes\n          }\n          children {\n            ... on HivePost {\n              body\n              permlink\n              created_at\n              author {\n                username\n              }\n              stats {\n                num_votes\n              }\n            }\n            children {\n              ... on HivePost {\n                body\n                permlink\n                created_at\n                author {\n                  username\n                }\n                stats {\n                  num_votes\n                }\n              }\n            }\n          }\n        }\n      }\n      body\n    }\n  }\n}",
       "operationName": "GetComments",
       "extensions": {}
     });
-    request.headers.addAll(headers);
-
-    http.StreamedResponse response = await request.send();
+     http.Response response =
+        await post(Uri.parse('https://union.us-02.infra.3speak.tv/api/v2/graphql'),headers: headers,body:body );
 
     if (response.statusCode == 200) {
-      var string = await response.stream.bytesToString();
+      var string =  response.body;
       return GQLHiveCommentReponse.fromRawJson(string).data.socialPost.children  ?? [];
     } else {
       throw response.reasonPhrase ?? 'Error occurred';

@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/safe_convert.dart';
+import 'package:acela/src/widgets/user_profile_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -179,8 +181,18 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
     var voteValue = sliderValue * 100;
     var intVoteValue = voteValue.round();
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Spacer(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            percentageButtons(0.1),
+            percentageButtons(0.25),
+            percentageButtons(0.5),
+            percentageButtons(0.75),
+            percentageButtons(1),
+          ],
+        ),
         Slider(
           value: sliderValue,
           min: 0.1,
@@ -199,8 +211,25 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
         Text(
             "$intVoteValue %${sliderValue >= 0.0 ? "" : "\nDownVote discourages content creator.\nPlease be double sure when downVoting 👎 content."}",
             textAlign: TextAlign.center),
-        const Spacer(),
       ],
+    );
+  }
+
+  Widget percentageButtons(double slideValue) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 15.0),
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            sliderValue = slideValue;
+          });
+        },
+        child: CircleAvatar(
+          radius: 20,
+          child: Text("${(slideValue * 100).round()}",
+              style: const TextStyle(color: Colors.white, fontSize: 15)),
+        ),
+      ),
     );
   }
 
@@ -249,9 +278,19 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
           });
         }
       } else {
+        if(isUpVoting && mounted){
+          setState(() {
+            isUpVoting = false;
+          });
+        }
         showError('Something went wrong.\n${response.error}');
       }
     } catch (e) {
+      if(isUpVoting && mounted){
+          setState(() {
+            isUpVoting = false;
+          });
+        }
       showError('Something went wrong.\n${e.toString()}');
     }
   }
@@ -344,44 +383,55 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
   @override
   Widget build(BuildContext context) {
     var data = Provider.of<HiveUserData>(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: ListTile(
-          title: Text("Vote content"),
-          subtitle: Text("@${widget.author}/${widget.permlink}"),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            // widget.onClose();
-            Navigator.of(context).pop();
-          },
-        ),
-        actions: isUpVoting || sliderValue == 0.0 || qrCode != null
-            ? []
-            : [
-                IconButton(
-                  onPressed: () {
-                    saveButtonTapped(data);
-                  },
-                  icon: Icon(
-                    sliderValue > 0.0
-                        ? Icons.thumb_up_sharp
-                        : Icons.thumb_down_alt_sharp,
-                    color: sliderValue > 0.0 ? Colors.blue : Colors.red,
-                  ),
+    return SizedBox(
+      height: 300,
+      child: Scaffold(
+        floatingActionButton: isUpVoting || sliderValue == 0.0 || qrCode != null
+            ? const SizedBox.shrink()
+            : FloatingActionButton(
+                onPressed: () {
+                  saveButtonTapped(data);
+                },
+                child: Icon(
+                  sliderValue > 0.0
+                      ? Icons.thumb_up_sharp
+                      : Icons.thumb_down_alt_sharp,
+                  color: sliderValue > 0.0 ? Colors.white : Colors.red,
                 ),
-              ],
-      ),
-      body: SafeArea(
-        child:
-        isUpVoting
-                ? qrCode != null
-                    ? _showQRCodeAndKeychainButton(qrCode!)
-                    : const Center(child: CircularProgressIndicator())
-                : qrCode != null
-                    ? _showQRCodeAndKeychainButton(qrCode!)
-                    : _upVoteSlider(),
+              ),
+        appBar: AppBar(
+            toolbarHeight: 60,
+            leadingWidth: 30,
+            automaticallyImplyLeading: false,
+            title: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading:UserProfileImage(userName: widget.author,),
+              title: Text("Upvote",style: TextStyle(color: Colors.white,fontWeight: FontWeight.w500),),
+              subtitle: Text(
+                "@${widget.author}/${widget.permlink}",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            actions: [
+              IconButton(
+                splashRadius: 30,
+                icon: const Icon(Icons.cancel,size: 28,),
+                onPressed: () {
+                  widget.onClose();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ]),
+        body: SafeArea(
+          child: isUpVoting
+              ? qrCode != null
+                  ? _showQRCodeAndKeychainButton(qrCode!)
+                  : const Center(child: CircularProgressIndicator())
+              : qrCode != null
+                  ? _showQRCodeAndKeychainButton(qrCode!)
+                  : _upVoteSlider(),
+        ),
       ),
     );
   }

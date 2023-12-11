@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
+
 class GQLHiveCommentReponse {
   final GQLHiveCommentReponseData data;
 
@@ -48,7 +50,7 @@ class CommentSocialPostModel {
       );
 }
 
-class VideoCommentModel {
+class VideoCommentModel extends Equatable{
   final String? body;
   final String permlink;
   final DateTime? createdAt;
@@ -65,6 +67,20 @@ class VideoCommentModel {
     required this.children,
   });
 
+  VideoCommentModel copyWith({
+    int? numVotes,
+
+  }) {
+    return VideoCommentModel(
+      body: body,
+      permlink: permlink,
+      author: author,
+      children: children,
+      createdAt: createdAt,
+      stats: stats!.copyWith(numVotes : numVotes),
+    );
+  }
+
   factory VideoCommentModel.fromJson(Map<String, dynamic> json) => VideoCommentModel(
         body: json["body"],
         permlink: json["permlink"],
@@ -77,6 +93,9 @@ class VideoCommentModel {
           }
         })) : [],
       );
+      
+        @override
+        List<Object?> get props => [body,permlink,createdAt,author,stats,children];
 }
 
 class VideoCommentAuthorModel {
@@ -92,14 +111,26 @@ class VideoCommentAuthorModel {
 
 }
 
-class VideoCommentStatsModel {
+class VideoCommentStatsModel extends Equatable{
   final int? numVotes;
 
   VideoCommentStatsModel({
     required this.numVotes,
   });
 
-  factory VideoCommentStatsModel.fromJson(Map<String, dynamic> json) => VideoCommentStatsModel(
-        numVotes: json["num_votes"] ?? 0,
+  factory VideoCommentStatsModel.fromJson(Map<String, dynamic>? json) => VideoCommentStatsModel(
+        numVotes: json!=null ? json["num_votes"] ?? 0 : 0,
       );
+  
+  VideoCommentStatsModel copyWith({
+    int? numVotes,
+
+  }) {
+    return VideoCommentStatsModel(
+      numVotes: numVotes ?? this.numVotes
+    );
+  }
+  
+  @override
+  List<Object?> get props => [numVotes];
 }

@@ -2,24 +2,25 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
+import 'package:acela/src/screens/video_details_screen/comment/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
-import 'package:acela/src/screens/video_details_screen/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
+import 'package:acela/src/screens/video_details_screen/comment/video_details_comments.dart';
 import 'package:acela/src/utils/communicator.dart';
-import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:http/http.dart' as http;
 
@@ -53,6 +54,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
   void dispose() {
     super.dispose();
     _betterPlayerController.removeEventsListener(controlsVisibilityListenener);
+    _betterPlayerController.videoPlayerController!.removeListener(_videoPlayerListener);
     _betterPlayerController.dispose();
   }
 
@@ -144,20 +146,39 @@ class _StoryPlayerState extends State<StoryPlayer> {
       _betterPlayerController = BetterPlayerController(config);
       _betterPlayerController.setupDataSource(dataSource);
     });
+    final videoSettingProvider = context.read<VideoSettingProvider>();
+    if (videoSettingProvider.isMuted) {
+      _betterPlayerController.setVolume(0.0);
+    }
+    _betterPlayerController.videoPlayerController!
+        .addListener(_videoPlayerListener);
     _betterPlayerController.addEventsListener(controlsVisibilityListenener);
   }
 
+    void _videoPlayerListener() {
+    final videoSettingProvider = context.read<VideoSettingProvider>();
+    if (_betterPlayerController.videoPlayerController != null &&
+        _betterPlayerController.videoPlayerController!.value.initialized) {
+      if (_betterPlayerController.videoPlayerController!.value.volume == 0.0 &&
+          !videoSettingProvider.isMuted) {
+        videoSettingProvider.changeMuteStatus(true);
+      } else if (_betterPlayerController.videoPlayerController!.value.volume !=
+              0.0 &&
+          videoSettingProvider.isMuted) {
+        videoSettingProvider.changeMuteStatus(false);
+      }
+    }
+  }
+
   void controlsVisibilityListenener(BetterPlayerEvent p0) {
-    if (p0.betterPlayerEventType ==
-        BetterPlayerEventType.controlsVisible) {
+    if (p0.betterPlayerEventType == BetterPlayerEventType.controlsVisible) {
       if (!controlsVisible) {
         setState(() {
           controlsVisible = true;
         });
       }
     } else {
-      if (p0.betterPlayerEventType ==
-          BetterPlayerEventType.controlsHiddenEnd) {
+      if (p0.betterPlayerEventType == BetterPlayerEventType.controlsHiddenEnd) {
         if (controlsVisible) {
           setState(() {
             controlsVisible = false;
@@ -178,6 +199,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
       MaterialPageRoute(
         builder: (context) {
           return VideoDetailsComments(
+            appData: widget.data,
+            item: widget.item,
             author: widget.item.author?.username ?? 'sagarkothari88',
             permlink: widget.item.permlink ?? 'ctbtwcxbbd',
             rpc: widget.data.rpc,
@@ -272,7 +295,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
       hasKey: widget.data.keychainData?.hasId ?? "",
       hasAuthKey: widget.data.keychainData?.hasAuthKey ?? "",
       onClose: () {},
-      onDone: () {
+      onDone: (comment) {
         loadHiveInfo();
       },
     );

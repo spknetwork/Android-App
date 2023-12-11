@@ -9,8 +9,8 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
-import 'package:acela/src/screens/video_details_screen/hive_comment_dialog.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_comments.dart';
+import 'package:acela/src/screens/video_details_screen/comment/hive_comment_dialog.dart';
+import 'package:acela/src/screens/video_details_screen/comment/video_details_comments.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
@@ -188,7 +188,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                           hasKey: appData.keychainData?.hasId ?? "",
                           hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
                           onClose: () {},
-                          onDone: () {
+                          onDone: (comment) {
                             setState(() {
                               _fetchHiveInfoForThisVideo =
                                   fetchHiveInfoForThisVideo(appData.rpc);
@@ -403,17 +403,19 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
         ),
       ),
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) {
-              return VideoDetailsComments(
-                author: widget.vm.author,
-                permlink: widget.vm.permlink,
-                rpc: appData.rpc,
-              );
-            },
-          ),
-        );
+        // Navigator.of(context).push(
+        //   MaterialPageRoute(
+        //     builder: (context) {
+        //       return VideoDetailsComments(
+        //         author: widget.vm.author,
+        //         permlink: widget.vm.permlink,
+        //         rpc: appData.rpc,
+        //         appData: appData,
+        //         item:,
+        //       );
+        //     },
+        //   ),
+        // );
       },
     );
   }

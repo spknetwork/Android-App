@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
@@ -10,8 +11,10 @@ import 'package:acela/src/screens/video_details_screen/video_details_screen.dart
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/cached_image.dart';
+import 'package:acela/src/widgets/mute_unmute_button.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class NewFeedListItem extends StatefulWidget {
@@ -99,6 +102,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         enablePip: false,
         enableFullscreen: false,
         enableSkips: true,
+        enableMute: false
       ),
       autoDetectFullscreenAspectRatio: false,
       autoDetectFullscreenDeviceOrientation: false,
@@ -118,8 +122,11 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   }
 
   void _initVideo() async {
+    final videoSettingProvider = context.read<VideoSettingProvider>();
     setupVideo(widget.item!.videoV2M3U8(widget.appData!));
-    _betterPlayerController!.setVolume(0.0);
+    if (videoSettingProvider.isMuted) {
+      _betterPlayerController!.setVolume(0.0);
+    }
     _betterPlayerController!.videoPlayerController!
         .addListener(_videoPlayerListener);
   }
@@ -157,11 +164,20 @@ class _NewFeedListItemState extends State<NewFeedListItem>
           tileColor: Colors.black,
           contentPadding: EdgeInsets.zero,
           title: widget.showVideo && _betterPlayerController != null
-              ? SizedBox(
-                  height: 230,
-                  child: BetterPlayer(
-                    controller: _betterPlayerController!,
-                  ),
+              ? Stack(
+                  children: [
+                    SizedBox(
+                      height: 230,
+                      child: BetterPlayer(
+                        controller: _betterPlayerController!,
+                      ),
+                    ),
+                    Positioned(
+                        right: 0,
+                        bottom: 15,
+                        child: MuteUnmuteButton(
+                            betterPlayerController: _betterPlayerController!))
+                  ],
                 )
               : CachedImage(
                   imageUrl: widget.thumbUrl,
@@ -203,9 +219,12 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                   },
                 ),
                 Spacer(),
-                Icon(
-                  Icons.thumb_up_sharp,
-                  size: 15,
+                Padding(
+                  padding: const EdgeInsets.only(top :1.0),
+                  child: Icon(
+                    Icons.thumb_up_sharp,
+                    size: 15,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 1.0),

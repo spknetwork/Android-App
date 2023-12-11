@@ -103,13 +103,22 @@ class _GQLStoriesScreenState extends State<GQLStoriesScreen>
 
   Widget appBarHeader() {
     return ListTile(
+      contentPadding: EdgeInsets.zero,
       leading: Image.asset(
         'assets/branding/three_shorts_icon.png',
         height: 40,
         width: 40,
       ),
-      title: Text('3Speak.tv'),
-      subtitle: Text(getSubtitle()),
+      title: Text(
+        '3Speak.tv',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        getSubtitle(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 
@@ -117,11 +126,15 @@ class _GQLStoriesScreenState extends State<GQLStoriesScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 40,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: BackButton(),
+        ),
         title: appBarHeader(),
         bottom: TabBar(
           controller: _tabController,
           tabs: myTabs(),
-          isScrollable: true,
         ),
         actions: [],
       ),

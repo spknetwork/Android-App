@@ -20,6 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 
 class VideoSize {
   double width;
@@ -255,8 +256,7 @@ class Communicator {
             const storage = FlutterSecureStorage();
             await storage.write(key: 'cookie', value: cookie);
             String resolution = await storage.read(key: 'resolution') ?? '480p';
-            String rpc =
-                await storage.read(key: 'rpc') ?? 'api.hive.blog';
+            String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
             String union = await storage.read(key: 'union') ??
                 GQLCommunicator.defaultGQLServer;
             var newData = HiveUserData(
@@ -294,8 +294,7 @@ class Communicator {
           const storage = FlutterSecureStorage();
           await storage.delete(key: 'cookie');
           String resolution = await storage.read(key: 'resolution') ?? '480p';
-          String rpc =
-              await storage.read(key: 'rpc') ?? 'api.hive.blog';
+          String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
           String union = await storage.read(key: 'union') ??
               GQLCommunicator.defaultGQLServer;
           var newData = HiveUserData(
@@ -574,6 +573,34 @@ class Communicator {
           response.reasonPhrase.toString();
       log('Error from server is $error');
       throw error;
+    }
+  }
+
+  Future<bool> deleteVideo(String permlink, HiveUserData user) async {
+    var cookie = await getValidCookie(user);
+    Map<String, String> headers = {
+      "Cookie": cookie,
+      "Content-Type": "application/json"
+    };
+    http.Response response = await get(
+        Uri.parse('https://studio.3speak.tv/mobile/api/video/$permlink/delete'),
+        headers: headers);
+
+    try {
+      if (response.statusCode == 200) {
+        Map map = json.decode(response.body);
+        if (map['success'] && map['message'] == 'Video deleted successfully.') {
+          print(response.body);
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        print(response.reasonPhrase);
+        return false;
+      }
+    } catch (e) {
+      return false;
     }
   }
 }
