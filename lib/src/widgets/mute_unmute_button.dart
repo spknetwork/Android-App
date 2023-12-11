@@ -29,19 +29,20 @@ class _MuteUnmuteButtonState extends State<MuteUnmuteButton> {
       }
     });
 
-    return IconButton(
-      icon: Icon(
-        isMuted ? Icons.volume_off : Icons.volume_up,
-        color: Colors.white,
-      ),
-      onPressed: () {
-        if (!isMuted) {
-          widget.betterPlayerController.setVolume(0);
-        } else {
-          widget.betterPlayerController.setVolume(1);
-        }
-        context.read<VideoSettingProvider>().changeMuteStatus(!isMuted);
-      },
-    );
+    return SizedBox.shrink();
+    // IconButton(
+    //   icon: Icon(
+    //     isMuted ? Icons.volume_off : Icons.volume_up,
+    //     color: Colors.white,
+    //   ),
+    //   onPressed: () {
+    //     if (!isMuted) {
+    //       widget.betterPlayerController.setVolume(0);
+    //     } else {
+    //       widget.betterPlayerController.setVolume(1);
+    //     }
+    //     context.read<VideoSettingProvider>().changeMuteStatus(!isMuted);
+    //   },
+    // );
   }
 }

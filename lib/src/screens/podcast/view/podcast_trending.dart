@@ -105,7 +105,7 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
               Tab(icon: const Icon(Icons.trending_up)),
               Tab(icon: const Icon(FontAwesomeIcons.rss)),
               Tab(icon: const Icon(Icons.category)),
-              Tab(icon: const Icon(Icons.history)),
+              Tab(icon: const Icon(Icons.music_note)),
               Tab(icon: const Icon(Icons.live_tv)),
             ],
           ),

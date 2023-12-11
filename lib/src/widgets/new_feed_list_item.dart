@@ -12,8 +12,10 @@ import 'package:acela/src/screens/video_details_screen/video_details_view_model.
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/widgets/mute_unmute_button.dart';
+import 'package:acela/src/widgets/upvote_button.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -62,12 +64,14 @@ class NewFeedListItem extends StatefulWidget {
 class _NewFeedListItemState extends State<NewFeedListItem>
     with AutomaticKeepAliveClientMixin {
   BetterPlayerController? _betterPlayerController;
+  late final VideoSettingProvider videoSettingProvider;
   Duration? initialStartDuration;
   bool skippedToInitialDuartion = false;
   final VideoFavoriteProvider favoriteProvider = VideoFavoriteProvider();
 
   @override
   void initState() {
+    videoSettingProvider = context.read<VideoSettingProvider>();
     if (widget.showVideo) {
       _initVideo();
     }
@@ -99,11 +103,10 @@ class _NewFeedListItemState extends State<NewFeedListItem>
       autoPlay: true,
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
-        enablePip: false,
-        enableFullscreen: false,
-        enableSkips: true,
-        enableMute: false
-      ),
+          enablePip: false,
+          enableFullscreen: true,
+          enableSkips: true,
+          enableMute: true),
       autoDetectFullscreenAspectRatio: false,
       autoDetectFullscreenDeviceOrientation: false,
       autoDispose: true,
@@ -122,7 +125,6 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   }
 
   void _initVideo() async {
-    final videoSettingProvider = context.read<VideoSettingProvider>();
     setupVideo(widget.item!.videoV2M3U8(widget.appData!));
     if (videoSettingProvider.isMuted) {
       _betterPlayerController!.setVolume(0.0);
@@ -134,6 +136,14 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   _videoPlayerListener() {
     if (_betterPlayerController!.videoPlayerController != null &&
         _betterPlayerController!.videoPlayerController!.value.initialized) {
+      if (_betterPlayerController!.videoPlayerController!.value.volume == 0.0 &&
+          !videoSettingProvider.isMuted) {
+        videoSettingProvider.changeMuteStatus(true);
+      } else if (_betterPlayerController!.videoPlayerController!.value.volume !=
+              0.0 &&
+          videoSettingProvider.isMuted) {
+        videoSettingProvider.changeMuteStatus(false);
+      }
       if (!skippedToInitialDuartion) {
         skippedToInitialDuartion = true;
         if (initialStartDuration != null) {
@@ -152,11 +162,10 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   }
 
   Widget listTile() {
-    String timeInString = widget.createdAt != null
-        ? "📝 ${timeago.format(widget.createdAt!)}"
-        : "";
+    String timeInString =
+        widget.createdAt != null ? "${timeago.format(widget.createdAt!)}" : "";
     String durationString = widget.duration != null
-        ? " 🕚 ${Utilities.formatTime(widget.duration!.toInt())} "
+        ? " ${Utilities.formatTime(widget.duration!.toInt())} "
         : "";
     return Stack(
       children: [
@@ -173,10 +182,11 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                       ),
                     ),
                     Positioned(
-                        right: 0,
-                        bottom: 15,
-                        child: MuteUnmuteButton(
-                            betterPlayerController: _betterPlayerController!))
+                      right: 0,
+                      top: 15,
+                      child: MuteUnmuteButton(
+                          betterPlayerController: _betterPlayerController!),
+                    )
                   ],
                 )
               : CachedImage(
@@ -186,82 +196,123 @@ class _NewFeedListItemState extends State<NewFeedListItem>
           subtitle: ListTile(
             contentPadding: EdgeInsets.all(2),
             dense: true,
-            leading: InkWell(
-              child: ClipOval(
-                child: CachedImage(
-                  imageHeight: 40,
-                  imageWidth: 40,
-                  loadingIndicatorSize: 25,
-                  imageUrl: server.userOwnerThumb(widget.author),
+            leading: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: InkWell(
+                    child: ClipOval(
+                      child: CachedImage(
+                        imageHeight: 40,
+                        imageWidth: 40,
+                        loadingIndicatorSize: 25,
+                        imageUrl: server.userOwnerThumb(widget.author),
+                      ),
+                    ),
+                    onTap: () {
+                      widget.onUserTap();
+                      var screen = UserChannelScreen(owner: widget.author);
+                      var route = MaterialPageRoute(builder: (c) => screen);
+                      Navigator.of(context).push(route);
+                    },
+                  ),
                 ),
-              ),
-              onTap: () {
-                widget.onUserTap();
-                var screen = UserChannelScreen(owner: widget.author);
-                var route = MaterialPageRoute(builder: (c) => screen);
-                Navigator.of(context).push(route);
-              },
+              ],
             ),
             title: Padding(
               padding: const EdgeInsets.only(bottom: 5.0),
               child: Text(widget.title),
             ),
-            subtitle: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            subtitle: Column(
               children: [
-                InkWell(
-                  child: Text('👤 ${widget.author}'),
-                  onTap: () {
-                    widget.onUserTap();
-                    var screen = UserChannelScreen(owner: widget.author);
-                    var route = MaterialPageRoute(builder: (c) => screen);
-                    Navigator.of(context).push(route);
-                  },
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    InkWell(
+                      child: Text('👤 ${widget.author}'),
+                      onTap: () {
+                        widget.onUserTap();
+                        var screen = UserChannelScreen(owner: widget.author);
+                        var route = MaterialPageRoute(builder: (c) => screen);
+                        Navigator.of(context).push(route);
+                      },
+                    ),
+                    Spacer(),
+                    UpvoteButton(
+                      appData: widget.appData!,
+                      item: widget.item!,
+                      votes: widget.votes,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 1.5, left: 15),
+                      child: Icon(
+                        Icons.comment,
+                        size: 15,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 1.0),
+                      child: Text('  ${widget.comments}'),
+                    ),
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(left: 10, top: 2.0, right: 5),
+                      child: SizedBox(
+                        height: 15,
+                        width: 25,
+                        child: FavouriteWidget(
+                            alignment: Alignment.topCenter,
+                            disablePadding: true,
+                            iconSize: 15,
+                            isLiked: favoriteProvider
+                                .isLikedVideoPresentLocally(widget.item!),
+                            onAdd: () {
+                              favoriteProvider
+                                  .storeLikedVideoLocally(widget.item!);
+                            },
+                            onRemove: () {
+                              favoriteProvider.storeLikedVideoLocally(
+                                  widget.item!,
+                                  forceRemove: true);
+                              if (widget.onFavouriteRemoved != null)
+                                widget.onFavouriteRemoved!();
+                            },
+                            toastType: 'Video'),
+                      ),
+                    )
+                  ],
                 ),
-                Spacer(),
                 Padding(
-                  padding: const EdgeInsets.only(top :1.0),
-                  child: Icon(
-                    Icons.thumb_up_sharp,
-                    size: 15,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 1.0),
-                  child: Text('  ${widget.votes ?? 0}'),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 1.5, left: 15),
-                  child: Icon(
-                    Icons.comment,
-                    size: 15,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 1.0),
-                  child: Text('  ${widget.comments}'),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, top: 2.0, right: 5),
-                  child: SizedBox(
-                    height: 15,
-                    width: 25,
-                    child: FavouriteWidget(
-                        alignment: Alignment.topCenter,
-                        disablePadding: true,
-                        iconSize: 15,
-                        isLiked: favoriteProvider
-                            .isLikedVideoPresentLocally(widget.item!),
-                        onAdd: () {
-                          favoriteProvider.storeLikedVideoLocally(widget.item!);
-                        },
-                        onRemove: () {
-                          favoriteProvider.storeLikedVideoLocally(widget.item!,
-                              forceRemove: true);
-                          if (widget.onFavouriteRemoved != null)
-                            widget.onFavouriteRemoved!();
-                        },
-                        toastType: 'Video'),
+                  padding: const EdgeInsets.only(top: 3.0, right: 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.edit_document,
+                            size: 15,
+                          ),
+                          const SizedBox(
+                            width: 2,
+                          ),
+                          Text(timeInString),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.schedule,
+                            size: 15,
+                          ),
+                          const SizedBox(
+                            width: 2,
+                          ),
+                          Text(durationString),
+                        ],
+                      )
+                    ],
                   ),
                 )
               ],
@@ -285,41 +336,6 @@ class _NewFeedListItemState extends State<NewFeedListItem>
             }
           },
         ),
-        Visibility(
-          visible: !widget.showVideo,
-          child: Column(
-            children: [
-              const SizedBox(height: 208),
-              Row(
-                children: [
-                  SizedBox(width: 5),
-                  if (timeInString.isNotEmpty)
-                    Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(timeInString,
-                          style: TextStyle(color: Colors.white)),
-                    ),
-                  Spacer(),
-                  if (durationString.isNotEmpty)
-                    Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(durationString,
-                          style: TextStyle(color: Colors.white)),
-                    ),
-                  SizedBox(width: 5),
-                ],
-              )
-            ],
-          ),
-        )
       ],
     );
   }

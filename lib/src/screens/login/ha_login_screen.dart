@@ -342,8 +342,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       if (bridgeResponse.valid) {
         debugPrint("Successful login");
         String resolution = await storage.read(key: 'resolution') ?? '480p';
-        String rpc =
-            await storage.read(key: 'rpc') ?? 'api.hive.blog';
+        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
         String union = await storage.read(key: 'union') ??
             GQLCommunicator.defaultGQLServer;
         String? lang = await storage.read(key: 'lang');
@@ -365,7 +364,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           language: lang,
         );
         server.updateHiveUserData(data);
-        // var cookie = await getValidCookie(user);
+        // var cookie = await Communicator().getValidCookie(data);
+        // log(cookie);
         Navigator.of(context).pop();
         var screen = GQLFeedScreen(
           appData: data,

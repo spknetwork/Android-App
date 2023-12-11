@@ -50,11 +50,13 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   late BetterPlayerController _betterPlayerController;
   HivePostInfoPostResultBody? postInfo;
   var selectedChip = 0;
+  late final VideoSettingProvider videoSettingProvider;
 
   List<GQLFeedItem> suggestions = [];
 
   @override
   void initState() {
+    videoSettingProvider = context.read<VideoSettingProvider>();
     super.initState();
     Wakelock.enable();
     loadRatio();
@@ -129,7 +131,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
         enablePip: false,
-        enableFullscreen: false,
+        enableFullscreen: true,
         enableSkips: true,
       ),
       autoDetectFullscreenAspectRatio: false,
@@ -150,7 +152,6 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   void _videoPlayerListener() {
-    final videoSettingProvider = context.read<VideoSettingProvider>();
     if (_betterPlayerController.videoPlayerController != null &&
         _betterPlayerController.videoPlayerController!.value.initialized) {
       if (_betterPlayerController.videoPlayerController!.value.volume == 0.0 &&
@@ -165,7 +166,6 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   void loadRatio() async {
-    final videoSettingProvider = context.read<VideoSettingProvider>();
     var info = await Communicator()
         .getAspectRatio(widget.item.videoV2M3U8(widget.appData));
     setState(() {
@@ -218,19 +218,6 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
                       },
                       icon: Icon(
                         Icons.arrow_back_outlined,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 15),
-                  CircleAvatar(
-                    backgroundColor: Colors.black.withOpacity(0.6),
-                    child: IconButton(
-                      onPressed: () {
-                        fullscreenTapped();
-                      },
-                      icon: Icon(
-                        Icons.fullscreen,
                         color: Colors.white,
                       ),
                     ),
