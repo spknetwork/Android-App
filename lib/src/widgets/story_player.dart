@@ -15,6 +15,7 @@ import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/comment/video_details_comments.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/widgets/user_profile_image.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -54,7 +55,8 @@ class _StoryPlayerState extends State<StoryPlayer> {
   void dispose() {
     super.dispose();
     _betterPlayerController.removeEventsListener(controlsVisibilityListenener);
-    _betterPlayerController.videoPlayerController!.removeListener(_videoPlayerListener);
+    _betterPlayerController.videoPlayerController!
+        .removeListener(_videoPlayerListener);
     _betterPlayerController.dispose();
   }
 
@@ -155,7 +157,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
     _betterPlayerController.addEventsListener(controlsVisibilityListenener);
   }
 
-    void _videoPlayerListener() {
+  void _videoPlayerListener() {
     final videoSettingProvider = context.read<VideoSettingProvider>();
     if (_betterPlayerController.videoPlayerController != null &&
         _betterPlayerController.videoPlayerController!.value.initialized) {
@@ -379,41 +381,6 @@ class _StoryPlayerState extends State<StoryPlayer> {
         },
       ),
       SizedBox(height: 10),
-      IconButton(
-        icon: ClipOval(
-          child: CachedNetworkImage(
-            height: 40,
-            width: 40,
-            imageUrl: server.userOwnerThumb(
-                widget.item.author?.username ?? 'sagarkothari88'),
-            progressIndicatorBuilder: (context, url, progress) => Container(
-              padding: EdgeInsets.all(8),
-              height: 40,
-              width: 40,
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.blue)),
-              child: CircularProgressIndicator(
-                strokeWidth: 1,
-              ),
-            ),
-            errorWidget: (context, url, error) => Container(
-              height: 40,
-              width: 40,
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.blue)),
-            ),
-          ),
-        ),
-        onPressed: () {
-          var screen = UserChannelScreen(
-              owner: widget.item.author?.username ?? 'sagarkothari88');
-          var route = MaterialPageRoute(builder: (c) => screen);
-          Navigator.of(context).push(route);
-        },
-      ),
-      SizedBox(height: 10),
     ];
   }
 
@@ -429,20 +396,80 @@ class _StoryPlayerState extends State<StoryPlayer> {
                 ),
           Visibility(
             visible: !controlsVisible,
-            child: Row(
-              children: [
-                const Spacer(),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
+            child: Padding(
+              padding: const EdgeInsets.only(left : 5.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: IconButton(
+                      icon: Row(
+                        children: [
+                          ClipOval(
+                            child: CachedNetworkImage(
+                              height: 40,
+                              width: 40,
+                              imageUrl: server.userOwnerThumb(
+                                  widget.item.author?.username ??
+                                      'sagarkothari88'),
+                              progressIndicatorBuilder:
+                                  (context, url, progress) => Container(
+                                padding: EdgeInsets.all(8),
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.blue)),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1,
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.blue)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
+                          Expanded(
+                            child: Text(
+                              widget.item.author!.username!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        ],
+                      ),
+                      onPressed: () {
+                        var screen = UserChannelScreen(
+                            owner:
+                                widget.item.author?.username ?? 'sagarkothari88');
+                        var route = MaterialPageRoute(builder: (c) => screen);
+                        Navigator.of(context).push(route);
+                      },
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: _fabButtonsOnRight(),
+                  const SizedBox(
+                    width: 35,
                   ),
-                ),
-              ],
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: _fabButtonsOnRight(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

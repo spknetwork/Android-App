@@ -511,6 +511,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                   } else {
                     var item = recommendations[index - 3];
                     return NewFeedListItem(
+                      appData: appData,
                       thumbUrl: server.resizedImage(item.image),
                       author: item.owner,
                       title: item.title,
