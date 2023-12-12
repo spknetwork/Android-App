@@ -224,15 +224,14 @@ class Communicator {
       uri =
           '${Communicator.tsServer}/mobile/login?username=${user.username}&client=mobile';
     }
-    var request = http.Request('GET', Uri.parse(uri));
+    var map;
     if (user.cookie != null) {
-      Map<String, String> map = {"cookie": user.cookie!};
-      request.headers.addAll(map);
+      map = {"cookie": user.cookie!};
     }
     try {
-      http.StreamedResponse response = await request.send();
+      http.Response response = await get(Uri.parse(uri), headers: map);
       if (response.statusCode == 200) {
-        var string = await response.stream.bytesToString();
+        var string = response.body;
         var loginResponse = VideoUploadLoginResponse.fromJsonString(string);
         if (loginResponse.error != null && loginResponse.error!.isNotEmpty) {
           throw 'Error - ${loginResponse.error}';
@@ -286,7 +285,7 @@ class Communicator {
           throw 'Something went wrong.';
         }
       } else if (response.statusCode == 500) {
-        var string = await response.stream.bytesToString();
+        var string = response.body;
         var errorResponse = VideoUploadLoginResponse.fromJsonString(string);
         if (errorResponse.error != null &&
             errorResponse.error!.isNotEmpty &&
@@ -311,7 +310,7 @@ class Communicator {
           server.updateHiveUserData(newData);
           return await getValidCookie(newData);
         } else {
-          throw 'Status code ${response.statusCode}';
+          throw errorResponse.error.toString();
         }
       } else {
         throw 'Status code ${response.statusCode}';
@@ -604,25 +603,26 @@ class Communicator {
     }
   }
 
-  Future<List<VideoDetails>> deleteAccount(HiveUserData user) async {
-    var cookie = await getValidCookie(user);
-    Map<String, String> map = {"cookie": cookie};
-    http.Response response = await get(
-        Uri.parse('${Communicator.tsServer}/mobile/api/account/delete'),
-        headers: map);
-    if (response.statusCode == 200) {
-      var string = response.body;
-      log('My videos response\n\n$string\n\n');
-      var videos = videoItemsFromString(string);
-      log("Ended fetch videos ${DateTime.now().toIso8601String()}");
-      return videos;
-    } else {
-      var string = response.body;
-      log(string);
-      var error = ErrorResponse.fromJsonString(string).error ??
-          response.reasonPhrase.toString();
-      log('Error from server is $error');
-      throw error;
+  Future<bool> deleteAccount(HiveUserData user) async {
+    try {
+      var cookie = await getValidCookie(user);
+      Map<String, String> map = {"cookie": cookie};
+      http.Response response = await get(
+          Uri.parse('${Communicator.tsServer}/mobile/api/account/delete'),
+          headers: map);
+      if (response.statusCode == 200) {
+        var map = json.decode(response.body);
+        return map['success'] && map['message'] == '3Speak Account Deleted.';
+      } else {
+        var string = response.body;
+        log(string);
+        var error = ErrorResponse.fromJsonString(string).error ??
+            response.reasonPhrase.toString();
+        log('Error from server is $error');
+        return false;
+      }
+    } catch (e) {
+      return false;
     }
   }
 }
