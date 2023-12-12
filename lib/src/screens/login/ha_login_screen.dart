@@ -364,8 +364,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           language: lang,
         );
         server.updateHiveUserData(data);
-        // var cookie = await Communicator().getValidCookie(data);
-        // log(cookie);
+        var cookie = await Communicator().getValidCookie(data);
+        log(cookie);
         Navigator.of(context).pop();
         var screen = GQLFeedScreen(
           appData: data,

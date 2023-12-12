@@ -1,5 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -24,7 +25,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     await storage.delete(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-    String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+    String union =
+        await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
     String? lang = await storage.read(key: 'lang');
     server.updateHiveUserData(
       HiveUserData(
@@ -58,6 +60,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               title: const Text('Log Out'),
               onTap: () {
                 logout(data);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete),
+              title: const Text('Delete Account'),
+              onTap: () {
+                Communicator().deleteAccount(data);
               },
             ),
           ],
