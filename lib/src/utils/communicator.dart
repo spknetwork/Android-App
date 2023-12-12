@@ -603,4 +603,26 @@ class Communicator {
       return false;
     }
   }
+
+  Future<List<VideoDetails>> deleteAccount(HiveUserData user) async {
+    var cookie = await getValidCookie(user);
+    Map<String, String> map = {"cookie": cookie};
+    http.Response response = await get(
+        Uri.parse('${Communicator.tsServer}/mobile/api/account/delete'),
+        headers: map);
+    if (response.statusCode == 200) {
+      var string = response.body;
+      log('My videos response\n\n$string\n\n');
+      var videos = videoItemsFromString(string);
+      log("Ended fetch videos ${DateTime.now().toIso8601String()}");
+      return videos;
+    } else {
+      var string = response.body;
+      log(string);
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
+    }
+  }
 }
