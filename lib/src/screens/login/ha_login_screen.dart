@@ -389,6 +389,27 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       setState(() {
         isLoading = false;
       });
+      log(e.toString());
+      if(e == 'No 3Speak Account found with name - ${usernameController.text}'){
+        await storage.delete(key: 'username');
+        await storage.delete(key: 'postingKey');
+        await storage.delete(key: 'hasId');
+        await storage.delete(key: 'hasExpiry');
+        await storage.delete(key: 'hasAuthKey');
+        await storage.delete(key: 'cookie');
+        var data = HiveUserData(
+          username: null,
+          postingKey: null,
+          keychainData: null,
+          cookie: null,
+          resolution: '480p',
+          rpc: 'api.hive.blog',
+          union: GQLCommunicator.defaultGQLServer,
+          loaded: true,
+          language: null,
+        );
+        server.updateHiveUserData(data);
+      }
       showError('Error occurred - ${e.toString()}');
     }
   }
