@@ -8,7 +8,6 @@ import 'package:acela/src/screens/podcast/widgets/podcast_player_widgets/podcast
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
