@@ -109,25 +109,37 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
               Tab(icon: const Icon(Icons.live_tv)),
             ],
           ),
-        ),
-        body: Stack(
-          children: [
-            TabBarView(
-              controller: _tabController,
-              children: [
-                PodcastFeedsBody(
-                    future: trendingFeeds, appData: widget.appData),
-                _rssPodcastTab(context),
-                PodcastCategoriesBody(
-                  appData: widget.appData,
-                  future: categories,
-                ),
-                PodcastFeedsBody(future: recentFeeds, appData: widget.appData),
-                PodcastFeedsBody(future: liveFeeds, appData: widget.appData),
-              ],
+          actions: [
+            IconButton(
+              onPressed: () {
+                var screen = PodCastSearch(appData: widget.appData);
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(context).push(route);
+              },
+              icon: Icon(Icons.search),
             ),
-            _fabContainer()
           ],
+        ),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              TabBarView(
+                controller: _tabController,
+                children: [
+                  PodcastFeedsBody(
+                      future: trendingFeeds, appData: widget.appData),
+                  _rssPodcastTab(context),
+                  PodcastCategoriesBody(
+                    appData: widget.appData,
+                    future: categories,
+                  ),
+                  PodcastFeedsBody(future: recentFeeds, appData: widget.appData),
+                  PodcastFeedsBody(future: liveFeeds, appData: widget.appData),
+                ],
+              ),
+              _fabContainer()
+            ],
+          ),
         ),
       ),
     );
