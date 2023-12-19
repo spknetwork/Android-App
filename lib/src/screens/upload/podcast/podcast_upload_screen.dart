@@ -3,8 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
-import 'package:acela/src/models/video_details_model/video_details.dart';
-import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/upload/podcast/audio_primary_info.dart';
 import 'package:acela/src/utils/communicator.dart';

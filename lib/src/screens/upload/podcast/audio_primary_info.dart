@@ -1,13 +1,16 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
+import 'package:acela/src/screens/upload/podcast/audio_details_info.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class AudioPrimaryInfo extends StatefulWidget {
   const AudioPrimaryInfo({
-    Key? key, required this.title, required this.url,
+    Key? key,
+    required this.title,
+    required this.url,
   }) : super(key: key);
 
   final String title;
@@ -29,7 +32,7 @@ class _AudioPrimaryInfoState extends State<AudioPrimaryInfo> {
   @override
   void initState() {
     super.initState();
-    selectedCommunity ='hive-181335';
+    selectedCommunity = 'hive-181335';
     selectedCommunityVisibleName = 'Three Speak';
     titleController.text = widget.title;
     title = widget.title;
@@ -172,19 +175,18 @@ class _AudioPrimaryInfoState extends State<AudioPrimaryInfo> {
       floatingActionButton: description.isNotEmpty && title.isNotEmpty
           ? FloatingActionButton(
               onPressed: () {
-                // var screen = VideoDetailsInfo(
-                //   item: widget.item,
-                //   title: titleController.text,
-                //   subtitle: descriptionController.text,
-                //   selectedCommunity: selectedCommunity,
-                //   isNsfwContent: isNsfwContent,
-                //   justForEditing: widget.justForEditing,
-                //   hasKey: appData.keychainData?.hasId ?? "",
-                //   hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
-                //   appData: appData,
-                // );
-                // var route = MaterialPageRoute(builder: (c) => screen);
-                // Navigator.of(context).push(route);
+                var screen = AudioDetailsInfoScreen(
+                  title: title,
+                  description: description,
+                  appData: appData,
+                  selectedCommunity: selectedCommunity,
+                  isNsfwContent: isNsfwContent,
+                  hasKey: appData.keychainData?.hasId ?? "",
+                  hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
+                  owner: appData.username ?? "",
+                );
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(context).push(route);
               },
               child: const Text('Next'),
             )
