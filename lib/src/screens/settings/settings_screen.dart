@@ -1,5 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/settings/add_cutom_union_indexer.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/foundation.dart';
@@ -82,8 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         String? hasExpiry = await storage.read(key: 'hasExpiry');
         String? hasAuthKey = await storage.read(key: 'hasAuthKey');
         String? cookie = await storage.read(key: 'cookie');
-        String rpc =
-            await storage.read(key: 'rpc') ?? 'api.hive.blog';
+        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
         String union = await storage.read(key: 'union') ??
             GQLCommunicator.defaultGQLServer;
         String? lang = await storage.read(key: 'lang');
@@ -315,30 +315,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: Text(serverUrl),
       onPressed: (context) async {
         Navigator.of(context).pop();
-        const storage = FlutterSecureStorage();
-        await storage.write(key: 'union', value: serverUrl);
-        server.updateHiveUserData(
-          HiveUserData(
-            username: user.username,
-            postingKey: user.postingKey,
-            keychainData: user.keychainData,
-            cookie: user.cookie,
-            resolution: user.resolution,
-            union: serverUrl,
-            rpc: user.rpc,
-            loaded: true,
-            language: user.language,
-          ),
-        );
+        await _saveUnionIndexer(serverUrl, user);
       },
     );
   }
 
+  Future<void> _saveUnionIndexer(String serverUrl, HiveUserData user) async {
+    const storage = FlutterSecureStorage();
+    await storage.write(key: 'union', value: serverUrl);
+    server.updateHiveUserData(
+      HiveUserData(
+        username: user.username,
+        postingKey: user.postingKey,
+        keychainData: user.keychainData,
+        cookie: user.cookie,
+        resolution: user.resolution,
+        union: serverUrl,
+        rpc: user.rpc,
+        loaded: true,
+        language: user.language,
+      ),
+    );
+  }
+
   void showBottomSheetForUnionIndexer(HiveUserData user) {
-    var list = [
-      'union.us-02.infra.3speak.tv',
-      'threespeak-union-graph-ql.sagarkothari88.one',
-    ].map((e) => getActionForUnionIndexer(e, user)).toList();
+    List<String> nodes = [];
+    nodes.add(GQLCommunicator.defaultGQLServer);
+    if (user.union != GQLCommunicator.defaultGQLServer) {
+      nodes.add(user.union);
+    }
+    var list = nodes.map((e) => getActionForUnionIndexer(e, user)).toList();
+    list.add(BottomSheetAction(
+      title: Text('Custom'),
+      onPressed: (context) async {
+        Navigator.pop(context);
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => AddCustomUnionIndexer(
+              onAdd: (serverUrl) async {
+                Navigator.pop(context);
+                await _saveUnionIndexer(serverUrl, user);
+              },
+            ),
+          ),
+        );
+      },
+    ));
     showAdaptiveActionSheet(
       context: context,
       title: const Text('Select Union Indexer API Node'),
