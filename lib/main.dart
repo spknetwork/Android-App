@@ -94,8 +94,7 @@ class _MyAppState extends State<MyApp> {
           lazy: false,
           create: (context) => PodcastController(),
         ),
-        ChangeNotifierProvider(
-          create: (context) => VideoSettingProvider())
+        ChangeNotifierProvider(create: (context) => VideoSettingProvider())
       ],
       child: OverlaySupport.global(
         child: futureBuilder(
@@ -141,6 +140,11 @@ class _MyAppState extends State<MyApp> {
     String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
     String union =
         await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+    if (union == 'threespeak-union-graph-ql.sagarkothari88.one') {
+      await storage.write(
+          key: 'union', value: GQLCommunicator.defaultGQLServer);
+      union = GQLCommunicator.defaultGQLServer;
+    }
     String? lang = await storage.read(key: 'lang');
     server.updateHiveUserData(
       HiveUserData(
@@ -188,7 +192,9 @@ class AcelaApp extends StatelessWidget {
                 child: CircularProgressIndicator(),
               ),
             ),
-      theme: isDarkMode ? ThemeData.dark().copyWith(scaffoldBackgroundColor: Colors.black) : ThemeData.light(),
+      theme: isDarkMode
+          ? ThemeData.dark().copyWith(scaffoldBackgroundColor: Colors.black)
+          : ThemeData.light(),
       debugShowCheckedModeBanner: false,
     );
   }
