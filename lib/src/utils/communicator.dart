@@ -34,8 +34,8 @@ class VideoSize {
 
 class Communicator {
   // Production
-  static const tsServer = "https://studio.3speak.tv";
-  static const fsServer = "https://uploads.3speak.tv/files";
+  // static const tsServer = "https://studio.3speak.tv";
+  // static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
   // static const fsServer = "http://10.0.2.2:1080/files";
@@ -50,9 +50,8 @@ class Communicator {
   // static const fsServer = "http://192.168.29.53:1080/files";
 
   // iOS Devices - Local server testing different router
-  // static const tsServer = "http://192.168.1.2:13050";
-
-  // static const fsServer = "http://192.168.1.2:1080/files";
+  static const tsServer = "http://192.168.1.12:13050";
+  static const fsServer = "http://192.168.1.12:1080/files";
 
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
@@ -623,6 +622,63 @@ class Communicator {
       }
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<void> uploadPodcast({
+    required HiveUserData user,
+    required String oFilename,
+    required int duration,
+    required double size,
+    required String title,
+    required String description,
+    required bool isNsfwContent,
+    required String tags,
+    required String thumbnail,
+    required String communityID,
+    required String beneficiaries,
+    required bool rewardPowerup,
+    required bool declineRewards,
+    required String episode, // upload path where podcast episode was uploaded
+  }) async {
+    var request = http.Request(
+        'POST', Uri.parse('${Communicator.tsServer}/mobile/api/podcast/add'));
+    request.body = json.encode({
+      'originalFilename': oFilename,
+      'duration': duration,
+      'size': size,
+      'isNsfwContent': isNsfwContent,
+      'owner': user.username ?? 'sagarkothari88',
+      'title': title,
+      'description': description,
+      'communityID': communityID,
+      'beneficiaries': beneficiaries,
+      'rewardPowerup': rewardPowerup,
+      'thumbnail': thumbnail,
+      'episode': episode,
+    });
+    Map<String, String> map = {
+      "cookie": user.cookie ?? "",
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    try {
+      http.StreamedResponse response = await request.send();
+      if (response.statusCode == 200) {
+        log("Successfully sent upload complete");
+        var string = await response.stream.bytesToString();
+        log('Podcast complete response is\n$string');
+        return ;
+      } else {
+        var string = await response.stream.bytesToString();
+        var error = ErrorResponse.fromJsonString(string).error ??
+            response.reasonPhrase.toString();
+        log('Error from server is $error');
+        throw error;
+      }
+    } catch (e) {
+      log('Error from server is ${e.toString()}');
+      rethrow;
     }
   }
 }
