@@ -335,19 +335,20 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           },
         ),
       );
-      //     fabItems.add(
-      //   FabOverItemData(
-      //     displayName: 'podcast upload',
-      //     icon: Icons.upload,
-      //     onTap: () {
-      //       setState(() {
-      //         isMenuOpen = false;
-      //         var route = MaterialPageRoute(builder: (c) => PodcastUploadScreen( data: widget.appData));
-      //       Navigator.of(context).push(route);
-      //       });
-      //     },
-      //   ),
-      // );
+      fabItems.add(
+        FabOverItemData(
+          displayName: 'Upload Podcast Episode',
+          icon: Icons.upload,
+          onTap: () {
+            setState(() {
+              isMenuOpen = false;
+              var route = MaterialPageRoute(
+                  builder: (c) => PodcastUploadScreen(data: widget.appData));
+              Navigator.of(context).push(route);
+            });
+          },
+        ),
+      );
     } else {
       fabItems.add(
         FabOverItemData(

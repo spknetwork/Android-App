@@ -11,10 +11,16 @@ class AudioPrimaryInfo extends StatefulWidget {
     Key? key,
     required this.title,
     required this.url,
+    required this.size,
+    required this.duration,
+    required this.episode,
   }) : super(key: key);
 
   final String title;
   final String url;
+  final int size;
+  final int duration;
+  final String episode;
 
   @override
   State<AudioPrimaryInfo> createState() => _AudioPrimaryInfoState();
@@ -177,6 +183,9 @@ class _AudioPrimaryInfoState extends State<AudioPrimaryInfo> {
               onPressed: () {
                 var screen = AudioDetailsInfoScreen(
                   title: title,
+                  oFileName: widget.title,
+                  duration: widget.duration,
+                  size: widget.size,
                   description: description,
                   appData: appData,
                   selectedCommunity: selectedCommunity,
@@ -184,6 +193,7 @@ class _AudioPrimaryInfoState extends State<AudioPrimaryInfo> {
                   hasKey: appData.keychainData?.hasId ?? "",
                   hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
                   owner: appData.username ?? "",
+                  episode: widget.episode,
                 );
                 var route = MaterialPageRoute(builder: (c) => screen);
                 Navigator.of(context).push(route);

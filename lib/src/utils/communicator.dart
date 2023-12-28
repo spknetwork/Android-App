@@ -50,8 +50,8 @@ class Communicator {
   // static const fsServer = "http://192.168.29.53:1080/files";
 
   // iOS Devices - Local server testing different router
-  static const tsServer = "http://192.168.1.12:13050";
-  static const fsServer = "http://192.168.1.12:1080/files";
+  static const tsServer = "http://192.168.1.8:13050";
+  static const fsServer = "http://192.168.1.8:1080/files";
 
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
@@ -629,14 +629,13 @@ class Communicator {
     required HiveUserData user,
     required String oFilename,
     required int duration,
-    required double size,
+    required int size,
     required String title,
     required String description,
     required bool isNsfwContent,
     required String tags,
     required String thumbnail,
     required String communityID,
-    required String beneficiaries,
     required bool rewardPowerup,
     required bool declineRewards,
     required String episode, // upload path where podcast episode was uploaded
@@ -652,7 +651,6 @@ class Communicator {
       'title': title,
       'description': description,
       'communityID': communityID,
-      'beneficiaries': beneficiaries,
       'rewardPowerup': rewardPowerup,
       'thumbnail': thumbnail,
       'episode': episode,

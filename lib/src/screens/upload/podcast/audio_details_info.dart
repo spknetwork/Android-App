@@ -33,6 +33,10 @@ class AudioDetailsInfoScreen extends StatefulWidget {
     required this.appData,
     required this.isNsfwContent,
     required this.owner,
+    required this.size,
+    required this.duration,
+    required this.oFileName,
+    required this.episode,
   }) : super(key: key);
 
   final String owner;
@@ -43,6 +47,10 @@ class AudioDetailsInfoScreen extends StatefulWidget {
   final String selectedCommunity;
   final HiveUserData appData;
   final bool isNsfwContent;
+  final int size;
+  final int duration;
+  final String oFileName;
+  final String episode;
 
   @override
   State<AudioDetailsInfoScreen> createState() => _AudioDetailsInfoScreenState();
@@ -132,142 +140,125 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
           ? null
           : thumbIpfs.isNotEmpty
               ? FloatingActionButton.extended(
-                  label:
-                      Text('Publish'),
+                  label: Text('Publish'),
                   onPressed: () {
                     if (user.username != null) {
-                      completeVideo(user);
+                      completePodcastUpload(user);
                     }
                   },
-                  icon:
-                      Icon(Icons.post_add),
+                  icon: Icon(Icons.post_add),
                 )
               : null,
     );
   }
 
-  void completeVideo(HiveUserData user) async {
-    // const platform = MethodChannel('com.example.acela/auth');
-    // setState(() {
-    //   isCompleting = true;
-    //   processText = 'Updating video info';
-    // });
-    // try {
-    //   var doesPostNotExist = await Communicator()
-    //       .doesPostNotExist(widget.owner, widget.permlink, user.rpc);
-    //   if (doesPostNotExist != true) {
-    //     await Communicator().updatePublishState(user, widget.item.id);
-    //     setState(() {
-    //       isCompleting = false;
-    //       processText = '';
-    //       showMessage('Your video was already published.');
-    //       showMyDialog();
-    //     });
-    //   } else {
-    //     var v = await Communicator().updateInfo(
-    //         user: user,
-    //         videoId: widget.item.id,
-    //         title: widget.title,
-    //         description: widget.subtitle,
-    //         isNsfwContent: widget.isNsfwContent,
-    //         tags: tags,
-    //         thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
-    //         communityID: widget.selectedCommunity);
-    //     if (widget.justForEditing) {
-    //       setState(() {
-    //         showMessage('Video details are saved.');
-    //         var screen = MyAccountScreen(data: user);
-    //         Navigator.of(context).pop();
-    //         Navigator.of(context).pop();
-    //         var route = MaterialPageRoute(builder: (c) => screen);
-    //         Navigator.of(context).push(route);
-    //       });
-    //       return;
-    //     }
-    //     await Future.delayed(const Duration(seconds: 1), () {});
-    //     var title = base64.encode(utf8.encode(widget.title));
-    //     var description = widget.subtitle;
-    //     // if (!(description.contains(Communicator.suffixText))) {
-    //     //   description = "$description\n${Communicator.suffixText}";
-    //     // }
-    //     description = base64.encode(utf8.encode(description));
-    //     var ipfsHash = "";
-    //     if (widget.item.video_v2.isNotEmpty) {
-    //       ipfsHash = widget.item.video_v2
-    //           .replaceAll("https://ipfs-3speak.b-cdn.net/ipfs/", "")
-    //           .replaceAll("ipfs://", "")
-    //           .replaceAll("/manifest.m3u8", "");
-    //     }
-    //     final String response = await platform.invokeMethod('newPostVideo', {
-    //       'thumbnail': v.thumbnailValue,
-    //       'video_v2': v.videoValue,
-    //       'description': description,
-    //       'title': title,
-    //       'tags': v.tags,
-    //       'username': user.username,
-    //       'permlink': v.permlink,
-    //       'duration': v.duration,
-    //       'size': v.size,
-    //       'originalFilename': v.originalFilename,
-    //       'firstUpload': v.firstUpload,
-    //       'bene': '',
-    //       'beneW': '',
-    //       'postingKey': user.postingKey ?? '',
-    //       'community': widget.selectedCommunity,
-    //       'ipfsHash': ipfsHash,
-    //       'hasKey': user.keychainData?.hasId ?? '',
-    //       'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
-    //       'newBene': base64.encode(utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
-    //       'language': selectedLanguage.code,
-    //       'powerUp': powerUp100,
-    //     });
-    //     log('Response from platform $response');
-    //     var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
-    //     if (bridgeResponse.error == "success") {
-    //       showMessage(
-    //           'Please wait. Video is posted on Hive but needs to be marked as published.');
-    //       Future.delayed(const Duration(seconds: 6), () async {
-    //         if (mounted) {
-    //           try {
-    //             await Communicator().updatePublishState(user, v.id);
-    //             setState(() {
-    //               isCompleting = false;
-    //               processText = '';
-    //               showMessage('Congratulations. Your video is published.');
-    //               showMyDialog();
-    //             });
-    //           } catch (e) {
-    //             setState(() {
-    //               isCompleting = false;
-    //               processText = '';
-    //               showMessage(
-    //                   'Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
-    //             });
-    //           }
-    //         }
-    //       });
-    //     } else if (bridgeResponse.error == "" &&
-    //         bridgeResponse.data != null &&
-    //         user.keychainData?.hasAuthKey != null) {
-    //       var socketData = {
-    //         "cmd": "sign_req",
-    //         "account": user.username!,
-    //         "token": user.keychainData!.hasId,
-    //         "data": bridgeResponse.data!,
-    //       };
-    //       var jsonData = json.encode(socketData);
-    //       socket.sink.add(jsonData);
-    //     } else {
-    //       throw bridgeResponse.error;
-    //     }
-    //   }
-    // } catch (e) {
-    //   showError(e.toString());
-    //   setState(() {
-    //     isCompleting = false;
-    //     processText = '';
-    //   });
-    // }
+  void completePodcastUpload(HiveUserData user) async {
+    if (thumbIpfs.isEmpty) {
+      // show
+      showError('Please set Thumbnail');
+    }
+    const platform = MethodChannel('com.example.acela/auth');
+    setState(() {
+      isCompleting = true;
+      processText = 'Updating video info';
+    });
+    try {
+      var v = await Communicator().uploadPodcast(
+        user: user,
+        size: widget.size,
+        episode: widget.episode,
+        oFilename: widget.oFileName,
+        rewardPowerup: powerUp100,
+        title: widget.title,
+        description: widget.description,
+        isNsfwContent: widget.isNsfwContent,
+        tags: tags,
+        thumbnail: thumbIpfs,
+        communityID: widget.selectedCommunity,
+        declineRewards: false,
+        duration: widget.duration,
+      );
+      // await Future.delayed(const Duration(seconds: 1), () {});
+      // var title = base64.encode(utf8.encode(widget.title));
+      // var description = widget.description;
+      // description = base64.encode(utf8.encode(description));
+      // var ipfsHash = "";
+      // if (widget.item.video_v2.isNotEmpty) {
+      //   ipfsHash = widget.item.video_v2
+      //       .replaceAll("https://ipfs-3speak.b-cdn.net/ipfs/", "")
+      //       .replaceAll("ipfs://", "")
+      //       .replaceAll("/manifest.m3u8", "");
+      // }
+      // final String response = await platform.invokeMethod('newPostVideo', {
+      //   'thumbnail': v.thumbnailValue,
+      //   'video_v2': v.videoValue,
+      //   'description': description,
+      //   'title': title,
+      //   'tags': v.tags,
+      //   'username': user.username,
+      //   'permlink': v.permlink,
+      //   'duration': v.duration,
+      //   'size': v.size,
+      //   'originalFilename': v.originalFilename,
+      //   'firstUpload': v.firstUpload,
+      //   'bene': '',
+      //   'beneW': '',
+      //   'postingKey': user.postingKey ?? '',
+      //   'community': widget.selectedCommunity,
+      //   'ipfsHash': ipfsHash,
+      //   'hasKey': user.keychainData?.hasId ?? '',
+      //   'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
+      //   'newBene': base64
+      //       .encode(utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
+      //   'language': selectedLanguage.code,
+      //   'powerUp': powerUp100,
+      // });
+      // log('Response from platform $response');
+      // var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
+      // if (bridgeResponse.error == "success") {
+      //   showMessage(
+      //       'Please wait. Video is posted on Hive but needs to be marked as published.');
+      //   Future.delayed(const Duration(seconds: 6), () async {
+      //     if (mounted) {
+      //       try {
+      //         await Communicator().updatePublishState(user, v.id);
+      //         setState(() {
+      //           isCompleting = false;
+      //           processText = '';
+      //           showMessage('Congratulations. Your video is published.');
+      //           showMyDialog();
+      //         });
+      //       } catch (e) {
+      //         setState(() {
+      //           isCompleting = false;
+      //           processText = '';
+      //           showMessage(
+      //               'Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+      //         });
+      //       }
+      //     }
+      //   });
+      // } else if (bridgeResponse.error == "" &&
+      //     bridgeResponse.data != null &&
+      //     user.keychainData?.hasAuthKey != null) {
+      //   var socketData = {
+      //     "cmd": "sign_req",
+      //     "account": user.username!,
+      //     "token": user.keychainData!.hasId,
+      //     "data": bridgeResponse.data!,
+      //   };
+      //   var jsonData = json.encode(socketData);
+      //   socket.sink.add(jsonData);
+      // } else {
+      //   throw bridgeResponse.error;
+      // }
+    } catch (e) {
+      showError(e.toString());
+      setState(() {
+        isCompleting = false;
+        processText = '';
+      });
+    }
   }
 
   void showError(String string) {

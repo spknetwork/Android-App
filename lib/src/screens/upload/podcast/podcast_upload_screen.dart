@@ -12,7 +12,6 @@ import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:images_picker/images_picker.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 import 'package:tus_client/tus_client.dart';
@@ -51,6 +50,9 @@ class _PodcastUploadScreenState extends State<PodcastUploadScreen> {
   var progress = 0.0;
   String fileName = "";
   String audioUrl = "";
+  String tusFileName = "";
+  int fileSize = 0;
+  int duration = 0;
 
   late Subscription _subscription;
   HiveUserData? user;
@@ -151,7 +153,7 @@ class _PodcastUploadScreenState extends State<PodcastUploadScreen> {
         var sizeInMb = fileSize / 1000 / 1000;
         log("Compressed audio file size in mb is - $sizeInMb");
         if (sizeInMb > 1024) {
-          throw 'Video is too big to be uploaded from mobile (exceeding 500 mb)';
+          throw 'Podcast Episode is too big to be uploaded from mobile (exceeding 500 mb)';
         }
         var path = file.path;
         MediaInformationSession session =
@@ -159,7 +161,11 @@ class _PodcastUploadScreenState extends State<PodcastUploadScreen> {
         var info = session.getMediaInformation();
         var duration =
             (double.tryParse(info?.getDuration() ?? "0.0") ?? 0.0).toInt();
-        log('Video duration is $duration');
+        log('Podcast Episode duration is $duration');
+        setState(() {
+          this.duration = duration;
+          this.fileSize = fileSize;
+        });
         var name = await initiateUpload(path);
         log(name);
         var dateEndUploadVideo = DateTime.now();
@@ -167,55 +173,11 @@ class _PodcastUploadScreenState extends State<PodcastUploadScreen> {
         setState(() {
           timeUpload = '${diff.inSeconds} seconds';
           didUpload = true;
+          tusFileName = name;
         });
-        // --- Step 3. Video upload
-
-        // Step 4. Generate Thumbnail
-        // var dateStartTakingThumbnail = DateTime.now();
-        // setState(() {
-        //   didStartTakeDefaultThumbnail = true;
-        // });
-        // var thumbPath = await getThumbnail(path);
-        // var dateEndTakingThumbnail = DateTime.now();
-        // diff = dateEndTakingThumbnail.difference(dateStartTakingThumbnail);
-        // setState(() {
-        //   timeTakeDefaultThumbnail = '${diff.inSeconds} seconds';
-        //   didTakeDefaultThumbnail = true;
-        // });
-
-        // --- Step 4. Generate Thumbnail
-
-        // Step 5. Upload Thumbnail
-        // var dateStartUploadThumbnail = DateTime.now();
-        // setState(() {
-        //   didStartUploadThumbnail = true;
-        // });
-        // var thumbName = await initiateUpload(thumbPath, true);
-        // var dateEndUploadThumbnail = DateTime.now();
-        // diff = dateEndUploadThumbnail.difference(dateStartUploadThumbnail);
-        // setState(() {
-        //   timeUploadThumbnail = '${diff.inSeconds} seconds';
-        //   didUploadThumbnail = true;
-        // });
-        // // --- Step 5. Upload Thumbnail
-        // log('Uploaded file name is $name');
-        // log('Uploaded thumbnail file name is $thumbName');
-
-        // Step 6. Move Video to Queue
-        // var dateStartMoveToQueue = DateTime.now();
-        // setState(() {
-        //   didStartMoveToQueue = true;
-        // });
-        // var videoUploadInfo = await Communicator().uploadInfo(
-        //   user: user!,
-        //   thumbnail: thumbName,
-        //   oFilename: originalFileName,
-        //   duration: duration,
-        //   size: fileSize.toDouble(),
-        //   tusFileName: name,
-        // );
         _addItem(originalFileName, file.path);
-        showMessage('Video is uploaded & moved to encoding queue');
+        showMessage(
+            'Podcast Episode Audio is uploaded. Hit Next to finish next action items to publish podcast episode.');
         showMyDialog();
         // Step 6. Move Video to Queue
       } else {
@@ -234,13 +196,19 @@ class _PodcastUploadScreenState extends State<PodcastUploadScreen> {
         onPressed: () async {
           Navigator.of(context).pop();
           Navigator.of(context).pop();
-          var screen = AudioPrimaryInfo(url: audioUrl, title: fileName);
+          var screen = AudioPrimaryInfo(
+            url: audioUrl,
+            title: fileName,
+            size: fileSize,
+            duration: duration,
+            episode: tusFileName,
+          );
           var route = MaterialPageRoute(builder: (c) => screen);
           Navigator.of(context).push(route);
         },
         child: const Text('Next'));
     AlertDialog alert = AlertDialog(
-      title: Text("🎉 Upload Complete 🎉"),
+      title: Text("🎉 Podcast Episode Audio Uploaded 🎉"),
       actions: [
         nowButton,
       ],
