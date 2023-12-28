@@ -41,11 +41,14 @@ class _UpvoteButtonState extends State<UpvoteButton> {
               onPressed: upvotePressed,
               icon: Icon(
                 Icons.thumb_up_sharp,
-                size: 15,
+                size: 14,
               ),
             ),
           ),
-          Text(' $votes'),
+          Text(
+            ' $votes',
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+          ),
         ],
       ),
     );

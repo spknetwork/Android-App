@@ -19,7 +19,7 @@ import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
-import 'package:acela/src/widgets/new_feed_list_item.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_feed_list_item.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
 import 'package:chip_list/chip_list.dart';
