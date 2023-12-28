@@ -122,13 +122,11 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
 
   Widget appBarHeader() {
     return ListTile(
+      contentPadding: EdgeInsets.zero,
       leading: InkWell(
-        child: CircleAvatar(
-          child: ClipOval(
-              child: Image.asset('assets/branding/three_speak_icon.png',
-                  height: 40, width: 40)),
-          radius: 20,
-        ),
+        child: ClipOval(
+            child: Image.asset('assets/branding/three_speak_icon.png',
+                height: 33, width: 33)),
         onTap: () {
           var screen = const AboutHomeScreen();
           var route = MaterialPageRoute(builder: (_) => screen);
@@ -136,11 +134,12 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         },
       ),
       title: Text('3Speak.tv'),
-      subtitle: Text(
-        getSubtitle(),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+      // subtitle: Text(
+      //   getSubtitle(),
+      //   maxLines: 1,
+      //   overflow: TextOverflow.ellipsis,
+      //   style: TextStyle(fontSize: 13),
+      // ),
     );
   }
 

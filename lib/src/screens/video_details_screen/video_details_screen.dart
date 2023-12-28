@@ -17,7 +17,7 @@ import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
-import 'package:acela/src/widgets/new_feed_list_item.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_feed_list_item.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

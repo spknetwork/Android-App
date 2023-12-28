@@ -1,7 +1,7 @@
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
-import 'package:acela/src/widgets/new_feed_list_item.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_feed_list_item.dart';
 import 'package:flutter/material.dart';
 
 class FavouriteVideoBody extends StatefulWidget {

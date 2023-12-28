@@ -15,7 +15,7 @@ class VideoPrimaryInfo extends StatefulWidget {
   }) : super(key: key);
   final VideoDetails item;
   final bool justForEditing;
-
+  
   @override
   State<VideoPrimaryInfo> createState() => _VideoPrimaryInfoState();
 }
