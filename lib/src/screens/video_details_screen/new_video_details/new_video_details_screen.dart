@@ -135,7 +135,16 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         enableSkips: true,
       ),
       autoDetectFullscreenAspectRatio: false,
-      autoDetectFullscreenDeviceOrientation: false,
+      deviceOrientationsOnFullScreen: const [
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.portraitUp
+      ],
+      deviceOrientationsAfterFullScreen: const [
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.portraitUp
+      ],
       autoDispose: true,
       expandToFill: true,
       allowedScreenSleep: false,
@@ -204,28 +213,28 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           BetterPlayer(
             controller: _betterPlayerController,
           ),
-          Column(
-            children: [
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  SizedBox(width: 10),
-                  CircleAvatar(
-                    backgroundColor: Colors.black.withOpacity(0.6),
-                    child: IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      icon: Icon(
-                        Icons.arrow_back_outlined,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+          // Column(
+          //   children: [
+          //     SizedBox(height: 10),
+          //     Row(
+          //       children: [
+          //         SizedBox(width: 10),
+          //         CircleAvatar(
+          //           backgroundColor: Colors.black.withOpacity(0.6),
+          //           child: IconButton(
+          //             onPressed: () {
+          //               Navigator.of(context).pop();
+          //             },
+          //             icon: Icon(
+          //               Icons.arrow_back_outlined,
+          //               color: Colors.white,
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );
