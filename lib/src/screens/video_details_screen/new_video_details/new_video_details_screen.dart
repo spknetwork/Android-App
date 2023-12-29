@@ -4,7 +4,6 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
 import 'package:acela/src/screens/trending_tags/trending_tag_videos.dart';
-import 'package:acela/src/screens/video_details_screen/comment/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
@@ -15,14 +14,12 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/comment/video_details_comments.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
+import 'package:acela/src/widgets/box_loading/video_feed_loader.dart';
 import 'package:acela/src/widgets/cached_image.dart';
-import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_feed_list_item.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
-import 'package:chip_list/chip_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -32,27 +29,28 @@ import 'package:share_plus/share_plus.dart';
 import 'package:http/http.dart' as http;
 
 class NewVideoDetailsScreen extends StatefulWidget {
-  const NewVideoDetailsScreen({
-    Key? key,
-    required this.item,
-    required this.appData,
-  });
+  const NewVideoDetailsScreen(
+      {Key? key,
+      required this.item,
+      required this.appData,
+      this.betterPlayerController});
 
   final GQLFeedItem item;
   final HiveUserData appData;
+  final BetterPlayerController? betterPlayerController;
 
   @override
   State<NewVideoDetailsScreen> createState() => _NewVideoDetailsScreenState();
 }
 
 class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
-  VideoSize? ratio;
   late BetterPlayerController _betterPlayerController;
   HivePostInfoPostResultBody? postInfo;
   var selectedChip = 0;
   late final VideoSettingProvider videoSettingProvider;
 
   List<GQLFeedItem> suggestions = [];
+  bool isSuggestionsLoading = true;
 
   @override
   void initState() {
@@ -66,8 +64,10 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
 
   @override
   void dispose() {
-    _betterPlayerController.videoPlayerController!
-        .removeListener(_videoPlayerListener);
+    if (widget.betterPlayerController == null) {
+      _betterPlayerController.videoPlayerController!
+          .removeListener(_videoPlayerListener);
+    }
     super.dispose();
     Wakelock.disable();
   }
@@ -80,6 +80,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
     setState(() {
       suggestions = items;
+      isSuggestionsLoading = false;
     });
   }
 
@@ -122,10 +123,10 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     }
   }
 
-  void setupVideo(String url, VideoSize size) {
+  void setupVideo(String url) {
     BetterPlayerConfiguration betterPlayerConfiguration =
         BetterPlayerConfiguration(
-      aspectRatio: size.width / size.height,
+      // aspectRatio: size.width / size.height,
       fit: BoxFit.contain,
       autoPlay: true,
       fullScreenByDefault: false,
@@ -175,17 +176,19 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   void loadRatio() async {
-    var info = await Communicator()
-        .getAspectRatio(widget.item.videoV2M3U8(widget.appData));
-    setState(() {
-      ratio = info;
-      setupVideo(widget.item.videoV2M3U8(widget.appData), info);
-    });
-    if (videoSettingProvider.isMuted) {
-      _betterPlayerController.setVolume(0.0);
+    if (widget.betterPlayerController != null) {
+      _betterPlayerController = widget.betterPlayerController!;
+      changeControlsVisibility(true);
+    } else {
+      setupVideo(
+        widget.item.videoV2M3U8(widget.appData),
+      );
+      if (videoSettingProvider.isMuted) {
+        _betterPlayerController.setVolume(0.0);
+      }
+      _betterPlayerController.videoPlayerController!
+          .addListener(_videoPlayerListener);
     }
-    _betterPlayerController.videoPlayerController!
-        .addListener(_videoPlayerListener);
   }
 
   void fullscreenTapped() async {
@@ -203,58 +206,119 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   Widget _videoPlayerStack(double screenWidth) {
-    if (ratio == null) return Container();
-    return SizedBox(
-      height: (ratio!.height >= ratio!.width)
-          ? 460.0
-          : (ratio!.height * screenWidth / ratio!.width),
-      child: Stack(
-        children: [
-          BetterPlayer(
-            controller: _betterPlayerController,
-          ),
-          // Column(
-          //   children: [
-          //     SizedBox(height: 10),
-          //     Row(
-          //       children: [
-          //         SizedBox(width: 10),
-          //         CircleAvatar(
-          //           backgroundColor: Colors.black.withOpacity(0.6),
-          //           child: IconButton(
-          //             onPressed: () {
-          //               Navigator.of(context).pop();
-          //             },
-          //             icon: Icon(
-          //               Icons.arrow_back_outlined,
-          //               color: Colors.white,
-          //             ),
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ],
-          // ),
-        ],
+    return Hero(
+      tag: '${widget.item.author}/${widget.item.permlink}',
+      child: SizedBox(
+        height: 230,
+        child: Stack(
+          children: [
+            BetterPlayer(
+              controller: _betterPlayerController,
+            ),
+            // Column(
+            //   children: [
+            //     SizedBox(height: 10),
+            //     Row(
+            //       children: [
+            //         SizedBox(width: 10),
+            //         CircleAvatar(
+            //           backgroundColor: Colors.black.withOpacity(0.6),
+            //           child: IconButton(
+            //             onPressed: () {
+            //               Navigator.of(context).pop();
+            //             },
+            //             icon: Icon(
+            //               Icons.arrow_back_outlined,
+            //               color: Colors.white,
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ],
+            // ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _header() {
     String timeInString = widget.item.createdAt != null
-        ? "📝 ${timeago.format(widget.item.createdAt!)}"
+        ? "${timeago.format(widget.item.createdAt!)}"
         : "";
     String durationString = widget.item.spkvideo?.duration != null
-        ? " 🕚 ${Utilities.formatTime(widget.item.spkvideo!.duration!.toInt())} "
+        ? "${Utilities.formatTime(widget.item.spkvideo!.duration!.toInt())} "
         : "";
-    String votes = "👍 ${widget.item.stats?.numVotes ?? 0}";
-    String comments = "💬 ${widget.item.stats?.numComments ?? 0}";
-    var subtitle =
-        [timeInString, durationString].where((e) => e.isNotEmpty).join(" · ");
-    subtitle = "$subtitle\n$votes · $comments";
-    return ListTile(
-      leading: InkWell(
-        child: ClipOval(
+    Color lightColor = Colors.white70;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.item.title ?? 'No title',
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+          ),
+          const SizedBox(
+            height: 5,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Icon(
+              //   Icons.timelapse,
+              //   color: lightColor,
+              //   size: 13,
+              // ),
+              // const SizedBox(
+              //   width: 5,
+              // ),
+              Text(
+                timeInString,
+                style: TextStyle(
+                    color: lightColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              // Icon(
+              //   Icons.schedule,
+              //   color: lightColor,
+              //   size: 13,
+              // ),
+              // const SizedBox(
+              //   width: 5,
+              // ),
+              Text(
+                durationString,
+                style: TextStyle(
+                    color: lightColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500),
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _userInfo() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20.0, bottom: 5),
+      child: ListTile(
+        splashColor: Colors.transparent,
+        onTap: () {
+          var screen = UserChannelScreen(
+              owner: widget.item.author?.username ?? "sagarkothari88");
+          var route = MaterialPageRoute(builder: (_) => screen);
+          Navigator.of(context).push(route);
+        },
+        leading: ClipOval(
           child: CachedImage(
             imageUrl:
                 'https://images.hive.blog/u/${widget.item.author?.username ?? 'sagarkothari88'}/avatar',
@@ -262,15 +326,11 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             imageWidth: 40,
           ),
         ),
-        onTap: () {
-          var screen = UserChannelScreen(
-              owner: widget.item.author?.username ?? "sagarkothari88");
-          var route = MaterialPageRoute(builder: (_) => screen);
-          Navigator.of(context).push(route);
-        },
+        title: Text(
+          widget.item.author?.username ?? "sagarkothari88",
+          style: TextStyle(color: Colors.white),
+        ),
       ),
-      title: Text(widget.item.author?.username ?? "sagarkothari88"),
-      subtitle: Text(subtitle),
     );
   }
 
@@ -443,45 +503,58 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
 
   Widget _actionBar(double width) {
     final VideoFavoriteProvider provider = VideoFavoriteProvider();
-    return ListTile(
-      title: Row(
+    Color color = Colors.white;
+    String votes = "${widget.item.stats?.numVotes ?? 0}";
+    String comments = "${widget.item.stats?.numComments ?? 0}";
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Spacer(),
           IconButton(
             onPressed: () {
               infoPressed(width);
             },
-            icon: Icon(Icons.info, color: Colors.blue),
+            icon: Icon(Icons.info, color: color),
           ),
-          Spacer(),
-          IconButton(
-            onPressed: () {
-              seeCommentsPressed();
-            },
-            icon: Icon(Icons.comment, color: Colors.blue),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  seeCommentsPressed();
+                },
+                icon: Icon(Icons.comment, color: color),
+              ),
+              Text(comments,
+                  style: TextStyle(color: Colors.white70, fontSize: 13))
+            ],
           ),
-          Spacer(),
-          IconButton(
-            onPressed: () {
-              if (postInfo != null) {
-                showVoters();
-              }
-            },
-            icon: Icon(Icons.thumb_up,
-                color: isUserVoted() ? Colors.blue : Colors.grey),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  if (postInfo != null) {
+                    showVoters();
+                  }
+                },
+                icon: Icon(
+                    isUserVoted() ? Icons.thumb_up : Icons.thumb_up_outlined,
+                    color: color),
+              ),
+              Text(votes, style: TextStyle(color: Colors.white70, fontSize: 13))
+            ],
           ),
-          Spacer(),
           IconButton(
             onPressed: () {
               Share.share(
                   'https://3speak.tv/watch?v=${widget.item.author?.username ?? 'sagarkothari88'}/${widget.item.permlink}');
             },
-            icon: Icon(Icons.share, color: Colors.blue),
+            icon: Icon(Icons.share, color: color),
           ),
-          Spacer(),
           FavouriteWidget(
               toastType: "Video",
-              iconColor: Colors.blue,
+              iconColor: color,
               isLiked: provider.isLikedVideoPresentLocally(widget.item),
               onAdd: () {
                 provider.storeLikedVideoLocally(widget.item);
@@ -508,91 +581,130 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   Widget _chipList() {
-    return ChipList(
-      listOfChipNames:
-          widget.item.tags ?? ['threespeak', 'video', 'threeshorts'],
-      activeBgColorList: [Theme.of(context).primaryColor],
-      inactiveBgColorList: [Theme.of(context).primaryColor],
-      activeTextColorList: const [Colors.white],
-      inactiveTextColorList: const [Colors.white],
-      activeBorderColorList: const [Colors.white],
-      listOfChipIndicesCurrentlySeclected: [selectedChip],
-      extraOnToggle: (selected) {
-        var tags = widget.item.tags ?? ['threespeak', 'video', 'threeshorts'];
-        var screen = TrendingTagVideos(tag: tags[selected]);
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).push(route);
-      },
+    List<String> tags =
+        widget.item.tags ?? ['threespeak', 'video', 'threeshorts'];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15.0, top: 10),
+      child: SizedBox(
+        height: 33,
+        child: ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            scrollDirection: Axis.horizontal,
+            itemCount: tags.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: InkWell(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(18),
+                  ),
+                  onTap: () {
+                    var screen = TrendingTagVideos(tag: tags[index]);
+                    var route = MaterialPageRoute(builder: (c) => screen);
+                    Navigator.of(context).push(route);
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white30),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(18),
+                      ),
+                    ),
+                    child: Text(
+                      tags[index],
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+              );
+            }),
+      ),
     );
   }
 
   Widget _listView(
     double screenWidth,
   ) {
-    if (ratio == null) return Container();
-    var height = (ratio!.height >= ratio!.width)
-        ? 460.0
-        : (ratio!.height * screenWidth / ratio!.width);
     var text = widget.item.spkvideo?.body ?? 'No content';
     if (text.length > 100) {
       text = text.substring(0, 96);
       text = "$text...";
     }
-    return ListView.separated(
-      itemBuilder: (c, i) {
-        if (i == 0) {
-          return Container(height: height);
-        } else if (i == 1) {
-          return ListTile(
-            title: Text(widget.item.title ?? 'No title'),
+    return Expanded(
+      child: ListView.separated(
+        itemBuilder: (c, i) {
+          if (i == 0) {
+            return const SizedBox.shrink();
+          } else if (i == 1) {
+            return _header();
+          } else if (i == 2) {
+            return _userInfo();
+          } else if (i == 3) {
+            return _actionBar(screenWidth);
+          } else if (i == 4) {
+            return _chipList();
+          } else if (i == 5 && isSuggestionsLoading) {
+            return VideoFeedLoader();
+          }
+          var item = suggestions[i - 5];
+          return NewFeedListItem(
+            thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
+            author: item.author?.username ?? '',
+            title: item.title ?? '',
+            createdAt: item.createdAt ?? DateTime.now(),
+            duration: item.spkvideo?.duration ?? 0.0,
+            comments: item.stats?.numComments,
+            hiveRewards: item.stats?.totalHiveReward,
+            votes: item.stats?.numVotes,
+            views: 0,
+            permlink: item.permlink ?? '',
+            onTap: () {},
+            onUserTap: () {},
+            item: item,
+            appData: widget.appData,
           );
-        } else if (i == 2) {
-          return _header();
-        } else if (i == 3) {
-          return _actionBar(screenWidth);
-        } else if (i == 4) {
-          return _chipList();
-        }
-        var item = suggestions[i - 5];
-        return NewFeedListItem(
-          thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
-          author: item.author?.username ?? '',
-          title: item.title ?? '',
-          createdAt: item.createdAt ?? DateTime.now(),
-          duration: item.spkvideo?.duration ?? 0.0,
-          comments: item.stats?.numComments,
-          hiveRewards: item.stats?.totalHiveReward,
-          votes: item.stats?.numVotes,
-          views: 0,
-          permlink: item.permlink ?? '',
-          onTap: () {},
-          onUserTap: () {},
-          item: item,
-          appData: widget.appData,
-        );
-      },
-      separatorBuilder: (c, i) =>
-          const Divider(height: 0, color: Colors.transparent),
-      itemCount: 5 + suggestions.length,
+        },
+        separatorBuilder: (c, i) =>
+            const Divider(height: 0, color: Colors.transparent),
+        itemCount: isSuggestionsLoading ? 6 : 5 + suggestions.length,
+      ),
     );
+  }
+
+  void changeControlsVisibility(bool showControls) {
+    if (widget.betterPlayerController != null) {
+      if (!showControls) {
+        if (!widget.betterPlayerController!.isPlaying()!) {
+          widget.betterPlayerController!.videoPlayerController!.play();
+        }
+      }
+      widget.betterPlayerController!.setControlsAlwaysVisible(false);
+      widget.betterPlayerController!.setControlsEnabled(showControls);
+      widget.betterPlayerController!.setControlsVisibility(showControls);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
-    return Scaffold(
-      body: SafeArea(
-        child: ratio == null
-            ? LoadingScreen(
-                title: 'Loading data',
-                subtitle: 'Please wait',
-              )
-            : Stack(
-                children: [
-                  _listView(width),
-                  _videoPlayerStack(width),
-                ],
-              ),
+    return PopScope(
+      onPopInvoked: (value) {
+        changeControlsVisibility(false);
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              _videoPlayerStack(width),
+              _listView(width),
+            ],
+          ),
+        ),
       ),
     );
   }

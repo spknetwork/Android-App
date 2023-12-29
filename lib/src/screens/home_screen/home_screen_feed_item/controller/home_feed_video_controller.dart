@@ -1,12 +1,13 @@
 import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:better_player/better_player.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class HomeFeedVideoController extends ChangeNotifier {
   Duration? currentDuration;
   Duration? totalDuration;
   bool skippedToInitialDuartion = false;
   bool isInitialized = false;
+  bool isUserOnVideoDetailScreen = false;
 
   void videoPlayerListener(BetterPlayerController? betterPlayerController,
       VideoSettingProvider videoSettingProvider) {
@@ -17,7 +18,8 @@ class HomeFeedVideoController extends ChangeNotifier {
         isInitialized = true;
       }
       if (!betterPlayerController.isFullScreen) {
-        if (betterPlayerController.controlsEnabled) {
+        if (betterPlayerController.controlsEnabled &&
+            !isUserOnVideoDetailScreen) {
           changeControlsVisibility(betterPlayerController, false);
         }
       }
@@ -38,7 +40,9 @@ class HomeFeedVideoController extends ChangeNotifier {
       }
       currentDuration =
           betterPlayerController.videoPlayerController!.value.position;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        notifyListeners();
+      });
       if (betterPlayerController.videoPlayerController!.value.volume == 0.0 &&
           !videoSettingProvider.isMuted) {
         videoSettingProvider.changeMuteStatus(true);
@@ -59,6 +63,9 @@ class HomeFeedVideoController extends ChangeNotifier {
 
   void reset() {
     isInitialized = false;
+    if (isUserOnVideoDetailScreen) {
+      isUserOnVideoDetailScreen = false;
+    }
     notifyListeners();
   }
 }

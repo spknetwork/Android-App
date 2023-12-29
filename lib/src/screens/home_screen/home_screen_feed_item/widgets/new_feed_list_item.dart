@@ -82,6 +82,10 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   @override
   void dispose() {
     homeFeedVideoController.dispose();
+    if (_betterPlayerController != null) {
+      _betterPlayerController!.videoPlayerController?.dispose();
+      _betterPlayerController!.dispose();
+    }
     super.dispose();
   }
 
@@ -95,6 +99,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         _betterPlayerController!.videoPlayerController!
             .removeListener(videoPlayerListener);
         homeFeedVideoController.reset();
+        _betterPlayerController!.videoPlayerController?.dispose();
         _betterPlayerController!.dispose();
         _betterPlayerController = null;
       }
@@ -126,7 +131,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         DeviceOrientation.portraitDown,
         DeviceOrientation.portraitUp
       ],
-      autoDispose: true,
+      autoDispose: false,
       expandToFill: true,
       allowedScreenSleep: false,
     );
@@ -178,9 +183,10 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                       children: [
                         _videoPlayer(),
                         _thumbNailAndLoader(thumbnail),
+                        _nextScreenGestureDetector(),
                         _videoSlider(),
                         _muteUnMuteButton(),
-                        _fullScreenButton()
+                        _fullScreenButton(),
                       ],
                     )
                   : thumbnail,
@@ -270,7 +276,9 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(top: 1.0,),
+                          padding: const EdgeInsets.only(
+                            top: 1.0,
+                          ),
                           child: Text(
                             '  ${widget.comments}',
                             style:
@@ -321,15 +329,36 @@ class _NewFeedListItemState extends State<NewFeedListItem>
               var route = MaterialPageRoute(builder: (context) => screen);
               Navigator.of(context).push(route);
             } else {
-              var screen = NewVideoDetailsScreen(
-                  item: widget.item!, appData: widget.appData!);
-              var route = MaterialPageRoute(builder: (context) => screen);
-              Navigator.of(context).push(route);
+              _pushToVideoDetailScreen();
             }
           },
         ),
       ],
     );
+  }
+
+  Positioned _nextScreenGestureDetector() {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () {
+          _pushToVideoDetailScreen();
+        },
+        child: Container(
+          color: Colors.transparent,
+        ),
+      ),
+    );
+  }
+
+  void _pushToVideoDetailScreen() async {
+    var screen = NewVideoDetailsScreen(
+        betterPlayerController: _betterPlayerController,
+        item: widget.item!,
+        appData: widget.appData!);
+    var route = MaterialPageRoute(builder: (context) => screen);
+    homeFeedVideoController.isUserOnVideoDetailScreen = true;
+    await Navigator.of(context).push(route);
+    homeFeedVideoController.isUserOnVideoDetailScreen = false;
   }
 
   Positioned _fullScreenButton() {
@@ -395,11 +424,14 @@ class _NewFeedListItemState extends State<NewFeedListItem>
     );
   }
 
-  SizedBox _videoPlayer() {
-    return SizedBox(
-      height: 230,
-      child: BetterPlayer(
-        controller: _betterPlayerController!,
+  Hero _videoPlayer() {
+    return Hero(
+      tag: '${widget.item?.author}/${widget.item?.permlink}',
+      child: SizedBox(
+        height: 230,
+        child: BetterPlayer(
+          controller: _betterPlayerController!,
+        ),
       ),
     );
   }
