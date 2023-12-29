@@ -224,15 +224,19 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
                   children: widget.username != null
                       ? [
                           HomeScreenFeedList(
+                            showVideo: currentIndex == 0,
                               feedType: HomeScreenFeedType.userFeed,
                               appData: appData),
                           HomeScreenFeedList(
+                            showVideo: currentIndex == 1,
                               feedType: HomeScreenFeedType.trendingFeed,
                               appData: appData),
                           HomeScreenFeedList(
+                            showVideo: currentIndex == 2,
                               feedType: HomeScreenFeedType.newUploads,
                               appData: appData),
                           HomeScreenFeedList(
+                            showVideo: currentIndex == 3,
                               feedType: HomeScreenFeedType.firstUploads,
                               appData: appData),
                           CommunitiesScreen(
@@ -243,12 +247,15 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
                         ]
                       : [
                           HomeScreenFeedList(
+                            showVideo: currentIndex == 0,
                               feedType: HomeScreenFeedType.trendingFeed,
                               appData: appData),
                           HomeScreenFeedList(
+                            showVideo: currentIndex == 1,
                               feedType: HomeScreenFeedType.newUploads,
                               appData: appData),
                           HomeScreenFeedList(
+                            showVideo: currentIndex == 2,
                               feedType: HomeScreenFeedType.firstUploads,
                               appData: appData),
                           CommunitiesScreen(
