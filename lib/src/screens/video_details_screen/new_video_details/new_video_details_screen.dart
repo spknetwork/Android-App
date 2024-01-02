@@ -261,20 +261,9 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             style: TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
           ),
-          const SizedBox(
-            height: 5,
-          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Icon(
-              //   Icons.timelapse,
-              //   color: lightColor,
-              //   size: 13,
-              // ),
-              // const SizedBox(
-              //   width: 5,
-              // ),
               Text(
                 timeInString,
                 style: TextStyle(
@@ -285,14 +274,6 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
               const SizedBox(
                 width: 10,
               ),
-              // Icon(
-              //   Icons.schedule,
-              //   color: lightColor,
-              //   size: 13,
-              // ),
-              // const SizedBox(
-              //   width: 5,
-              // ),
               Text(
                 durationString,
                 style: TextStyle(
@@ -311,6 +292,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     return Padding(
       padding: const EdgeInsets.only(top: 20.0, bottom: 5),
       child: ListTile(
+        dense: true,
         splashColor: Colors.transparent,
         onTap: () {
           var screen = UserChannelScreen(
@@ -326,6 +308,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             imageWidth: 40,
           ),
         ),
+        trailing: Icon(Icons.arrow_circle_right_outlined),
         title: Text(
           widget.item.author?.username ?? "sagarkothari88",
           style: TextStyle(color: Colors.white),
@@ -584,7 +567,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     List<String> tags =
         widget.item.tags ?? ['threespeak', 'video', 'threeshorts'];
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15.0, top: 10),
+      padding: const EdgeInsets.only(bottom: 15.0, top: 5),
       child: SizedBox(
         height: 33,
         child: ListView.builder(
@@ -637,6 +620,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     }
     return Expanded(
       child: ListView.separated(
+        padding: EdgeInsets.only(top: 10),
         itemBuilder: (c, i) {
           if (i == 0) {
             return const SizedBox.shrink();
