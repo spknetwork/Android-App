@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/my_account/account_settings/account_settings_screen.dart';
@@ -36,7 +38,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
     setState(() {
       loadVideos = Communicator().loadVideos(widget.data);
     });
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       setState(() {
         currentIndex = _tabController.index;
@@ -56,43 +58,33 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   }
 
   AppBar _appBar(String username) {
-    var text = currentIndex == 0
-        ? 'Videos in Encoding'
-        : currentIndex == 1
-            ? 'Ready to post Videos'
-            : currentIndex == 2
-                ? 'Posted Videos'
-                : 'Failed Videos';
     return AppBar(
       leadingWidth: 30,
       title: ListTile(
+        splashColor: Colors.transparent,
         contentPadding: EdgeInsets.zero,
-        leading: GestureDetector(
-          onTap: () {
-            var screen = UserChannelScreen(owner: username);
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
-          },
-          child: CustomCircleAvatar(
-            height: 36,
-            width: 36,
-            url: 'https://images.hive.blog/u/$username/avatar',
-          ),
+        onTap: () {
+          var screen = UserChannelScreen(owner: username);
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).push(route);
+        },
+        leading: CustomCircleAvatar(
+          height: 36,
+          width: 36,
+          url: 'https://images.hive.blog/u/$username/avatar',
         ),
         title: Text(
           username,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
       bottom: TabBar(
         controller: _tabController,
         tabs: [
-          Tab(icon: Icon(Icons.hourglass_top, color: Colors.yellowAccent)),
-          Tab(icon: Icon(Icons.rocket_launch, color: Colors.green)),
-          Tab(icon: Icon(Icons.check, color: Colors.blueAccent)),
-          Tab(icon: Icon(Icons.cancel_rounded, color: Colors.red)),
+          Tab(icon: Text('Publish Now')),
+          Tab(icon: Text('My Videos')),
+          Tab(icon: Text('Others')),
         ],
       ),
       actions: [
@@ -118,14 +110,58 @@ class _MyAccountScreenState extends State<MyAccountScreen>
 
   Widget _trailingActionOnVideoListItem(VideoDetails item, HiveUserData user) {
     return item.status == 'published'
-        ? const Icon(Icons.check, color: Colors.blueAccent)
+        ? const Icon(
+            Icons.more_vert,
+          )
         : item.status == "encoding_failed" ||
                 item.status.toLowerCase() == "deleted"
             ? const Icon(Icons.cancel_outlined, color: Colors.red)
             : item.status == 'publish_manual'
-                ? const Icon(
-                    Icons.rocket_launch,
-                    color: Colors.green,
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 25,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(4))),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 2, vertical: 0)),
+                          onPressed: () {
+                            var screen = VideoPrimaryInfo(
+                                item: item, justForEditing: false);
+                            var route =
+                                MaterialPageRoute(builder: (c) => screen);
+                            Navigator.of(context).push(route);
+                          },
+                          child: Text('Publish'),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      SizedBox(
+                        height: 25,
+                        width: 25,
+                        child: Center(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(4))),
+                                padding: EdgeInsets.zero),
+                            onPressed: () {
+                              _showBottomSheet(item);
+                            },
+                            child: Center(
+                              child: Icon(Icons.more_vert),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   )
                 : const Icon(
                     Icons.hourglass_top,
@@ -165,7 +201,8 @@ class _MyAccountScreenState extends State<MyAccountScreen>
           onPressed: (context) async {
             Navigator.of(context).pop();
             showSnackBar('Deleting...', seconds: 60);
-            bool result = await Communicator().deleteVideo(item.permlink, widget.data);
+            bool result =
+                await Communicator().deleteVideo(item.permlink, widget.data);
             hideSnackBar();
             if (result) {
               setState(() {
@@ -189,17 +226,21 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         },
       ));
     }
-    if (item.status == 'publish_manual') {
-      actions.add(BottomSheetAction(
-        title: Text('Publish'),
-        onPressed: (context) {
-          Navigator.of(context).pop();
-          var screen = VideoPrimaryInfo(item: item, justForEditing: false);
-          var route = MaterialPageRoute(builder: (c) => screen);
-          Navigator.of(context).push(route);
-        },
-      ));
-    }
+    // if (item.status == 'publish_manual') {
+    //   actions.add(BottomSheetAction(
+    //     title: Text(
+    //       'Publish',
+    //       style: TextStyle(
+    //           color: Colors.green, fontSize: 30, fontWeight: FontWeight.bold),
+    //     ),
+    //     onPressed: (context) {
+    //       Navigator.of(context).pop();
+    //       var screen = VideoPrimaryInfo(item: item, justForEditing: false);
+    //       var route = MaterialPageRoute(builder: (c) => screen);
+    //       Navigator.of(context).push(route);
+    //     },
+    //   ));
+    // }
     showAdaptiveActionSheet(
       context: context,
       title: const Text('Options'),
@@ -230,6 +271,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         : item.description;
     // desc = "\n${item.visible_status}";
     return ListTile(
+      contentPadding: EdgeInsets.only(right: 10, left: 10),
       leading: Image.network(
         item.getThumbnail(),
       ),
@@ -241,8 +283,6 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         if (item.status != 'publish_manual' &&
             item.status != 'encoding_failed' &&
             item.status.toLowerCase() != 'deleted') {
-          _showBottomSheet(item);
-        } else if (item.status == 'publish_manual') {
           _showBottomSheet(item);
         }
       },
@@ -259,16 +299,14 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       itemBuilder: (context, index) {
         if (index == 0) {
           var text = currentIndex == 0
-              ? 'Your uploaded videos are in video encoding process\nCome back soon to publish your videos'
+              ? 'Your videos are ready to post\nTap on a video to edit details & publish'
               : currentIndex == 1
-                  ? 'Your videos are ready to post\nTap on a video to edit details & publish'
-                  : currentIndex == 2
-                      ? 'Following videos are already posted\nTap on a video to change thumbnail'
-                      : 'Following videos failed encoding\nTo publish, consider re-uploading';
-          return ListTile(
-            dense: true,
-            tileColor: Colors.black,
-            title: Text(
+                  ? 'Following videos are already posted\nTap on a video to change thumbnail'
+                  : "Here you'll see list of videos which are either in video encoding process or deleted.";
+          return Padding(
+            padding: const EdgeInsets.only(
+                top: 15.0, left: 15, right: 15, bottom: 20),
+            child: Text(
               text,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white),
@@ -286,6 +324,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   }
 
   Widget _videosList(List<VideoDetails> items, HiveUserData user) {
+    log(items.first.created);
     var published = items.where((item) => item.status == 'published').toList();
     var ready = items.where((item) => item.status == 'publish_manual').toList();
     var failed = items
@@ -300,12 +339,18 @@ class _MyAccountScreenState extends State<MyAccountScreen>
             item.status != 'encoding_failed' &&
             item.status.toLowerCase() != 'deleted')
         .toList();
+    var processAndFailed = process + failed;
+    processAndFailed.sort((a, b) {
+      DateTime dateA = DateTime.parse(a.created);
+      DateTime dateB = DateTime.parse(b.created);
+      return dateB.compareTo(dateA); // Compare in descending order
+    });
     return TabBarView(
       controller: _tabController,
       children: [
-        SafeArea(
-          child: _listViewForItems(process, user),
-        ),
+        // SafeArea(
+        //   child: _listViewForItems(process, user),
+        // ),
         SafeArea(
           child: _listViewForItems(ready, user),
         ),
@@ -313,7 +358,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
           child: _listViewForItems(published, user),
         ),
         SafeArea(
-          child: _listViewForItems(failed, user),
+          child: _listViewForItems(processAndFailed, user),
         ),
       ],
     );

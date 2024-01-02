@@ -160,7 +160,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
     const platform = MethodChannel('com.example.acela/auth');
     setState(() {
       isCompleting = true;
-      processText = 'Updating video info';
+      processText = 'Updating Podcast info';
     });
     try {
       var v = await Communicator().uploadPodcast(
@@ -274,7 +274,14 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
   @override
   void initState() {
     super.initState();
-    beneficiaries = [];
+    beneficiaries = [
+        BeneficiariesJson(account: 'sagarkothari88', src: 'mobile', weight: 1),
+        BeneficiariesJson(
+            account: 'spk.beneficiary', src: 'threespeak', weight: 9),
+        BeneficiariesJson(
+            account: 'threespeakleader', src: 'threespeak', weight: 1),
+        BeneficiariesJson(account: widget.appData.username!, src: 'author', weight: 89),
+      ];
     tagsController.text = "threespeak,mobile";
     socket = WebSocketChannel.connect(
       Uri.parse(Communicator.hiveAuthServer),
@@ -337,7 +344,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
               qrCode = null;
             });
             showMessage(
-                'Please wait. Video is posted on Hive but needs to be marked as published.');
+                'Please wait. Podcast is posted on Hive but needs to be marked as published.');
             Future.delayed(const Duration(seconds: 6), () async {
               if (mounted) {
                 try {
@@ -447,7 +454,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
     AlertDialog alert = AlertDialog(
       title: Text("🎉 Congratulations 🎉"),
       content: Text(
-          "Your Video is published on Hive & video is marked as published."),
+          "Your Podcast is published on Hive & podcast is marked as published."),
       actions: [
         okButton,
       ],
@@ -503,7 +510,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
                             height: 160,
                           )
                         : const Text(
-                            'Tap here to add thumbnail for your video\n\nThumbnail is MANDATORY to set.',
+                            'Tap here to add thumbnail for your podcast\n\nThumbnail is MANDATORY to set.',
                             textAlign: TextAlign.center),
           ),
           onTap: () async {
@@ -566,10 +573,18 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
             child: CupertinoSegmentedControl(
               children: {
                 0: Center(
-                  child: Text('50% Power', textAlign: TextAlign.center),
+                  child: Text(
+                    '50% Power',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
                 1: Center(
-                  child: Text('100% Power', textAlign: TextAlign.center),
+                  child: Text(
+                    '100% Power',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white),
+                  ),
                 )
               },
               selectedColor: Theme.of(context).primaryColor,
@@ -600,7 +615,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
         },
         child: Row(
           children: [
-            Text('Video Participants:'),
+            Text('Podcast Participants:'),
             Spacer(),
             Icon(Icons.arrow_drop_down),
           ],
@@ -640,7 +655,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
             height: 400,
             child: Scaffold(
               appBar: AppBar(
-                title: Text('Video Participants'),
+                title: Text('Podcast Participants'),
                 actions: [
                   if (beneficiaries.length < 8)
                     IconButton(

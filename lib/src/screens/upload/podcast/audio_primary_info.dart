@@ -48,8 +48,8 @@ class _AudioPrimaryInfoState extends State<AudioPrimaryInfo> {
     return Row(
       children: [
         Text(isNsfwContent
-            ? 'Video is NOT SAFE for work.'
-            : 'Video is Safe for work.'),
+            ? 'Audio is NOT SAFE for work.'
+            : 'Audio is Safe for work.'),
         const Spacer(),
         Switch(
           value: isNsfwContent,

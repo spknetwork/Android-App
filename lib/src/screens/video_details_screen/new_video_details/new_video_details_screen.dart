@@ -14,12 +14,12 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/comment/video_details_comments.dart';
-import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/box_loading/video_feed_loader.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_feed_list_item.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -132,7 +132,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
         enablePip: false,
-        enableFullscreen: true,
+        enableFullscreen: defaultTargetPlatform == TargetPlatform.android,
         enableSkips: true,
       ),
       autoDetectFullscreenAspectRatio: false,
@@ -215,83 +215,65 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             BetterPlayer(
               controller: _betterPlayerController,
             ),
-            // Column(
-            //   children: [
-            //     SizedBox(height: 10),
-            //     Row(
-            //       children: [
-            //         SizedBox(width: 10),
-            //         CircleAvatar(
-            //           backgroundColor: Colors.black.withOpacity(0.6),
-            //           child: IconButton(
-            //             onPressed: () {
-            //               Navigator.of(context).pop();
-            //             },
-            //             icon: Icon(
-            //               Icons.arrow_back_outlined,
-            //               color: Colors.white,
-            //             ),
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            //   ],
-            // ),
+            _fullScreenButtonForIos(),
           ],
         ),
       ),
     );
   }
 
-  Widget _header() {
-    String timeInString = widget.item.createdAt != null
-        ? "${timeago.format(widget.item.createdAt!)}"
-        : "";
-    String durationString = widget.item.spkvideo?.duration != null
-        ? "${Utilities.formatTime(widget.item.spkvideo!.duration!.toInt())} "
-        : "";
-    Color lightColor = Colors.white70;
+  Padding _fullScreenButtonForIos() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      padding: const EdgeInsets.only(top: 10.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.item.title ?? 'No title',
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
-          ),
+          SizedBox(height: 10),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                timeInString,
-                style: TextStyle(
-                    color: lightColor,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500),
+              SizedBox(width: 10),
+              CircleAvatar(
+                backgroundColor: Colors.black.withOpacity(0.6),
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  icon: Icon(
+                    Icons.arrow_back_outlined,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-              const SizedBox(
-                width: 10,
+              SizedBox(width: 10),
+              Visibility(
+                visible: defaultTargetPlatform == TargetPlatform.iOS,
+                child: CircleAvatar(
+                  backgroundColor: Colors.black.withOpacity(0.6),
+                  child: IconButton(
+                    onPressed: () {
+                      _betterPlayerController.enterFullScreen();
+                    },
+                    icon: Icon(
+                      Icons.fullscreen,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
-              Text(
-                durationString,
-                style: TextStyle(
-                    color: lightColor,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500),
-              )
             ],
-          )
+          ),
         ],
       ),
     );
   }
 
   Widget _userInfo() {
+    String timeInString = widget.item.createdAt != null
+        ? "${timeago.format(widget.item.createdAt!)}"
+        : "";
     return Padding(
-      padding: const EdgeInsets.only(top: 20.0, bottom: 5),
+      padding: const EdgeInsets.only(top: 0.0, bottom: 5),
       child: ListTile(
+        contentPadding: EdgeInsets.only(top: 0, left: 15, right: 15),
         dense: true,
         splashColor: Colors.transparent,
         onTap: () {
@@ -308,10 +290,30 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             imageWidth: 40,
           ),
         ),
-        trailing: Icon(Icons.arrow_circle_right_outlined),
         title: Text(
-          widget.item.author?.username ?? "sagarkothari88",
-          style: TextStyle(color: Colors.white),
+          widget.item.title ?? 'No title',
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+        ),
+        subtitle: Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.item.author?.username ?? "sagarkothari88",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Text(
+              timeInString,
+              style:
+                  TextStyle(color: Colors.white70, fontWeight: FontWeight.w500),
+            ),
+          ],
         ),
       ),
     );
@@ -490,7 +492,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     String votes = "${widget.item.stats?.numVotes ?? 0}";
     String comments = "${widget.item.stats?.numComments ?? 0}";
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -623,19 +625,15 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         padding: EdgeInsets.only(top: 10),
         itemBuilder: (c, i) {
           if (i == 0) {
-            return const SizedBox.shrink();
-          } else if (i == 1) {
-            return _header();
-          } else if (i == 2) {
             return _userInfo();
-          } else if (i == 3) {
+          } else if (i == 1) {
             return _actionBar(screenWidth);
-          } else if (i == 4) {
+          } else if (i == 2) {
             return _chipList();
-          } else if (i == 5 && isSuggestionsLoading) {
+          } else if (i == 3 && isSuggestionsLoading) {
             return VideoFeedLoader();
           }
-          var item = suggestions[i - 5];
+          var item = suggestions[i - 3];
           return NewFeedListItem(
             thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
             author: item.author?.username ?? '',
@@ -655,7 +653,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         },
         separatorBuilder: (c, i) =>
             const Divider(height: 0, color: Colors.transparent),
-        itemCount: isSuggestionsLoading ? 6 : 5 + suggestions.length,
+        itemCount: isSuggestionsLoading ? 4 : 3 + suggestions.length,
       ),
     );
   }

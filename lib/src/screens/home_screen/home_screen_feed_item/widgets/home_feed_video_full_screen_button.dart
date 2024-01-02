@@ -23,7 +23,7 @@ class HomeFeedVideoFullScreenButton extends StatelessWidget {
                 .changeControlsVisibility(betterPlayerController, true);
             betterPlayerController.enterFullScreen();
           },
-          icon: Icon(Icons.fullscreen)),
+          icon: Icon(Icons.fullscreen,color: Colors.white,)),
     );
   }
 }
