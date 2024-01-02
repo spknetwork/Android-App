@@ -11,6 +11,7 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details/new_video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/controller/home_feed_video_controller.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/mute_unmute_button.dart';
@@ -91,7 +92,9 @@ class _NewFeedListItemState extends State<NewFeedListItem>
 
   @override
   void didUpdateWidget(covariant NewFeedListItem oldWidget) {
-    if (widget.showVideo && _betterPlayerController == null) {
+    if (widget.showVideo &&
+        _betterPlayerController == null &&
+        !homeFeedVideoController.isUserOnAnotherScreen) {
       _initVideo();
     } else if (oldWidget.showVideo && !widget.showVideo) {
       if (_betterPlayerController != null) {
@@ -163,6 +166,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   }
 
   Widget listTile() {
+    TextStyle titleStyle = TextStyle(color: Colors.white, fontSize: 13);
     Widget thumbnail = CachedImage(
       imageUrl: widget.thumbUrl,
       imageHeight: 230,
@@ -173,7 +177,6 @@ class _NewFeedListItemState extends State<NewFeedListItem>
     return Stack(
       children: [
         ListTile(
-          tileColor: Colors.black,
           contentPadding: EdgeInsets.zero,
           title: Stack(
             children: [
@@ -197,7 +200,9 @@ class _NewFeedListItemState extends State<NewFeedListItem>
             padding: const EdgeInsets.only(
                 top: 10.0, bottom: 5, left: 13, right: 13),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: isTitleOneLine(titleStyle)
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
               children: [
                 InkWell(
                   child: ClipOval(
@@ -210,9 +215,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                   ),
                   onTap: () {
                     widget.onUserTap();
-                    var screen = UserChannelScreen(owner: widget.author);
-                    var route = MaterialPageRoute(builder: (c) => screen);
-                    Navigator.of(context).push(route);
+                    _pushToUserScreen();
                   },
                 ),
                 const SizedBox(
@@ -228,7 +231,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                         widget.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.white, fontSize: 13),
+                        style: titleStyle,
                       ),
                     ),
                     Row(
@@ -246,11 +249,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                           ),
                           onTap: () {
                             widget.onUserTap();
-                            var screen =
-                                UserChannelScreen(owner: widget.author);
-                            var route =
-                                MaterialPageRoute(builder: (c) => screen);
-                            Navigator.of(context).push(route);
+                            _pushToUserScreen();
                           },
                         ),
                         Expanded(
@@ -337,6 +336,14 @@ class _NewFeedListItemState extends State<NewFeedListItem>
     );
   }
 
+  bool isTitleOneLine(
+    TextStyle titleStyle,
+  ) {
+    return Utilities.textLines(widget.title, titleStyle,
+            MediaQuery.of(context).size.width * 0.78, 2) ==
+        1;
+  }
+
   Positioned _nextScreenGestureDetector() {
     return Positioned.fill(
       child: GestureDetector(
@@ -356,9 +363,31 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         item: widget.item!,
         appData: widget.appData!);
     var route = MaterialPageRoute(builder: (context) => screen);
-    homeFeedVideoController.isUserOnVideoDetailScreen = true;
+    homeFeedVideoController.isUserOnAnotherScreen = true;
     await Navigator.of(context).push(route);
-    homeFeedVideoController.isUserOnVideoDetailScreen = false;
+    homeFeedVideoController.isUserOnAnotherScreen = false;
+    if (widget.showVideo &&
+        _betterPlayerController == null &&
+        !homeFeedVideoController.isUserOnAnotherScreen) {
+      setState(() {
+        _initVideo();
+      });
+    }
+  }
+
+  void _pushToUserScreen() async {
+    var screen = UserChannelScreen(owner: widget.author);
+    var route = MaterialPageRoute(builder: (c) => screen);
+    homeFeedVideoController.isUserOnAnotherScreen = true;
+    await Navigator.of(context).push(route);
+    homeFeedVideoController.isUserOnAnotherScreen = false;
+    if (widget.showVideo &&
+        _betterPlayerController == null &&
+        !homeFeedVideoController.isUserOnAnotherScreen) {
+      setState(() {
+        _initVideo();
+      });
+    }
   }
 
   Positioned _fullScreenButton() {

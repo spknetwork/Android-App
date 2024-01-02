@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Utilities {
   static String formatTime(int seconds) {
     return '${(Duration(seconds: seconds))}'.split('.')[0].padLeft(8, '0');
@@ -22,5 +24,19 @@ class Utilities {
 
   static double durationToDouble(Duration duration) {
     return duration.inMilliseconds / 1000.0;
+  }
+
+  static int textLines(
+      String text, TextStyle style, double maxWidth, int? maxLines) {
+    TextSpan textSpan = TextSpan(text: text, style: style);
+    TextPainter textPainter = TextPainter(
+      text: textSpan,
+      maxLines: maxLines,
+      textAlign: TextAlign.left,
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout(maxWidth: maxWidth);
+
+    return textPainter.computeLineMetrics().length;
   }
 }

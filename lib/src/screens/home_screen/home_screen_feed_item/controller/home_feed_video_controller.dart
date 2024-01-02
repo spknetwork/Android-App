@@ -7,7 +7,7 @@ class HomeFeedVideoController extends ChangeNotifier {
   Duration? totalDuration;
   bool skippedToInitialDuartion = false;
   bool isInitialized = false;
-  bool isUserOnVideoDetailScreen = false;
+  bool isUserOnAnotherScreen = false;
 
   void videoPlayerListener(BetterPlayerController? betterPlayerController,
       VideoSettingProvider videoSettingProvider) {
@@ -18,8 +18,7 @@ class HomeFeedVideoController extends ChangeNotifier {
         isInitialized = true;
       }
       if (!betterPlayerController.isFullScreen) {
-        if (betterPlayerController.controlsEnabled &&
-            !isUserOnVideoDetailScreen) {
+        if (betterPlayerController.controlsEnabled && !isUserOnAnotherScreen) {
           changeControlsVisibility(betterPlayerController, false);
         }
       }
@@ -63,8 +62,8 @@ class HomeFeedVideoController extends ChangeNotifier {
 
   void reset() {
     isInitialized = false;
-    if (isUserOnVideoDetailScreen) {
-      isUserOnVideoDetailScreen = false;
+    if (isUserOnAnotherScreen) {
+      isUserOnAnotherScreen = false;
     }
     notifyListeners();
   }
