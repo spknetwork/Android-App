@@ -132,7 +132,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
         enablePip: false,
-        enableFullscreen: defaultTargetPlatform == TargetPlatform.android,
+        enableFullscreen: true, //defaultTargetPlatform == TargetPlatform.android,
         enableSkips: true,
       ),
       autoDetectFullscreenAspectRatio: false,

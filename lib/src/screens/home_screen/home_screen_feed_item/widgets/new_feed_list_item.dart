@@ -121,7 +121,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
           enablePip: false,
-          enableFullscreen: defaultTargetPlatform == TargetPlatform.android,
+          enableFullscreen: true, //defaultTargetPlatform == TargetPlatform.android,
           enableSkips: true,
           enableMute: true),
       autoDetectFullscreenAspectRatio: false,

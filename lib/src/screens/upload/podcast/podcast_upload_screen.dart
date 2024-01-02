@@ -85,7 +85,7 @@ class _PodcastUploadScreenState extends State<PodcastUploadScreen> {
   void dispose() {
     super.dispose();
     timer.cancel();
-    _subscription.unsubscribe();
+    // _subscription.unsubscribe();
   }
 
   void _addItem(String fileName, String filePath) {
