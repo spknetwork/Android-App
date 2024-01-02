@@ -340,7 +340,8 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           'ipfsHash': ipfsHash,
           'hasKey': user.keychainData?.hasId ?? '',
           'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
-          'newBene': base64.encode(utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
+          'newBene': base64.encode(
+              utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
           'language': selectedLanguage.code,
           'powerUp': powerUp100,
         });
@@ -548,10 +549,16 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             child: CupertinoSegmentedControl(
               children: {
                 0: Center(
-                  child: Text('50% Power', textAlign: TextAlign.center),
+                  child: Text(
+                    '50% Power',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
                 1: Center(
-                  child: Text('100% Power', textAlign: TextAlign.center),
+                  child: Text('100% Power',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white)),
                 )
               },
               selectedColor: Theme.of(context).primaryColor,
@@ -610,7 +617,9 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   void beneficiariesBottomSheet() {
     var filteredBenes = beneficiaries
         .where((element) =>
-            element.src != 'ENCODER_PAY' && element.src != 'mobile' && element.src != 'threespeak')
+            element.src != 'ENCODER_PAY' &&
+            element.src != 'mobile' &&
+            element.src != 'threespeak')
         .toList();
     showModalBottomSheet(
       context: context,
@@ -622,12 +631,13 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
               appBar: AppBar(
                 title: Text('Video Participants'),
                 actions: [
-                  if (beneficiaries.length < 8) IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        showAlertForAddBene(beneficiaries);
-                      },
-                      icon: Icon(Icons.add))
+                  if (beneficiaries.length < 8)
+                    IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          showAlertForAddBene(beneficiaries);
+                        },
+                        icon: Icon(Icons.add))
                 ],
               ),
               body: ListView.separated(

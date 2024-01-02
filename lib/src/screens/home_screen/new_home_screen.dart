@@ -5,6 +5,7 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/favourites/user_favourites.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/tab_title_toast.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
@@ -224,19 +225,19 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
                   children: widget.username != null
                       ? [
                           HomeScreenFeedList(
-                            showVideo: currentIndex == 0,
+                              showVideo: currentIndex == 0,
                               feedType: HomeScreenFeedType.userFeed,
                               appData: appData),
                           HomeScreenFeedList(
-                            showVideo: currentIndex == 1,
+                              showVideo: currentIndex == 1,
                               feedType: HomeScreenFeedType.trendingFeed,
                               appData: appData),
                           HomeScreenFeedList(
-                            showVideo: currentIndex == 2,
+                              showVideo: currentIndex == 2,
                               feedType: HomeScreenFeedType.newUploads,
                               appData: appData),
                           HomeScreenFeedList(
-                            showVideo: currentIndex == 3,
+                              showVideo: currentIndex == 3,
                               feedType: HomeScreenFeedType.firstUploads,
                               appData: appData),
                           CommunitiesScreen(
@@ -247,15 +248,15 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
                         ]
                       : [
                           HomeScreenFeedList(
-                            showVideo: currentIndex == 0,
+                              showVideo: currentIndex == 0,
                               feedType: HomeScreenFeedType.trendingFeed,
                               appData: appData),
                           HomeScreenFeedList(
-                            showVideo: currentIndex == 1,
+                              showVideo: currentIndex == 1,
                               feedType: HomeScreenFeedType.newUploads,
                               appData: appData),
                           HomeScreenFeedList(
-                            showVideo: currentIndex == 2,
+                              showVideo: currentIndex == 2,
                               feedType: HomeScreenFeedType.firstUploads,
                               appData: appData),
                           CommunitiesScreen(
@@ -264,6 +265,16 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
                           ),
                           TrendingTagsWidget(),
                         ]),
+              Padding(
+                padding: const EdgeInsets.only(top: 15.0),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: HomeScreenTabTitleToast(
+                    subtitle: getSubtitle(),
+                    tabIndex: currentIndex,
+                  ),
+                ),
+              ),
               _fabContainer()
             ],
           ),
@@ -273,59 +284,18 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   }
 
   List<FabOverItemData> _fabItems() {
-    var podcast = FabOverItemData(
-      displayName: 'Podcasts',
-      icon: Icons.video_camera_front_outlined,
-      image: 'assets/pod-cast-logo-round.png',
-      onTap: () {
-        setState(() {
-          isMenuOpen = false;
-          var screen = PodCastTrendingScreen(appData: widget.appData);
-          var route = MaterialPageRoute(builder: (c) => screen);
-          Navigator.of(context).push(route);
-        });
-      },
-    );
-    var threeShorts = FabOverItemData(
-      displayName: '3Shorts',
-      icon: Icons.video_camera_front_outlined,
-      image: 'assets/branding/three_shorts_icon.png',
-      onTap: () {
-        setState(() {
-          isMenuOpen = false;
-          var screen = GQLStoriesScreen(appData: widget.appData);
-          var route = MaterialPageRoute(builder: (c) => screen);
-          Navigator.of(context).push(route);
-        });
-      },
-    );
-    var search = FabOverItemData(
-      displayName: 'Search',
-      icon: Icons.search,
-      onTap: () {
-        setState(() {
-          isMenuOpen = false;
-          var route = MaterialPageRoute(
-            builder: (context) => const SearchScreen(),
-          );
-          Navigator.of(context).push(route);
-        });
-      },
-    );
-    var fabItems = [podcast, threeShorts, search];
+    List<FabOverItemData> fabItems = [];
     if (widget.username != null) {
-      fabItems.add(
-        FabOverItemData(
-          displayName: 'Upload',
-          icon: Icons.upload,
-          onTap: () {
-            setState(() {
-              isMenuOpen = false;
-              uploadClicked(widget.appData);
-            });
-          },
-        ),
-      );
+      fabItems.add(FabOverItemData(
+        displayName: 'Upload',
+        icon: Icons.upload,
+        onTap: () {
+          setState(() {
+            isMenuOpen = false;
+            uploadBottomSheet(widget.appData);
+          });
+        },
+      ));
       fabItems.add(
         FabOverItemData(
           displayName: 'My Account',
@@ -336,20 +306,6 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
               isMenuOpen = false;
               var screen = MyAccountScreen(data: widget.appData);
               var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).push(route);
-            });
-          },
-        ),
-      );
-      fabItems.add(
-        FabOverItemData(
-          displayName: 'Upload Podcast Episode',
-          icon: Icons.upload,
-          onTap: () {
-            setState(() {
-              isMenuOpen = false;
-              var route = MaterialPageRoute(
-                  builder: (c) => PodcastUploadScreen(data: widget.appData));
               Navigator.of(context).push(route);
             });
           },
@@ -373,13 +329,13 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     }
     fabItems.add(
       FabOverItemData(
-        displayName: 'Important 3Speak Links',
-        icon: Icons.link,
+        displayName: 'Favourites',
+        icon: Icons.favorite,
         onTap: () {
           setState(() {
             isMenuOpen = false;
-            var screen = const AboutHomeScreen();
-            var route = MaterialPageRoute(builder: (_) => screen);
+            var screen = const UserFavourites();
+            var route = MaterialPageRoute(builder: (c) => screen);
             Navigator.of(context).push(route);
           });
         },
@@ -401,13 +357,13 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     );
     fabItems.add(
       FabOverItemData(
-        displayName: 'Favourites',
-        icon: Icons.favorite,
+        displayName: 'Important 3Speak Links',
+        icon: Icons.link,
         onTap: () {
           setState(() {
             isMenuOpen = false;
-            var screen = const UserFavourites();
-            var route = MaterialPageRoute(builder: (c) => screen);
+            var screen = const AboutHomeScreen();
+            var route = MaterialPageRoute(builder: (_) => screen);
             Navigator.of(context).push(route);
           });
         },
@@ -480,6 +436,48 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void uploadBottomSheet(HiveUserData data) {
+    showAdaptiveActionSheet(
+      context: context,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.upload),
+          const SizedBox(
+            width: 5,
+          ),
+          const Text(
+            'Upload',
+            style: TextStyle(fontSize: 20),
+          ),
+        ],
+      ),
+      androidBorderRadius: 30,
+      actions: <BottomSheetAction>[
+        BottomSheetAction(
+          title: const Text('Video'),
+          leading: const Icon(Icons.video_call),
+          onPressed: (c) {
+            Navigator.pop(context);
+            uploadClicked(data);
+          },
+        ),
+        BottomSheetAction(
+            title: const Text('Podcast'),
+            leading: const Icon(Icons.podcasts),
+            onPressed: (c) {
+              var route = MaterialPageRoute(
+                  builder: (c) => PodcastUploadScreen(data: widget.appData));
+              Navigator.of(context).pop();
+              Navigator.of(context).push(route);
+            }),
+      ],
+      cancelAction: CancelAction(
+        title: const Text('Cancel'),
+      ),
+    );
   }
 
   void showBottomSheetForVideoOptions(bool isReel, HiveUserData data) {

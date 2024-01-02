@@ -17,6 +17,7 @@ import 'package:acela/src/screens/home_screen/home_screen_feed_item/controller/h
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/mute_unmute_button.dart';
 import 'package:acela/src/widgets/upvote_button.dart';
 import 'package:better_player/better_player.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -120,7 +121,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
           enablePip: false,
-          enableFullscreen: true,
+          enableFullscreen: defaultTargetPlatform == TargetPlatform.android,
           enableSkips: true,
           enableMute: true),
       autoDetectFullscreenAspectRatio: false,
