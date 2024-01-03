@@ -54,7 +54,6 @@ class _PodcastUploadScreenState extends State<PodcastUploadScreen> {
   int fileSize = 0;
   int duration = 0;
 
-  late Subscription _subscription;
   HiveUserData? user;
   final LocalStorage storage = LocalStorage('uploaded_audio_data');
   final UploadedItemList list = UploadedItemList();
@@ -85,7 +84,6 @@ class _PodcastUploadScreenState extends State<PodcastUploadScreen> {
   void dispose() {
     super.dispose();
     timer.cancel();
-    _subscription.unsubscribe();
   }
 
   void _addItem(String fileName, String filePath) {
