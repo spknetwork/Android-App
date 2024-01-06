@@ -9,6 +9,7 @@ import 'package:acela/src/models/hive_post_info/hive_user_posting_key.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/login/memo_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
+import 'package:acela/src/models/podcast/upload/podcast_episode_upload_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_upload/does_post_exists.dart';
@@ -34,8 +35,8 @@ class VideoSize {
 
 class Communicator {
   // Production
-  static const tsServer = "https://studio.3speak.tv";
-  static const fsServer = "https://uploads.3speak.tv/files";
+  // static const tsServer = "https://studio.3speak.tv";
+  // static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
   // static const fsServer = "http://10.0.2.2:1080/files";
@@ -50,8 +51,8 @@ class Communicator {
   // static const fsServer = "http://192.168.29.53:1080/files";
 
   // iOS Devices - Local server testing different router
-  // static const tsServer = "http://192.168.1.8:13050";
-  // static const fsServer = "http://192.168.1.8:1080/files";
+  static const tsServer = "http://192.168.1.7:13050";
+  static const fsServer = "http://192.168.1.7:1080/files";
 
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
@@ -574,6 +575,34 @@ class Communicator {
     }
   }
 
+  Future<void> updatePublishStateForPodcastEpisode(HiveUserData user, String episodeId) async {
+    var cookie = await getValidCookie(user);
+    var request = http.Request('POST',
+        Uri.parse('${Communicator.tsServer}/mobile/api/podcast/iPublished'));
+    request.body = "{\"episodeId\": \"$episodeId\"}";
+    Map<String, String> map = {
+      "cookie": cookie,
+      "Content-Type": "application/json"
+    };
+    request.headers.addAll(map);
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      var string = await response.stream.bytesToString();
+      var result = VideoOpsResponse.fromJsonString(string);
+      if (result.success) {
+        return;
+      } else {
+        throw 'Error updating video status';
+      }
+    } else {
+      var string = await response.stream.bytesToString();
+      var error = ErrorResponse.fromJsonString(string).error ??
+          response.reasonPhrase.toString();
+      log('Error from server is $error');
+      throw error;
+    }
+  }
+
   Future<bool> deleteVideo(String permlink, HiveUserData user) async {
     var cookie = await getValidCookie(user);
     Map<String, String> headers = {
@@ -625,7 +654,7 @@ class Communicator {
     }
   }
 
-  Future<void> uploadPodcast({
+  Future<PodcastEpisodeUploadResponse> uploadPodcast({
     required HiveUserData user,
     required String oFilename,
     required int duration,
@@ -636,37 +665,35 @@ class Communicator {
     required String tags,
     required String thumbnail,
     required String communityID,
-    required bool rewardPowerup,
     required bool declineRewards,
     required String episode, // upload path where podcast episode was uploaded
   }) async {
     var request = http.Request(
         'POST', Uri.parse('${Communicator.tsServer}/mobile/api/podcast/add'));
     request.body = json.encode({
-      'originalFilename': oFilename,
+      'oFilename': oFilename,
       'duration': duration,
       'size': size,
       'isNsfwContent': isNsfwContent,
-      'owner': user.username ?? 'sagarkothari88',
       'title': title,
       'description': description,
       'communityID': communityID,
-      'rewardPowerup': rewardPowerup,
       'thumbnail': thumbnail,
       'episode': episode,
     });
+    var cookie = await getValidCookie(user);
     Map<String, String> map = {
-      "cookie": user.cookie ?? "",
-      "Content-Type": "application/json"
+      "cookie": cookie,
+      "Content-Type": "application/json",
+      "authorization": "Bearer $cookie"
     };
     request.headers.addAll(map);
     try {
       http.StreamedResponse response = await request.send();
       if (response.statusCode == 200) {
-        log("Successfully sent upload complete");
         var string = await response.stream.bytesToString();
-        log('Podcast complete response is\n$string');
-        return ;
+        return PodcastEpisodeUploadResponse
+            .podcastEpisodeUploadResponseFromJson(string);
       } else {
         var string = await response.stream.bytesToString();
         var error = ErrorResponse.fromJsonString(string).error ??

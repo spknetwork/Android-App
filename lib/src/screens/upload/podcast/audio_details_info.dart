@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/my_account/update_video/add_bene_sheet.dart';
@@ -163,12 +164,11 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
       processText = 'Updating Podcast info';
     });
     try {
-      var v = await Communicator().uploadPodcast(
+      var podcastResponse = await Communicator().uploadPodcast(
         user: user,
         size: widget.size,
         episode: widget.episode,
         oFilename: widget.oFileName,
-        rewardPowerup: powerUp100,
         title: widget.title,
         description: widget.description,
         isNsfwContent: widget.isNsfwContent,
@@ -178,80 +178,78 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
         declineRewards: false,
         duration: widget.duration,
       );
-      // await Future.delayed(const Duration(seconds: 1), () {});
-      // var title = base64.encode(utf8.encode(widget.title));
-      // var description = widget.description;
-      // description = base64.encode(utf8.encode(description));
-      // var ipfsHash = "";
-      // if (widget.item.video_v2.isNotEmpty) {
-      //   ipfsHash = widget.item.video_v2
-      //       .replaceAll("https://ipfs-3speak.b-cdn.net/ipfs/", "")
-      //       .replaceAll("ipfs://", "")
-      //       .replaceAll("/manifest.m3u8", "");
-      // }
-      // final String response = await platform.invokeMethod('newPostVideo', {
-      //   'thumbnail': v.thumbnailValue,
-      //   'video_v2': v.videoValue,
-      //   'description': description,
-      //   'title': title,
-      //   'tags': v.tags,
-      //   'username': user.username,
-      //   'permlink': v.permlink,
-      //   'duration': v.duration,
-      //   'size': v.size,
-      //   'originalFilename': v.originalFilename,
-      //   'firstUpload': v.firstUpload,
-      //   'bene': '',
-      //   'beneW': '',
-      //   'postingKey': user.postingKey ?? '',
-      //   'community': widget.selectedCommunity,
-      //   'ipfsHash': ipfsHash,
-      //   'hasKey': user.keychainData?.hasId ?? '',
-      //   'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
-      //   'newBene': base64
-      //       .encode(utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
-      //   'language': selectedLanguage.code,
-      //   'powerUp': powerUp100,
-      // });
-      // log('Response from platform $response');
-      // var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
-      // if (bridgeResponse.error == "success") {
-      //   showMessage(
-      //       'Please wait. Video is posted on Hive but needs to be marked as published.');
-      //   Future.delayed(const Duration(seconds: 6), () async {
-      //     if (mounted) {
-      //       try {
-      //         await Communicator().updatePublishState(user, v.id);
-      //         setState(() {
-      //           isCompleting = false;
-      //           processText = '';
-      //           showMessage('Congratulations. Your video is published.');
-      //           showMyDialog();
-      //         });
-      //       } catch (e) {
-      //         setState(() {
-      //           isCompleting = false;
-      //           processText = '';
-      //           showMessage(
-      //               'Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
-      //         });
-      //       }
-      //     }
-      //   });
-      // } else if (bridgeResponse.error == "" &&
-      //     bridgeResponse.data != null &&
-      //     user.keychainData?.hasAuthKey != null) {
-      //   var socketData = {
-      //     "cmd": "sign_req",
-      //     "account": user.username!,
-      //     "token": user.keychainData!.hasId,
-      //     "data": bridgeResponse.data!,
-      //   };
-      //   var jsonData = json.encode(socketData);
-      //   socket.sink.add(jsonData);
-      // } else {
-      //   throw bridgeResponse.error;
-      // }
+      await Future.delayed(const Duration(seconds: 1), () {});
+      var title = base64.encode(utf8.encode(podcastResponse.title));
+      var description = podcastResponse.description;
+      description = base64.encode(utf8.encode(description));
+      var ipfsHash = "";
+      if (podcastResponse.enclosureUrl.isNotEmpty) {
+        ipfsHash = podcastResponse.enclosureUrl
+            .replaceAll("https://ipfs-3speak.b-cdn.net/ipfs/", "")
+            .replaceAll("ipfs://", "");
+      }
+      final String response = await platform.invokeMethod('newPostVideo', {
+        'thumbnail': podcastResponse.thumbnail,
+        'description': description,
+        'title': title,
+        'tags': tags,
+        'username': user.username,
+        'permlink': podcastResponse.permlink,
+        'duration': widget.duration,
+        'size': widget.size,
+        'originalFilename': widget.oFileName,
+        'firstUpload': podcastResponse.firstUpload,
+        'bene': '',
+        'beneW': '',
+        'postingKey': user.postingKey ?? '',
+        'community': widget.selectedCommunity,
+        'ipfsHash': ipfsHash,
+        'hasKey': user.keychainData?.hasId ?? '',
+        'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
+        'newBene': base64
+            .encode(utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
+        'language': selectedLanguage.code,
+        'powerUp': powerUp100,
+      });
+      log('Response from platform $response');
+      var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
+      if (bridgeResponse.error == "success") {
+        showMessage('Congratulations. Your Podcast Episode is published.');
+        showMyDialog();
+        // Future.delayed(const Duration(seconds: 6), () async {
+        //   if (mounted) {
+        //     try {
+        //       await Communicator().updatePublishStateForPodcastEpisode(user, podcastResponse.id);
+        //       setState(() {
+        //         isCompleting = false;
+        //         processText = '';
+        //         showMessage('Congratulations. Your Podcast Episode is published.');
+        //         showMyDialog();
+        //       });
+        //     } catch (e) {
+        //       setState(() {
+        //         isCompleting = false;
+        //         processText = '';
+        //         showMessage(
+        //             'Podcast is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+        //       });
+        //     }
+        //   }
+        // });
+      } else if (bridgeResponse.error == "" &&
+          bridgeResponse.data != null &&
+          user.keychainData?.hasAuthKey != null) {
+        var socketData = {
+          "cmd": "sign_req",
+          "account": user.username!,
+          "token": user.keychainData!.hasId,
+          "data": bridgeResponse.data!,
+        };
+        var jsonData = json.encode(socketData);
+        socket.sink.add(jsonData);
+      } else {
+        throw bridgeResponse.error;
+      }
     } catch (e) {
       showError(e.toString());
       setState(() {
@@ -343,32 +341,34 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
             setState(() {
               qrCode = null;
             });
-            showMessage(
-                'Please wait. Podcast is posted on Hive but needs to be marked as published.');
-            Future.delayed(const Duration(seconds: 6), () async {
-              if (mounted) {
-                try {
-                  await Communicator()
-                      .updatePublishState(widget.appData, podcastEpisodeId);
-                  setState(() {
-                    isCompleting = false;
-                    processText = '';
-                    qrCode = null;
-                    showMessage(
-                        'Congratulations. Your Podcast Episode is published.');
-                    showMyDialog();
-                  });
-                } catch (e) {
-                  setState(() {
-                    qrCode = null;
-                    isCompleting = false;
-                    processText = '';
-                    showMessage(
-                        'Podcast is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
-                  });
-                }
-              }
-            });
+            showMessage('Congratulations. Your Podcast Episode is published.');
+            showMyDialog();
+            // showMessage(
+            //     'Please wait. Podcast is posted on Hive but needs to be marked as published.');
+            // Future.delayed(const Duration(seconds: 6), () async {
+            //   if (mounted) {
+            //     try {
+            //       await Communicator()
+            //           .updatePublishState(widget.appData, podcastEpisodeId);
+            //       setState(() {
+            //         isCompleting = false;
+            //         processText = '';
+            //         qrCode = null;
+            //         showMessage(
+            //             'Congratulations. Your Podcast Episode is published.');
+            //         showMyDialog();
+            //       });
+            //     } catch (e) {
+            //       setState(() {
+            //         qrCode = null;
+            //         isCompleting = false;
+            //         processText = '';
+            //         showMessage(
+            //             'Podcast is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+            //       });
+            //     }
+            //   }
+            // });
             break;
           case "sign_nack":
             setState(() {
