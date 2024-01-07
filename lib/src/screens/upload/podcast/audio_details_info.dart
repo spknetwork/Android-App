@@ -188,8 +188,11 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
             .replaceAll("https://ipfs-3speak.b-cdn.net/ipfs/", "")
             .replaceAll("ipfs://", "");
       }
-      final String response = await platform.invokeMethod('newPostVideo', {
-        'thumbnail': podcastResponse.thumbnail,
+      var thumbnail = podcastResponse.thumbnail.replaceAll("ipfs://", "https://ipfs-3speak.b-cdn.net/ipfs/");
+      var enclosureUrl = podcastResponse.enclosureUrl.replaceAll("ipfs://", "https://ipfs-3speak.b-cdn.net/ipfs/");
+      final String response = await platform.invokeMethod('newPostPodcast', {
+        'thumbnail': thumbnail,
+        'enclosureUrl': enclosureUrl,
         'description': description,
         'title': title,
         'tags': tags,
@@ -216,26 +219,6 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
       if (bridgeResponse.error == "success") {
         showMessage('Congratulations. Your Podcast Episode is published.');
         showMyDialog();
-        // Future.delayed(const Duration(seconds: 6), () async {
-        //   if (mounted) {
-        //     try {
-        //       await Communicator().updatePublishStateForPodcastEpisode(user, podcastResponse.id);
-        //       setState(() {
-        //         isCompleting = false;
-        //         processText = '';
-        //         showMessage('Congratulations. Your Podcast Episode is published.');
-        //         showMyDialog();
-        //       });
-        //     } catch (e) {
-        //       setState(() {
-        //         isCompleting = false;
-        //         processText = '';
-        //         showMessage(
-        //             'Podcast is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
-        //       });
-        //     }
-        //   }
-        // });
       } else if (bridgeResponse.error == "" &&
           bridgeResponse.data != null &&
           user.keychainData?.hasAuthKey != null) {

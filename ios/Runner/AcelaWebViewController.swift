@@ -17,6 +17,7 @@ class AcelaWebViewController: UIViewController {
 	var postingKeyValidationHandler: ((String) -> Void)?
 	var decryptTokenHandler: ((String) -> Void)?
 	var postVideoHandler: ((String) -> Void)?
+	var postPodcastHandler: ((String) -> Void)?
 
 	var getRedirectUriHandler: ((String) -> Void)? = nil
 	var getRedirectUriDataHandler: ((String) -> Void)? = nil
@@ -135,6 +136,36 @@ class AcelaWebViewController: UIViewController {
 		}
 	}
 
+	func postPodcast(
+		thumbnail: String,
+		enclosureUrl: String,
+		description: String,
+		title: String,
+		tags: String,
+		username: String,
+		permlink: String,
+		duration: Double,
+		size: Double,
+		originalFilename: String,
+		firstUpload: Bool,
+		bene: String,
+		beneW: String,
+		postingKey: String,
+		community: String,
+		ipfsHash: String,
+		hasKey: String,
+		hasAuthkey: String,
+		newBene: String,
+		language: String,
+		powerUp: Bool,
+		handler: @escaping (String) -> Void
+	) {
+		postPodcastHandler = handler
+		OperationQueue.main.addOperation {
+			self.webView?.evaluateJavaScript("newPostPodcast('\(thumbnail)','\(enclosureUrl)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', '\(language)', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)', '\(community)', '\(ipfsHash)', '\(hasKey)', '\(hasAuthkey)', '\(newBene)', \(powerUp ? "true" : "false"));")
+		}
+	}
+
 	func getRedirectUri(_ username: String, handler: @escaping (String) -> Void) {
 		getRedirectUriHandler = handler
 		webView?.evaluateJavaScript("getRedirectUri('\(username)');")
@@ -201,6 +232,11 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 				debugPrint("Is it valid? \(isValid ? "TRUE" : "FALSE")")
 				debugPrint("Error is \(error)")
 				postVideoHandler?(response)
+			case "postAudio":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				postPodcastHandler?(response)
 			case "hiveAuthUserInfo":
 				guard
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)

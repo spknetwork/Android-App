@@ -38,7 +38,7 @@ class PodcastEpisodeUploadResponse {
         community: json["community"],
         thumbnail: json["thumbnail"],
         enclosureUrl: json["enclosureUrl"],
-        firstUpload: json["firstUpload"],
+        firstUpload: json["firstUpload"] == 1 ,
       );
 
   Map<String, dynamic> toJson() => {

@@ -73,6 +73,60 @@ class AuthBridge {
 						return
 					}
 					self?.decryptMemo(username: username, postingKey: password, encryptedMemo: encryptedToken, result: result)
+				case "newPostPodcast":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let thumbnail = arguments["thumbnail"] as? String,
+						let enclosureUrl = arguments["enclosureUrl"] as? String,
+						let description = arguments["description"] as? String,
+						let title = arguments["title"] as? String,
+						let tags = arguments["tags"] as? String,
+						let username = arguments["username"] as? String,
+						let permlink = arguments["permlink"] as? String,
+						let duration = arguments["duration"] as? Double,
+						let size = arguments["size"] as? Double,
+						let originalFilename = arguments["originalFilename"] as? String,
+						let firstUpload = arguments["firstUpload"] as? Bool,
+						let bene = arguments["bene"] as? String,
+						let beneW = arguments["beneW"] as? String,
+						let postingKey = arguments["postingKey"] as? String,
+						let community = arguments["community"] as? String,
+						let ipfsHash = arguments["ipfsHash"] as? String,
+						let hasKey = arguments["hasKey"] as? String,
+						let hasAuthKey = arguments["hasAuthKey"] as? String,
+						let newBene = arguments["newBene"] as? String,
+						let language = arguments["language"] as? String,
+						let powerUp = arguments["powerUp"] as? Bool,
+						let acela = acela
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					acela.postPodcast(
+						thumbnail: thumbnail,
+						enclosureUrl: enclosureUrl,
+						description: description,
+						title: title,
+						tags: tags,
+						username: username,
+						permlink: permlink,
+						duration: duration,
+						size: size,
+						originalFilename: originalFilename,
+						firstUpload: firstUpload,
+						bene: bene,
+						beneW: beneW,
+						postingKey: postingKey,
+						community: community,
+						ipfsHash: ipfsHash,
+						hasKey: hasKey,
+						hasAuthkey: hasAuthKey,
+						newBene: newBene,
+						language: language,
+						powerUp: powerUp
+					) { response in
+						result(response)
+					}
 				case "newPostVideo":
 					guard
 						let arguments = call.arguments as? NSDictionary,
