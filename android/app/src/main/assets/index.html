@@ -357,6 +357,139 @@
         );
       }
 
+      function newPostPodcast(
+        thumbnail,
+        videoV2,
+        dDescription,
+        dTitle,
+        tags,
+        author,
+        permlink,
+        duration,
+        size,
+        file,
+        language,
+        firstUpload,
+        benes,
+        beneWeights,
+        postingKey,
+        community,
+        ipfsHash,
+        hasKey,
+        hasAuthKey,
+        dNewBene,
+        powerUp
+      ) {
+        let description = atob(dDescription);
+        description = decodeURIComponent(escape(description));
+        let title = atob(dTitle);
+        title = decodeURIComponent(escape(title));
+        let newBene = atob(dNewBene);
+        newBene = decodeURIComponent(escape(newBene));
+        newBene = JSON.parse(newBene);
+        let jsonMetaData = {
+          tags: processTags(tags.split(",")),
+          app: "3speak/0.3.0",
+          type: "3speak/audio",
+          image: [thumbnail],
+          audio: {
+            info: {
+              platform: "3speak",
+              title: customStringEscaping(title),
+              author: author,
+              permlink: permlink,
+              duration: duration,
+              filesize: size,
+              file: file,
+              lang: language,
+              firstUpload: firstUpload,
+              enclosureUrl: videoV2,
+              app: "3speak/0.3.0",
+              mobile_app: "3speak/iOS-App/2.1.1+80",
+              developer: "https://hive.blog/@sagarkothari88",
+              sourceMap: [
+                {
+                  type: "audio",
+                  url: thumbnail,
+                  format: "audio/mpeg",
+                },
+                {
+                  type: "thumbnail",
+                  url: thumbnail,
+                },
+              ],
+            },
+            content: {
+              description: customStringEscaping(description),
+              tags: processTags(tags.split(",")),
+            },
+          },
+        };
+        let customJson = buildPublishCustomJson(
+          author,
+          permlink,
+          language,
+          duration,
+          title
+        );
+        newBene.sort((a, b) => {
+          let fa = a.account.toLowerCase(),
+            fb = b.account.toLowerCase();
+          if (fa < fb) return -1;
+          if (fa > fb) return 1;
+          return 0;
+        });
+        for (let i = 0; i < newBene.length; i++) {
+          newBene[i].weight = newBene[i].weight * 100;
+        }
+        let benefactor_global = [[0, { beneficiaries: newBene }]];
+        let comment_options = [
+          "comment_options",
+          {
+            author: author,
+            permlink: permlink,
+            allow_votes: true,
+            max_accepted_payout: "100000.000 SBD",
+            percent_hbd: powerUp ? 0 : 10000,
+            allow_curation_rewards: true,
+            extensions: benefactor_global,
+          },
+        ];
+        let body = "<center>\n\n" +
+          `![](${thumbnail})\n\n` +
+          "</center>\n\n" +
+          "---\n\n" +
+          `<audio controls><source src="${videoV2}" type="audio/mpeg">Your browser does not support the audio element.</audio>\n\n` +
+          `${description}\n\n` +
+          "---\n\n";
+        hive.broadcast.updateOperations();
+        const operations = [];
+        operations.push([
+          "comment",
+          {
+            parent_author: "",
+            parent_permlink: community,
+            author: author,
+            permlink: permlink,
+            title: title.substr(0, 254),
+            body: body,
+            json_metadata: JSON.stringify(jsonMetaData),
+          },
+        ]);
+        operations.push(comment_options);
+        operations.push(customJson);
+        console.log(`operations are ${JSON.stringify(operations)}`);
+        performOperations(
+          operations,
+          "postAudio",
+          author,
+          postingKey,
+          hasKey,
+          hasAuthKey
+        );
+      }
+
+
       function performOperations(
         operations,
         operationName,

@@ -309,7 +309,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).primaryColorLight),
             ),
           );
         }

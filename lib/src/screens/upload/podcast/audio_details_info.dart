@@ -140,109 +140,107 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
             ),
       floatingActionButton: isCompleting
           ? null
-          : thumbIpfs.isNotEmpty
-              ? FloatingActionButton.extended(
-                  label: Text('Publish'),
-                  onPressed: () {
-                    if (user.username != null) {
-                      completePodcastUpload(user);
-                    }
-                  },
-                  icon: Icon(Icons.post_add),
-                )
-              : null,
+          : FloatingActionButton.extended(
+              label: Text('Publish'),
+              onPressed: () {
+                if (user.username != null) {
+                  completePodcastUpload(user);
+                }
+              },
+              icon: Icon(Icons.post_add),
+            ),
     );
   }
 
   void completePodcastUpload(HiveUserData user) async {
     if (thumbIpfs.isEmpty) {
-      // show
       showError('Please set Thumbnail');
-    }
-    const platform = MethodChannel('com.example.acela/auth');
-    setState(() {
-      isCompleting = true;
-      processText = 'Updating Podcast info';
-    });
-    try {
-      final String ipfsUrl = IpfsNodeProvider().nodeUrl;
-      var podcastResponse = await Communicator().uploadPodcast(
-        user: user,
-        size: widget.size,
-        episode: widget.episode,
-        oFilename: widget.oFileName,
-        title: widget.title,
-        description: widget.description,
-        isNsfwContent: widget.isNsfwContent,
-        tags: tags,
-        thumbnail: thumbIpfs,
-        communityID: widget.selectedCommunity,
-        declineRewards: false,
-        duration: widget.duration,
-      );
-      await Future.delayed(const Duration(seconds: 1), () {});
-      var title = base64.encode(utf8.encode(podcastResponse.title));
-      var description = podcastResponse.description;
-      description = base64.encode(utf8.encode(description));
-      var ipfsHash = "";
-      if (podcastResponse.enclosureUrl.isNotEmpty) {
-        ipfsHash = podcastResponse.enclosureUrl
-            .replaceAll(ipfsUrl, "")
-            .replaceAll("ipfs://", "");
-      }
-      var thumbnail = podcastResponse.thumbnail
-          .replaceAll("ipfs://", ipfsUrl);
-      var enclosureUrl = podcastResponse.enclosureUrl
-          .replaceAll("ipfs://", ipfsUrl);
-      final String response = await platform.invokeMethod('newPostPodcast', {
-        'thumbnail': thumbnail,
-        'enclosureUrl': enclosureUrl,
-        'description': description,
-        'title': title,
-        'tags': tags,
-        'username': user.username,
-        'permlink': podcastResponse.permlink,
-        'duration': widget.duration,
-        'size': widget.size,
-        'originalFilename': widget.oFileName,
-        'firstUpload': podcastResponse.firstUpload,
-        'bene': '',
-        'beneW': '',
-        'postingKey': user.postingKey ?? '',
-        'community': widget.selectedCommunity,
-        'ipfsHash': ipfsHash,
-        'hasKey': user.keychainData?.hasId ?? '',
-        'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
-        'newBene': base64
-            .encode(utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
-        'language': selectedLanguage.code,
-        'powerUp': powerUp100,
-      });
-      log('Response from platform $response');
-      var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
-      if (bridgeResponse.error == "success") {
-        showMessage('Congratulations. Your Podcast Episode is published.');
-        showMyDialog();
-      } else if (bridgeResponse.error == "" &&
-          bridgeResponse.data != null &&
-          user.keychainData?.hasAuthKey != null) {
-        var socketData = {
-          "cmd": "sign_req",
-          "account": user.username!,
-          "token": user.keychainData!.hasId,
-          "data": bridgeResponse.data!,
-        };
-        var jsonData = json.encode(socketData);
-        socket.sink.add(jsonData);
-      } else {
-        throw bridgeResponse.error;
-      }
-    } catch (e) {
-      showError(e.toString());
+    } else {
+      const platform = MethodChannel('com.example.acela/auth');
       setState(() {
-        isCompleting = false;
-        processText = '';
+        isCompleting = true;
+        processText = 'Updating Podcast info';
       });
+      try {
+        final String ipfsUrl = IpfsNodeProvider().nodeUrl;
+        var podcastResponse = await Communicator().uploadPodcast(
+          user: user,
+          size: widget.size,
+          episode: widget.episode,
+          oFilename: widget.oFileName,
+          title: widget.title,
+          description: widget.description,
+          isNsfwContent: widget.isNsfwContent,
+          tags: tags,
+          thumbnail: thumbIpfs,
+          communityID: widget.selectedCommunity,
+          declineRewards: false,
+          duration: widget.duration,
+        );
+        await Future.delayed(const Duration(seconds: 1), () {});
+        var title = base64.encode(utf8.encode(podcastResponse.title));
+        var description = podcastResponse.description;
+        description = base64.encode(utf8.encode(description));
+        var ipfsHash = "";
+        if (podcastResponse.enclosureUrl.isNotEmpty) {
+          ipfsHash = podcastResponse.enclosureUrl
+              .replaceAll(ipfsUrl, "")
+              .replaceAll("ipfs://", "");
+        }
+        var thumbnail =
+            podcastResponse.thumbnail.replaceAll("ipfs://", ipfsUrl);
+        var enclosureUrl =
+            podcastResponse.enclosureUrl.replaceAll("ipfs://", ipfsUrl);
+        final String response = await platform.invokeMethod('newPostPodcast', {
+          'thumbnail': thumbnail,
+          'enclosureUrl': enclosureUrl,
+          'description': description,
+          'title': title,
+          'tags': tags,
+          'username': user.username,
+          'permlink': podcastResponse.permlink,
+          'duration': widget.duration.toDouble(),
+          'size': widget.size,
+          'originalFilename': widget.oFileName,
+          'firstUpload': podcastResponse.firstUpload,
+          'bene': '',
+          'beneW': '',
+          'postingKey': user.postingKey ?? '',
+          'community': widget.selectedCommunity,
+          'ipfsHash': ipfsHash,
+          'hasKey': user.keychainData?.hasId ?? '',
+          'hasAuthKey': user.keychainData?.hasAuthKey ?? '',
+          'newBene': base64.encode(
+              utf8.encode(BeneficiariesJson.toJsonString(beneficiaries))),
+          'language': selectedLanguage.code,
+          'powerUp': powerUp100,
+        });
+        log('Response from platform $response');
+        var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
+        if (bridgeResponse.error == "" && bridgeResponse.valid) {
+          showMessage('Congratulations. Your Podcast Episode is published.');
+          showMyDialog();
+        } else if (bridgeResponse.error == "" &&
+            bridgeResponse.data != null &&
+            user.keychainData?.hasAuthKey != null) {
+          var socketData = {
+            "cmd": "sign_req",
+            "account": user.username!,
+            "token": user.keychainData!.hasId,
+            "data": bridgeResponse.data!,
+          };
+          var jsonData = json.encode(socketData);
+          socket.sink.add(jsonData);
+        } else {
+          throw bridgeResponse.error;
+        }
+      } catch (e) {
+        showError(e.toString());
+        setState(() {
+          isCompleting = false;
+          processText = '';
+        });
+      }
     }
   }
 
@@ -433,7 +431,6 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
     Widget okButton = TextButton(
       child: Text("Okay"),
       onPressed: () {
-        Navigator.of(context).pop();
         Navigator.of(context).pop();
         Navigator.of(context).pop();
         Navigator.of(context).pop();

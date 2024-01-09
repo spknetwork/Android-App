@@ -847,19 +847,22 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             ),
       floatingActionButton: isCompleting
           ? null
-          : thumbIpfs.isNotEmpty || widget.item.getThumbnail().isNotEmpty
-              ? FloatingActionButton.extended(
+          :  FloatingActionButton.extended(
                   label:
                       Text(widget.justForEditing ? 'Save Details' : 'Publish'),
                   onPressed: () {
                     if (user.username != null) {
-                      completeVideo(user);
+                      if (thumbIpfs.isNotEmpty ||
+                          widget.item.getThumbnail().isNotEmpty) {
+                        completeVideo(user);
+                      } else {
+                        showError('Please set Thumbnail');
+                      }
                     }
                   },
                   icon:
                       Icon(widget.justForEditing ? Icons.save : Icons.post_add),
-                )
-              : null,
+                ),
     );
   }
 }

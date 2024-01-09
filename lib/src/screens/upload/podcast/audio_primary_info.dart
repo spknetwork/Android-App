@@ -167,40 +167,49 @@ class _AudioPrimaryInfoState extends State<AudioPrimaryInfo> {
   Widget build(BuildContext context) {
     var appData = Provider.of<HiveUserData>(context);
     return Scaffold(
-      appBar: AppBar(
-        title: ListTile(
-          leading: CustomCircleAvatar(
-            height: 36,
-            width: 36,
-            url: 'https://images.hive.blog/u/${appData.username ?? ''}/avatar',
+        appBar: AppBar(
+          title: ListTile(
+            leading: CustomCircleAvatar(
+              height: 36,
+              width: 36,
+              url:
+                  'https://images.hive.blog/u/${appData.username ?? ''}/avatar',
+            ),
+            title: Text(appData.username ?? ''),
           ),
-          title: Text(appData.username ?? ''),
         ),
-      ),
-      body: _body(),
-      floatingActionButton: description.isNotEmpty && title.isNotEmpty
-          ? FloatingActionButton(
-              onPressed: () {
-                var screen = AudioDetailsInfoScreen(
-                  title: title,
-                  oFileName: widget.title,
-                  duration: widget.duration,
-                  size: widget.size,
-                  description: description,
-                  appData: appData,
-                  selectedCommunity: selectedCommunity,
-                  isNsfwContent: isNsfwContent,
-                  hasKey: appData.keychainData?.hasId ?? "",
-                  hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
-                  owner: appData.username ?? "",
-                  episode: widget.episode,
-                );
-                var route = MaterialPageRoute(builder: (c) => screen);
-                Navigator.of(context).push(route);
-              },
-              child: const Text('Next'),
-            )
-          : null,
-    );
+        body: _body(),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            if (title.isEmpty) {
+              showError('Title is required');
+            } else if (description.isEmpty) {
+              showError('Description is required');
+            } else {
+              var screen = AudioDetailsInfoScreen(
+                title: title,
+                oFileName: widget.title,
+                duration: widget.duration,
+                size: widget.size,
+                description: description,
+                appData: appData,
+                selectedCommunity: selectedCommunity,
+                isNsfwContent: isNsfwContent,
+                hasKey: appData.keychainData?.hasId ?? "",
+                hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
+                owner: appData.username ?? "",
+                episode: widget.episode,
+              );
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).push(route);
+            }
+          },
+          child: const Text('Next'),
+        ));
+  }
+
+  void showError(String string) {
+    var snackBar = SnackBar(content: Text('Error: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
