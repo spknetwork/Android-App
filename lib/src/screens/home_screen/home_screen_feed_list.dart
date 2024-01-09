@@ -252,7 +252,7 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
                           title: item.title ?? '',
                           createdAt: item.createdAt ?? DateTime.now(),
                           duration: item.spkvideo?.duration ?? 0.0,
-                          comments: item.stats?.numComments,
+                          comments: item.stats?.numComments ?? 0,
                           hiveRewards: item.stats?.totalHiveReward,
                           votes: item.stats?.numVotes,
                           views: 0,

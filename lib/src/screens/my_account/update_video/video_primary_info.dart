@@ -15,7 +15,7 @@ class VideoPrimaryInfo extends StatefulWidget {
   }) : super(key: key);
   final VideoDetails item;
   final bool justForEditing;
-  
+
   @override
   State<VideoPrimaryInfo> createState() => _VideoPrimaryInfoState();
 }
@@ -180,26 +180,35 @@ class _VideoPrimaryInfoState extends State<VideoPrimaryInfo> {
         ),
       ),
       body: _body(),
-      floatingActionButton: description.isNotEmpty && title.isNotEmpty
-          ? FloatingActionButton(
+      floatingActionButton:  FloatingActionButton(
               onPressed: () {
-                var screen = VideoDetailsInfo(
-                  item: widget.item,
-                  title: titleController.text,
-                  subtitle: descriptionController.text,
-                  selectedCommunity: selectedCommunity,
-                  isNsfwContent: isNsfwContent,
-                  justForEditing: widget.justForEditing,
-                  hasKey: appData.keychainData?.hasId ?? "",
-                  hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
-                  appData: appData,
-                );
-                var route = MaterialPageRoute(builder: (c) => screen);
-                Navigator.of(context).push(route);
+                if (title.isEmpty) {
+                  showError('Title is required');
+                } else if (description.isEmpty) {
+                  showError('Description is required');
+                } else {
+                  var screen = VideoDetailsInfo(
+                    item: widget.item,
+                    title: titleController.text,
+                    subtitle: descriptionController.text,
+                    selectedCommunity: selectedCommunity,
+                    isNsfwContent: isNsfwContent,
+                    justForEditing: widget.justForEditing,
+                    hasKey: appData.keychainData?.hasId ?? "",
+                    hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
+                    appData: appData,
+                  );
+                  var route = MaterialPageRoute(builder: (c) => screen);
+                  Navigator.of(context).push(route);
+                }
               },
               child: const Text('Next'),
-            )
-          : null,
+            ),
     );
+  }
+
+  void showError(String string) {
+    var snackBar = SnackBar(content: Text('Error: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

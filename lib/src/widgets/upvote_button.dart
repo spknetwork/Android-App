@@ -47,7 +47,9 @@ class _UpvoteButtonState extends State<UpvoteButton> {
           ),
           Text(
             ' $votes',
-            style: TextStyle(color: Colors.white70, fontSize: 12),
+            style: TextStyle(
+                color: Theme.of(context).primaryColorLight.withOpacity(0.7),
+                fontSize: 12),
           ),
         ],
       ),

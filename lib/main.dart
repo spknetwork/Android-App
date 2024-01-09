@@ -98,8 +98,7 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProvider(create: (context) => VideoSettingProvider()),
         ChangeNotifierProvider(
-          lazy: false,
-          create: (context) => ImageResolution())
+            lazy: false, create: (context) => ImageResolution())
       ],
       child: OverlaySupport.global(
         child: futureBuilder(
@@ -198,8 +197,17 @@ class AcelaApp extends StatelessWidget {
               ),
             ),
       theme: isDarkMode
-          ? ThemeData.dark().copyWith(scaffoldBackgroundColor: Colors.black)
-          : ThemeData.light(),
+          ? ThemeData.dark().copyWith(
+            primaryColor: Colors.deepPurple,
+              primaryColorLight: Colors.white,
+              primaryColorDark: Colors.black,
+              scaffoldBackgroundColor: Colors.black,
+            )
+          : ThemeData.light().copyWith(
+            primaryColor: Colors.deepPurple,
+              primaryColorLight: Colors.black,
+              primaryColorDark: Colors.white,
+            ),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -81,6 +81,7 @@ class MainActivity : AudioServiceActivity() {
             val newBene = call.argument<String?>("newBene")
             val language = call.argument<String?>("language")
             val powerUp = call.argument<Boolean?>("powerUp")
+            val enclosureUrl = call.argument<String?>("enclosureUrl")
             val string = call.argument<String?>("string")
 
             val data = call.argument<String?>("data")
@@ -114,7 +115,19 @@ class MainActivity : AudioServiceActivity() {
                     "newPostVideo('$thumbnail','$video_v2', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', '$language', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash', '$hasKey', '$hasAuthkey', '$newBene', $powerUp);",
                     null
                 )
-            } else if (call.method == "voteContent" && user != null && author != null
+            } 
+            else if (call.method == "newPostPodcast" && thumbnail != null && enclosureUrl != null
+                && description != null && title != null && tags != null && username != null
+                && permlink != null && duration != null && size != null && originalFilename != null
+                && firstUpload != null && bene != null && beneW != null && community != null
+                && ipfsHash != null && newBene != null && language != null && powerUp != null
+            ) {
+                webView?.evaluateJavascript(
+                    "newPostPodcast('$thumbnail','$enclosureUrl', '$description', '$title', '$tags', '$username', '$permlink', $duration, $size, '$originalFilename', '$language', $firstUpload, '$bene', '$beneW', '$postingKey', '$community', '$ipfsHash', '$hasKey', '$hasAuthkey', '$newBene', $powerUp);",
+                    null
+                )
+            }
+            else if (call.method == "voteContent" && user != null && author != null
                 && permlink != null && weight != null && postingKey != null && hasKey != null
                 && hasAuthkey != null
             ) {
@@ -195,6 +208,9 @@ class WebAppInterface(private val mContext: Context) {
             JSBridgeAction.GET_HTML.value -> {
                 main.result?.success(message)
             }
+             JSBridgeAction.POST_AUDIO.value -> {
+                main.result?.success(message)
+            }
         }
     }
 }
@@ -212,4 +228,5 @@ enum class JSBridgeAction(val value: String) {
     COMMENT_ON_CONTENT("commentOnContent"),
     VOTE_CONTENT("voteContent"),
     GET_HTML("getHTMLStringForContent"),
+    POST_AUDIO("postAudio"),
 }

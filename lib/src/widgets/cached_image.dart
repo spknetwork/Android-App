@@ -18,7 +18,9 @@ class CachedImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.grey.shade900,
+      color: Theme.of(context).primaryColorLight == Colors.black
+          ? Colors.grey.shade400
+          : Colors.grey.shade900,
       child: CachedNetworkImage(
         imageUrl: imageUrl ?? '',
         height: imageHeight,
