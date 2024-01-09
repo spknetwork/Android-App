@@ -132,7 +132,8 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
         enablePip: false,
-        enableFullscreen: true, //defaultTargetPlatform == TargetPlatform.android,
+        enableFullscreen:
+            true, //defaultTargetPlatform == TargetPlatform.android,
         enableSkips: true,
       ),
       autoDetectFullscreenAspectRatio: false,
@@ -293,7 +294,9 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         title: Text(
           widget.item.title ?? 'No title',
           style: TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+              color: Theme.of(context).primaryColorLight,
+              fontWeight: FontWeight.bold,
+              fontSize: 17),
         ),
         subtitle: Row(
           children: [
@@ -302,7 +305,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
                 widget.item.author?.username ?? "sagarkothari88",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Theme.of(context).primaryColorLight),
               ),
             ),
             const SizedBox(
@@ -310,8 +313,9 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             ),
             Text(
               timeInString,
-              style:
-                  TextStyle(color: Colors.white70, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  color: Theme.of(context).primaryColorLight.withOpacity(0.7),
+                  fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -488,7 +492,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
 
   Widget _actionBar(double width) {
     final VideoFavoriteProvider provider = VideoFavoriteProvider();
-    Color color = Colors.white;
+    Color color = Theme.of(context).primaryColorLight;
     String votes = "${widget.item.stats?.numVotes ?? 0}";
     String comments = "${widget.item.stats?.numComments ?? 0}";
     return Padding(
@@ -512,7 +516,10 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
                 icon: Icon(Icons.comment, color: color),
               ),
               Text(comments,
-                  style: TextStyle(color: Colors.white70, fontSize: 13))
+                  style: TextStyle(
+                      color:
+                          Theme.of(context).primaryColorLight.withOpacity(0.7),
+                      fontSize: 13))
             ],
           ),
           Row(
@@ -527,7 +534,11 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
                     isUserVoted() ? Icons.thumb_up : Icons.thumb_up_outlined,
                     color: color),
               ),
-              Text(votes, style: TextStyle(color: Colors.white70, fontSize: 13))
+              Text(votes,
+                  style: TextStyle(
+                      color:
+                          Theme.of(context).primaryColorLight.withOpacity(0.7),
+                      fontSize: 13))
             ],
           ),
           IconButton(
@@ -592,7 +603,10 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
                     alignment: Alignment.center,
                     padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white30),
+                      border: Border.all(
+                          color: Theme.of(context)
+                              .primaryColorLight
+                              .withOpacity(0.3)),
                       borderRadius: BorderRadius.all(
                         Radius.circular(18),
                       ),
@@ -600,7 +614,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
                     child: Text(
                       tags[index],
                       style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).primaryColorLight,
                           fontSize: 14,
                           fontWeight: FontWeight.w500),
                     ),

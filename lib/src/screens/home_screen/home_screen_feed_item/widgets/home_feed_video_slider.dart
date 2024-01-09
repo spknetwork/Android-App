@@ -24,27 +24,30 @@ class HomeFeedVideoSlider extends StatelessWidget {
     return isInitialized && totalDuration != null && currentDuration != null
         ? SliderTheme(
             data: SliderThemeData(
-              trackHeight: 2.0, 
+              trackHeight: 2.0,
               thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7.0),
               overlayShape: RoundSliderOverlayShape(overlayRadius: 0.0),
               trackShape: RectangularSliderTrackShape(),
             ),
             child: Slider(
-              activeColor: Colors.white,
-              inactiveColor: Colors.white38,
+              activeColor: Theme.of(context).primaryColorLight == Colors.black
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).primaryColorLight,
+              inactiveColor: Theme.of(context).primaryColorLight == Colors.black
+                  ? Theme.of(context).primaryColor.withOpacity(0.5)
+                  : Theme.of(context).primaryColorLight.withOpacity(0.38),
               min: min,
               max: Utilities.durationToDouble(totalDuration),
               value: (Utilities.durationToDouble(currentDuration)
                   .clamp(min, Utilities.durationToDouble(totalDuration))),
               onChanged: (newValue) {
-                betterPlayerController!.seekTo(Utilities.doubleToDuration(newValue)).then(
-                    (value) =>
+                betterPlayerController!
+                    .seekTo(Utilities.doubleToDuration(newValue))
+                    .then((value) =>
                         betterPlayerController!.videoPlayerController!.play());
               },
             ),
           )
         : const SizedBox.shrink();
   }
-
-
 }

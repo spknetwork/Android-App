@@ -169,7 +169,8 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   }
 
   Widget listTile() {
-    TextStyle titleStyle = TextStyle(color: Colors.white, fontSize: 13);
+    TextStyle titleStyle =
+        TextStyle(color: Theme.of(context).primaryColorLight, fontSize: 13);
     Widget thumbnail = Selector<ImageResolution, String>(
         selector: (context, myType) => myType.resolution,
         builder: (context, value, child) {
@@ -250,7 +251,10 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                               Text(
                                 '${widget.author}',
                                 style: TextStyle(
-                                    color: Colors.white70, fontSize: 12),
+                                    color: Theme.of(context)
+                                        .primaryColorLight
+                                        .withOpacity(0.7),
+                                    fontSize: 12),
                               ),
                             ],
                           ),
@@ -264,7 +268,11 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                           '  •  $timeInString',
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .primaryColorLight
+                                  .withOpacity(0.7),
+                              fontSize: 12),
                         )),
                         const SizedBox(
                           width: 15,
@@ -287,8 +295,11 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                           ),
                           child: Text(
                             '  ${widget.comments}',
-                            style:
-                                TextStyle(color: Colors.white70, fontSize: 12),
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .primaryColorLight
+                                    .withOpacity(0.7),
+                                fontSize: 12),
                           ),
                         ),
                         // Padding(
@@ -449,9 +460,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                 height: 13,
                 width: 13,
                 child: CircularProgressIndicator(
-                  strokeWidth: 1.8,
-                  color: Colors.white,
-                ),
+                    strokeWidth: 1.8, color: Colors.white),
               ),
             )
           ],

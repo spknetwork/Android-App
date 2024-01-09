@@ -29,7 +29,7 @@ class HomeFeedVideoTimer extends StatelessWidget {
             horizontal: 4,
           ),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.8),
+            color: Theme.of(context).primaryColorDark.withOpacity(0.8),
             borderRadius: BorderRadius.all(
               Radius.circular(4),
             ),

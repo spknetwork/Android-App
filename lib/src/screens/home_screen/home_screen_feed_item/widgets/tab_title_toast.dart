@@ -72,7 +72,7 @@ class _HomeScreenTabTitleToastState extends State<HomeScreenTabTitleToast>
           ),
           color: Colors.deepPurple.withOpacity(0.8),
         ),
-        child: Text(widget.subtitle),
+        child: Text(widget.subtitle,style: TextStyle(color: Colors.white),),
       ),
     );
   }

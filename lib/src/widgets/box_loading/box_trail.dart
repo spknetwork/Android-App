@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 
 class BoxTrail extends StatelessWidget {
   const BoxTrail(
-      {
-      this.width,
-      this.margin,
-      this.height,
-      this.borderRadius,
-      this.shape});
+      {this.width, this.margin, this.height, this.borderRadius, this.shape});
 
   final double? width;
   final double? margin;
@@ -23,7 +18,9 @@ class BoxTrail extends StatelessWidget {
       margin: EdgeInsets.only(right: margin ?? 0),
       decoration: BoxDecoration(
           shape: shape ?? BoxShape.rectangle,
-          color: Colors.grey.shade900,
+          color: Theme.of(context).primaryColorLight == Colors.black
+              ? Colors.grey.shade400
+              : Colors.grey.shade900,
           borderRadius: shape == null
               ? BorderRadius.all(
                   Radius.circular(borderRadius ?? 30),
