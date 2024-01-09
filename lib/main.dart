@@ -1,4 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/image_resolution_provider.dart';
+import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
@@ -94,7 +96,10 @@ class _MyAppState extends State<MyApp> {
           lazy: false,
           create: (context) => PodcastController(),
         ),
-        ChangeNotifierProvider(create: (context) => VideoSettingProvider())
+        ChangeNotifierProvider(create: (context) => VideoSettingProvider()),
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (context) => ImageResolution())
       ],
       child: OverlaySupport.global(
         child: futureBuilder(

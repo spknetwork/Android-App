@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -317,7 +318,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         var ipfsHash = "";
         if (widget.item.video_v2.isNotEmpty) {
           ipfsHash = widget.item.video_v2
-              .replaceAll("https://ipfs-3speak.b-cdn.net/ipfs/", "")
+              .replaceAll(IpfsNodeProvider().nodeUrl, "")
               .replaceAll("ipfs://", "")
               .replaceAll("/manifest.m3u8", "");
         }

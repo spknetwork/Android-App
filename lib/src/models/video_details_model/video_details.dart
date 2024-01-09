@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
-
+import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -42,7 +42,7 @@ class VideoDetails {
 
   String getThumbnail() {
     return thumbnail.replaceAll(
-        'ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
+        'ipfs://', IpfsNodeProvider().nodeUrl);
   }
 
   String getVideoUrl(HiveUserData data) {
@@ -66,7 +66,7 @@ class VideoDetails {
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
       var url =
-          video_v2.replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
+          video_v2.replaceAll('ipfs://', IpfsNodeProvider().nodeUrl);
       log('Root Play url is - $url');
       return url;
     }
@@ -80,7 +80,7 @@ class VideoDetails {
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
       var url = video_v2
-          .replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/')
+          .replaceAll('ipfs://', IpfsNodeProvider().nodeUrl)
           .replaceAll('manifest', '${data.resolution}/index');
       log('Play url is - $url');
       return url;

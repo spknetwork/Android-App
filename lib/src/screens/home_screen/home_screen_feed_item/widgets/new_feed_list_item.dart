@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/image_resolution_provider.dart';
 import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/home_feed_video_full_screen_button.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/home_feed_video_slider.dart';
@@ -121,7 +122,8 @@ class _NewFeedListItemState extends State<NewFeedListItem>
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
           enablePip: false,
-          enableFullscreen: true, //defaultTargetPlatform == TargetPlatform.android,
+          enableFullscreen:
+              true, //defaultTargetPlatform == TargetPlatform.android,
           enableSkips: true,
           enableMute: true),
       autoDetectFullscreenAspectRatio: false,
@@ -168,11 +170,15 @@ class _NewFeedListItemState extends State<NewFeedListItem>
 
   Widget listTile() {
     TextStyle titleStyle = TextStyle(color: Colors.white, fontSize: 13);
-    Widget thumbnail = CachedImage(
-      imageUrl: widget.thumbUrl,
-      imageHeight: 230,
-      imageWidth: double.infinity,
-    );
+    Widget thumbnail = Selector<ImageResolution, String>(
+        selector: (context, myType) => myType.resolution,
+        builder: (context, value, child) {
+          return CachedImage(
+            imageUrl: Utilities.getProxyImage(value, widget.thumbUrl),
+            imageHeight: 230,
+            imageWidth: double.infinity,
+          );
+        });
     String timeInString =
         widget.createdAt != null ? "${timeago.format(widget.createdAt!)}" : "";
     return Stack(

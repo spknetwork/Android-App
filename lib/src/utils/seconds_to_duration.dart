@@ -1,3 +1,4 @@
+import 'package:acela/src/global_provider/image_resolution_provider.dart';
 import 'package:flutter/material.dart';
 
 class Utilities {
@@ -38,5 +39,10 @@ class Utilities {
     textPainter.layout(maxWidth: maxWidth);
 
     return textPainter.computeLineMetrics().length;
+  }
+
+  static getProxyImage(String resolution, String imageUrl) {
+    String actualResolution = Resolution.removePFromResolution(resolution);
+    return 'https://images.hive.blog/${actualResolution}x0/$imageUrl';
   }
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -164,6 +165,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
       processText = 'Updating Podcast info';
     });
     try {
+      final String ipfsUrl = IpfsNodeProvider().nodeUrl;
       var podcastResponse = await Communicator().uploadPodcast(
         user: user,
         size: widget.size,
@@ -185,11 +187,13 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
       var ipfsHash = "";
       if (podcastResponse.enclosureUrl.isNotEmpty) {
         ipfsHash = podcastResponse.enclosureUrl
-            .replaceAll("https://ipfs-3speak.b-cdn.net/ipfs/", "")
+            .replaceAll(ipfsUrl, "")
             .replaceAll("ipfs://", "");
       }
-      var thumbnail = podcastResponse.thumbnail.replaceAll("ipfs://", "https://ipfs-3speak.b-cdn.net/ipfs/");
-      var enclosureUrl = podcastResponse.enclosureUrl.replaceAll("ipfs://", "https://ipfs-3speak.b-cdn.net/ipfs/");
+      var thumbnail = podcastResponse.thumbnail
+          .replaceAll("ipfs://", ipfsUrl);
+      var enclosureUrl = podcastResponse.enclosureUrl
+          .replaceAll("ipfs://", ipfsUrl);
       final String response = await platform.invokeMethod('newPostPodcast', {
         'thumbnail': thumbnail,
         'enclosureUrl': enclosureUrl,
@@ -256,13 +260,14 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
   void initState() {
     super.initState();
     beneficiaries = [
-        BeneficiariesJson(account: 'sagarkothari88', src: 'mobile', weight: 1),
-        BeneficiariesJson(
-            account: 'spk.beneficiary', src: 'threespeak', weight: 9),
-        BeneficiariesJson(
-            account: 'threespeakleader', src: 'threespeak', weight: 1),
-        BeneficiariesJson(account: widget.appData.username!, src: 'author', weight: 89),
-      ];
+      BeneficiariesJson(account: 'sagarkothari88', src: 'mobile', weight: 1),
+      BeneficiariesJson(
+          account: 'spk.beneficiary', src: 'threespeak', weight: 9),
+      BeneficiariesJson(
+          account: 'threespeakleader', src: 'threespeak', weight: 1),
+      BeneficiariesJson(
+          account: widget.appData.username!, src: 'author', weight: 89),
+    ];
     tagsController.text = "threespeak,mobile";
     socket = WebSocketChannel.connect(
       Uri.parse(Communicator.hiveAuthServer),
