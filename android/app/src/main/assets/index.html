@@ -456,12 +456,13 @@
           },
         ];
         let body = "<center>\n\n" +
-          `![](${thumbnail})\n\n` +
+          `[![](${thumbnail})](https://3speak.tv/watch?v=${author}/${permlink})\n\n` +
+          `▶️ [Watch on 3Speak](https://3speak.tv/watch?v=${author}/${permlink})\n\n` +
           "</center>\n\n" +
           "---\n\n" +
-          `<audio controls><source src="${videoV2}" type="audio/mpeg">Your browser does not support the audio element.</audio>\n\n` +
           `${description}\n\n` +
-          "---\n\n";
+          "---\n\n" +
+          `▶️ [3Speak](https://3speak.tv/watch?v=${author}/${permlink})`;
         hive.broadcast.updateOperations();
         const operations = [];
         operations.push([

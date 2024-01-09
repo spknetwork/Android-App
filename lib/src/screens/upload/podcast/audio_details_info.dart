@@ -217,7 +217,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
         });
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
-        if (bridgeResponse.error == "" && bridgeResponse.valid) {
+        if (bridgeResponse.error == "" && bridgeResponse.valid && (bridgeResponse.data ?? "").isEmpty) {
           showMessage('Congratulations. Your Podcast Episode is published.');
           showMyDialog();
         } else if (bridgeResponse.error == "" &&
