@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/communicator.dart';
 
@@ -147,7 +148,7 @@ class GQLFeedItem {
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/manifest.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
-      var url = (spkvideo?.playUrl ?? '').replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/').replaceAll('manifest', '${data.resolution}/index');
+      var url = (spkvideo?.playUrl ?? '').replaceAll('ipfs://', IpfsNodeProvider().nodeUrl).replaceAll('manifest', '${data.resolution}/index');
       return url;
     }
     return spkvideo?.playUrl ?? '';
@@ -159,7 +160,7 @@ class GQLFeedItem {
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/manifest.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
-      var url = (spkvideo?.playUrl ?? '').replaceAll('ipfs://', 'https://ipfs-3speak.b-cdn.net/ipfs/');
+      var url = (spkvideo?.playUrl ?? '').replaceAll('ipfs://', IpfsNodeProvider().nodeUrl);
       return url;
     }
     return spkvideo?.playUrl ?? '';

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/models/hive_comments/response/hive_comments.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -324,7 +325,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                             onPressed: () {
                               var ipfsHash = details.playUrl
                                   .replaceAll(
-                                      "https://ipfs-3speak.b-cdn.net/ipfs/", "")
+                                      IpfsNodeProvider().nodeUrl, "")
                                   .replaceAll("/manifest.m3u8", "");
                               Share.share(
                                   "Copy this IPFS Hash & Pin it on your system - $ipfsHash");

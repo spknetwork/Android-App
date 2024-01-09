@@ -1,4 +1,6 @@
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/image_resolution_provider.dart';
+import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/settings/add_cutom_union_indexer.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
@@ -6,6 +8,7 @@ import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -236,10 +239,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListTile(
       leading: const Icon(Icons.video_collection),
       title: const Text("Video Resolution"),
-      subtitle: const Text("Change Default resolution"),
-      trailing: Text(res),
+      subtitle: Text(res),
+      trailing: Icon(Icons.arrow_drop_down),
       onTap: () async {
         tappedVideoRes(data);
+      },
+    );
+  }
+
+  Widget _image(BuildContext context) {
+    return Selector<ImageResolution, String>(
+      selector: (_, myType) => myType.resolution,
+      builder: (context, value, child) {
+        return ListTile(
+          leading: const Icon(Icons.image),
+          title: const Text("Image Resolution"),
+          subtitle: Text(value),
+          trailing: Icon(Icons.arrow_drop_down),
+          onTap: () async {
+            tappedImageRes();
+          },
+        );
+      },
+    );
+  }
+
+  void tappedImageRes() {
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('Set Default video Image resolution to'),
+      androidBorderRadius: 30,
+      actions: [
+        getImageResolutionAction(Resolution.r360),
+        getImageResolutionAction(Resolution.r480),
+        getImageResolutionAction(Resolution.r720),
+        getImageResolutionAction(Resolution.r1080),
+      ],
+      cancelAction: CancelAction(title: const Text('Cancel')),
+    );
+  }
+
+  BottomSheetAction getImageResolutionAction(
+    String resolution,
+  ) {
+    return BottomSheetAction(
+      title: Text(resolution),
+      onPressed: (context) async {
+        Navigator.of(context).pop();
+        context.read<ImageResolution>().resolution = resolution;
       },
     );
   }
@@ -301,8 +348,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _rpc(BuildContext context, HiveUserData user) {
     return ListTile(
       leading: const Icon(Icons.cloud),
-      title: const Text("Change Hive API Node (RPC)"),
+      title: const Text("Hive API Node (RPC)"),
       subtitle: Text(user.rpc),
+      trailing: Icon(Icons.arrow_drop_down),
       onTap: () {
         showBottomSheetForServer(user);
       },
@@ -378,10 +426,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _unionIndexer(BuildContext context, HiveUserData user) {
     return ListTile(
       leading: const Icon(Icons.computer),
-      title: const Text("Change Union Indexer API Node"),
+      title: const Text("Union Indexer API Node"),
       subtitle: Text(user.union),
+      trailing: Icon(Icons.arrow_drop_down),
       onTap: () {
         showBottomSheetForUnionIndexer(user);
+      },
+    );
+  }
+
+  Widget _ipfsNode() {
+    return ListTile(
+      leading: const Icon(Icons.note_rounded),
+      title: const Text("IPFS Node"),
+      subtitle: Text(IpfsNodeProvider().nodeUrl),
+      trailing: Icon(Icons.arrow_drop_down),
+      onTap: () {
+        showIpfsNodeBottomSheet();
+      },
+    );
+    
+  }
+
+  void showIpfsNodeBottomSheet() {
+    List<String> ipfsNodes = [IpfsNodeProvider().nodeUrl];
+    showAdaptiveActionSheet(
+      context: context,
+      title: const Text('Select IPFS Node'),
+      androidBorderRadius: 30,
+      actions: ipfsNodes.map((e) => _ipfsBottomSheetAction(e)).toList(),
+      cancelAction: CancelAction(
+        title: const Text(
+          'Cancel',
+          style: TextStyle(color: Colors.deepOrange),
+        ),
+      ),
+    );
+  }
+
+  BottomSheetAction _ipfsBottomSheetAction(String url) {
+    return BottomSheetAction(
+      title: Text(url),
+      onPressed: (context) async {
+        Navigator.pop(context);
+        setState(() {
+          IpfsNodeProvider().changeIpfsNode(url);
+        });
       },
     );
   }
@@ -395,9 +485,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _divider(),
         _video(context),
         _divider(),
+        _image(context),
+        _divider(),
         _rpc(context, user),
         _divider(),
         _unionIndexer(context, user),
+        _divider(),
+        _ipfsNode(),
         _divider(),
         _appVersion(context),
         _divider(),
