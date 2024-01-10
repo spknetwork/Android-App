@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
-class AddCustomUnionIndexer extends StatefulWidget {
-  const AddCustomUnionIndexer({Key? key, required this.onAdd})
+class AddNodeByUrl extends StatefulWidget {
+  const AddNodeByUrl({Key? key, required this.onAdd, required this.title})
       : super(key: key);
   final Function(String) onAdd;
 
+  final String title;
+
   @override
-  State<AddCustomUnionIndexer> createState() => _AddRssPodcastState();
+  State<AddNodeByUrl> createState() => _AddRssPodcastState();
 }
 
-class _AddRssPodcastState extends State<AddCustomUnionIndexer> {
+class _AddRssPodcastState extends State<AddNodeByUrl> {
   final TextEditingController textEditingController = TextEditingController();
 
   @override
@@ -22,7 +24,7 @@ class _AddRssPodcastState extends State<AddCustomUnionIndexer> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:const Text('Add union indexer'),
+        title:  Text('Add ${widget.title}'),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15.0),
@@ -41,7 +43,7 @@ class _AddRssPodcastState extends State<AddCustomUnionIndexer> {
         ),
       ),
       Text(
-        "Add union indexer node by Url",
+        "Add ${widget.title} node by Url",
         style: TextStyle(fontSize: 18),
         textAlign: TextAlign.center,
       ),
@@ -65,12 +67,13 @@ class _AddRssPodcastState extends State<AddCustomUnionIndexer> {
       SizedBox(
         width: 125,
         child: TextButton(
-            style: TextButton.styleFrom(backgroundColor: Colors.blue),
-            onPressed: onAdd,
-            child: Text(
-              "Save",
-              style: const TextStyle(color: Colors.white),
-            ),),
+          style: TextButton.styleFrom(backgroundColor: Colors.blue),
+          onPressed: onAdd,
+          child: Text(
+            "Save",
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
       )
     ]);
   }

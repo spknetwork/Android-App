@@ -399,7 +399,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Navigator.pop(context);
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => AddCustomUnionIndexer(
+            builder: (context) => AddNodeByUrl(
+              title: 'union indexer',
               onAdd: (serverUrl) async {
                 Navigator.pop(context);
                 await _saveUnionIndexer(serverUrl, user);
@@ -437,7 +438,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _ipfsNode() {
     return ListTile(
-      leading: const Icon(Icons.note_rounded),
+      leading: const Icon(Icons.view_in_ar),
       title: const Text("IPFS Node"),
       subtitle: Text(IpfsNodeProvider().nodeUrl),
       trailing: Icon(Icons.arrow_drop_down),
@@ -445,16 +446,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
         showIpfsNodeBottomSheet();
       },
     );
-    
   }
 
   void showIpfsNodeBottomSheet() {
-    List<String> ipfsNodes = [IpfsNodeProvider().nodeUrl];
+    List<String> nodes = [];
+    nodes.add(IpfsNodeProvider().defaultIpfsNode);
+    if (IpfsNodeProvider().nodeUrl != IpfsNodeProvider().defaultIpfsNode) {
+      nodes.add(IpfsNodeProvider().nodeUrl);
+    }
+    var list = nodes.map((e) => _ipfsBottomSheetAction(e)).toList();
+    list.add(BottomSheetAction(
+      title: Text('Custom'),
+      onPressed: (context) async {
+        Navigator.pop(context);
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => AddNodeByUrl(
+              title: 'IPFS node',
+              onAdd: (serverUrl) async {
+                Navigator.pop(context);
+                setState(() {
+                  IpfsNodeProvider().changeIpfsNode(serverUrl);
+                });
+              },
+            ),
+          ),
+        );
+      },
+    ));
     showAdaptiveActionSheet(
       context: context,
       title: const Text('Select IPFS Node'),
       androidBorderRadius: 30,
-      actions: ipfsNodes.map((e) => _ipfsBottomSheetAction(e)).toList(),
+      actions: list,
       cancelAction: CancelAction(
         title: const Text(
           'Cancel',
