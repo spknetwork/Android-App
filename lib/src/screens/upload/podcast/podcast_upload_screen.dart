@@ -113,7 +113,7 @@ class _PodcastUploadScreenState extends State<PodcastUploadScreen> {
       });
 
       FilePickerResult? pickerResult =
-          await FilePicker.platform.pickFiles(type: FileType.audio);
+          await FilePicker.platform.pickFiles(type: FileType.audio).c;
       final XFile? file;
       file = pickerResult != null
           ? XFile(pickerResult.files.single.path ?? "")
