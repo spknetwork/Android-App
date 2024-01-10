@@ -438,7 +438,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _ipfsNode() {
     return ListTile(
-      leading: const Icon(Icons.note_rounded),
+      leading: const Icon(Icons.view_in_ar),
       title: const Text("IPFS Node"),
       subtitle: Text(IpfsNodeProvider().nodeUrl),
       trailing: Icon(Icons.arrow_drop_down),
