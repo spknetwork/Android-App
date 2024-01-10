@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
@@ -14,7 +15,9 @@ import 'package:acela/src/utils/safe_convert.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
+import 'package:croppy/croppy.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -177,6 +180,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
           declineRewards: false,
           duration: widget.duration,
         );
+        podcastEpisodeId = podcastResponse.id;
         await Future.delayed(const Duration(seconds: 1), () {});
         var title = base64.encode(utf8.encode(podcastResponse.title));
         var description = podcastResponse.description;
@@ -217,9 +221,35 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
         });
         log('Response from platform $response');
         var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
-        if (bridgeResponse.error == "" && bridgeResponse.valid && (bridgeResponse.data ?? "").isEmpty) {
-          showMessage('Congratulations. Your Podcast Episode is published.');
-          showMyDialog();
+        if (bridgeResponse.error == "" &&
+            bridgeResponse.valid &&
+            (bridgeResponse.data ?? "").isEmpty) {
+          showMessage(
+              'Please wait. Podcast is posted on Hive but needs to be marked as published.');
+          Future.delayed(const Duration(seconds: 6), () async {
+            if (mounted) {
+              try {
+                await Communicator().updatePublishStateForPodcastEpisode(
+                    user, podcastResponse.id);
+                setState(() {
+                  isCompleting = false;
+                  processText = '';
+                  showMessage(
+                      'Congratulations. Your Podcast Episode is published.');
+                  showMyDialog();
+                });
+              } catch (e) {
+                setState(
+                  () {
+                    isCompleting = false;
+                    processText = '';
+                    showMessage(
+                        'Podcast is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+                  },
+                );
+              }
+            }
+          });
         } else if (bridgeResponse.error == "" &&
             bridgeResponse.data != null &&
             user.keychainData?.hasAuthKey != null) {
@@ -327,34 +357,32 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
             setState(() {
               qrCode = null;
             });
-            showMessage('Congratulations. Your Podcast Episode is published.');
-            showMyDialog();
-            // showMessage(
-            //     'Please wait. Podcast is posted on Hive but needs to be marked as published.');
-            // Future.delayed(const Duration(seconds: 6), () async {
-            //   if (mounted) {
-            //     try {
-            //       await Communicator()
-            //           .updatePublishState(widget.appData, podcastEpisodeId);
-            //       setState(() {
-            //         isCompleting = false;
-            //         processText = '';
-            //         qrCode = null;
-            //         showMessage(
-            //             'Congratulations. Your Podcast Episode is published.');
-            //         showMyDialog();
-            //       });
-            //     } catch (e) {
-            //       setState(() {
-            //         qrCode = null;
-            //         isCompleting = false;
-            //         processText = '';
-            //         showMessage(
-            //             'Podcast is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
-            //       });
-            //     }
-            //   }
-            // });
+            showMessage(
+                'Please wait. Podcast is posted on Hive but needs to be marked as published.');
+            Future.delayed(const Duration(seconds: 6), () async {
+              if (mounted) {
+                try {
+                  await Communicator().updatePublishStateForPodcastEpisode(
+                      widget.appData, podcastEpisodeId);
+                  setState(() {
+                    isCompleting = false;
+                    processText = '';
+                    showMessage(
+                        'Congratulations. Your Podcast Episode is published.');
+                    showMyDialog();
+                  });
+                } catch (e) {
+                  setState(
+                    () {
+                      isCompleting = false;
+                      processText = '';
+                      showMessage(
+                          'Podcast is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
+                    },
+                  );
+                }
+              }
+            });
             break;
           case "sign_nack":
             setState(() {
@@ -464,6 +492,26 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
     showDialog(context: context, builder: (c) => alert);
   }
 
+  Widget _rewardType() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 15, right: 15, top: 20, bottom: 20),
+      child: Row(
+        children: [
+          Text(powerUp100 ? '100% power' : '50% power'),
+          const Spacer(),
+          Switch(
+            value: powerUp100,
+            onChanged: (newVal) {
+              setState(() {
+                powerUp100 = newVal;
+              });
+            },
+          )
+        ],
+      ),
+    );
+  }
+
   Widget _thumbnailPicker(HiveUserData user) {
     return Center(
       child: Container(
@@ -502,14 +550,64 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
             try {
               setState(() {
                 isPickingImage = true;
+                if (thumbUrl.isNotEmpty) {
+                  thumbUrl = "";
+                }
+                if (thumbIpfs.isNotEmpty) {
+                  thumbIpfs = "";
+                }
               });
-              final XFile? file =
+              XFile? file =
                   await _picker.pickImage(source: ImageSource.gallery);
+
+              CropImageResult? result;
               if (file != null) {
+                if (defaultTargetPlatform == TargetPlatform.android) {
+                  result = await showMaterialImageCropper(
+                    context,
+                    imageProvider: FileImage(File(file.path)),
+                    enabledTransformations: Transformation.values,
+                    allowedAspectRatios: [
+                      CropAspectRatio(width: 3, height: 3), //squre shape
+                    ],
+                    postProcessFn: (result) async {
+                      var croppedfile = await saveCroppedImageToFile(
+                          result.uiImage, file!.path);
+                      file = XFile(croppedfile.path);
+                      return result;
+                    },
+                  );
+                } else {
+                  result = await showCupertinoImageCropper(
+                    context,
+                    imageProvider: FileImage(File(file.path)),
+                    enabledTransformations: Transformation.values,
+                    allowedAspectRatios: [
+                      CropAspectRatio(width: 3, height: 3), //squre shape
+                    ],
+                    postProcessFn: (result) async {
+                      var croppedfile = await saveCroppedImageToFile(
+                          result.uiImage, file!.path);
+                      file = XFile(croppedfile.path);
+                      return result;
+                    },
+                  );
+                }
                 setState(() {
                   isPickingImage = false;
+                  if (result == null) {
+                    if (thumbUrl.isNotEmpty) {
+                      thumbUrl = "";
+                    }
+                    if (thumbIpfs.isNotEmpty) {
+                      thumbIpfs = "";
+                    }
+                    file = null;
+                  }
                 });
-                initiateUpload(user, file);
+                if (file != null) {
+                  initiateUpload(user, file!);
+                }
               } else {
                 throw 'User cancelled image picker';
               }
@@ -523,6 +621,16 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
         ),
       ),
     );
+  }
+
+  Future<File> saveCroppedImageToFile(
+      ui.Image croppedImage, String savePath) async {
+    ByteData? byteData =
+        await croppedImage.toByteData(format: ui.ImageByteFormat.png);
+    Uint8List pngBytes = byteData!.buffer.asUint8List();
+    String filePath = "$savePath";
+    await File(filePath).writeAsBytes(pngBytes);
+    return File(filePath);
   }
 
   Widget _tagField() {
@@ -542,51 +650,6 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
         maxLines: 1,
         minLines: 1,
         maxLength: 150,
-      ),
-    );
-  }
-
-  Widget _rewardType() {
-    return Container(
-      margin: const EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 20),
-      child: Row(
-        children: [
-          Text('Type:'),
-          Spacer(),
-          SizedBox(
-            width: 250.0,
-            child: CupertinoSegmentedControl(
-              children: {
-                0: Center(
-                  child: Text(
-                    '50% Power',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                1: Center(
-                  child: Text(
-                    '100% Power',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                )
-              },
-              selectedColor: Theme.of(context).primaryColor,
-              borderColor: Theme.of(context).primaryColor,
-              groupValue: powerUp100 ? 1 : 0,
-              onValueChanged: (value) {
-                setState(() {
-                  if (value == 0) {
-                    powerUp100 = false;
-                  } else {
-                    powerUp100 = true;
-                  }
-                });
-              },
-            ),
-          ),
-        ],
       ),
     );
   }

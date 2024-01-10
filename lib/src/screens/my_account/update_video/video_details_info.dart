@@ -539,43 +539,20 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
   }
 
   Widget _rewardType() {
-    return Container(
-      margin: const EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 20),
+    return Padding(
+      padding: const EdgeInsets.only(left: 15, right: 15, top: 20, bottom: 20),
       child: Row(
         children: [
-          Text('Type:'),
-          Spacer(),
-          SizedBox(
-            width: 250.0,
-            child: CupertinoSegmentedControl(
-              children: {
-                0: Center(
-                  child: Text(
-                    '50% Power',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                1: Center(
-                  child: Text('100% Power',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white)),
-                )
-              },
-              selectedColor: Theme.of(context).primaryColor,
-              borderColor: Theme.of(context).primaryColor,
-              groupValue: powerUp100 ? 1 : 0,
-              onValueChanged: (value) {
-                setState(() {
-                  if (value == 0) {
-                    powerUp100 = false;
-                  } else {
-                    powerUp100 = true;
-                  }
-                });
-              },
-            ),
-          ),
+          Text(powerUp100 ? '100% power' : '50% power'),
+          const Spacer(),
+          Switch(
+            value: powerUp100,
+            onChanged: (newVal) {
+              setState(() {
+                powerUp100 = newVal;
+              });
+            },
+          )
         ],
       ),
     );
@@ -847,22 +824,20 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
             ),
       floatingActionButton: isCompleting
           ? null
-          :  FloatingActionButton.extended(
-                  label:
-                      Text(widget.justForEditing ? 'Save Details' : 'Publish'),
-                  onPressed: () {
-                    if (user.username != null) {
-                      if (thumbIpfs.isNotEmpty ||
-                          widget.item.getThumbnail().isNotEmpty) {
-                        completeVideo(user);
-                      } else {
-                        showError('Please set Thumbnail');
-                      }
-                    }
-                  },
-                  icon:
-                      Icon(widget.justForEditing ? Icons.save : Icons.post_add),
-                ),
+          : FloatingActionButton.extended(
+              label: Text(widget.justForEditing ? 'Save Details' : 'Publish'),
+              onPressed: () {
+                if (user.username != null) {
+                  if (thumbIpfs.isNotEmpty ||
+                      widget.item.getThumbnail().isNotEmpty) {
+                    completeVideo(user);
+                  } else {
+                    showError('Please set Thumbnail');
+                  }
+                }
+              },
+              icon: Icon(widget.justForEditing ? Icons.save : Icons.post_add),
+            ),
     );
   }
 }

@@ -36,6 +36,7 @@ class VideoSize {
 class Communicator {
   // Production
   static const tsServer = "https://studio.3speak.tv";
+  // static const tsServer = 'https://bc99-2401-4900-1c8f-1ccb-e550-34fe-d7b7-ed7.ngrok-free.app';
   static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
@@ -592,7 +593,7 @@ class Communicator {
       if (result.success) {
         return;
       } else {
-        throw 'Error updating video status';
+        throw 'Error updating podcast status';
       }
     } else {
       var string = await response.stream.bytesToString();
