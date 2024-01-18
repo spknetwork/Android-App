@@ -1,16 +1,19 @@
 import 'dart:async';
 
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_info_description.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_player_widgets/download_podcast_button.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_player_widgets/podcast_player_intercation_icon_button.dart';
+import 'package:acela/src/screens/podcast/widgets/value_for_value_view.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/audio_player/action_tools.dart';
 import 'package:acela/src/widgets/audio_player/touch_controls.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
@@ -173,53 +176,69 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
 
   Widget userToolbar() {
     Color iconColor = Colors.lightBlue;
+    List<Widget> tools = [
+      IconButton(
+        constraints: const BoxConstraints(),
+        padding: EdgeInsets.zero,
+        icon: Icon(Icons.info_outline, color: iconColor),
+        onPressed: () {
+          _onInfoButtonTap();
+        },
+      ),
+      IconButton(
+        constraints: const BoxConstraints(),
+        padding: EdgeInsets.zero,
+        icon: Icon(Icons.share, color: iconColor),
+        onPressed: () {
+          Share.share(currentPodcastEpisode.enclosureUrl ?? '');
+        },
+      ),
+      DownloadPodcastButton(
+        color: iconColor,
+        episode: currentPodcastEpisode,
+      ),
+      FavouriteWidget(
+          toastType: "Podcast Episode",
+          disablePadding: true,
+          iconColor: iconColor,
+          isLiked: podcastController
+              .isLikedPodcastEpisodePresentLocally(currentPodcastEpisode),
+          onAdd: () {
+            podcastController
+                .storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
+          },
+          onRemove: () {
+            podcastController
+                .storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
+          }),
+      IconButton(
+        onPressed: () {
+          _onTapPodcastHistory();
+        },
+        icon: Icon(
+          Icons.list,
+          color: iconColor,
+        ),
+      )
+    ];
+    if (context.read<HiveUserData>().username != null) {
+      tools.insert(
+        3,
+        IconButton(
+          constraints: const BoxConstraints(),
+          padding: EdgeInsets.zero,
+          icon: Icon(CupertinoIcons.gift_fill, color: iconColor),
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const ValueForValueView(),));
+          },
+        ),
+      );
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        IconButton(
-          constraints: const BoxConstraints(),
-          padding: EdgeInsets.zero,
-          icon: Icon(Icons.info_outline, color: iconColor),
-          onPressed: () {
-            _onInfoButtonTap();
-          },
-        ),
-        IconButton(
-          constraints: const BoxConstraints(),
-          padding: EdgeInsets.zero,
-          icon: Icon(Icons.share, color: iconColor),
-          onPressed: () {
-            Share.share(currentPodcastEpisode.guid ?? '');
-          },
-        ),
-        DownloadPodcastButton(
-          color: iconColor,
-          episode: currentPodcastEpisode,
-        ),
-        FavouriteWidget(
-            toastType: "Podcast Episode",
-            disablePadding: true,
-            iconColor: iconColor,
-            isLiked: podcastController
-                .isLikedPodcastEpisodePresentLocally(currentPodcastEpisode),
-            onAdd: () {
-              podcastController
-                  .storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
-            },
-            onRemove: () {
-              podcastController
-                  .storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
-            }),
-        IconButton(
-          onPressed: () {
-            _onTapPodcastHistory();
-          },
-          icon: Icon(
-            Icons.list,
-            color: iconColor,
-          ),
-        )
-      ],
+      children: tools,
     );
   }
 
