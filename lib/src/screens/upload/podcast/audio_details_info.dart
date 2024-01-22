@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
@@ -16,10 +17,10 @@ import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:croppy/croppy.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -420,7 +421,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
     }, cancelOnError: true);
   }
 
-  void initiateUpload(
+  Future<void> initiateUpload(
     HiveUserData data,
     XFile xFile,
   ) async {
@@ -559,7 +560,6 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
               });
               XFile? file =
                   await _picker.pickImage(source: ImageSource.gallery);
-
               CropImageResult? result;
               if (file != null) {
                 if (defaultTargetPlatform == TargetPlatform.android) {
@@ -571,9 +571,6 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
                       CropAspectRatio(width: 3, height: 3), //squre shape
                     ],
                     postProcessFn: (result) async {
-                      var croppedfile = await saveCroppedImageToFile(
-                          result.uiImage, file!.path);
-                      file = XFile(croppedfile.path);
                       return result;
                     },
                   );
@@ -586,29 +583,26 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
                       CropAspectRatio(width: 3, height: 3), //squre shape
                     ],
                     postProcessFn: (result) async {
-                      var croppedfile = await saveCroppedImageToFile(
-                          result.uiImage, file!.path);
-                      file = XFile(croppedfile.path);
                       return result;
                     },
                   );
                 }
-                setState(() {
-                  isPickingImage = false;
-                  if (result == null) {
-                    if (thumbUrl.isNotEmpty) {
-                      thumbUrl = "";
-                    }
-                    if (thumbIpfs.isNotEmpty) {
-                      thumbIpfs = "";
-                    }
-                    file = null;
-                  }
-                });
-                if (file != null) {
-                  initiateUpload(user, file!);
+                if (result != null) {
+                  var croppedfile =
+                      await saveCroppedImageToFile(result.uiImage, file.path);
+                  file = XFile(croppedfile.path);
+
+                  await initiateUpload(user, file);
+                  setState(() {
+                    isPickingImage = false;
+                  });
+                } else {
+                  _onCancel();
+                  throw 'User cancelled image cropper';
                 }
               } else {
+                _onCancel();
+                file = null;
                 throw 'User cancelled image picker';
               }
             } catch (e) {
@@ -623,6 +617,29 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
     );
   }
 
+  void _onCancel() {
+    setState(() {
+      isPickingImage = false;
+      if (thumbUrl.isNotEmpty) {
+        thumbUrl = "";
+      }
+      if (thumbIpfs.isNotEmpty) {
+        thumbIpfs = "";
+      }
+    });
+  }
+
+  Future<File> resizeImage(File file) async {
+    img.Image image = img.decodeImage(file.readAsBytesSync())!;
+    img.Image resizedImage = img.copyResize(image, width: 1080, height: 1080);
+    List<int> compressedBytes = img.encodeJpg(
+      resizedImage,
+    );
+    File compressedFile = File(file.path);
+    compressedFile.writeAsBytesSync(compressedBytes);
+    return compressedFile;
+  }
+
   Future<File> saveCroppedImageToFile(
       ui.Image croppedImage, String savePath) async {
     ByteData? byteData =
@@ -630,7 +647,11 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
     Uint8List pngBytes = byteData!.buffer.asUint8List();
     String filePath = "$savePath";
     await File(filePath).writeAsBytes(pngBytes);
-    return File(filePath);
+    if (croppedImage.width > 1080 || croppedImage.height > 1080) {
+      return await resizeImage(File(filePath));
+    } else {
+      return File(filePath);
+    }
   }
 
   Widget _tagField() {

@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
-class ImageResolution extends ChangeNotifier {
+class SettingsProvider extends ChangeNotifier {
   late String _resolution;
-  String storageKey = 'videoImageResolution';
+  late bool _autoPlayVideo;
+  String _resolutionKey = 'videoImageResolution';
+  String _autoPlayVideoKey = 'autoPlayVideo';
   GetStorage _storage = GetStorage();
 
-  ImageResolution() {
+  SettingsProvider() {
     _init();
   }
 
   void _init() {
-    _resolution = _storage.read(storageKey) ?? Resolution.r480;
+    _resolution = _storage.read(_resolutionKey) ?? Resolution.r480;
+    _autoPlayVideo = _storage.read(_autoPlayVideoKey) ?? true;
   }
 
   set resolution(String newResolution) {
     if (newResolution != _resolution) {
       _resolution = newResolution;
-      _storage.write(storageKey, newResolution);
+      _storage.write(_resolutionKey, newResolution);
       notifyListeners();
     }
   }
@@ -25,6 +28,18 @@ class ImageResolution extends ChangeNotifier {
   String get resolution {
     String resolutionString = _resolution.toString().replaceAll('r', '');
     return resolutionString;
+  }
+
+   set autoPlayVideo(bool status) {
+    if (status != _autoPlayVideo) {
+      _autoPlayVideo = status;
+      _storage.write(_autoPlayVideoKey, status);
+      notifyListeners();
+    }
+  }
+
+  bool get autoPlayVideo {
+    return _autoPlayVideo;
   }
 }
 
