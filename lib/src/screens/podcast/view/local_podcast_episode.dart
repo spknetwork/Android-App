@@ -1,8 +1,8 @@
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
-import 'package:acela/src/widgets/audio_player/new_pod_cast_epidose_player.dart';
-import 'package:acela/src/widgets/audio_player/touch_controls.dart';
+import 'package:acela/src/screens/podcast/widgets/audio_player/new_pod_cast_epidose_player.dart';
+import 'package:acela/src/screens/podcast/widgets/audio_player/audio_player_core_controls.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';

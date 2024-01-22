@@ -27,10 +27,8 @@ class PodcastEpisodeChapterResponse {
 
   Map<String, dynamic> toJson() => {
         "version": version,
-        "chapters": chapters == null
-            ? []
-            : List<PodcastEpisodeChapter>.from(
-                chapters!.map(
+        "chapters": List<PodcastEpisodeChapter>.from(
+                chapters.map(
                   (x) => x.toJson(),
                 ),
               ),
