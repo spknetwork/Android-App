@@ -248,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _image(BuildContext context) {
-    return Selector<ImageResolution, String>(
+    return Selector<SettingsProvider, String>(
       selector: (_, myType) => myType.resolution,
       builder: (context, value, child) {
         return ListTile(
@@ -258,6 +258,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
           trailing: Icon(Icons.arrow_drop_down),
           onTap: () async {
             tappedImageRes();
+          },
+        );
+      },
+    );
+  }
+
+  Widget _autoPlayVideo(BuildContext context) {
+    var settingsProvider = context.read<SettingsProvider>();
+    return Selector<SettingsProvider, bool>(
+      selector: (_, myType) => myType.autoPlayVideo,
+      builder: (context, value, child) {
+        return ListTile(
+          contentPadding: EdgeInsets.only(left: 15,right: 10),
+          leading: const Icon(Icons.auto_mode_rounded),
+          title: const Text("Auto Play Video"),
+          trailing: Transform.scale(
+            scale: 0.7,
+            child: Switch(
+              value: value,
+              onChanged: (newVal) {
+                settingsProvider.autoPlayVideo = newVal;
+              },
+            ),
+          ),
+          onTap: () async {
+           settingsProvider.autoPlayVideo = !settingsProvider.autoPlayVideo;
           },
         );
       },
@@ -286,7 +312,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: Text(resolution),
       onPressed: (context) async {
         Navigator.of(context).pop();
-        context.read<ImageResolution>().resolution = resolution;
+        context.read<SettingsProvider>().resolution = resolution;
       },
     );
   }
@@ -506,6 +532,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _changeLanguage(context),
         _divider(),
         _changeTheme(context),
+        _divider(),
+        _autoPlayVideo(context),
         _divider(),
         _video(context),
         _divider(),

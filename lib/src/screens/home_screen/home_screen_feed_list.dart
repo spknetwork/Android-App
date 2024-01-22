@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:acela/src/global_provider/image_resolution_provider.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -8,6 +9,7 @@ import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
 import 'package:inview_notifier_list/inview_notifier_list.dart';
+import 'package:provider/provider.dart';
 
 enum HomeScreenFeedType {
   userFeed,
@@ -21,14 +23,13 @@ enum HomeScreenFeedType {
 }
 
 class HomeScreenFeedList extends StatefulWidget {
-  const HomeScreenFeedList({
-    Key? key,
-    required this.appData,
-    required this.feedType,
-    this.owner,
-    this.community,
-    this.showVideo = true
-  });
+  const HomeScreenFeedList(
+      {Key? key,
+      required this.appData,
+      required this.feedType,
+      this.owner,
+      this.community,
+      this.showVideo = true});
 
   final HiveUserData appData;
   final HomeScreenFeedType feedType;
@@ -244,23 +245,30 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
                           );
                         }
                         var item = items[index];
-                        return NewFeedListItem(
-                          key: ValueKey(index),
-                          showVideo: index == inViewIndex && !isUserScrolling && widget.showVideo,
-                          thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
-                          author: item.author?.username ?? '',
-                          title: item.title ?? '',
-                          createdAt: item.createdAt ?? DateTime.now(),
-                          duration: item.spkvideo?.duration ?? 0.0,
-                          comments: item.stats?.numComments ?? 0,
-                          hiveRewards: item.stats?.totalHiveReward,
-                          votes: item.stats?.numVotes,
-                          views: 0,
-                          permlink: item.permlink ?? '',
-                          onTap: () {},
-                          onUserTap: () {},
-                          item: item,
-                          appData: widget.appData,
+                        return Selector<SettingsProvider, bool>(
+                          selector: (_, myType) => myType.autoPlayVideo,
+                          builder: (context, autoPlay, child) {
+                            return NewFeedListItem(
+                              key: ValueKey(index),
+                              showVideo: (index == inViewIndex &&
+                                  !isUserScrolling &&
+                                  widget.showVideo) && autoPlay,
+                              thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
+                              author: item.author?.username ?? '',
+                              title: item.title ?? '',
+                              createdAt: item.createdAt ?? DateTime.now(),
+                              duration: item.spkvideo?.duration ?? 0.0,
+                              comments: item.stats?.numComments ?? 0,
+                              hiveRewards: item.stats?.totalHiveReward,
+                              votes: item.stats?.numVotes,
+                              views: 0,
+                              permlink: item.permlink ?? '',
+                              onTap: () {},
+                              onUserTap: () {},
+                              item: item,
+                              appData: widget.appData,
+                            );
+                          },
                         );
                       },
                     );

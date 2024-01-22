@@ -171,7 +171,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   Widget listTile() {
     TextStyle titleStyle =
         TextStyle(color: Theme.of(context).primaryColorLight, fontSize: 13);
-    Widget thumbnail = Selector<ImageResolution, String>(
+    Widget thumbnail = Selector<SettingsProvider, String>(
         selector: (context, myType) => myType.resolution,
         builder: (context, value, child) {
           return CachedImage(
