@@ -20,7 +20,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:upgrader/upgrader.dart';
 
-import 'src/widgets/audio_player/touch_controls.dart';
+import 'src/screens/podcast/widgets/audio_player/audio_player_core_controls.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
