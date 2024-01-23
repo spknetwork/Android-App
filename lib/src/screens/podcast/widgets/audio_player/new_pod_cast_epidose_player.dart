@@ -269,32 +269,33 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
       builder: (context) {
         return SizedBox(
             height: MediaQuery.of(context).size.height * 0.7,
-            child: ListView.builder(
-              itemCount: widget.podcastEpisodes.length,
-              itemBuilder: (context, index) {
-                PodcastEpisode item = widget.podcastEpisodes[index];
-                return ListTile(
-                  onTap: () {
-                    _audioHandler.skipToQueueItem(index);
-                    setState(() {
-                      currentPodcastIndex = index;
-                      currentPodcastEpisode = item;
-                      Navigator.pop(context);
-                    });
-                  },
-                  trailing: Icon(Icons.play_circle_outline_outlined),
-                  leading: CachedImage(
-                    imageUrl: item.image,
-                    imageHeight: 48,
-                    imageWidth: 48,
-                    loadingIndicatorSize: 25,
-                  ),
-                  title: Text(
-                    item.title!,
-                    style: TextStyle(fontSize: 14),
-                  ),
-                );
-              },
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text("Podcast Episodes"),
+              ),
+              body: ListView.builder(
+                itemCount: widget.podcastEpisodes.length,
+                itemBuilder: (context, index) {
+                  PodcastEpisode item = widget.podcastEpisodes[index];
+                  return ListTile(
+                    onTap: () {
+                      _audioHandler.skipToQueueItem(index);
+                        Navigator.pop(context);
+                    },
+                    trailing: Icon(Icons.play_circle_outline_outlined),
+                    leading: CachedImage(
+                      imageUrl: item.image,
+                      imageHeight: 48,
+                      imageWidth: 48,
+                      loadingIndicatorSize: 25,
+                    ),
+                    title: Text(
+                      item.title!,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  );
+                },
+              ),
             ));
       },
     );
