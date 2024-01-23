@@ -36,7 +36,6 @@ class VideoSize {
 class Communicator {
   // Production
   static const tsServer = "https://studio.3speak.tv";
-  // static const tsServer = 'https://bc99-2401-4900-1c8f-1ccb-e550-34fe-d7b7-ed7.ngrok-free.app';
   static const fsServer = "https://uploads.3speak.tv/files";
 
   // Android
@@ -52,8 +51,8 @@ class Communicator {
   // static const fsServer = "http://192.168.29.53:1080/files";
 
   // iOS Devices - Local server testing different router
-  // static const tsServer = "http://192.168.1.6:13050";
-  // static const fsServer = "http://192.168.1.6:1080/files";
+  // static const tsServer = "http://192.168.1.4:13050";
+  // static const fsServer = "http://192.168.1.4:1080/files";
 
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';

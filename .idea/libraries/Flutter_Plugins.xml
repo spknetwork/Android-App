@@ -44,7 +44,6 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_macos-3.1.0" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.1" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_windows-3.1.0" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/image_picker_android-0.8.8+2" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_web-2.2.0" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_downloader-1.11.4" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_linux-3.1.0" />
@@ -60,8 +59,10 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/just_audio-0.9.36" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/webview_flutter-4.4.2" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher-6.2.1" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.8+4" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/sentry_flutter-7.13.2" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/croppy-1.1.4" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.9" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/image_picker_android-0.8.9+2" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

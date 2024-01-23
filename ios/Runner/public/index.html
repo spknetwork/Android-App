@@ -390,9 +390,9 @@
         let jsonMetaData = {
           tags: processTags(tags.split(",")),
           app: "3speak/0.3.0",
-          type: "3speak/audio",
+          type: "3speak/video",
           image: [thumbnail],
-          audio: {
+          video: {
             info: {
               platform: "3speak",
               title: customStringEscaping(title),
@@ -407,10 +407,12 @@
               app: "3speak/0.3.0",
               mobile_app: "3speak/iOS-App/2.1.1+80",
               developer: "https://hive.blog/@sagarkothari88",
+              video_v2: videoV2,
+              audio: true,
               sourceMap: [
                 {
                   type: "audio",
-                  url: thumbnail,
+                  url: videoV2,
                   format: "audio/mpeg",
                 },
                 {
