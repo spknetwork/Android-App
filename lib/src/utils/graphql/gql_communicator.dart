@@ -12,8 +12,8 @@ class GQLCommunicator {
   static const defaultGQLServer =
       "union.us-02.infra.3speak.tv";
   // static const gqlServer = "https://union.us-02.infra.3speak.tv/api/v2/graphql";
-  static const dataQuery =
-      "{\n    items {\n      created_at\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n      }\n    }\n  }\n}";
+static const dataQuery =
+      "{\n    items {\n      created_at\n      title\n      ... on HivePost {\n        permlink\n        lang\n        title\n        tags\n        spkvideo\n        stats {\n          num_comments\n          num_votes\n          total_hive_reward\n        }\n        author {\n          username\n        }\n json_metadata {\n          raw\n        }\n      }\n    }\n  }\n}";
 
   Future<List<GQLFeedItem>> getGQLFeed(String operation, String query) async {
     const storage = FlutterSecureStorage();

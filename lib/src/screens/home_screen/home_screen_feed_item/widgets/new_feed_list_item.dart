@@ -127,6 +127,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
           enableSkips: true,
           enableMute: true),
       autoDetectFullscreenAspectRatio: false,
+      placeholder: !widget.item!.isVideo ? videoThumbnail() : const SizedBox.shrink(),
       deviceOrientationsOnFullScreen: const [
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
@@ -143,10 +144,14 @@ class _NewFeedListItemState extends State<NewFeedListItem>
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      Platform.isAndroid
-          ? url.replaceAll("/manifest.m3u8", "/480p/index.m3u8")
-          : url,
-      videoFormat: BetterPlayerVideoFormat.hls,
+      (widget.item!.isVideo)
+          ? Platform.isAndroid
+              ? url.replaceAll("/manifest.m3u8", "/480p/index.m3u8")
+              : url
+          : widget.item!.playUrl!,
+      videoFormat: widget.item!.isVideo
+          ? BetterPlayerVideoFormat.hls
+          : BetterPlayerVideoFormat.other,
     );
     _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
     _betterPlayerController!.setupDataSource(dataSource);
@@ -155,7 +160,11 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   }
 
   void _initVideo() async {
-    setupVideo(widget.item!.videoV2M3U8(widget.appData!));
+    if (widget.item!.isVideo) {
+      setupVideo(widget.item!.videoV2M3U8(widget.appData!));
+    } else {
+      setupVideo(widget.item!.playUrl!);
+    }
     if (videoSettingProvider.isMuted) {
       _betterPlayerController!.setVolume(0.0);
     }
@@ -168,10 +177,8 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         _betterPlayerController, videoSettingProvider);
   }
 
-  Widget listTile() {
-    TextStyle titleStyle =
-        TextStyle(color: Theme.of(context).primaryColorLight, fontSize: 13);
-    Widget thumbnail = Selector<SettingsProvider, String>(
+  Widget videoThumbnail(){
+    return Selector<SettingsProvider, String>(
         selector: (context, myType) => myType.resolution,
         builder: (context, value, child) {
           return CachedImage(
@@ -180,6 +187,12 @@ class _NewFeedListItemState extends State<NewFeedListItem>
             imageWidth: double.infinity,
           );
         });
+  }
+
+  Widget listTile() {
+    TextStyle titleStyle =
+        TextStyle(color: Theme.of(context).primaryColorLight, fontSize: 13);
+    Widget thumbnail = videoThumbnail();
     String timeInString =
         widget.createdAt != null ? "${timeago.format(widget.createdAt!)}" : "";
     return Stack(

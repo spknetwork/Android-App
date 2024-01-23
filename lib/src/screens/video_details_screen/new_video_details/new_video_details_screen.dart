@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/global_provider/image_resolution_provider.dart';
 import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
 import 'package:acela/src/screens/trending_tags/trending_tag_videos.dart';
@@ -14,6 +15,7 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/comment/video_details_comments.dart';
+import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/box_loading/video_feed_loader.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_feed_list_item.dart';
@@ -123,6 +125,18 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     }
   }
 
+  Widget videoThumbnail(){
+    return Selector<SettingsProvider, String>(
+        selector: (context, myType) => myType.resolution,
+        builder: (context, value, child) {
+          return CachedImage(
+            imageUrl: Utilities.getProxyImage(value, (widget.item.spkvideo?.thumbnailUrl ?? '')),
+            imageHeight: 230,
+            imageWidth: double.infinity,
+          );
+        });
+  }
+
   void setupVideo(String url) {
     BetterPlayerConfiguration betterPlayerConfiguration =
         BetterPlayerConfiguration(
@@ -130,6 +144,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       fit: BoxFit.contain,
       autoPlay: true,
       fullScreenByDefault: false,
+      placeholder: videoThumbnail(),
       controlsConfiguration: BetterPlayerControlsConfiguration(
         enablePip: false,
         enableFullscreen:
@@ -153,10 +168,14 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      Platform.isAndroid
-          ? url.replaceAll("/manifest.m3u8", "/480p/index.m3u8")
-          : url,
-      videoFormat: BetterPlayerVideoFormat.hls,
+      (widget.item.isVideo)
+          ? Platform.isAndroid
+              ? url.replaceAll("/manifest.m3u8", "/480p/index.m3u8")
+              : url
+          : widget.item.playUrl!,
+      videoFormat: widget.item.isVideo
+          ? BetterPlayerVideoFormat.hls
+          : BetterPlayerVideoFormat.other,
     );
     _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
     _betterPlayerController.setupDataSource(dataSource);
@@ -181,9 +200,14 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       _betterPlayerController = widget.betterPlayerController!;
       changeControlsVisibility(true);
     } else {
-      setupVideo(
-        widget.item.videoV2M3U8(widget.appData),
-      );
+      if (widget.item.isVideo) {
+        setupVideo(
+          widget.item.videoV2M3U8(widget.appData),
+        );
+      } else {
+        setupVideo(widget.item.playUrl!);
+      }
+
       if (videoSettingProvider.isMuted) {
         _betterPlayerController.setVolume(0.0);
       }

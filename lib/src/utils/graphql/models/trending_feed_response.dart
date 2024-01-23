@@ -11,17 +11,21 @@ class GraphQlFeedResponse {
     this.data,
   });
 
-  factory GraphQlFeedResponse.fromRawJson(String str) => GraphQlFeedResponse.fromJson(json.decode(str));
+  factory GraphQlFeedResponse.fromRawJson(String str) =>
+      GraphQlFeedResponse.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
-  factory GraphQlFeedResponse.fromJson(Map<String, dynamic> json) => GraphQlFeedResponse(
-    data: json["data"] == null ? null : GraphQlFeedResponseData.fromJson(json["data"]),
-  );
+  factory GraphQlFeedResponse.fromJson(Map<String, dynamic> json) =>
+      GraphQlFeedResponse(
+        data: json["data"] == null
+            ? null
+            : GraphQlFeedResponseData.fromJson(json["data"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "data": data?.toJson(),
-  };
+        "data": data?.toJson(),
+      };
 }
 
 class GraphQlFeedResponseData {
@@ -37,23 +41,33 @@ class GraphQlFeedResponseData {
     this.searchFeed,
   });
 
-  factory GraphQlFeedResponseData.fromRawJson(String str) => GraphQlFeedResponseData.fromJson(json.decode(str));
+  factory GraphQlFeedResponseData.fromRawJson(String str) =>
+      GraphQlFeedResponseData.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
-  factory GraphQlFeedResponseData.fromJson(Map<String, dynamic> json) => GraphQlFeedResponseData(
-    trendingFeed: json["trendingFeed"] == null ? null : TrendingFeed.fromJson(json["trendingFeed"]),
-    socialFeed: json["socialFeed"] == null ? null : TrendingFeed.fromJson(json["socialFeed"]),
-    relatedFeed: json["relatedFeed"] == null ? null : TrendingFeed.fromJson(json["relatedFeed"]),
-    searchFeed: json["searchFeed"] == null ? null : TrendingFeed.fromJson(json["searchFeed"]),
-  );
+  factory GraphQlFeedResponseData.fromJson(Map<String, dynamic> json) =>
+      GraphQlFeedResponseData(
+        trendingFeed: json["trendingFeed"] == null
+            ? null
+            : TrendingFeed.fromJson(json["trendingFeed"]),
+        socialFeed: json["socialFeed"] == null
+            ? null
+            : TrendingFeed.fromJson(json["socialFeed"]),
+        relatedFeed: json["relatedFeed"] == null
+            ? null
+            : TrendingFeed.fromJson(json["relatedFeed"]),
+        searchFeed: json["searchFeed"] == null
+            ? null
+            : TrendingFeed.fromJson(json["searchFeed"]),
+      );
 
   Map<String, dynamic> toJson() => {
-    "trendingFeed": trendingFeed?.toJson(),
-    "socialFeed": socialFeed?.toJson(),
-    "relatedFeed": socialFeed?.toJson(),
-    "searchFeed": searchFeed?.toJson(),
-  };
+        "trendingFeed": trendingFeed?.toJson(),
+        "socialFeed": socialFeed?.toJson(),
+        "relatedFeed": socialFeed?.toJson(),
+        "searchFeed": searchFeed?.toJson(),
+      };
 }
 
 class TrendingFeed {
@@ -63,22 +77,29 @@ class TrendingFeed {
     this.items,
   });
 
-  factory TrendingFeed.fromRawJson(String str) => TrendingFeed.fromJson(json.decode(str));
+  factory TrendingFeed.fromRawJson(String str) =>
+      TrendingFeed.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
   factory TrendingFeed.fromJson(Map<String, dynamic> json) => TrendingFeed(
-    items: json["items"] == null ? [] : List<GQLFeedItem>.from(json["items"]!.map((x) => GQLFeedItem.fromJson(x))),
-  );
+        items: json["items"] == null
+            ? []
+            : List<GQLFeedItem>.from(
+                json["items"]!.map((x) => GQLFeedItem.fromJson(x))),
+      );
 
   Map<String, dynamic> toJson() => {
-    "items": items == null ? [] : List<dynamic>.from(items!.map((x) => x.toJson())),
-  };
+        "items": items == null
+            ? []
+            : List<dynamic>.from(items!.map((x) => x.toJson())),
+      };
 }
 
 class GQLFeedItem {
   GQLFeedItemStats? stats;
   Spkvideo? spkvideo;
+  final String? playUrl;
   String? permlink;
   String? lang;
   DateTime? createdAt;
@@ -88,8 +109,11 @@ class GQLFeedItem {
   GQLFeedItemAuthor? author;
   String? body;
   List<GQLFeedItemChild>? children;
+  final bool isVideo;
 
   GQLFeedItem({
+    required this.playUrl,
+    required this.isVideo,
     this.stats,
     this.spkvideo,
     this.permlink,
@@ -103,37 +127,58 @@ class GQLFeedItem {
     this.children,
   });
 
-  factory GQLFeedItem.fromRawJson(String str) => GQLFeedItem.fromJson(json.decode(str));
+  factory GQLFeedItem.fromRawJson(String str) =>
+      GQLFeedItem.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
   factory GQLFeedItem.fromJson(Map<String, dynamic> json) => GQLFeedItem(
-    stats: json["stats"] == null ? null : GQLFeedItemStats.fromJson(json["stats"]),
-    spkvideo: json["spkvideo"] == null ? null : Spkvideo.fromJson(json["spkvideo"]),
-    permlink: json["permlink"],
-    lang: json["lang"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    community: json["community"] == null ? null : GQLFeedCommunity.fromJson(json["community"]),
-    title: json["title"],
-    tags: json["tags"] == null ? [] : List<String>.from(json["tags"]!.map((x) => x)),
-    author: json["author"] == null ? null : GQLFeedItemAuthor.fromJson(json["author"]),
-    body: json["body"],
-    children: json["children"] == null ? [] : List<GQLFeedItemChild>.from(json["children"]!.map((x) => GQLFeedItemChild.fromJson(x))),
-  );
+        playUrl: json['json_metadata']?['raw']?['video']?['info']?['video_v2'] ,
+        isVideo: json['json_metadata']?['raw']?['video']?['info']?['video_v2']?.endsWith('.m3u8') ?? true,
+        stats: json["stats"] == null
+            ? null
+            : GQLFeedItemStats.fromJson(json["stats"]),
+        spkvideo: json["spkvideo"] == null
+            ? null
+            : Spkvideo.fromJson(json["spkvideo"]),
+        permlink: json["permlink"],
+        lang: json["lang"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        community: json["community"] == null
+            ? null
+            : GQLFeedCommunity.fromJson(json["community"]),
+        title: json["title"],
+        tags: json["tags"] == null
+            ? []
+            : List<String>.from(json["tags"]!.map((x) => x)),
+        author: json["author"] == null
+            ? null
+            : GQLFeedItemAuthor.fromJson(json["author"]),
+        body: json["body"],
+        children: json["children"] == null
+            ? []
+            : List<GQLFeedItemChild>.from(
+                json["children"]!.map((x) => GQLFeedItemChild.fromJson(x))),
+      );
+
 
   Map<String, dynamic> toJson() => {
-    "stats": stats?.toJson(),
-    "spkvideo": spkvideo?.toJson(),
-    "permlink": permlink,
-    "lang": lang,
-    "created_at": createdAt?.toIso8601String(),
-    "community": community?.toJson(),
-    "title": title,
-    "tags": tags == null ? [] : List<dynamic>.from(tags!.map((x) => x)),
-    "author": author?.toJson(),
-    "body": body,
-    "children": children == null ? [] : List<dynamic>.from(children!.map((x) => x.toJson())),
-  };
+        "stats": stats?.toJson(),
+        "spkvideo": spkvideo?.toJson(),
+        "permlink": permlink,
+        "lang": lang,
+        "created_at": createdAt?.toIso8601String(),
+        "community": community?.toJson(),
+        "title": title,
+        "tags": tags == null ? [] : List<dynamic>.from(tags!.map((x) => x)),
+        "author": author?.toJson(),
+        "body": body,
+        "children": children == null
+            ? []
+            : List<dynamic>.from(children!.map((x) => x.toJson())),
+      };
 
   String get thumbnailValue {
     if ((spkvideo?.thumbnailUrl ?? '').startsWith("http")) {
@@ -148,7 +193,9 @@ class GQLFeedItem {
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/manifest.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
-      var url = (spkvideo?.playUrl ?? '').replaceAll('ipfs://', IpfsNodeProvider().nodeUrl).replaceAll('manifest', '${data.resolution}/index');
+      var url = (spkvideo?.playUrl ?? '')
+          .replaceAll('ipfs://', IpfsNodeProvider().nodeUrl)
+          .replaceAll('manifest', '${data.resolution}/index');
       return url;
     }
     return spkvideo?.playUrl ?? '';
@@ -160,7 +207,8 @@ class GQLFeedItem {
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/manifest.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmTRDJcgtt66pxs3ZnQCdRw57b69NS2TQvF4yHwaux5grT/480p/index.m3u8
       // https://ipfs-3speak.b-cdn.net/ipfs/QmWADpD1PWPnmYVkSZvgokU5vcN2qZqvsHCA985GZ5Jf4r/manifest.m3u8
-      var url = (spkvideo?.playUrl ?? '').replaceAll('ipfs://', IpfsNodeProvider().nodeUrl);
+      var url = (spkvideo?.playUrl ?? '')
+          .replaceAll('ipfs://', IpfsNodeProvider().nodeUrl);
       return url;
     }
     return spkvideo?.playUrl ?? '';
@@ -174,17 +222,19 @@ class GQLFeedItemAuthor {
     this.username,
   });
 
-  factory GQLFeedItemAuthor.fromRawJson(String str) => GQLFeedItemAuthor.fromJson(json.decode(str));
+  factory GQLFeedItemAuthor.fromRawJson(String str) =>
+      GQLFeedItemAuthor.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
-  factory GQLFeedItemAuthor.fromJson(Map<String, dynamic> json) => GQLFeedItemAuthor(
-    username: json["username"],
-  );
+  factory GQLFeedItemAuthor.fromJson(Map<String, dynamic> json) =>
+      GQLFeedItemAuthor(
+        username: json["username"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "username": username,
-  };
+        "username": username,
+      };
 }
 
 class GQLFeedItemChild {
@@ -202,25 +252,31 @@ class GQLFeedItemChild {
     this.title,
   });
 
-  factory GQLFeedItemChild.fromRawJson(String str) => GQLFeedItemChild.fromJson(json.decode(str));
+  factory GQLFeedItemChild.fromRawJson(String str) =>
+      GQLFeedItemChild.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
-  factory GQLFeedItemChild.fromJson(Map<String, dynamic> json) => GQLFeedItemChild(
-    author: json["author"] == null ? null : GQLFeedItemAuthor.fromJson(json["author"]),
-    body: json["body"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    permlink: json["permlink"],
-    title: json["title"],
-  );
+  factory GQLFeedItemChild.fromJson(Map<String, dynamic> json) =>
+      GQLFeedItemChild(
+        author: json["author"] == null
+            ? null
+            : GQLFeedItemAuthor.fromJson(json["author"]),
+        body: json["body"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        permlink: json["permlink"],
+        title: json["title"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "author": author?.toJson(),
-    "body": body,
-    "created_at": createdAt?.toIso8601String(),
-    "permlink": permlink,
-    "title": title,
-  };
+        "author": author?.toJson(),
+        "body": body,
+        "created_at": createdAt?.toIso8601String(),
+        "permlink": permlink,
+        "title": title,
+      };
 }
 
 class GQLFeedCommunity {
@@ -256,43 +312,58 @@ class GQLFeedCommunity {
     this.subscribers,
   });
 
-  factory GQLFeedCommunity.fromRawJson(String str) => GQLFeedCommunity.fromJson(json.decode(str));
+  factory GQLFeedCommunity.fromRawJson(String str) =>
+      GQLFeedCommunity.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
-  factory GQLFeedCommunity.fromJson(Map<String, dynamic> json) => GQLFeedCommunity(
-    id: json["_id"],
-    about: json["about"],
-    needsUpdate: json["needs_update"],
-    title: json["title"],
-    images: json["images"] == null ? null : CommunityImages.fromJson(json["images"]),
-    topics: json["topics"] == null ? [] : List<dynamic>.from(json["topics"]!.map((x) => x)),
-    username: json["username"],
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    description: json["description"],
-    flagText: json["flag_text"],
-    isNsfw: json["is_nsfw"],
-    lang: json["lang"],
-    roles: json["roles"] == null ? [] : List<List<String>>.from(json["roles"]!.map((x) => List<String>.from(x.map((x) => x)))),
-    subscribers: json["subscribers"],
-  );
+  factory GQLFeedCommunity.fromJson(Map<String, dynamic> json) =>
+      GQLFeedCommunity(
+        id: json["_id"],
+        about: json["about"],
+        needsUpdate: json["needs_update"],
+        title: json["title"],
+        images: json["images"] == null
+            ? null
+            : CommunityImages.fromJson(json["images"]),
+        topics: json["topics"] == null
+            ? []
+            : List<dynamic>.from(json["topics"]!.map((x) => x)),
+        username: json["username"],
+        createdAt: json["created_at"] == null
+            ? null
+            : DateTime.parse(json["created_at"]),
+        description: json["description"],
+        flagText: json["flag_text"],
+        isNsfw: json["is_nsfw"],
+        lang: json["lang"],
+        roles: json["roles"] == null
+            ? []
+            : List<List<String>>.from(
+                json["roles"]!.map((x) => List<String>.from(x.map((x) => x)))),
+        subscribers: json["subscribers"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "_id": id,
-    "about": about,
-    "needs_update": needsUpdate,
-    "title": title,
-    "images": images?.toJson(),
-    "topics": topics == null ? [] : List<dynamic>.from(topics!.map((x) => x)),
-    "username": username,
-    "created_at": createdAt?.toIso8601String(),
-    "description": description,
-    "flag_text": flagText,
-    "is_nsfw": isNsfw,
-    "lang": lang,
-    "roles": roles == null ? [] : List<dynamic>.from(roles!.map((x) => List<dynamic>.from(x.map((x) => x)))),
-    "subscribers": subscribers,
-  };
+        "_id": id,
+        "about": about,
+        "needs_update": needsUpdate,
+        "title": title,
+        "images": images?.toJson(),
+        "topics":
+            topics == null ? [] : List<dynamic>.from(topics!.map((x) => x)),
+        "username": username,
+        "created_at": createdAt?.toIso8601String(),
+        "description": description,
+        "flag_text": flagText,
+        "is_nsfw": isNsfw,
+        "lang": lang,
+        "roles": roles == null
+            ? []
+            : List<dynamic>.from(
+                roles!.map((x) => List<dynamic>.from(x.map((x) => x)))),
+        "subscribers": subscribers,
+      };
 }
 
 class CommunityImages {
@@ -304,19 +375,21 @@ class CommunityImages {
     this.cover,
   });
 
-  factory CommunityImages.fromRawJson(String str) => CommunityImages.fromJson(json.decode(str));
+  factory CommunityImages.fromRawJson(String str) =>
+      CommunityImages.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
-  factory CommunityImages.fromJson(Map<String, dynamic> json) => CommunityImages(
-    avatar: json["avatar"],
-    cover: json["cover"],
-  );
+  factory CommunityImages.fromJson(Map<String, dynamic> json) =>
+      CommunityImages(
+        avatar: json["avatar"],
+        cover: json["cover"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "avatar": avatar,
-    "cover": cover,
-  };
+        "avatar": avatar,
+        "cover": cover,
+      };
 }
 
 class Spkvideo {
@@ -328,39 +401,39 @@ class Spkvideo {
   int? height;
   int? width;
 
-  Spkvideo({
-    this.thumbnailUrl,
-    this.playUrl,
-    this.duration,
-    this.isShort,
-    this.body,
-    this.height,
-    this.width,
-  });
+  Spkvideo(
+      {this.thumbnailUrl,
+      this.playUrl,
+      this.duration,
+      this.isShort,
+      this.body,
+      this.height,
+      this.width});
 
-  factory Spkvideo.fromRawJson(String str) => Spkvideo.fromJson(json.decode(str));
+  factory Spkvideo.fromRawJson(String str) =>
+      Spkvideo.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
   factory Spkvideo.fromJson(Map<String, dynamic> json) => Spkvideo(
-    thumbnailUrl: json["thumbnail_url"],
-    playUrl: json["play_url"],
-    duration: json["duration"]?.toDouble(),
-    isShort: json["is_short"],
-    body: json["body"],
-    height: json["height"],
-    width: json["width"],
-  );
+        thumbnailUrl: json["thumbnail_url"],
+        playUrl: json["play_url"],
+        duration: json["duration"]?.toDouble(),
+        isShort: json["is_short"],
+        body: json["body"],
+        height: json["height"],
+        width: json["width"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "thumbnail_url": thumbnailUrl,
-    "play_url": playUrl,
-    "duration": duration,
-    "is_short": isShort,
-    "body": body,
-    "width": width,
-    "height": height,
-  };
+        "thumbnail_url": thumbnailUrl,
+        "play_url": playUrl,
+        "duration": duration,
+        "is_short": isShort,
+        "body": body,
+        "width": width,
+        "height": height,
+      };
 }
 
 class GQLFeedItemStats {
@@ -374,19 +447,21 @@ class GQLFeedItemStats {
     this.numComments,
   });
 
-  factory GQLFeedItemStats.fromRawJson(String str) => GQLFeedItemStats.fromJson(json.decode(str));
+  factory GQLFeedItemStats.fromRawJson(String str) =>
+      GQLFeedItemStats.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
-  factory GQLFeedItemStats.fromJson(Map<String, dynamic> json) => GQLFeedItemStats(
-    totalHiveReward: json["total_hive_reward"]?.toDouble(),
-    numVotes: json["num_votes"],
-    numComments: json["num_comments"],
-  );
+  factory GQLFeedItemStats.fromJson(Map<String, dynamic> json) =>
+      GQLFeedItemStats(
+        totalHiveReward: json["total_hive_reward"]?.toDouble(),
+        numVotes: json["num_votes"],
+        numComments: json["num_comments"],
+      );
 
   Map<String, dynamic> toJson() => {
-    "total_hive_reward": totalHiveReward,
-    "num_votes": numVotes,
-    "num_comments": numComments,
-  };
+        "total_hive_reward": totalHiveReward,
+        "num_votes": numVotes,
+        "num_comments": numComments,
+      };
 }
