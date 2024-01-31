@@ -5,6 +5,7 @@ import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
+import 'package:acela/src/screens/upload/video/controller/video_upload_controller.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:flutter/foundation.dart';
 
@@ -98,7 +99,10 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProvider(create: (context) => VideoSettingProvider()),
         ChangeNotifierProvider(
-            lazy: false, create: (context) => SettingsProvider())
+          lazy: false,
+          create: (context) => SettingsProvider(),
+        ),
+        ChangeNotifierProvider(create: (context) => VideoUploadController())
       ],
       child: OverlaySupport.global(
         child: futureBuilder(
@@ -202,11 +206,19 @@ class AcelaApp extends StatelessWidget {
               primaryColorLight: Colors.white,
               primaryColorDark: Colors.black,
               scaffoldBackgroundColor: Colors.black,
+              cardTheme: CardTheme(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(4))),
+                  color: Colors.grey.shade900),
             )
           : ThemeData.light().copyWith(
               primaryColor: Colors.deepPurple,
               primaryColorLight: Colors.black,
               primaryColorDark: Colors.white,
+              cardTheme: CardTheme(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(4))),
+                  color: Colors.grey.shade200),
             ),
       debugShowCheckedModeBanner: false,
     );
