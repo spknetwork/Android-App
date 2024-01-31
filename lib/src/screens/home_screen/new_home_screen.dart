@@ -7,6 +7,7 @@ import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/favourites/user_favourites.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/tab_title_toast.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
+import 'package:acela/src/screens/home_screen/video_upload_sheet.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/podcast/view/podcast_trending.dart';
@@ -16,6 +17,8 @@ import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
 import 'package:acela/src/screens/trending_tags/trending_tags.dart';
 import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/upload/podcast/podcast_upload_screen.dart';
+import 'package:acela/src/screens/upload/video/controller/video_upload_controller.dart';
+import 'package:acela/src/screens/upload/video/video_upload_screen.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/widgets/fab_custom.dart';
 import 'package:acela/src/widgets/fab_overlay.dart';
@@ -162,6 +165,21 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     );
   }
 
+  Widget addPostButton(HiveUserData? userData) {
+    return Visibility(
+      visible: widget.username != null,
+      child: SizedBox(
+          width: 40,
+          child: IconButton(
+            color: Theme.of(context).primaryColorLight,
+            onPressed: () {
+              uploadBottomSheet(userData!);
+            },
+            icon: Icon(Icons.add_circle),
+          )),
+    );
+  }
+
   SizedBox podcastsActionButton() {
     return SizedBox(
       width: 35,
@@ -215,6 +233,7 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
             searchIconButton(),
             threeShortsActionButton(),
             podcastsActionButton(),
+            addPostButton(widget.appData)
           ],
         ),
         body: SafeArea(
@@ -404,35 +423,6 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     );
   }
 
-  void uploadClicked(HiveUserData data) {
-    if (data.username != null && data.postingKey != null) {
-      showBottomSheetForRecordingTypes(data);
-    } else if (data.keychainData != null) {
-      var expiry = data.keychainData!.hasExpiry;
-      log('Expiry is $expiry');
-      try {
-        var longValue = int.tryParse(expiry) ?? 0;
-        var expiryDate = DateTime.fromMillisecondsSinceEpoch(longValue);
-        var nowDate = DateTime.now();
-        log('Expiry Date is $expiryDate, now date is $nowDate');
-        var compareResult = nowDate.compareTo(expiryDate);
-        log('compare result - $compareResult');
-        if (compareResult == -1) {
-          showBottomSheetForRecordingTypes(data);
-        } else {
-          showError('Invalid Session. Please login again.');
-          logout(data);
-        }
-      } catch (e) {
-        showError('Invalid Session. Please login again.');
-        logout(data);
-      }
-    } else {
-      showError('Invalid Session. Please login again.');
-      logout(data);
-    }
-  }
-
   void showError(String string) {
     var snackBar = SnackBar(content: Text('Error: $string'));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -461,7 +451,16 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
           leading: const Icon(Icons.video_call),
           onPressed: (c) {
             Navigator.pop(context);
-            uploadClicked(data);
+            if (!context.read<VideoUploadController>().isFreshUpload()) {
+              var screen = VideoUploadScreen(
+                isCamera: true,
+                appData: data,
+              );
+              var route = MaterialPageRoute(builder: (c) => screen);
+              Navigator.of(context).push(route);
+            } else {
+              VideoUploadSheet.show(data, context);
+            }
           },
         ),
         BottomSheetAction(
@@ -476,76 +475,6 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
       ],
       cancelAction: CancelAction(
         title: const Text('Cancel'),
-      ),
-    );
-  }
-
-  void showBottomSheetForVideoOptions(bool isReel, HiveUserData data) {
-    showAdaptiveActionSheet(
-      context: context,
-      title: const Text('How do you want to upload?'),
-      androidBorderRadius: 30,
-      actions: <BottomSheetAction>[
-        BottomSheetAction(
-          title: const Text('Camera'),
-          leading: const Icon(Icons.camera_alt),
-          onPressed: (c) {
-            var screen = NewVideoUploadScreen(
-              camera: true,
-              data: data,
-            );
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).pop();
-            Navigator.of(context).push(route);
-          },
-        ),
-        BottomSheetAction(
-            title: const Text('Photo Gallery'),
-            leading: const Icon(Icons.photo_library),
-            onPressed: (c) {
-              var screen = NewVideoUploadScreen(
-                camera: false,
-                data: data,
-              );
-              var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).pop();
-              Navigator.of(context).push(route);
-            }),
-      ],
-      cancelAction: CancelAction(
-        title: const Text('Cancel'),
-      ),
-    );
-  }
-
-  void showBottomSheetForRecordingTypes(HiveUserData data) {
-    showBottomSheetForVideoOptions(false, data);
-  }
-
-  void logout(HiveUserData data) async {
-    const storage = FlutterSecureStorage();
-    await storage.delete(key: 'username');
-    await storage.delete(key: 'postingKey');
-    await storage.delete(key: 'cookie');
-    await storage.delete(key: 'hasId');
-    await storage.delete(key: 'hasExpiry');
-    await storage.delete(key: 'hasAuthKey');
-    String resolution = await storage.read(key: 'resolution') ?? '480p';
-    String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-    String union =
-        await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
-    String? lang = await storage.read(key: 'lang');
-    server.updateHiveUserData(
-      HiveUserData(
-        username: null,
-        postingKey: null,
-        keychainData: null,
-        cookie: null,
-        resolution: resolution,
-        rpc: rpc,
-        union: union,
-        loaded: true,
-        language: lang,
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/home_screen/video_upload_sheet.dart';
 import 'package:acela/src/screens/stories/story_feed_list.dart';
 import 'package:flutter/material.dart';
 
@@ -136,7 +137,7 @@ class _GQLStoriesScreenState extends State<GQLStoriesScreen>
           controller: _tabController,
           tabs: myTabs(),
         ),
-        actions: [],
+        actions: [_postVideoButton(widget.appData)],
       ),
       body: SafeArea(
         child: TabBarView(
@@ -172,6 +173,19 @@ class _GQLStoriesScreenState extends State<GQLStoriesScreen>
                       feedType: StoryFeedType.firstUploads),
                 ],
         ),
+      ),
+    );
+  }
+
+  Widget _postVideoButton(HiveUserData data) {
+    return Visibility(
+      visible: data.username != null,
+      child: IconButton(
+        color: Theme.of(context).primaryColorLight,
+        onPressed: () {
+          VideoUploadSheet.show(data, context);
+        },
+        icon: Icon(Icons.add),
       ),
     );
   }

@@ -9,10 +9,12 @@ import 'package:acela/src/screens/podcast/view/podcast_search.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_categories_body.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_feed_item.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_feeds_body.dart';
+import 'package:acela/src/screens/upload/podcast/podcast_upload_screen.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+
 import '../../../widgets/fab_custom.dart';
 import '../../../widgets/fab_overlay.dart';
 
@@ -118,6 +120,7 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
               },
               icon: Icon(Icons.search),
             ),
+            _postPodcastButton(widget.appData)
           ],
         ),
         body: SafeArea(
@@ -133,7 +136,8 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
                     appData: widget.appData,
                     future: categories,
                   ),
-                  PodcastFeedsBody(future: recentFeeds, appData: widget.appData),
+                  PodcastFeedsBody(
+                      future: recentFeeds, appData: widget.appData),
                   PodcastFeedsBody(future: liveFeeds, appData: widget.appData),
                 ],
               ),
@@ -141,6 +145,21 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _postPodcastButton(HiveUserData userData) {
+    return Visibility(
+      visible: userData.username != null,
+      child: IconButton(
+        color: Theme.of(context).primaryColorLight,
+        onPressed: () {
+          var route = MaterialPageRoute(
+              builder: (c) => PodcastUploadScreen(data: widget.appData));
+          Navigator.of(context).push(route);
+        },
+        icon: Icon(Icons.add),
       ),
     );
   }

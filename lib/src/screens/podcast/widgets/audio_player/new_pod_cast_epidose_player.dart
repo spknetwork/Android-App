@@ -222,21 +222,21 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
         ),
       )
     ];
-    if (context.read<HiveUserData>().username != null) {
-      tools.insert(
-        3,
-        IconButton(
-          constraints: const BoxConstraints(),
-          padding: EdgeInsets.zero,
-          icon: Icon(CupertinoIcons.gift_fill, color: iconColor),
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const ValueForValueView(),
-            ));
-          },
-        ),
-      );
-    }
+    // if (context.read<HiveUserData>().username != null) {
+    //   tools.insert(
+    //     3,
+    //     IconButton(
+    //       constraints: const BoxConstraints(),
+    //       padding: EdgeInsets.zero,
+    //       icon: Icon(CupertinoIcons.gift_fill, color: iconColor),
+    //       onPressed: () {
+    //         Navigator.of(context).push(MaterialPageRoute(
+    //           builder: (context) => const ValueForValueView(),
+    //         ));
+    //       },
+    //     ),
+    //   );
+    // }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
