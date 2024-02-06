@@ -83,6 +83,8 @@ class MainActivity : AudioServiceActivity() {
             val powerUp = call.argument<Boolean?>("powerUp")
             val enclosureUrl = call.argument<String?>("enclosureUrl")
             val string = call.argument<String?>("string")
+            //getProofOfPayload
+            val proof = call.argument<String?>("proof")
 
             val data = call.argument<String?>("data")
             if (call.method == "playFullscreen" && url != null && seconds != null) {
@@ -94,6 +96,8 @@ class MainActivity : AudioServiceActivity() {
                 startActivity(intent)
             } else if (call.method == "validateHiveKey" && username != null && postingKey != null) {
                 webView?.evaluateJavascript("validateHiveKey('$username','$postingKey');", null)
+            } else if (call.method == "getProofOfPayload" && username != null && postingKey != null && proof != null) {
+                webView?.evaluateJavascript("getProofOfPayload('$username','$postingKey','$proof');", null)
             } else if (call.method == "getHTMLStringForContent" && string != null) {
                 webView?.evaluateJavascript("getHTMLStringForContent('$string');", null)
             } else if (call.method == "encryptedToken" && username != null
@@ -208,7 +212,10 @@ class WebAppInterface(private val mContext: Context) {
             JSBridgeAction.GET_HTML.value -> {
                 main.result?.success(message)
             }
-             JSBridgeAction.POST_AUDIO.value -> {
+            JSBridgeAction.POST_AUDIO.value -> {
+                main.result?.success(message)
+            }
+            JSBridgeAction.GET_PROOF_PAYLOAD.value -> {
                 main.result?.success(message)
             }
         }
@@ -229,4 +236,5 @@ enum class JSBridgeAction(val value: String) {
     VOTE_CONTENT("voteContent"),
     GET_HTML("getHTMLStringForContent"),
     POST_AUDIO("postAudio"),
+    GET_PROOF_PAYLOAD("getProofOfPayload"),
 }

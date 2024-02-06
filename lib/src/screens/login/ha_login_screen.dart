@@ -340,44 +340,53 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       });
       var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
       if (bridgeResponse.valid) {
-        debugPrint("Successful login");
-        String resolution = await storage.read(key: 'resolution') ?? '480p';
-        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-        String union = await storage.read(key: 'union') ??
-            GQLCommunicator.defaultGQLServer;
-        String? lang = await storage.read(key: 'lang');
-        await storage.write(key: 'username', value: usernameController.text);
-        await storage.write(key: 'postingKey', value: postingKey);
-        await storage.delete(key: 'hasId');
-        await storage.delete(key: 'hasExpiry');
-        await storage.delete(key: 'hasAuthKey');
-        await storage.delete(key: 'cookie');
-        var data = HiveUserData(
-          username: usernameController.text,
-          postingKey: postingKey,
-          keychainData: null,
-          cookie: null,
-          resolution: resolution,
-          rpc: rpc,
-          union: union,
-          loaded: true,
-          language: lang,
-        );
-        server.updateHiveUserData(data);
-        var cookie = await Communicator().getValidCookie(data);
-        log(cookie);
-        Navigator.of(context).pop();
-        var screen = GQLFeedScreen(
-          appData: data,
-          username: usernameController.text,
-        );
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).pushReplacement(route);
-        showMessage(
-            'You have successfully logged in as - ${usernameController.text}');
-        setState(() {
-          isLoading = false;
-        });
+        var response =
+            await Communicator().login(usernameController.text, postingKey);
+        if (response.valid) {
+          debugPrint("Successful login");
+          String resolution = await storage.read(key: 'resolution') ?? '480p';
+          String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+          String union = await storage.read(key: 'union') ??
+              GQLCommunicator.defaultGQLServer;
+          String? lang = await storage.read(key: 'lang');
+          await storage.write(key: 'username', value: usernameController.text);
+          await storage.write(key: 'postingKey', value: postingKey);
+          await storage.delete(key: 'hasId');
+          await storage.delete(key: 'hasExpiry');
+          await storage.delete(key: 'hasAuthKey');
+          await storage.delete(key: 'cookie');
+          var data = HiveUserData(
+            username: usernameController.text,
+            postingKey: postingKey,
+            keychainData: null,
+            cookie: null,
+            resolution: resolution,
+            rpc: rpc,
+            union: union,
+            loaded: true,
+            language: lang,
+          );
+          server.updateHiveUserData(data);
+          var cookie = await Communicator().getValidCookie(data);
+          log(cookie);
+          Navigator.of(context).pop();
+          var screen = GQLFeedScreen(
+            appData: data,
+            username: usernameController.text,
+          );
+          var route = MaterialPageRoute(builder: (c) => screen);
+          Navigator.of(context).pushReplacement(route);
+          showMessage(
+              'You have successfully logged in as - ${usernameController.text}');
+          setState(() {
+            isLoading = false;
+          });
+        } else {
+          showError(response.error);
+          setState(() {
+            isLoading = false;
+          });
+        }
       } else {
         // it is NO valid key
         showError('Not valid key.');
@@ -390,7 +399,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         isLoading = false;
       });
       log(e.toString());
-      if(e == 'No 3Speak Account found with name - ${usernameController.text}'){
+      if (e ==
+          'No 3Speak Account found with name - ${usernameController.text}') {
         await storage.delete(key: 'username');
         await storage.delete(key: 'postingKey');
         await storage.delete(key: 'hasId');
