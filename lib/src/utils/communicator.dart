@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/action_response.dart';
 import 'package:acela/src/models/communities_models/request/communities_request_model.dart';
 import 'package:acela/src/models/communities_models/response/communities_response_models.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
@@ -57,6 +58,7 @@ class Communicator {
   // static const hiveApiUrl = 'api.hive.blog';
   static const threeSpeakCDN = 'https://ipfs-3speak.b-cdn.net';
   static const hiveAuthServer = 'wss://hive-auth.arcange.eu';
+  static const acelaServer = 'https://acela.us-02.infra.3speak.tv';
 
   Future<bool> doesPostNotExist(
     String user,
@@ -575,7 +577,8 @@ class Communicator {
     }
   }
 
-  Future<void> updatePublishStateForPodcastEpisode(HiveUserData user, String episodeId) async {
+  Future<void> updatePublishStateForPodcastEpisode(
+      HiveUserData user, String episodeId) async {
     var cookie = await getValidCookie(user);
     var request = http.Request('POST',
         Uri.parse('${Communicator.tsServer}/mobile/api/podcast/iPublished'));
@@ -704,6 +707,118 @@ class Communicator {
     } catch (e) {
       log('Error from server is ${e.toString()}');
       rethrow;
+    }
+  }
+
+  Future<ActionResponse> login(String userName, String postingKey) async {
+    var headers = {
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    };
+
+    try {
+      String proofPayload = json.encode(
+          {'account': userName, 'ts': DateTime.now().toIso8601String()});
+
+      const platform = MethodChannel('com.example.acela/auth');
+      final String result = await platform.invokeMethod('getProofOfPayload', {
+        'username': userName,
+        'postingKey': postingKey,
+        'proof': proofPayload,
+      });
+      ActionResponse actionResponse = ActionResponse.fromJsonString(result);
+      if (actionResponse.valid && actionResponse.error == '') {
+        var body = json.encode({
+          "username": userName,
+          "network": "hive",
+          "authority_type": "posting",
+          "proof_payload": proofPayload,
+          "proof": actionResponse.data
+        });
+        http.Response response = await post(
+            Uri.parse(
+                '${Communicator.acelaServer}/api/v1/auth/login_singleton'),
+            headers: headers,
+            body: body);
+
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          return ActionResponse(
+              data: json.decode(response.body)['access_token'],
+              valid: true,
+              error: '');
+        } else if (response.statusCode == 400) {
+          return ActionResponse(
+              data: '',
+              valid: false,
+              error: json.decode(response.body)['reason']);
+        } else {
+          return ActionResponse(data: '', valid: false, error: 'Server Error');
+        }
+      } else {
+        return ActionResponse(data: '', valid: false, error: 'Incorrect Key');
+      }
+    } catch (e) {
+      return ActionResponse(data: '', valid: false, error: e.toString());
+    }
+  }
+
+  Future<ActionResponse> vote(String userName, String permlink) async {
+    var headers = {
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    };
+    try {
+      var body = json.encode({
+        "author": userName,
+        "permlink": permlink,
+      });
+      http.Response response = await post(
+          Uri.parse('${Communicator.acelaServer}/api/v1/hive/vote'),
+          headers: headers,
+          body: body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return ActionResponse(
+            data: json.decode(response.body)['id'], valid: true, error: '');
+      } else {
+        return ActionResponse(data: '', valid: false, error: 'Server Error');
+      }
+    } catch (e) {
+      return ActionResponse(data: '', valid: false, error: e.toString());
+    }
+  }
+
+  Future<ActionResponse> postComment(
+      {required String parentAuthor,
+      required String parentPermlink,
+      required String author,
+      required String authorization,
+      required String commentBody}) async {
+    var headers = {
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': 'application/json',
+      "authorization": "Bearer $authorization"
+    };
+    try {
+      var body = json.encode({
+        "body": commentBody,
+        "parent_author": parentAuthor,
+        "parent_permlink": parentPermlink,
+        "author": author
+      });
+      http.Response response = await post(
+          Uri.parse('${Communicator.acelaServer}/api/v1/hive/post_comment'),
+          headers: headers,
+          body: body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return ActionResponse(
+            data: json.decode(response.body)['id'], valid: true, error: '');
+      } else {
+        return ActionResponse(data: '', valid: false, error: 'Server Error');
+      }
+    } catch (e) {
+      return ActionResponse(data: '', valid: false, error: e.toString());
     }
   }
 }
