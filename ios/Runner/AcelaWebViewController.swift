@@ -26,6 +26,8 @@ class AcelaWebViewController: UIViewController {
 	var voteContentHandler: ((String) -> Void)? = nil
 	var commentOnContentHandler: ((String) -> Void)? = nil
 	var getHtmlHandler: ((String) -> Void)? = nil
+	var getProofOfPayloadHandler: ((String) -> Void)? = nil
+	var getEncryptedChallengeHandler: ((String) -> Void)? = nil
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -133,6 +135,20 @@ class AcelaWebViewController: UIViewController {
 		postVideoHandler = handler
 		OperationQueue.main.addOperation {
 			self.webView?.evaluateJavaScript("newPostVideo('\(thumbnail)','\(video_v2)', '\(description)', '\(title)', '\(tags)', '\(username)', '\(permlink)', \(duration), \(size), '\(originalFilename)', '\(language)', \(firstUpload ? "true" : "false"), '\(bene)', '\(beneW)', '\(postingKey)', '\(community)', '\(ipfsHash)', '\(hasKey)', '\(hasAuthkey)', '\(newBene)', \(powerUp ? "true" : "false"));")
+		}
+	}
+
+	func getProofOfPayload(username: String, password: String, proof: String, handler: @escaping (String) -> Void) {
+		getProofOfPayloadHandler = handler
+		OperationQueue.main.addOperation {
+			self.webView?.evaluateJavaScript("getProofOfPayload('\(username)','\(password)', '\(proof)');")
+		}
+	}
+
+	func getEncryptedChallenge(username: String, authKey: String, handler: @escaping (String) -> Void) {
+		getEncryptedChallengeHandler = handler
+		OperationQueue.main.addOperation {
+			self.webView?.evaluateJavaScript("getEncryptedChallenge('\(username)','\(authKey)');")
 		}
 	}
 
@@ -272,6 +288,16 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
 				getHtmlHandler?(response)
+			case "getProofOfPayload":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				getProofOfPayloadHandler?(response)
+			case "getEncryptedChallenge":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				getEncryptedChallengeHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}

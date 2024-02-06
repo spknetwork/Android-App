@@ -60,6 +60,19 @@ class HASBridge {
 					self?.getDecryptedHASToken(username: username, authKey: authKey, data: data, result: result)
 				case "getUserInfo":
 					self?.getUserInfo(result: result)
+				case "getEncryptedChallenge":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let username = arguments ["username"] as? String,
+						let authKey = arguments["authKey"] as? String,
+						let acela = acela
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					acela.getEncryptedChallenge(username: username, authKey: authKey) { data in
+						result(data)
+					}
 				default:
 					result(FlutterMethodNotImplemented)
 			}

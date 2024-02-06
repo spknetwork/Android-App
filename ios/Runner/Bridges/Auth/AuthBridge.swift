@@ -73,6 +73,20 @@ class AuthBridge {
 						return
 					}
 					self?.decryptMemo(username: username, postingKey: password, encryptedMemo: encryptedToken, result: result)
+				case "getProofOfPayload":
+					guard
+						let arguments = call.arguments as? NSDictionary,
+						let username = arguments ["username"] as? String,
+						let password = arguments["postingKey"] as? String,
+						let proof = arguments["proof"] as? String,
+						let acela = acela
+					else {
+						result(FlutterMethodNotImplemented)
+						return
+					}
+					acela.getProofOfPayload(username: username, password: password, proof: proof) { data in
+						result(data)
+					}
 				case "newPostPodcast":
 					guard
 						let arguments = call.arguments as? NSDictionary,

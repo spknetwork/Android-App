@@ -43,6 +43,8 @@ class MainActivity : AudioServiceActivity() {
                 webView?.evaluateJavascript("getRedirectUriData('$username');", null)
             } else if (call.method == "getDecryptedHASToken" && username != null && authKey != null && data != null) {
                 webView?.evaluateJavascript("getDecryptedHASToken('$username','$authKey','$data');", null)
+            } else if (call.method == "getEncryptedChallenge" && username != null && authKey != null) {
+                webView?.evaluateJavascript("getEncryptedChallenge('$username','$authKey');", null)
             }
         }
         MethodChannel(
@@ -83,7 +85,6 @@ class MainActivity : AudioServiceActivity() {
             val powerUp = call.argument<Boolean?>("powerUp")
             val enclosureUrl = call.argument<String?>("enclosureUrl")
             val string = call.argument<String?>("string")
-            //getProofOfPayload
             val proof = call.argument<String?>("proof")
 
             val data = call.argument<String?>("data")
@@ -218,6 +219,9 @@ class WebAppInterface(private val mContext: Context) {
             JSBridgeAction.GET_PROOF_PAYLOAD.value -> {
                 main.result?.success(message)
             }
+            JSBridgeAction.GET_ENCRYPTED_CHALLENGE.value -> {
+                main.result?.success(message)
+            }
         }
     }
 }
@@ -237,4 +241,5 @@ enum class JSBridgeAction(val value: String) {
     GET_HTML("getHTMLStringForContent"),
     POST_AUDIO("postAudio"),
     GET_PROOF_PAYLOAD("getProofOfPayload"),
+    GET_ENCRYPTED_CHALLENGE("getEncryptedChallenge"),
 }

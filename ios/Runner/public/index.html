@@ -7,6 +7,7 @@
     <meta name="description" content="3Speak" />
     <title>3Speak</title>
   </head>
+
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <!-- <script src="./hive.min.js"></script> -->
@@ -77,6 +78,16 @@
               data: "",
             });
           });
+      }
+
+      function getProofOfPayload(accountName, postingKey, proof) {
+        const signProof = hive.auth.signMessage(proof, postingKey);
+        replyToNative({
+          type: "getProofOfPayload",
+          valid: true,
+          error: "",
+          data: signProof,
+        });
       }
 
       function decryptMemo(accountName, postingKey, encrypted) {
@@ -405,7 +416,7 @@
               firstUpload: firstUpload,
               enclosureUrl: videoV2,
               app: "3speak/0.3.0",
-              mobile_app: "3speak/iOS-App/2.1.1+80",
+              mobile_app: "3speak/Android-App/2.1.1+80",
               developer: "https://hive.blog/@sagarkothari88",
               video_v2: videoV2,
               audio: true,
@@ -457,7 +468,8 @@
             extensions: benefactor_global,
           },
         ];
-        let body = "<center>\n\n" +
+        let body =
+          "<center>\n\n" +
           `[![](${thumbnail})](https://3speak.tv/watch?v=${author}/${permlink})\n\n` +
           `▶️ [Watch on 3Speak](https://3speak.tv/watch?v=${author}/${permlink})\n\n` +
           "</center>\n\n" +
@@ -640,8 +652,8 @@
       function getRedirectUriData(uname) {
         username = uname.toLowerCase();
         const HAS_APP_DATA = {
-          name: "3Speak Mobile iOS App",
-          description: "3Speak Mobile iOS App with HAS Integration",
+          name: "3Speak Mobile Android App",
+          description: "3Speak Mobile Android App with HAS Integration",
         };
         const auth_data = {
           app: HAS_APP_DATA,
@@ -682,6 +694,58 @@
         } catch (e) {
           replyToNative({
             type: "getDecryptedHASToken",
+            valid: false,
+            accountName: username,
+            error: e.message,
+          });
+        }
+      }
+
+      function getEncryptedChallenge(username, authKey) {
+        try {
+          const challenge_data = {
+            key_type: "posting",
+            challenge: JSON.stringify({
+              account: username,
+              ts: Date.now(),
+            }),
+          };
+          const data = CryptoJS.AES.encrypt(
+            JSON.stringify(challenge_data),
+            auth_key
+          ).toString();
+          replyToNative({
+            type: "getEncryptedChallenge",
+            valid: true,
+            username: username,
+            error: "",
+            data: `${data}|${challenge_data.challenge}`,
+          });
+        } catch (e) {
+          replyToNative({
+            type: "getEncryptedChallenge",
+            valid: false,
+            accountName: username,
+            error: e.message,
+          });
+        }
+      }
+
+      function getDecryptedChallenge(username, authKey) {
+        try {
+          const decryptedData = JSON.parse(
+            CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
+          );
+          replyToNative({
+            type: "getDecryptedChallenge",
+            valid: true,
+            username: username,
+            error: "",
+            data: decryptedData.challenge,
+          });
+        } catch (e) {
+          replyToNative({
+            type: "getDecryptedChallenge",
             valid: false,
             accountName: username,
             error: e.message,
