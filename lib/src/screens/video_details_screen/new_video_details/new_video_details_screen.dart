@@ -125,12 +125,13 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     }
   }
 
-  Widget videoThumbnail(){
+  Widget videoThumbnail() {
     return Selector<SettingsProvider, String>(
         selector: (context, myType) => myType.resolution,
         builder: (context, value, child) {
           return CachedImage(
-            imageUrl: Utilities.getProxyImage(value, (widget.item.spkvideo?.thumbnailUrl ?? '')),
+            imageUrl: Utilities.getProxyImage(
+                value, (widget.item.spkvideo?.thumbnailUrl ?? '')),
             imageHeight: 230,
             imageWidth: double.infinity,
           );
@@ -147,8 +148,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       placeholder: videoThumbnail(),
       controlsConfiguration: BetterPlayerControlsConfiguration(
         enablePip: false,
-        enableFullscreen:
-            true, //defaultTargetPlatform == TargetPlatform.android,
+        enableFullscreen: defaultTargetPlatform == TargetPlatform.android,
         enableSkips: true,
       ),
       autoDetectFullscreenAspectRatio: false,
@@ -275,7 +275,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
                   backgroundColor: Colors.black.withOpacity(0.6),
                   child: IconButton(
                     onPressed: () {
-                      _betterPlayerController.enterFullScreen();
+                      fullscreenTapped();
                     },
                     icon: Icon(
                       Icons.fullscreen,
