@@ -122,12 +122,12 @@ class _NewFeedListItemState extends State<NewFeedListItem>
       fullScreenByDefault: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
           enablePip: false,
-          enableFullscreen:
-              true, //defaultTargetPlatform == TargetPlatform.android,
+          enableFullscreen: defaultTargetPlatform == TargetPlatform.android,
           enableSkips: true,
           enableMute: true),
       autoDetectFullscreenAspectRatio: false,
-      placeholder: !widget.item!.isVideo ? videoThumbnail() : const SizedBox.shrink(),
+      placeholder:
+          !widget.item!.isVideo ? videoThumbnail() : const SizedBox.shrink(),
       deviceOrientationsOnFullScreen: const [
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
@@ -177,7 +177,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         _betterPlayerController, videoSettingProvider);
   }
 
-  Widget videoThumbnail(){
+  Widget videoThumbnail() {
     return Selector<SettingsProvider, String>(
         selector: (context, myType) => myType.resolution,
         builder: (context, value, child) {
@@ -426,6 +426,8 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         top: 5,
         left: 5,
         child: HomeFeedVideoFullScreenButton(
+            appData: widget.appData!,
+            item: widget.item!,
             betterPlayerController: _betterPlayerController!));
   }
 
