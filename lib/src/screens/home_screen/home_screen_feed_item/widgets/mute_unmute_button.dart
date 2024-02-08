@@ -34,19 +34,22 @@ class _MuteUnmuteButtonState extends State<MuteUnmuteButton> {
 
     return Visibility(
       visible: isInitialized,
-      child: IconButton(
-        icon: Icon(
-          isMuted ? Icons.volume_off : Icons.volume_up,
-          color: Colors.white,
+      child: CircleAvatar(
+        backgroundColor: Theme.of(context).primaryColorDark.withOpacity(0.5),
+        child: IconButton(
+          icon: Icon(
+            isMuted ? Icons.volume_off : Icons.volume_up,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            if (!isMuted) {
+              widget.betterPlayerController.setVolume(0);
+            } else {
+              widget.betterPlayerController.setVolume(1);
+            }
+            context.read<VideoSettingProvider>().changeMuteStatus(!isMuted);
+          },
         ),
-        onPressed: () {
-          if (!isMuted) {
-            widget.betterPlayerController.setVolume(0);
-          } else {
-            widget.betterPlayerController.setVolume(1);
-          }
-          context.read<VideoSettingProvider>().changeMuteStatus(!isMuted);
-        },
       ),
     );
   }

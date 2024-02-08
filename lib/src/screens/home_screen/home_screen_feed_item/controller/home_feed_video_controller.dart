@@ -8,6 +8,24 @@ class HomeFeedVideoController extends ChangeNotifier {
   bool skippedToInitialDuartion = false;
   bool isInitialized = false;
   bool isUserOnAnotherScreen = false;
+  bool isPaused = false;
+
+  void videoEventListener(
+      BetterPlayerController? betterPlayerController, BetterPlayerEvent event) {
+
+    if (event.betterPlayerEventType == BetterPlayerEventType.hideFullscreen &&
+        !betterPlayerController!.videoPlayerController!.value.isPlaying &&
+        !isUserOnAnotherScreen) {
+      changeControlsVisibility(betterPlayerController, false);
+    }
+  }
+
+  void didPopFullScreen(BetterPlayerController betterPlayerController) {
+    if (!betterPlayerController.videoPlayerController!.value.isPlaying &&
+        !isUserOnAnotherScreen) {
+      changeControlsVisibility(betterPlayerController, false);
+    }
+  }
 
   void videoPlayerListener(BetterPlayerController? betterPlayerController,
       VideoSettingProvider videoSettingProvider) {
@@ -21,6 +39,14 @@ class HomeFeedVideoController extends ChangeNotifier {
         if (betterPlayerController.controlsEnabled && !isUserOnAnotherScreen) {
           changeControlsVisibility(betterPlayerController, false);
         }
+      }
+      if (betterPlayerController.videoPlayerController!.value.isPlaying &&
+          isPaused) {
+        isPaused = false;
+      } else if (!betterPlayerController
+              .videoPlayerController!.value.isPlaying &&
+          !isPaused) {
+        isPaused = true;
       }
       if (totalDuration == null) {
         totalDuration =

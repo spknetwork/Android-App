@@ -25,21 +25,24 @@ class HomeFeedVideoFullScreenButton extends StatelessWidget {
         .select<HomeFeedVideoController, bool>((value) => value.isInitialized);
     return Visibility(
       visible: isInitialized,
-      child: IconButton(
-          onPressed: () {
-            if (defaultTargetPlatform == TargetPlatform.android) {
-              context
-                  .read<HomeFeedVideoController>()
-                  .changeControlsVisibility(betterPlayerController, true);
-              betterPlayerController.enterFullScreen();
-            } else {
-              fullscreenTapped();
-            }
-          },
-          icon: Icon(
-            Icons.fullscreen,
-            color: Colors.white,
-          )),
+      child: CircleAvatar(
+        backgroundColor: Theme.of(context).primaryColorDark.withOpacity(0.5),
+        child: IconButton(
+            onPressed: () {
+              if (defaultTargetPlatform == TargetPlatform.android) {
+                context
+                    .read<HomeFeedVideoController>()
+                    .changeControlsVisibility(betterPlayerController, true);
+                betterPlayerController.enterFullScreen();
+              } else {
+                fullscreenTapped();
+              }
+            },
+            icon: Icon(
+              Icons.fullscreen,
+              color: Colors.white,
+            )),
+      ),
     );
   }
 
