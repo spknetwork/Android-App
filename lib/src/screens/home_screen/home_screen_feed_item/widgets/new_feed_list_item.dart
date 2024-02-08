@@ -1,21 +1,23 @@
 import 'dart:io';
+
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/image_resolution_provider.dart';
 import 'package:acela/src/global_provider/video_setting_provider.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/controller/home_feed_video_controller.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/home_feed_video_full_screen_button.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/home_feed_video_slider.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/home_feed_video_timer.dart';
-import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
-import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
-import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/mute_unmute_button.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/play_pause_button.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details/new_video_details_screen.dart';
+import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/cached_image.dart';
-import 'package:acela/src/screens/home_screen/home_screen_feed_item/controller/home_feed_video_controller.dart';
-import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/mute_unmute_button.dart';
 import 'package:acela/src/widgets/upvote_button.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter/foundation.dart';
@@ -103,6 +105,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         homeFeedVideoController.skippedToInitialDuartion = false;
         _betterPlayerController!.videoPlayerController!
             .removeListener(videoPlayerListener);
+        _betterPlayerController!.removeEventsListener(videoEventListener);
         homeFeedVideoController.reset();
         _betterPlayerController!.videoPlayerController?.dispose();
         _betterPlayerController!.dispose();
@@ -117,6 +120,18 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   ) {
     BetterPlayerConfiguration betterPlayerConfiguration =
         BetterPlayerConfiguration(
+      routePageBuilder:
+          (context, animation, secondaryAnimation, controllerProvider) =>
+              PopScope(
+        onPopInvoked: (didPop) {
+          if (didPop) {
+            homeFeedVideoController.didPopFullScreen(_betterPlayerController!);
+          }
+        },
+        child: BetterPlayer(
+          controller: _betterPlayerController!,
+        ),
+      ),
       fit: BoxFit.contain,
       autoPlay: true,
       fullScreenByDefault: false,
@@ -170,11 +185,16 @@ class _NewFeedListItemState extends State<NewFeedListItem>
     }
     _betterPlayerController!.videoPlayerController!
         .addListener(videoPlayerListener);
+    _betterPlayerController!.addEventsListener(videoEventListener);
   }
 
   void videoPlayerListener() {
     homeFeedVideoController.videoPlayerListener(
         _betterPlayerController, videoSettingProvider);
+  }
+
+  void videoEventListener(BetterPlayerEvent event) {
+    homeFeedVideoController.videoEventListener(_betterPlayerController, event);
   }
 
   Widget videoThumbnail() {
@@ -209,8 +229,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                         _thumbNailAndLoader(thumbnail),
                         _nextScreenGestureDetector(),
                         _videoSlider(),
-                        _muteUnMuteButton(),
-                        _fullScreenButton(),
+                        _interactionTools()
                       ],
                     )
                   : thumbnail,
@@ -421,16 +440,6 @@ class _NewFeedListItemState extends State<NewFeedListItem>
     }
   }
 
-  Positioned _fullScreenButton() {
-    return Positioned(
-        top: 5,
-        left: 5,
-        child: HomeFeedVideoFullScreenButton(
-            appData: widget.appData!,
-            item: widget.item!,
-            betterPlayerController: _betterPlayerController!));
-  }
-
   Positioned _timer() {
     return Positioned(
       bottom: 10,
@@ -439,11 +448,24 @@ class _NewFeedListItemState extends State<NewFeedListItem>
     );
   }
 
-  Positioned _muteUnMuteButton() {
+  Positioned _interactionTools() {
     return Positioned(
-      right: 5,
       top: 5,
-      child: MuteUnmuteButton(betterPlayerController: _betterPlayerController!),
+      right: 5,
+      child: Column(
+        children: [
+          HomeFeedVideoFullScreenButton(
+              appData: widget.appData!,
+              item: widget.item!,
+              betterPlayerController: _betterPlayerController!),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: MuteUnmuteButton(
+                betterPlayerController: _betterPlayerController!),
+          ),
+          PlayPauseButton(betterPlayerController: _betterPlayerController!)
+        ],
+      ),
     );
   }
 

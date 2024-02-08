@@ -6,6 +6,7 @@ import 'package:acela/src/screens/my_account/account_settings/account_settings_s
 import 'package:acela/src/screens/my_account/update_thumb/update_thumb_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/screens/my_account/video_preview.dart';
+import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
@@ -98,7 +99,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         ),
         IconButton(
           onPressed: () {
-            var screen = const AccountSettingsScreen();
+            var screen = const SettingsScreen(isUserFromUserSettings: true,);
             var route = MaterialPageRoute(builder: (c) => screen);
             Navigator.of(context).push(route);
           },

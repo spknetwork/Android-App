@@ -353,6 +353,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   void showVoters() {
+    _betterPlayerController.pause();
     List<String> voters = [];
     bool currentUserPresentInVoters = false;
     if (postInfo != null) {
@@ -698,11 +699,6 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
 
   void changeControlsVisibility(bool showControls) {
     if (widget.betterPlayerController != null) {
-      if (!showControls) {
-        if (!widget.betterPlayerController!.isPlaying()!) {
-          widget.betterPlayerController!.videoPlayerController!.play();
-        }
-      }
       widget.betterPlayerController!.setControlsAlwaysVisible(false);
       widget.betterPlayerController!.setControlsEnabled(showControls);
       widget.betterPlayerController!.setControlsVisibility(showControls);

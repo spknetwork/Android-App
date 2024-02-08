@@ -2,7 +2,10 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/image_resolution_provider.dart';
 import 'package:acela/src/global_provider/ipfs_node_provider.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/home_screen/new_home_screen.dart';
+import 'package:acela/src/screens/my_account/account_settings/widgets/delete_dialog.dart';
 import 'package:acela/src/screens/settings/add_cutom_union_indexer.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/foundation.dart';
@@ -24,7 +27,10 @@ class VideoLanguage {
 }
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({Key? key, this.isUserFromUserSettings = false})
+      : super(key: key);
+
+  final bool isUserFromUserSettings;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -51,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     VideoLanguage(code: "he", name: "עִברִית"),
     VideoLanguage(code: "all", name: "All"),
   ];
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -219,6 +226,113 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _logout() {
+    var data = context.read<HiveUserData>();
+    return Visibility(
+      visible: data.username != null,
+      child: ListTile(
+        leading: const Icon(Icons.logout),
+        title: const Text('Log Out'),
+        onTap: () {
+          logout(data);
+        },
+      ),
+    );
+  }
+
+  Future<void> logout(HiveUserData data) async {
+    // Create storage
+    const storage = FlutterSecureStorage();
+    await storage.delete(key: 'username');
+    await storage.delete(key: 'postingKey');
+    await storage.delete(key: 'cookie');
+    await storage.delete(key: 'hasId');
+    await storage.delete(key: 'hasExpiry');
+    await storage.delete(key: 'hasAuthKey');
+    String resolution = await storage.read(key: 'resolution') ?? '480p';
+    String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+    String union =
+        await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+    String? lang = await storage.read(key: 'lang');
+    var newUserData = HiveUserData(
+      username: null,
+      postingKey: null,
+      keychainData: null,
+      cookie: null,
+      resolution: resolution,
+      rpc: rpc,
+      union: union,
+      loaded: true,
+      language: lang,
+    );
+    server.updateHiveUserData(newUserData);
+    if (widget.isUserFromUserSettings) {
+      Navigator.of(context).pop();
+    }
+    Navigator.of(context).pop();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) =>
+            GQLFeedScreen(appData: newUserData, username: null),
+      ),
+    );
+  }
+
+  Widget _deleteAccount() {
+    var data = context.read<HiveUserData>();
+    return Visibility(
+      visible: data.username != null,
+      child: ListTile(
+        leading: const Icon(
+          Icons.delete,
+          color: Colors.red,
+        ),
+        title: const Text(
+          'Delete Account',
+          style: TextStyle(color: Colors.red),
+        ),
+        onTap: () {
+          _deleteDialog(data);
+        },
+      ),
+    );
+  }
+
+  void _deleteDialog(HiveUserData data) {
+    showDialog(
+      barrierDismissible: true,
+      useRootNavigator: true,
+      context: context,
+      builder: (context) {
+        return DeleteDialog(
+          onDelete: () async {
+            Navigator.pop(context);
+            try {
+              setState(() {
+                isLoading = true;
+              });
+              bool status = await Communicator().deleteAccount(data);
+              if (status) {
+                await logout(data);
+                showMessage('Account Deleted Successfully');
+              } else {
+                showError("Sorry, Something went wrong.");
+              }
+              setState(() {
+                isLoading = false;
+              });
+            } catch (e) {
+              setState(() {
+                isLoading = false;
+              });
+              showError("Sorry, Something went wrong.");
+            }
+          },
+        );
+      },
+    );
+  }
+
   Widget _changeLanguage(BuildContext context) {
     var data = Provider.of<HiveUserData>(context);
     var display =
@@ -270,7 +384,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       selector: (_, myType) => myType.autoPlayVideo,
       builder: (context, value, child) {
         return ListTile(
-          contentPadding: EdgeInsets.only(left: 15,right: 10),
+          contentPadding: EdgeInsets.only(left: 15, right: 10),
           leading: const Icon(Icons.auto_mode_rounded),
           title: const Text("Auto Play Video"),
           trailing: Transform.scale(
@@ -283,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           onTap: () async {
-           settingsProvider.autoPlayVideo = !settingsProvider.autoPlayVideo;
+            settingsProvider.autoPlayVideo = !settingsProvider.autoPlayVideo;
           },
         );
       },
@@ -526,6 +640,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void showMessage(String string) {
+    var snackBar = SnackBar(content: Text(string));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void showError(String string) {
+    var snackBar = SnackBar(content: Text('Error: $string'));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   Widget _drawerMenu(BuildContext context, HiveUserData user) {
     return ListView(
       children: [
@@ -547,6 +671,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _divider(),
         _appVersion(context),
         _divider(),
+        _logout(),
+        _divider(),
+        _deleteAccount(),
+        _divider()
       ],
     );
   }
@@ -558,7 +686,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: const Text('Settings'),
       ),
-      body: _drawerMenu(context, user),
+      body: isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : _drawerMenu(context, user),
     );
   }
 }
