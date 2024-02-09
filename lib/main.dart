@@ -111,7 +111,7 @@ class _MyAppState extends State<MyApp> {
             initialData: HiveUserData(
               resolution: '480p',
               keychainData: null,
-              cookie: null,
+              accessToken: null,
               postingKey: null,
               username: null,
               rpc: 'api.hive.blog',
@@ -141,6 +141,7 @@ class _MyAppState extends State<MyApp> {
     String? username = await storage.read(key: 'username');
     String? postingKey = await storage.read(key: 'postingKey');
     String? cookie = await storage.read(key: 'cookie');
+    String? accessToken = await storage.read(key: 'accessToken');
     String? hasId = await storage.read(key: 'hasId');
     String? hasExpiry = await storage.read(key: 'hasExpiry');
     String? hasAuthKey = await storage.read(key: 'hasAuthKey');
@@ -170,7 +171,7 @@ class _MyAppState extends State<MyApp> {
                 hasId: hasId,
               )
             : null,
-        cookie: cookie,
+        accessToken: accessToken,
         resolution: resolution,
         rpc: rpc,
         union: union,

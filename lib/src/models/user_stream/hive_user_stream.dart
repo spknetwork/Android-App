@@ -22,19 +22,20 @@ class HiveSocketData {
 class HiveUserData {
   String? username;
   String? postingKey;
-  String? cookie;
+  // String? cookie;
   String? language;
   HiveKeychainData? keychainData;
   String resolution;
   String rpc;
   String union;
   bool loaded;
+  String? accessToken;
 
   HiveUserData({
     required this.username,
     required this.postingKey,
     required this.keychainData,
-    required this.cookie,
+    required this.accessToken,
     required this.resolution,
     required this.rpc,
     required this.union,

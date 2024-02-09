@@ -24,6 +24,7 @@ class HiveUpvoteDialog extends StatefulWidget {
     required this.permlink,
     required this.hasKey,
     required this.hasAuthKey,
+    required this.accessToken,
     required this.activeVotes,
     required this.onClose,
     required this.onDone,
@@ -33,6 +34,7 @@ class HiveUpvoteDialog extends StatefulWidget {
   final String permlink;
   final String hasKey;
   final String hasAuthKey;
+  final String? accessToken;
   final Function onDone;
   final Function onClose;
   final List<ActiveVotesItem> activeVotes;
@@ -237,61 +239,65 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
     setState(() {
       isUpVoting = true;
     });
-    try {
-      var voteValue = sliderValue * 10000;
-      var user = data.username;
-      if (user == null) return;
-      const platform = MethodChannel('com.example.acela/auth');
-      final String result = await platform.invokeMethod('voteContent', {
-        'user': user,
-        'author': widget.author,
-        'permlink': widget.permlink,
-        'weight': voteValue,
-        'postingKey': data.postingKey ?? '',
-        'hasKey': data.keychainData?.hasId ?? '',
-        'hasAuthKey': data.keychainData?.hasAuthKey ?? '',
-      });
-      var response = LoginBridgeResponse.fromJsonString(result);
-      if (response.valid && response.error.isEmpty) {
-        if (response.error == "" &&
-            response.data != null &&
-            response.data!.isNotEmpty &&
-            data.keychainData?.hasAuthKey != null) {
-          var socketData = {
-            "cmd": "sign_req",
-            "account": data.username!,
-            "token": data.keychainData!.hasId,
-            "data": response.data!,
-          };
-          loadingQR = true;
-          var jsonData = json.encode(socketData);
-          socket.sink.add(jsonData);
+    var voteValue = sliderValue * 10000;
+    var user = data.username;
+    if (user == null) return;
+    if (widget.accessToken != null) {
+      // TO-DO: Call Acela-Core upvote API using access token.
+    } else {
+      try {
+        const platform = MethodChannel('com.example.acela/auth');
+        final String result = await platform.invokeMethod('voteContent', {
+          'user': user,
+          'author': widget.author,
+          'permlink': widget.permlink,
+          'weight': voteValue,
+          'postingKey': data.postingKey ?? '',
+          'hasKey': data.keychainData?.hasId ?? '',
+          'hasAuthKey': data.keychainData?.hasAuthKey ?? '',
+        });
+        var response = LoginBridgeResponse.fromJsonString(result);
+        if (response.valid && response.error.isEmpty) {
+          if (response.error == "" &&
+              response.data != null &&
+              response.data!.isNotEmpty &&
+              data.keychainData?.hasAuthKey != null) {
+            var socketData = {
+              "cmd": "sign_req",
+              "account": data.username!,
+              "token": data.keychainData!.hasId,
+              "data": response.data!,
+            };
+            loadingQR = true;
+            var jsonData = json.encode(socketData);
+            socket.sink.add(jsonData);
+          } else {
+            Future.delayed(const Duration(seconds: 6), () {
+              if (mounted) {
+                setState(() {
+                  isUpVoting = false;
+                  widget.onDone();
+                  Navigator.of(context).pop();
+                });
+              }
+            });
+          }
         } else {
-          Future.delayed(const Duration(seconds: 6), () {
-            if (mounted) {
-              setState(() {
-                isUpVoting = false;
-                widget.onDone();
-                Navigator.of(context).pop();
-              });
-            }
-          });
+          if (isUpVoting && mounted) {
+            setState(() {
+              isUpVoting = false;
+            });
+          }
+          showError('Something went wrong.\n${response.error}');
         }
-      } else {
-        if(isUpVoting && mounted){
+      } catch (e) {
+        if (isUpVoting && mounted) {
           setState(() {
             isUpVoting = false;
           });
         }
-        showError('Something went wrong.\n${response.error}');
+        showError('Something went wrong.\n${e.toString()}');
       }
-    } catch (e) {
-      if(isUpVoting && mounted){
-          setState(() {
-            isUpVoting = false;
-          });
-        }
-      showError('Something went wrong.\n${e.toString()}');
     }
   }
 
@@ -405,8 +411,14 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
             automaticallyImplyLeading: false,
             title: ListTile(
               contentPadding: EdgeInsets.zero,
-              leading:UserProfileImage(userName: widget.author,),
-              title: Text("Upvote",style: TextStyle(color: Colors.white,fontWeight: FontWeight.w500),),
+              leading: UserProfileImage(
+                userName: widget.author,
+              ),
+              title: Text(
+                "Upvote",
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              ),
               subtitle: Text(
                 "@${widget.author}/${widget.permlink}",
                 maxLines: 1,
@@ -416,7 +428,10 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
             actions: [
               IconButton(
                 splashRadius: 30,
-                icon: const Icon(Icons.cancel,size: 28,),
+                icon: const Icon(
+                  Icons.cancel,
+                  size: 28,
+                ),
                 onPressed: () {
                   widget.onClose();
                   Navigator.of(context).pop();

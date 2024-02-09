@@ -731,7 +731,7 @@
         }
       }
 
-      function getDecryptedChallenge(username, authKey) {
+      function getDecryptedChallenge(username, authKey, data) {
         try {
           const decryptedData = JSON.parse(
             CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)

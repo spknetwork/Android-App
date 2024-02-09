@@ -87,6 +87,7 @@ class _UpvoteButtonState extends State<UpvoteButton> {
           username: widget.appData.username ?? "",
           hasKey: widget.appData.keychainData?.hasId ?? "",
           hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
+          accessToken: widget.appData.accessToken,
           activeVotes: [],
           onClose: () {},
           onDone: () {

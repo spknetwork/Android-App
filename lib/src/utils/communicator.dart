@@ -219,7 +219,7 @@ class Communicator {
     }
     return memo.decrypted.replaceFirst("#", '');
   }
-
+/* OLD APIs
   Future<String> getValidCookie(HiveUserData user) async {
     var uri = '${Communicator.tsServer}/mobile/login?username=${user.username}';
     if (user.keychainData != null && user.postingKey == null) {
@@ -450,6 +450,7 @@ class Communicator {
     }
   }
 
+  */
   Future<List<VideoDetails>> loadAnyFeed(Uri uri) async {
     var request = http.Request('GET', uri);
     http.StreamedResponse response = await request.send();
@@ -525,7 +526,7 @@ class Communicator {
       throw error;
     }
   }
-
+/* OLD APIS. Use Acela-core now.
   Future<List<VideoDetails>> loadVideos(HiveUserData user) async {
     log("Starting fetch videos ${DateTime.now().toIso8601String()}");
     var cookie = await getValidCookie(user);
@@ -709,10 +710,10 @@ class Communicator {
       rethrow;
     }
   }
-
+*/
   Future<ActionResponse> login(String userName, String postingKey) async {
     var headers = {
-      'Accept': 'application/json, text/plain, */*',
+      'Accept': 'application/json, text/plain',
       'Content-Type': 'application/json'
     };
 

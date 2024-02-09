@@ -28,6 +28,7 @@ class AcelaWebViewController: UIViewController {
 	var getHtmlHandler: ((String) -> Void)? = nil
 	var getProofOfPayloadHandler: ((String) -> Void)? = nil
 	var getEncryptedChallengeHandler: ((String) -> Void)? = nil
+	var getDecryptedChallengeHandler: ((String) -> Void)? = nil
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -149,6 +150,13 @@ class AcelaWebViewController: UIViewController {
 		getEncryptedChallengeHandler = handler
 		OperationQueue.main.addOperation {
 			self.webView?.evaluateJavaScript("getEncryptedChallenge('\(username)','\(authKey)');")
+		}
+	}
+
+	func getDecryptedChallenge(username: String, authKey: String, data: String, handler: @escaping (String) -> Void) {
+		getDecryptedChallengeHandler = handler
+		OperationQueue.main.addOperation {
+			self.webView?.evaluateJavaScript("getDecryptedChallenge('\(username)','\(authKey)', '\(data)');")
 		}
 	}
 
@@ -298,6 +306,11 @@ extension AcelaWebViewController: WKScriptMessageHandler {
 					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
 				else { return }
 				getEncryptedChallengeHandler?(response)
+			case "getDecryptedChallenge":
+				guard
+					let response = ValidateHiveKeyResponse.jsonStringFrom(dict: dict)
+				else { return }
+				getDecryptedChallengeHandler?(response)
 			default: debugPrint("Do nothing here.")
 		}
 	}
