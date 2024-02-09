@@ -233,6 +233,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                                     author: widget.vm.author,
                                     permlink: widget.vm.permlink,
                                     username: appData.username ?? "",
+                                    accessToken: appData.accessToken,
                                     hasKey: appData.keychainData?.hasId ?? "",
                                     hasAuthKey:
                                         appData.keychainData?.hasAuthKey ?? "",

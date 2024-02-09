@@ -36,9 +36,11 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   @override
   void initState() {
     super.initState();
+    /* TO-DO: Acela Core integration
     setState(() {
       loadVideos = Communicator().loadVideos(widget.data);
     });
+     */
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       setState(() {
@@ -91,9 +93,11 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       actions: [
         IconButton(
           onPressed: () {
+            /* TO-DO: Acela Core Integration
             setState(() {
               loadVideos = Communicator().loadVideos(widget.data);
             });
+             */
           },
           icon: Icon(Icons.refresh),
         ),
@@ -200,6 +204,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         BottomSheetAction(
           title: Text('Delete Video'),
           onPressed: (context) async {
+            /* TO-DO: Acela Core API Integration
             Navigator.of(context).pop();
             showSnackBar('Deleting...', seconds: 60);
             bool result =
@@ -212,6 +217,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
             } else {
               showSnackBar("Something went wrong");
             }
+             */
           },
         ),
       );

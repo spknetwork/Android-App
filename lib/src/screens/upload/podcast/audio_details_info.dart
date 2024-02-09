@@ -167,6 +167,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
       });
       try {
         final String ipfsUrl = IpfsNodeProvider().nodeUrl;
+        /* TO-DO: Acela Core Integration
         var podcastResponse = await Communicator().uploadPodcast(
           user: user,
           size: widget.size,
@@ -265,6 +266,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
         } else {
           throw bridgeResponse.error;
         }
+         */
       } catch (e) {
         showError(e.toString());
         setState(() {
@@ -360,6 +362,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
             });
             showMessage(
                 'Please wait. Podcast is posted on Hive but needs to be marked as published.');
+            /* TO-DO: Acela Core Integration
             Future.delayed(const Duration(seconds: 6), () async {
               if (mounted) {
                 try {
@@ -384,6 +387,7 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
                 }
               }
             });
+             */
             break;
           case "sign_nack":
             setState(() {

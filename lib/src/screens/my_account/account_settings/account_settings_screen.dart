@@ -38,7 +38,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       username: null,
       postingKey: null,
       keychainData: null,
-      cookie: null,
+      accessToken: null,
       resolution: resolution,
       rpc: rpc,
       union: union,
@@ -106,6 +106,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           onDelete: () async {
             Navigator.pop(context);
             try {
+              /*
+              // TO-DO: New Acela Core APIs
               setState(() {
                 isLoading = true;
               });
@@ -120,6 +122,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               setState(() {
                 isLoading = false;
               });
+               */
             } catch (e) {
               setState(() {
                 isLoading = false;

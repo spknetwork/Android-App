@@ -92,7 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         String? hasId = await storage.read(key: 'hasId');
         String? hasExpiry = await storage.read(key: 'hasExpiry');
         String? hasAuthKey = await storage.read(key: 'hasAuthKey');
-        String? cookie = await storage.read(key: 'cookie');
+        String? accessToken = await storage.read(key: 'accessToken');
         String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
         String union = await storage.read(key: 'union') ??
             GQLCommunicator.defaultGQLServer;
@@ -101,7 +101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           HiveUserData(
             username: username,
             postingKey: postingKey,
-            cookie: cookie,
+            accessToken: accessToken,
             resolution: optionName,
             rpc: rpc,
             union: union,
@@ -173,7 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           HiveUserData(
             username: appData.username,
             postingKey: appData.postingKey,
-            cookie: appData.cookie,
+            accessToken: appData.accessToken,
             resolution: appData.resolution,
             rpc: appData.rpc,
             union: appData.union,
@@ -258,7 +258,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       username: null,
       postingKey: null,
       keychainData: null,
-      cookie: null,
+      accessToken: null,
       resolution: resolution,
       rpc: rpc,
       union: union,
@@ -306,6 +306,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) {
         return DeleteDialog(
           onDelete: () async {
+            /* TO-DO: Acela Core integration
             Navigator.pop(context);
             try {
               setState(() {
@@ -327,6 +328,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               });
               showError("Sorry, Something went wrong.");
             }
+             */
           },
         );
       },
@@ -443,7 +445,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             username: user.username,
             postingKey: user.postingKey,
             keychainData: user.keychainData,
-            cookie: user.cookie,
+            accessToken: user.accessToken,
             resolution: user.resolution,
             union: user.union,
             rpc: serverUrl,
@@ -516,7 +518,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         username: user.username,
         postingKey: user.postingKey,
         keychainData: user.keychainData,
-        cookie: user.cookie,
+        accessToken: user.accessToken,
         resolution: user.resolution,
         union: serverUrl,
         rpc: user.rpc,

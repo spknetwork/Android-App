@@ -373,7 +373,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             username: usernameController.text,
             postingKey: postingKey,
             keychainData: null,
-            cookie: null,
+            accessToken: null,
             resolution: resolution,
             rpc: rpc,
             union: union,
@@ -381,8 +381,9 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             language: lang,
           );
           server.updateHiveUserData(data);
-          var cookie = await Communicator().getValidCookie(data);
-          log(cookie);
+          // TO-DO: get accessToken here
+          // var cookie = await Communicator().getValidCookie(data);
+          // log(cookie);
           Navigator.of(context).pop();
           var screen = GQLFeedScreen(
             appData: data,
@@ -425,7 +426,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
           username: null,
           postingKey: null,
           keychainData: null,
-          cookie: null,
+          accessToken: null,
           resolution: '480p',
           rpc: 'api.hive.blog',
           union: GQLCommunicator.defaultGQLServer,
@@ -497,7 +498,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             hasExpiry: tokenData[1],
             hasId: tokenData[0],
           ),
-          cookie: null,
+          accessToken: null,
           resolution: data.resolution,
           rpc: data.rpc,
           union: data.union,

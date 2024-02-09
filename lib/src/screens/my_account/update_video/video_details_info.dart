@@ -177,6 +177,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                 'Please wait. Video is posted on Hive but needs to be marked as published.');
             Future.delayed(const Duration(seconds: 6), () async {
               if (mounted) {
+                /* TO-DO: Acela Core integration
                 try {
                   await Communicator()
                       .updatePublishState(widget.appData, widget.item.id);
@@ -196,6 +197,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                         'Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
                   });
                 }
+                 */
               }
             });
             break;
@@ -280,6 +282,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       var doesPostNotExist = await Communicator()
           .doesPostNotExist(widget.item.owner, widget.item.permlink, user.rpc);
       if (doesPostNotExist != true) {
+        /* TO-DO: Acela-Core integration
         await Communicator().updatePublishState(user, widget.item.id);
         setState(() {
           isCompleting = false;
@@ -287,7 +290,9 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           showMessage('Your video was already published.');
           showMyDialog();
         });
+         */
       } else {
+        /* TO-DO: Acela-Core integration
         var v = await Communicator().updateInfo(
             user: user,
             videoId: widget.item.id,
@@ -385,6 +390,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         } else {
           throw bridgeResponse.error;
         }
+         */
       }
     } catch (e) {
       showError(e.toString());

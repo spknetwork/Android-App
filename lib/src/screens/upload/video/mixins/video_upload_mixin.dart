@@ -35,19 +35,19 @@ mixin Upload {
     log('upload started');
     int fileSize = _checkFileSize(size);
     var path = pickedVideoFile.path;
-    var videoUploadReponse = await _uploadToServer(path, videoUploadProgress);
-    var name = videoUploadReponse.name;
+    // var videoUploadReponse = await _uploadToServer(path, videoUploadProgress);
+    // var name = videoUploadReponse.name;
     _initiateNextUpload();
     var thumbPath = await _getThumbnail(path);
     _initiateNextUpload();
-    var thumbReponse = await uploadThumbnail(thumbPath);
+    // var thumbReponse = await uploadThumbnail(thumbPath);
     _initiateNextUpload();
 
-    log('Uploaded file name is $name');
-    log('Uploaded thumbnail file name is ${thumbReponse.name}');
-    uploadedVideoItem= await _encodeAndUploadInfo(path,
-        hiveUserData, thumbReponse.name, originalFileName, fileSize, name);
-    uploadStatus.value = UploadStatus.ended;
+    // log('Uploaded file name is $name');
+    // log('Uploaded thumbnail file name is ${thumbReponse.name}');
+    // uploadedVideoItem= await _encodeAndUploadInfo(path,
+    //     hiveUserData, thumbReponse.name, originalFileName, fileSize, name);
+    // uploadStatus.value = UploadStatus.ended;
     _initiateNextUpload();
   }
 
@@ -99,7 +99,7 @@ mixin Upload {
     }
     return fileSize;
   }
-
+/* TO-DO: This with acela Core
   Future<UploadResponse> uploadThumbnail(String path) async {
     thumbnailUploadStatus.value = UploadStatus.started;
     var thumbReponse = await _uploadToServer(path, thumbnailUploadProgress);
@@ -157,5 +157,5 @@ mixin Upload {
     );
     return UploadResponse(name: name, url: url);
   }
-
+ */
 }

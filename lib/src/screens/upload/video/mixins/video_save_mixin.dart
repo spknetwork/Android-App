@@ -26,15 +26,16 @@ class VideoSaveMixin {
   }) async {
     try {
       isSaving.value = true;
-      await Communicator().updateInfo(
-          user: user,
-          videoId: item.id,
-          title: title,
-          description: description,
-          isNsfwContent: isNsfwContent,
-          tags: tags,
-          thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
-          communityID: communityId);
+      // TO-DO: Update here
+      // await Communicator().updateInfo(
+      //     user: user,
+      //     videoId: item.id,
+      //     title: title,
+      //     description: description,
+      //     isNsfwContent: isNsfwContent,
+      //     tags: tags,
+      //     thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
+      //     communityID: communityId);
       isSaving.value = false;
       successDialog();
     } catch (e) {
