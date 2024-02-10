@@ -6,7 +6,6 @@ import 'dart:ui' as ui;
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/ipfs_node_provider.dart';
-import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/my_account/update_video/add_bene_sheet.dart';

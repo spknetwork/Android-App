@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
-import 'package:acela/src/screens/my_account/account_settings/account_settings_screen.dart';
 import 'package:acela/src/screens/my_account/update_thumb/update_thumb_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/screens/my_account/video_preview.dart';
@@ -10,7 +9,6 @@ import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';

@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
-import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/upload/video/video_upload_screen.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';

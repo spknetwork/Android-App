@@ -45,6 +45,10 @@ class MainActivity : AudioServiceActivity() {
                 webView?.evaluateJavascript("getDecryptedHASToken('$username','$authKey','$data');", null)
             } else if (call.method == "getEncryptedChallenge" && username != null && authKey != null) {
                 webView?.evaluateJavascript("getEncryptedChallenge('$username','$authKey');", null)
+            } else if (call.method == "getDecryptedChallenge" && username != null && authKey != null && data != null) {
+                webView?.evaluateJavascript("getDecryptedChallenge('$username','$authKey', '$data');", null)
+            } else if (call.method == "doWeHavePostingAuth" && username != null) {
+                webView?.evaluateJavascript("doWeHavePostingAuth('$username');", null)
             }
         }
         MethodChannel(
@@ -222,6 +226,12 @@ class WebAppInterface(private val mContext: Context) {
             JSBridgeAction.GET_ENCRYPTED_CHALLENGE.value -> {
                 main.result?.success(message)
             }
+            JSBridgeAction.GET_DECRYPTED_CHALLENGE.value -> {
+                main.result?.success(message)
+            }
+            JSBridgeAction.DO_WE_HAVE_POSTING_AUTH.value -> {
+                main.result?.success(message)
+            }
         }
     }
 }
@@ -242,4 +252,6 @@ enum class JSBridgeAction(val value: String) {
     POST_AUDIO("postAudio"),
     GET_PROOF_PAYLOAD("getProofOfPayload"),
     GET_ENCRYPTED_CHALLENGE("getEncryptedChallenge"),
+    GET_DECRYPTED_CHALLENGE("getDecryptedChallenge"),
+    DO_WE_HAVE_POSTING_AUTH("doWeHavePostingAuth"),
 }

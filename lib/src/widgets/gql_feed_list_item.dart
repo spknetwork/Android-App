@@ -1,20 +1,15 @@
-import 'dart:convert';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
-import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
-import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
-import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:http/http.dart' as http;
 
 class GQLFeedListItemWidget extends StatefulWidget {
   const GQLFeedListItemWidget({

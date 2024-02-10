@@ -3,13 +3,9 @@ import 'dart:io';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_upload/upload_response.dart';
 import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/enum.dart';
-import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tus_client/tus_client.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 mixin Upload {

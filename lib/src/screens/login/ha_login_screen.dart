@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
+import 'package:acela/src/models/action_response.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
@@ -35,7 +36,9 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
   var usernameController = TextEditingController();
   late WebSocketChannel socket;
   String authKey = '';
+  String hasIdToken = '';
   String proofOfPayload = '';
+  String signedHash = '';
   String? qrCode;
   var loadingQR = false;
   var timer = 0;
@@ -109,6 +112,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
               qrCode = null;
               timer = 0;
               loadingQR = false;
+              hasIdToken = '';
             });
             break;
           case "challenge_ack":
@@ -116,13 +120,19 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             decryptChallenge(widget.appData, messageData);
             break;
           case "challenge_nack":
-            showError("You denied signing the auth");
+            showError("You denied signing the auth for authentication");
             setState(() {
               proofOfPayload = '';
+              signedHash = '';
               qrCode = null;
               timer = 0;
               loadingQR = false;
             });
+            break;
+          case "sign_ack":
+            break;
+          case "sign_nack":
+            showError("You denied granting posting authority to 3Speak");
             break;
           default:
             log('Default case here');
@@ -354,50 +364,94 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       });
       var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
       if (bridgeResponse.valid) {
-        var response =
-            await Communicator().login(usernameController.text, postingKey);
-        if (response.valid) {
-          debugPrint("Successful login");
-          String resolution = await storage.read(key: 'resolution') ?? '480p';
-          String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-          String union = await storage.read(key: 'union') ??
-              GQLCommunicator.defaultGQLServer;
-          String? lang = await storage.read(key: 'lang');
-          await storage.write(key: 'username', value: usernameController.text);
-          await storage.write(key: 'postingKey', value: postingKey);
-          await storage.delete(key: 'hasId');
-          await storage.delete(key: 'hasExpiry');
-          await storage.delete(key: 'hasAuthKey');
-          await storage.delete(key: 'cookie');
-          var data = HiveUserData(
-            username: usernameController.text,
-            postingKey: postingKey,
-            keychainData: null,
-            accessToken: null,
-            resolution: resolution,
-            rpc: rpc,
-            union: union,
-            loaded: true,
-            language: lang,
-          );
-          server.updateHiveUserData(data);
-          // TO-DO: get accessToken here
-          // var cookie = await Communicator().getValidCookie(data);
-          // log(cookie);
-          Navigator.of(context).pop();
-          var screen = GQLFeedScreen(
-            appData: data,
-            username: usernameController.text,
-          );
-          var route = MaterialPageRoute(builder: (c) => screen);
-          Navigator.of(context).pushReplacement(route);
-          showMessage(
-              'You have successfully logged in as - ${usernameController.text}');
-          setState(() {
-            isLoading = false;
-          });
+        final String doWeHave =
+            await MethodChannel("blog.hive.auth/bridge").invokeMethod(
+          'doWeHavePostingAuth',
+          {
+            'username': usernameController.text,
+          },
+        );
+        var doWeHaveResponse = LoginBridgeResponse.fromJsonString(doWeHave);
+        if (doWeHaveResponse.valid) {
+          if (doWeHaveResponse.data != null &&
+              doWeHaveResponse.data == "true") {
+            // we have posting authority. we can login now.
+            String proofPayload = json.encode({
+              'account': usernameController.text,
+              'ts': DateTime.now().toIso8601String()
+            });
+            const platform = MethodChannel('com.example.acela/auth');
+            final String result =
+                await platform.invokeMethod('getProofOfPayload', {
+              'username': usernameController.text,
+              'postingKey': postingKey,
+              'proof': proofPayload,
+            });
+            LoginBridgeResponse actionResponse = LoginBridgeResponse.fromJsonString(result);
+            if (actionResponse.valid &&
+                actionResponse.error == '' &&
+                actionResponse.data != null && actionResponse.data!.isNotEmpty) {
+              var loginApiResponse = await Communicator().login(
+                  usernameController.text, proofPayload, actionResponse.data!);
+              if (loginApiResponse.valid) {
+                debugPrint("Successful login");
+                String resolution =
+                    await storage.read(key: 'resolution') ?? '480p';
+                String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+                String union = await storage.read(key: 'union') ??
+                    GQLCommunicator.defaultGQLServer;
+                String? lang = await storage.read(key: 'lang');
+                await storage.write(
+                    key: 'username', value: usernameController.text);
+                await storage.write(key: 'postingKey', value: postingKey);
+                await storage.delete(key: 'hasId');
+                await storage.delete(key: 'hasExpiry');
+                await storage.delete(key: 'hasAuthKey');
+                await storage.delete(key: 'cookie');
+                var data = HiveUserData(
+                  username: usernameController.text,
+                  postingKey: postingKey,
+                  keychainData: null,
+                  accessToken: loginApiResponse.data,
+                  resolution: resolution,
+                  rpc: rpc,
+                  union: union,
+                  loaded: true,
+                  language: lang,
+                );
+                server.updateHiveUserData(data);
+                Navigator.of(context).pop();
+                var screen = GQLFeedScreen(
+                  appData: data,
+                  username: usernameController.text,
+                );
+                var route = MaterialPageRoute(builder: (c) => screen);
+                Navigator.of(context).pushReplacement(route);
+                showMessage(
+                    'You have successfully logged in as - ${usernameController.text}');
+                setState(() {
+                  isLoading = false;
+                });
+              } else {
+                showError(loginApiResponse.error);
+                setState(() {
+                  isLoading = false;
+                });
+              }
+            } else {
+              showError(actionResponse.error);
+              setState(() {
+                isLoading = false;
+              });
+            }
+          } else {
+            showError(doWeHaveResponse.error);
+            setState(() {
+              isLoading = false;
+            });
+          }
         } else {
-          showError(response.error);
+          showError(doWeHaveResponse.error);
           setState(() {
             isLoading = false;
           });
@@ -459,12 +513,47 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
       var proof = bridgeResponse.data;
       var payload = proofOfPayload;
       setState(() {
-        proofOfPayload = '';
+        signedHash = bridgeResponse.data!;
       });
+      final String postingAuthResponse =
+          await platform.invokeMethod('getPostingAuthOps', {
+        'username': usernameController.text,
+        'authKey': authKey,
+      });
+      var postingAuthBridgeResponse =
+          LoginBridgeResponse.fromJsonString(postingAuthResponse);
+      if (postingAuthBridgeResponse.valid) {
+        if (postingAuthBridgeResponse.data != null &&
+            postingAuthBridgeResponse.data!.isNotEmpty) {
+          // get posting authority here.
+          var socketData = {
+            "cmd": "sign_req",
+            "account": usernameController.text,
+            "token": hasIdToken,
+            "data": bridgeResponse.data!,
+          };
+          var jsonEncodedData = json.encode(socketData);
+          socket.sink.add(jsonEncodedData);
+        } else {
+          // Posting Auth Data empty = we already have posting authority
+          // execute acela core login API
+          performSignInWithAccessTokenHere();
+        }
+      } else {
+        // error when getting posting authority details. show error to user.
+      }
     } else {
       showMessage(
           'Something went wrong - ${bridgeResponse.error}. Please go back & try again.');
     }
+  }
+
+  void performSignInWithAccessTokenHere() {
+    debugPrint("Signed proof is $signedHash");
+    debugPrint("Proof of Payload is $proofOfPayload");
+    debugPrint("Username is ${usernameController.text}");
+    // execute another function similar to
+    // Future<ActionResponse> login(String userName, String postingKey) async {
   }
 
   void decryptData(HiveUserData data, String encryptedData) async {
@@ -517,6 +606,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
             json.decode(eChallengeResponse)['data'] as String;
         var eData = eChallengeResponseData.split("|")[0];
         setState(() {
+          hasIdToken = tokenData[0];
           proofOfPayload = eChallengeResponseData.split("|")[1];
         });
         var socketData = {

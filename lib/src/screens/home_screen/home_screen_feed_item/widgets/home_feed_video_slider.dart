@@ -1,7 +1,6 @@
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/controller/home_feed_video_controller.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:better_player/better_player.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

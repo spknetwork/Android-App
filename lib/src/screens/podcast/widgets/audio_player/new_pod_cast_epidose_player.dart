@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:acela/src/models/podcast/podcast_episode_chapters.dart';
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
-import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_chapters_controller.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
@@ -9,12 +8,10 @@ import 'package:acela/src/screens/podcast/widgets/podcast_info_description.dart'
 import 'package:acela/src/screens/podcast/widgets/podcast_player_widgets/control_buttons.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_player_widgets/download_podcast_button.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_player_widgets/podcast_player_slider.dart';
-import 'package:acela/src/screens/podcast/widgets/value_for_value_view.dart';
 import 'package:acela/src/screens/podcast/widgets/audio_player/action_tools.dart';
 import 'package:acela/src/screens/podcast/widgets/audio_player/audio_player_core_controls.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
