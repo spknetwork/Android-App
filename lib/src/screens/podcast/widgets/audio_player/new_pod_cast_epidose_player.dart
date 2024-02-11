@@ -18,14 +18,12 @@ import 'package:rxdart/rxdart.dart';
 import 'package:share_plus/share_plus.dart';
 
 class NewPodcastEpidosePlayer extends StatefulWidget {
-  const NewPodcastEpidosePlayer({Key? key, required this.podcastEpisodes})
-      : super(key: key);
+  const NewPodcastEpidosePlayer({Key? key, required this.podcastEpisodes}) : super(key: key);
 
   final List<PodcastEpisode> podcastEpisodes;
 
   @override
-  State<NewPodcastEpidosePlayer> createState() =>
-      _NewPodcastEpidosePlayerState();
+  State<NewPodcastEpidosePlayer> createState() => _NewPodcastEpidosePlayerState();
 }
 
 class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
@@ -40,20 +38,12 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
   late String originalTitle;
   late String? originalImage;
 
-  Stream<Duration> get _bufferedPositionStream => _audioHandler.playbackState
-      .map((state) => state.bufferedPosition)
-      .distinct();
+  Stream<Duration> get _bufferedPositionStream => _audioHandler.playbackState.map((state) => state.bufferedPosition).distinct();
 
-  Stream<Duration?> get _durationStream =>
-      _audioHandler.mediaItem.map((item) => item?.duration).distinct();
+  Stream<Duration?> get _durationStream => _audioHandler.mediaItem.map((item) => item?.duration).distinct();
 
-  Stream<PositionData> get _positionDataStream =>
-      Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
-          AudioService.position,
-          _bufferedPositionStream,
-          _durationStream,
-          (position, bufferedPosition, duration) => PositionData(
-              position, bufferedPosition, duration ?? Duration.zero));
+  Stream<PositionData> get _positionDataStream => Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(AudioService.position, _bufferedPositionStream,
+      _durationStream, (position, bufferedPosition, duration) => PositionData(position, bufferedPosition, duration ?? Duration.zero));
 
   @override
   void initState() {
@@ -62,10 +52,11 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
     currentPodcastEpisode = widget.podcastEpisodes[currentPodcastIndex];
     originalImage = currentPodcastEpisode.image;
     originalTitle = currentPodcastEpisode.title!;
-    chapterController = PodcastChapterController(
-        chapterUrl: currentPodcastEpisode.chaptersUrl,
-        totalDuration: currentPodcastEpisode.duration ?? 0,
-        audioPlayerHandler: _audioHandler);
+    // TO-DO: Ram to handle chapters for offline player
+    // if (currentPodcastEpisode.enclosureUrl != null && currentPodcastEpisode.enclosureUrl!.startsWith("http")) {
+      chapterController = PodcastChapterController(
+          chapterUrl: currentPodcastEpisode.chaptersUrl, totalDuration: currentPodcastEpisode.duration ?? 0, audioPlayerHandler: _audioHandler);
+    // }
     queueSubscription = _audioHandler.queueState.listen((event) {});
     queueSubscription.onData((data) {
       _onEpisodeChange(data);
@@ -78,10 +69,10 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
       setState(() {
         currentPodcastIndex = queueState.queueIndex ?? 0;
         currentPodcastEpisode = widget.podcastEpisodes[currentPodcastIndex];
-        chapterController = PodcastChapterController(
-            chapterUrl: currentPodcastEpisode.chaptersUrl,
-            totalDuration: currentPodcastEpisode.duration ?? 0,
-            audioPlayerHandler: _audioHandler);
+        // if (currentPodcastEpisode.enclosureUrl != null && currentPodcastEpisode.enclosureUrl!.startsWith("http")) {
+          chapterController = PodcastChapterController(
+              chapterUrl: currentPodcastEpisode.chaptersUrl, totalDuration: currentPodcastEpisode.duration ?? 0, audioPlayerHandler: _audioHandler);
+        // }
         originalTitle = currentPodcastEpisode.title!;
         originalImage = currentPodcastEpisode.image;
       });
@@ -110,21 +101,18 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                      constraints: BoxConstraints(
-                          maxHeight: MediaQuery.of(context).size.height * 0.45),
+                      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.45),
                       child: Selector<PodcastChapterController, String?>(
                         selector: (_, myType) => myType.image,
                         builder: (context, chapterImage, child) {
                           return CachedImage(
                             imageUrl: chapterImage ?? originalImage,
-                            imageHeight:
-                                MediaQuery.of(context).size.height * 0.45,
+                            imageHeight: MediaQuery.of(context).size.height * 0.45,
                           );
                         },
                       )),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15.0, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10),
                     child: Column(
                       children: [
                         Selector<PodcastChapterController, String?>(
@@ -154,8 +142,7 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
                       chapterController: chapterController,
                       audioPlayerHandler: _audioHandler,
                       positionDataStream: _positionDataStream,
-                      currentPodcastEpisodeDuration:
-                          currentPodcastEpisode.duration),
+                      currentPodcastEpisodeDuration: currentPodcastEpisode.duration),
                   ControlButtons(
                     _audioHandler,
                     chapterController: chapterController,
@@ -199,15 +186,12 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
           toastType: "Podcast Episode",
           disablePadding: true,
           iconColor: iconColor,
-          isLiked: podcastController
-              .isLikedPodcastEpisodePresentLocally(currentPodcastEpisode),
+          isLiked: podcastController.isLikedPodcastEpisodePresentLocally(currentPodcastEpisode),
           onAdd: () {
-            podcastController
-                .storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
+            podcastController.storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
           },
           onRemove: () {
-            podcastController
-                .storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
+            podcastController.storeLikedPodcastEpisodeLocally(currentPodcastEpisode);
           }),
       IconButton(
         onPressed: () {
@@ -250,9 +234,7 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
       builder: (context) {
         return SizedBox(
             height: MediaQuery.of(context).size.height * 0.7,
-            child: PodcastInfoDescroption(
-                title: currentPodcastEpisode.title,
-                description: currentPodcastEpisode.description));
+            child: PodcastInfoDescroption(title: currentPodcastEpisode.title, description: currentPodcastEpisode.description));
       },
     );
   }
@@ -277,7 +259,7 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
                   return ListTile(
                     onTap: () {
                       _audioHandler.skipToQueueItem(index);
-                        Navigator.pop(context);
+                      Navigator.pop(context);
                     },
                     trailing: Icon(Icons.play_circle_outline_outlined),
                     leading: CachedImage(

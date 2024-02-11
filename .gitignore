@@ -104,6 +104,7 @@ iOSInjectionProject/
 
 .dart_tool
 .env
+dotenv
 *.env
 
 .idea

@@ -9,8 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LocalPodcastEpisode extends StatelessWidget {
-  const LocalPodcastEpisode({Key? key, required this.appData})
-      : super(key: key);
+  const LocalPodcastEpisode({Key? key, required this.appData}) : super(key: key);
   final HiveUserData appData;
 
   @override
@@ -39,20 +38,16 @@ class LocalPodcastEpisode extends StatelessWidget {
 }
 
 class LocalEpisodeListView extends StatelessWidget {
-  const LocalEpisodeListView({Key? key, required this.isOffline})
-      : super(key: key);
+  const LocalEpisodeListView({Key? key, required this.isOffline}) : super(key: key);
 
   final bool isOffline;
 
   @override
   Widget build(BuildContext context) {
     final controller = context.read<PodcastController>();
-    List<PodcastEpisode> items =
-        controller.likedOrOfflinepodcastEpisodes(isOffline: isOffline);
+    List<PodcastEpisode> items = controller.likedOrOfflinepodcastEpisodes(isOffline: isOffline);
     if (items.isEmpty)
-      return Center(
-          child: Text(
-              "${isOffline ? "Offline" : "Liked"} Podcast Episode is Empty"));
+      return Center(child: Text("${isOffline ? "Offline" : "Liked"} Podcast Episode is Empty"));
     else
       return ListView.separated(
         itemBuilder: (c, index) {
@@ -64,7 +59,7 @@ class LocalEpisodeListView extends StatelessWidget {
                 if (isOffline) {
                   controller.deleteOfflinePodcastEpisode(item);
                 } else {
-                  controller.storeLikedPodcastEpisodeLocally(item,forceRemove: true);
+                  controller.storeLikedPodcastEpisodeLocally(item, forceRemove: true);
                 }
               },
               child: podcastEpisodeListItem(item, context, controller));
@@ -74,23 +69,24 @@ class LocalEpisodeListView extends StatelessWidget {
       );
   }
 
-  ListTile podcastEpisodeListItem(
-      PodcastEpisode item, BuildContext context, PodcastController controller) {
+  ListTile podcastEpisodeListItem(PodcastEpisode item, BuildContext context, PodcastController controller) {
     String url = item.enclosureUrl ?? "";
     if (isOffline) {
-      url =
-          Uri.parse(controller.getOfflineUrl(item.enclosureUrl ?? "", item.id!))
-              .path;
+      url = Uri.parse(controller.getOfflineUrl(item.enclosureUrl ?? "", item.id!)).path;
+      item.enclosureUrl = '$url';
     }
     return ListTile(
       onTap: () {
         GetAudioPlayer audioPlayer = GetAudioPlayer();
         audioPlayer.audioHandler.updateQueue([]);
-        audioPlayer.audioHandler.addQueueItem(MediaItem(
+        audioPlayer.audioHandler.addQueueItem(
+          MediaItem(
             id: url,
             title: item.title ?? "",
             artUri: Uri.parse(item.image ?? ""),
-            duration: Duration(seconds: item.duration ?? 0)));
+            duration: Duration(seconds: item.duration ?? 0),
+          ),
+        );
         var screen = Scaffold(
           appBar: AppBar(
             title: ListTile(
@@ -103,9 +99,10 @@ class LocalEpisodeListView extends StatelessWidget {
             ),
           ),
           body: SafeArea(
-              child: NewPodcastEpidosePlayer(
-            podcastEpisodes: [item],
-          )),
+            child: NewPodcastEpidosePlayer(
+              podcastEpisodes: [item],
+            ),
+          ),
         );
         var route = MaterialPageRoute(builder: (c) => screen);
         Navigator.of(context).push(route);
