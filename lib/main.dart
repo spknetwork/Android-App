@@ -1,3 +1,4 @@
+import 'package:acela/firebase_options.dart';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/image_resolution_provider.dart';
 import 'package:acela/src/global_provider/video_setting_provider.dart';
@@ -6,6 +7,8 @@ import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
 import 'package:acela/src/screens/upload/video/controller/video_upload_controller.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
@@ -24,6 +27,10 @@ import 'src/screens/podcast/widgets/audio_player/audio_player_core_controls.dart
 
 Future<void> main() async {
   await dotenv.load(fileName: "dotenv");
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await GetStorage.init();
   await FlutterDownloader.initialize(
     debug: true,
@@ -90,6 +97,12 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  void logEvent() async {
+    await FirebaseAnalytics.instance.logEvent(
+      name: 'app_entry',
+    );
+  }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -135,6 +148,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    logEvent();
     _futureToLoadData = loadData();
   }
 
@@ -148,9 +162,11 @@ class _MyAppState extends State<MyApp> {
     String? hasAuthKey = await storage.read(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-    String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+    String union =
+        await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
     if (union == 'threespeak-union-graph-ql.sagarkothari88.one') {
-      await storage.write(key: 'union', value: GQLCommunicator.defaultGQLServer);
+      await storage.write(
+          key: 'union', value: GQLCommunicator.defaultGQLServer);
       union = GQLCommunicator.defaultGQLServer;
     }
     String? lang = await storage.read(key: 'lang');
@@ -158,7 +174,12 @@ class _MyAppState extends State<MyApp> {
       HiveUserData(
         username: username,
         postingKey: postingKey,
-        keychainData: hasId != null && hasId.isNotEmpty && hasExpiry != null && hasExpiry.isNotEmpty && hasAuthKey != null && hasAuthKey.isNotEmpty
+        keychainData: hasId != null &&
+                hasId.isNotEmpty &&
+                hasExpiry != null &&
+                hasExpiry.isNotEmpty &&
+                hasAuthKey != null &&
+                hasAuthKey.isNotEmpty
             ? HiveKeychainData(
                 hasAuthKey: hasAuthKey,
                 hasExpiry: hasExpiry,
@@ -201,13 +222,19 @@ class AcelaApp extends StatelessWidget {
               primaryColorLight: Colors.white,
               primaryColorDark: Colors.black,
               scaffoldBackgroundColor: Colors.black,
-              cardTheme: CardTheme(shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))), color: Colors.grey.shade900),
+              cardTheme: CardTheme(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(4))),
+                  color: Colors.grey.shade900),
             )
           : ThemeData.light().copyWith(
               primaryColor: Colors.deepPurple,
               primaryColorLight: Colors.black,
               primaryColorDark: Colors.white,
-              cardTheme: CardTheme(shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))), color: Colors.grey.shade200),
+              cardTheme: CardTheme(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(4))),
+                  color: Colors.grey.shade200),
             ),
       debugShowCheckedModeBanner: false,
     );
