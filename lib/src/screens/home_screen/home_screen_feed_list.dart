@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:acela/src/global_provider/image_resolution_provider.dart';
+import 'package:acela/src/models/user_stream/hive_user_stream.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/feed_item_grid_view.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_feed_list_item.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
-import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/widgets/box_loading/video_feed_loader.dart';
-import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_feed_list_item.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
 import 'package:inview_notifier_list/inview_notifier_list.dart';
@@ -23,13 +25,14 @@ enum HomeScreenFeedType {
 }
 
 class HomeScreenFeedList extends StatefulWidget {
-  const HomeScreenFeedList(
-      {Key? key,
-      required this.appData,
-      required this.feedType,
-      this.owner,
-      this.community,
-      this.showVideo = true});
+  const HomeScreenFeedList({
+    Key? key,
+    required this.appData,
+    required this.feedType,
+    this.owner,
+    this.community,
+    this.showVideo = true,
+  });
 
   final HiveUserData appData;
   final HomeScreenFeedType feedType;
@@ -47,7 +50,9 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
   bool get wantKeepAlive => true;
 
   List<GQLFeedItem> items = [];
+  int pageLimit = 50;
   var firstPageLoaded = false;
+  var isPageEnded = false;
   var isLoading = false;
   var hasFailed = false;
   final _scrollController = ScrollController();
@@ -86,7 +91,7 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
       }
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent &&
-          items.length % 50 == 0) {
+          !isPageEnded) {
         loadFeed(false);
       }
     });
@@ -143,6 +148,7 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
   }
 
   void loadFeed(bool reset) async {
+    log('loading');
     if (isLoading) return;
     if (!firstPageLoaded) {
       setState(() {
@@ -151,6 +157,9 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
       });
       var newItems = await loadWith(true);
       setState(() {
+        if (newItems.length < pageLimit - 1) {
+          isPageEnded = true;
+        }
         items = newItems;
         isLoading = false;
         firstPageLoaded = true;
@@ -160,10 +169,17 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
         isLoading = true;
         if (reset) {
           firstPageLoaded = false;
+          isPageEnded = false;
         }
       });
       var newItems = await loadWith(reset);
       setState(() {
+        if (newItems.length < pageLimit - 1) {
+          isPageEnded = true;
+        }
+        if (newItems.isNotEmpty) {
+          newItems.removeAt(0);
+        }
         items = items + newItems;
         isLoading = false;
         firstPageLoaded = true;
@@ -173,9 +189,13 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
 
   @override
   Widget build(BuildContext context) {
+    final isGridView = MediaQuery.of(context).size.shortestSide > 600;
     super.build(context);
+    var screenWidth = MediaQuery.of(context).size.width;
     if (isLoading && !firstPageLoaded) {
-      return VideoFeedLoader();
+      return VideoFeedLoader(
+        isGridView: isGridView,
+      );
     } else if (hasFailed) {
       return RetryScreen(
         onRetry: () async {
@@ -202,57 +222,74 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
           ),
         );
       } else {
-        return NotificationListener<ScrollNotification>(
-          onNotification: _onScrollStartStopNotification,
-          child: RefreshIndicator(
-            onRefresh: () async {
-              loadFeed(true);
-            },
-            child: InViewNotifierList(
-              scrollDirection: Axis.vertical,
-              controller: _scrollController,
-              initialInViewIds: ['0'],
-              isInViewPortCondition: (double deltaTop, double deltaBottom,
-                  double viewPortDimension) {
-                return deltaTop < (0.5 * viewPortDimension) &&
-                    deltaBottom > (0.5 * viewPortDimension);
-              },
-              itemCount:
-                  items.length % 50 == 0 ? items.length + 1 : items.length,
-              onListEndReached: () {
-                if (!viewOnEnd) {
-                  setState(() {
-                    viewOnEnd = true;
-                  });
-                }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            ;
+            if (isGridView) {
+              var gridCount = screenWidth.toInt() / 340;
+              return FeedItemGridView(
+                  scrollController: _scrollController,
+                  nextPageLoader: _loadNextPageWidget(),
+                  screenWidth: screenWidth,
+                  gridCount: gridCount,
+                  items: items,
+                  appData: widget.appData);
+            } else {
+              return _listView();
+            }
+          },
+        );
+      }
+    }
+  }
 
-                _setInViewIndex(items.length - 1);
-              },
-              builder: (context, index) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    return InViewNotifierWidget(
-                      id: '$index',
-                      builder: (context, isInView, child) {
-                        if (isInView && !viewOnStart && !viewOnEnd) {
-                          _setInViewIndex(index);
-                        }
-                        if (items.length == index) {
-                          return ListTile(
-                            leading: CircularProgressIndicator(),
-                            title: Text('Loading next page'),
-                            subtitle: Text('Please wait...'),
-                          );
-                        }
-                        var item = items[index];
-                        return Selector<SettingsProvider, bool>(
-                          selector: (_, myType) => myType.autoPlayVideo,
-                          builder: (context, autoPlay, child) {
-                            return NewFeedListItem(
+  NotificationListener<ScrollNotification> _listView() {
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onScrollStartStopNotification,
+      child: RefreshIndicator(
+        onRefresh: () async {
+          loadFeed(true);
+        },
+        child: InViewNotifierList(
+          scrollDirection: Axis.vertical,
+          controller: _scrollController,
+          initialInViewIds: ['0'],
+          isInViewPortCondition:
+              (double deltaTop, double deltaBottom, double viewPortDimension) {
+            return deltaTop < (0.5 * viewPortDimension) &&
+                deltaBottom > (0.5 * viewPortDimension);
+          },
+          itemCount: items.length,
+          onListEndReached: () {
+            if (!viewOnEnd) {
+              setState(() {
+                viewOnEnd = true;
+              });
+            }
+
+            _setInViewIndex(items.length - 1);
+          },
+          builder: (context, index) {
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return InViewNotifierWidget(
+                  id: '$index',
+                  builder: (context, isInView, child) {
+                    if (isInView && !viewOnStart && !viewOnEnd) {
+                      _setInViewIndex(index);
+                    }
+                    var item = items[index];
+                    return Selector<SettingsProvider, bool>(
+                      selector: (_, myType) => myType.autoPlayVideo,
+                      builder: (context, autoPlay, child) {
+                        return Column(
+                          children: [
+                            NewFeedListItem(
                               key: ValueKey(index),
                               showVideo: (index == inViewIndex &&
-                                  !isUserScrolling &&
-                                  widget.showVideo) && autoPlay,
+                                      !isUserScrolling &&
+                                      widget.showVideo) &&
+                                  autoPlay,
                               thumbUrl: item.spkvideo?.thumbnailUrl ?? '',
                               author: item.author?.username ?? '',
                               title: item.title ?? '',
@@ -267,19 +304,35 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
                               onUserTap: () {},
                               item: item,
                               appData: widget.appData,
-                            );
-                          },
+                            ),
+                            Visibility(
+                                visible:
+                                    index == items.length - 1 && !isPageEnded,
+                                child: _loadNextPageWidget())
+                          ],
                         );
                       },
                     );
                   },
                 );
               },
-            ),
-          ),
-        );
-      }
-    }
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Visibility _loadNextPageWidget() {
+    return Visibility(
+      visible: !isPageEnded,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    );
   }
 
   bool _onScrollStartStopNotification(ScrollNotification scrollNotification) {
