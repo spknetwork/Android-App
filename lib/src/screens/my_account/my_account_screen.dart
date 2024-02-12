@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
-import 'package:acela/src/screens/my_account/account_settings/account_settings_screen.dart';
 import 'package:acela/src/screens/my_account/update_thumb/update_thumb_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/screens/my_account/video_preview.dart';
@@ -10,7 +9,6 @@ import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
@@ -36,9 +34,11 @@ class _MyAccountScreenState extends State<MyAccountScreen>
   @override
   void initState() {
     super.initState();
+    /* TO-DO: Acela Core integration
     setState(() {
       loadVideos = Communicator().loadVideos(widget.data);
     });
+     */
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       setState(() {
@@ -91,9 +91,11 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       actions: [
         IconButton(
           onPressed: () {
+            /* TO-DO: Acela Core Integration
             setState(() {
               loadVideos = Communicator().loadVideos(widget.data);
             });
+             */
           },
           icon: Icon(Icons.refresh),
         ),
@@ -200,6 +202,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         BottomSheetAction(
           title: Text('Delete Video'),
           onPressed: (context) async {
+            /* TO-DO: Acela Core API Integration
             Navigator.of(context).pop();
             showSnackBar('Deleting...', seconds: 60);
             bool result =
@@ -212,6 +215,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
             } else {
               showSnackBar("Something went wrong");
             }
+             */
           },
         ),
       );

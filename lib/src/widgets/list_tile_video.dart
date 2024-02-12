@@ -97,7 +97,7 @@ class _ListTileVideoState extends State<ListTileVideo> {
           String priceAndVotes =
               "\$ ${data.payout?.toStringAsFixed(3)} · 👍 ${data.upVotes} · 👎 ${data.downVotes}";
           return Text(priceAndVotes,
-              style: Theme.of(context).textTheme.bodyText2);
+              style: Theme.of(context).textTheme.bodyMedium);
         } else {
           return const Text('Loading hive payout info');
         }
@@ -162,7 +162,7 @@ class _ListTileVideoState extends State<ListTileVideo> {
                             height: 45, width: 45, url: widget.userThumbUrl),
                         SizedBox(height: 3),
                         Text(widget.user,
-                            style: Theme.of(context).textTheme.bodyText2),
+                            style: Theme.of(context).textTheme.bodyMedium),
                       ],
                     ),
                     onTap: () {
@@ -176,10 +176,10 @@ class _ListTileVideoState extends State<ListTileVideo> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(widget.title,
-                          style: Theme.of(context).textTheme.bodyText1),
+                          style: Theme.of(context).textTheme.bodyLarge),
                       SizedBox(height: 2),
                       Text(widget.subtitle,
-                          style: Theme.of(context).textTheme.bodyText2),
+                          style: Theme.of(context).textTheme.bodyMedium),
                       SizedBox(height: 2),
                       payoutInfo(),
                     ],

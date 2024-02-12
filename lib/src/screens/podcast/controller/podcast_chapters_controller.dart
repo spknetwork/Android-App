@@ -13,17 +13,18 @@ class PodcastChapterController extends ChangeNotifier {
 
   String? title;
   String? image;
-  PodcastChapterController(
-      {required this.chapterUrl,
-      required this.totalDuration,
-      required this.audioPlayerHandler}) {
+
+  PodcastChapterController({
+    required this.chapterUrl,
+    required this.totalDuration,
+    required this.audioPlayerHandler,
+  }) {
     _loadChapters();
   }
 
   void _loadChapters() async {
     if (chapterUrl != null) {
-      var result =
-          await PodCastCommunicator().getPodcastEpisodeChapters(chapterUrl!);
+      var result = await PodCastCommunicator().getPodcastEpisodeChapters(chapterUrl!);
       result.removeWhere((element) => element.toc != null);
       chapters = result;
       notifyListeners();
@@ -77,7 +78,7 @@ class PodcastChapterController extends ChangeNotifier {
       int? index = _findNearestLessThan(checkEqual: false);
       if (index == 0 && currentDuration == 0) {
         return false;
-      }  else {
+      } else {
         return index != null;
       }
     }
@@ -97,15 +98,13 @@ class PodcastChapterController extends ChangeNotifier {
   void syncChapters({bool isInteracted = false, bool isReduced = false}) {
     if (chapters != null && chapters!.isNotEmpty) {
       if (!isInteracted) {
-        int index = chapters!
-            .indexWhere((element) => element.startTime == currentDuration);
+        int index = chapters!.indexWhere((element) => element.startTime == currentDuration);
         WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
           _setChapterTitleAndImage(index);
         });
       } else {
         if (!isReduced) {
-          int index = chapters!
-              .indexWhere((element) => element.startTime == currentDuration);
+          int index = chapters!.indexWhere((element) => element.startTime == currentDuration);
           if (index == -1) {
             int newIndex = chapters!.indexWhere((element) {
               return element.startTime! > currentDuration;

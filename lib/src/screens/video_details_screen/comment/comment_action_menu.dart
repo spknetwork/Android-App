@@ -58,6 +58,7 @@ class CommentActionMenu extends StatelessWidget {
           author: author,
           permlink: permlink,
           username: appData.username ?? "",
+          accessToken: appData.accessToken,
           hasKey: appData.keychainData?.hasId ?? "",
           hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
           activeVotes: [],

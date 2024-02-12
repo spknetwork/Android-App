@@ -731,7 +731,7 @@
         }
       }
 
-      function getDecryptedChallenge(username, authKey) {
+      function getDecryptedChallenge(username, authKey, data) {
         try {
           const decryptedData = JSON.parse(
             CryptoJS.AES.decrypt(data, authKey).toString(CryptoJS.enc.Utf8)
@@ -751,6 +751,138 @@
             error: e.message,
           });
         }
+      }
+
+      function getPostingAuthOps(username, authKey) {
+        hive.api.getAccounts([username], function (err, result) {
+          console.log(err, result);
+          if (
+            (err === null || err === undefined) &&
+            result != null &&
+            result != undefined &&
+            Array.isArray(result) &&
+            result.length === 1
+          ) {
+            let account = result[0];
+            let doWeHavePostingAuth = false;
+            if (Array.isArray(account.posting.account_auths)) {
+              account.posting.account_auths.forEach(function (item) {
+                if (item[0] === "threespeak") {
+                  doWeHavePostingAuth = true;
+                }
+              });
+              if (!doWeHavePostingAuth) {
+                let auths = account.posting.account_auths;
+                auths.push(["threespeak", 1]);
+                console.log(`new auths - ${JSON.stringify(auths)}`);
+                const newPostingAuth = {
+                  weight_threshold: account.posting.weight_threshold,
+                  account_auths: auths,
+                  key_auths: account.posting.key_auths,
+                };
+                const operations = [];
+                operations.push([
+                  "account_update",
+                  {
+                    account: username,
+                    owner: undefined,
+                    active: account.active,
+                    posting: newPostingAuth,
+                    memo_key: account.memo_key,
+                    json_metadata: account.json_metadata,
+                  },
+                ]);
+                console.log(`Operations - ${JSON.stringify(operations)}`);
+                const sign_data = {
+                  key_type: "active",
+                  ops: operations,
+                  broadcast: true,
+                };
+                const data = CryptoJS.AES.encrypt(
+                  JSON.stringify(sign_data),
+                  auth_key
+                ).toString();
+                replyToNative({
+                  type: "getPostingAuthOps",
+                  valid: true,
+                  username: username,
+                  error: "",
+                  data: data,
+                });
+              } else {
+                replyToNative({
+                  type: "getPostingAuthOps",
+                  valid: true,
+                  username: username,
+                  error: "",
+                  data: "",
+                });
+              }
+            } else {
+              replyToNative({
+                type: "getPostingAuthOps",
+                valid: false,
+                username: username,
+                error: "failed getting account information",
+                data: "",
+              });
+            }
+          } else {
+            replyToNative({
+              type: "getPostingAuthOps",
+              valid: false,
+              username: username,
+              error: "failed getting account information",
+              data: "",
+            });
+          }
+        });
+      }
+
+      function doWeHavePostingAuth(username) {
+        hive.api.getAccounts([username], function (err, result) {
+          console.log(err, result);
+          if (
+            (err === null || err === undefined) &&
+            result != null &&
+            result != undefined &&
+            Array.isArray(result) &&
+            result.length === 1
+          ) {
+            let account = result[0];
+            let doWe = false;
+            if (Array.isArray(account.posting.account_auths)) {
+              account.posting.account_auths.forEach(function (item) {
+                if (item[0] === "threespeak") {
+                  doWe = true;
+                }
+              });
+              replyToNative({
+                type: "doWeHavePostingAuth",
+                valid: true,
+                username: username,
+                error: "",
+                data: doWe ? "true" : "false",
+              });
+            } else {
+              replyToNative({
+                type: "doWeHavePostingAuth",
+                valid: true,
+                username: username,
+                error: "",
+                data: "false",
+              });
+            }
+          } else {
+            replyToNative({
+              type: "doWeHavePostingAuth",
+              valid: false,
+              username: username,
+              error: "failed getting account information",
+              data: "",
+            });
+          }
+        });
       }
 
       function replyToNative(result) {

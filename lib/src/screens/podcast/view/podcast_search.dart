@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
-import 'package:acela/src/screens/podcast/view/podcast_trending.dart';
-import 'package:acela/src/screens/podcast/view/podcasts_feed.dart';
 import 'package:acela/src/screens/podcast/widgets/podcast_feed_item.dart';
 import 'package:acela/src/utils/podcast/podcast_communicator.dart';
 import 'package:flutter/material.dart';

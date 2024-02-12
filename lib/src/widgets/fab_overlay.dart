@@ -50,7 +50,7 @@ class FabOverlay extends StatelessWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
                 color: Theme
                     .of(context)
-                    .backgroundColor,
+                    .colorScheme.background,
               ),
               child: Text(data.displayName),
             ),

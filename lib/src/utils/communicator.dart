@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/action_response.dart';
 import 'package:acela/src/models/communities_models/request/communities_request_model.dart';
 import 'package:acela/src/models/communities_models/response/communities_response_models.dart';
@@ -10,17 +9,11 @@ import 'package:acela/src/models/hive_post_info/hive_user_posting_key.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/login/memo_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
-import 'package:acela/src/models/podcast/upload/podcast_episode_upload_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_upload/does_post_exists.dart';
-import 'package:acela/src/models/video_upload/video_upload_complete_request.dart';
-import 'package:acela/src/models/video_upload/video_upload_login_response.dart';
-import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
-import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
@@ -219,6 +212,7 @@ class Communicator {
     }
     return memo.decrypted.replaceFirst("#", '');
   }
+
 /* OLD APIs
   Future<String> getValidCookie(HiveUserData user) async {
     var uri = '${Communicator.tsServer}/mobile/login?username=${user.username}';
@@ -526,6 +520,7 @@ class Communicator {
       throw error;
     }
   }
+
 /* OLD APIS. Use Acela-core now.
   Future<List<VideoDetails>> loadVideos(HiveUserData user) async {
     log("Starting fetch videos ${DateTime.now().toIso8601String()}");
@@ -711,52 +706,40 @@ class Communicator {
     }
   }
 */
-  Future<ActionResponse> login(String userName, String postingKey) async {
+  Future<ActionResponse> login(
+    String userName,
+    String proofOfPayload,
+    String proof,
+  ) async {
     var headers = {
       'Accept': 'application/json, text/plain',
       'Content-Type': 'application/json'
     };
-
     try {
-      String proofPayload = json.encode(
-          {'account': userName, 'ts': DateTime.now().toIso8601String()});
-
-      const platform = MethodChannel('com.example.acela/auth');
-      final String result = await platform.invokeMethod('getProofOfPayload', {
-        'username': userName,
-        'postingKey': postingKey,
-        'proof': proofPayload,
+      var body = json.encode({
+        "username": userName,
+        "network": "hive",
+        "authority_type": "posting",
+        "proof_payload": proofOfPayload,
+        "proof": proof
       });
-      ActionResponse actionResponse = ActionResponse.fromJsonString(result);
-      if (actionResponse.valid && actionResponse.error == '') {
-        var body = json.encode({
-          "username": userName,
-          "network": "hive",
-          "authority_type": "posting",
-          "proof_payload": proofPayload,
-          "proof": actionResponse.data
-        });
-        http.Response response = await post(
-            Uri.parse(
-                '${Communicator.acelaServer}/api/v1/auth/login_singleton'),
-            headers: headers,
-            body: body);
+      http.Response response = await post(
+          Uri.parse('${Communicator.acelaServer}/api/v1/auth/login_singleton'),
+          headers: headers,
+          body: body);
 
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          return ActionResponse(
-              data: json.decode(response.body)['access_token'],
-              valid: true,
-              error: '');
-        } else if (response.statusCode == 400) {
-          return ActionResponse(
-              data: '',
-              valid: false,
-              error: json.decode(response.body)['reason']);
-        } else {
-          return ActionResponse(data: '', valid: false, error: 'Server Error');
-        }
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return ActionResponse(
+            data: json.decode(response.body)['access_token'],
+            valid: true,
+            error: '');
+      } else if (response.statusCode == 400) {
+        return ActionResponse(
+            data: '',
+            valid: false,
+            error: json.decode(response.body)['reason']);
       } else {
-        return ActionResponse(data: '', valid: false, error: 'Incorrect Key');
+        return ActionResponse(data: '', valid: false, error: 'Server Error');
       }
     } catch (e) {
       return ActionResponse(data: '', valid: false, error: e.toString());

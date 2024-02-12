@@ -476,6 +476,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           author: widget.item.author?.username ?? 'sagarkothari88',
           permlink: widget.item.permlink ?? 'ctbtwcxbbd',
           username: widget.appData.username ?? "",
+          accessToken: widget.appData.accessToken,
           hasKey: widget.appData.keychainData?.hasId ?? "",
           hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
           activeVotes: postInfo!.activeVotes,

@@ -186,9 +186,15 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
   }
 
   AudioSource _itemToSource(MediaItem mediaItem) {
-    final audioSource = AudioSource.uri(Uri.parse(mediaItem.id));
-    _mediaItemExpando[audioSource] = mediaItem;
-    return audioSource;
+    if (mediaItem.id.startsWith("http")) {
+      final audioSource = AudioSource.uri(Uri.parse(mediaItem.id));
+      _mediaItemExpando[audioSource] = mediaItem;
+      return audioSource;
+    } else {
+      final audioSource = AudioSource.asset(mediaItem.id);
+      _mediaItemExpando[audioSource] = mediaItem;
+      return audioSource;
+    }
   }
 
   List<AudioSource> _itemsToSources(List<MediaItem> mediaItems) =>

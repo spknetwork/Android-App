@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';

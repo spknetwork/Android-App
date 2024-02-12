@@ -1,6 +1,4 @@
-import 'dart:developer';
 
-import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
@@ -15,16 +13,13 @@ import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
 import 'package:acela/src/screens/trending_tags/trending_tags.dart';
-import 'package:acela/src/screens/upload/new_video_upload_screen.dart';
 import 'package:acela/src/screens/upload/podcast/podcast_upload_screen.dart';
 import 'package:acela/src/screens/upload/video/controller/video_upload_controller.dart';
 import 'package:acela/src/screens/upload/video/video_upload_screen.dart';
-import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/widgets/fab_custom.dart';
 import 'package:acela/src/widgets/fab_overlay.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:upgrader/upgrader.dart';
 

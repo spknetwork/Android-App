@@ -127,7 +127,7 @@ flutter:
     - assets/ctt-logo.png
     - assets/podcast-index.jpg
     - assets/pod-cast-logo-round.png
-    - .env
+    - dotenv
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

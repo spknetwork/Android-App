@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +17,16 @@ class PodcastController extends ChangeNotifier {
     init();
   }
 
-  void init() async {
-    externalDir = await getExternalStorageDirectory();
+  void init() {
+    setupOfflinePath();
+  }
+
+  void setupOfflinePath() async {
+    if (Platform.isAndroid) {
+      externalDir = await getExternalStorageDirectory();
+    } else {
+      externalDir = await getApplicationDocumentsDirectory();
+    }
   }
 
   bool isOffline(String name, String episodeId) {
@@ -37,8 +47,7 @@ class PodcastController extends ChangeNotifier {
 
   String getOfflineUrl(String url, String episodeId) {
     for (var item in externalDir.listSync()) {
-      if (decodeAudioName(item.path) ==
-          decodeAudioName(url, episodeId: episodeId)) {
+      if (decodeAudioName(item.path) == decodeAudioName(url, episodeId: episodeId)) {
         return item.path.toString();
       }
     }
@@ -121,7 +130,7 @@ class PodcastController extends ChangeNotifier {
   }
 
   //sotre the single podcast episode locally if user likes it
-  void storeLikedPodcastEpisodeLocally(PodcastEpisode item,{bool forceRemove=false}) {
+  void storeLikedPodcastEpisodeLocally(PodcastEpisode item, {bool forceRemove = false}) {
     final String key = _likedPodcastEpisodeLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
@@ -151,15 +160,12 @@ class PodcastController extends ChangeNotifier {
   }
 
   //retrieve the single podcast episodes for liked or offline
-  List<PodcastEpisode> likedOrOfflinepodcastEpisodes(
-      {required bool isOffline}) {
+  List<PodcastEpisode> likedOrOfflinepodcastEpisodes({required bool isOffline}) {
     final box = GetStorage();
-    final String key =
-        isOffline ? _offlinePodcastLocalKey : _likedPodcastEpisodeLocalKey;
+    final String key = isOffline ? _offlinePodcastLocalKey : _likedPodcastEpisodeLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
-      List<PodcastEpisode> items =
-          json.map((e) => PodcastEpisode.fromJson(e)).toList();
+      List<PodcastEpisode> items = json.map((e) => PodcastEpisode.fromJson(e)).toList();
       return items;
     } else {
       return [];
@@ -173,8 +179,7 @@ class PodcastController extends ChangeNotifier {
         if (decodeAudioName(
               item.path,
             ) ==
-            decodeAudioName(episode.enclosureUrl ?? "",
-                episodeId: episode.id)) {
+            decodeAudioName(episode.enclosureUrl ?? "", episodeId: episode.id)) {
           externalDir.listSync()[i].delete();
           final String key = _offlinePodcastLocalKey;
           if (box.read(key) != null) {

@@ -1,11 +1,8 @@
-import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/my_account/account_settings/widgets/delete_dialog.dart';
-import 'package:acela/src/screens/my_account/account_settings/widgets/dialog_button.dart';
-import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -38,7 +35,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       username: null,
       postingKey: null,
       keychainData: null,
-      cookie: null,
+      accessToken: null,
       resolution: resolution,
       rpc: rpc,
       union: union,
@@ -106,6 +103,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           onDelete: () async {
             Navigator.pop(context);
             try {
+              /*
+              // TO-DO: New Acela Core APIs
               setState(() {
                 isLoading = true;
               });
@@ -120,6 +119,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               setState(() {
                 isLoading = false;
               });
+               */
             } catch (e) {
               setState(() {
                 isLoading = false;

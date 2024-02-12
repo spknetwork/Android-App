@@ -3,12 +3,9 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/global_provider/ipfs_node_provider.dart';
-import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
-import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/add_bene_sheet.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -16,7 +13,6 @@ import 'package:acela/src/utils/safe_convert.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -177,6 +173,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                 'Please wait. Video is posted on Hive but needs to be marked as published.');
             Future.delayed(const Duration(seconds: 6), () async {
               if (mounted) {
+                /* TO-DO: Acela Core integration
                 try {
                   await Communicator()
                       .updatePublishState(widget.appData, widget.item.id);
@@ -196,6 +193,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
                         'Video is posted on Hive but needs to be marked as published. Please hit Save button again after few seconds.');
                   });
                 }
+                 */
               }
             });
             break;
@@ -280,6 +278,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
       var doesPostNotExist = await Communicator()
           .doesPostNotExist(widget.item.owner, widget.item.permlink, user.rpc);
       if (doesPostNotExist != true) {
+        /* TO-DO: Acela-Core integration
         await Communicator().updatePublishState(user, widget.item.id);
         setState(() {
           isCompleting = false;
@@ -287,7 +286,9 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
           showMessage('Your video was already published.');
           showMyDialog();
         });
+         */
       } else {
+        /* TO-DO: Acela-Core integration
         var v = await Communicator().updateInfo(
             user: user,
             videoId: widget.item.id,
@@ -385,6 +386,7 @@ class _VideoDetailsInfoState extends State<VideoDetailsInfo> {
         } else {
           throw bridgeResponse.error;
         }
+         */
       }
     } catch (e) {
       showError(e.toString());

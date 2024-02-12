@@ -12,11 +12,13 @@ enum DownloadStatus { downloading, downloaded, download }
 class DownloadPodcastButton extends StatefulWidget {
   const DownloadPodcastButton({
     Key? key,
-    required this.episode, required this.color,
+    required this.episode,
+    required this.color,
   }) : super(key: key);
 
   final PodcastEpisode episode;
   final Color color;
+
   @override
   State<DownloadPodcastButton> createState() => _DownloadPodcastButtonState();
 }
@@ -31,8 +33,7 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
   void initState() {
     super.initState();
     podcastController = context.read<PodcastController>();
-    IsolateNameServer.registerPortWithName(
-        _port.sendPort, 'downloader_send_port');
+    IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) {
       // String id = data[0];
       // DownloadTaskStatus status = (data[1]);
@@ -63,8 +64,7 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
         });
       }
     }
-    print(podcastController.isOffline(
-        widget.episode.enclosureUrl ?? "", widget.episode.id.toString()));
+    print(podcastController.isOffline(widget.episode.enclosureUrl ?? "", widget.episode.id.toString()));
     super.didUpdateWidget(oldWidget);
   }
 
@@ -77,8 +77,7 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
 
   @pragma('vm:entry-point')
   static void downloadCallback(String id, int status, int progress) {
-    final SendPort? send =
-        IsolateNameServer.lookupPortByName('downloader_send_port');
+    final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
     send!.send([id, status, progress]);
   }
 
@@ -98,9 +97,7 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
           color: iconColor,
         ),
       );
-    } else if (podcastController.isOffline(
-            widget.episode.enclosureUrl ?? "", widget.episode.id.toString()) ||
-        status == DownloadStatus.downloaded) {
+    } else if (podcastController.isOffline(widget.episode.enclosureUrl ?? "", widget.episode.id.toString()) || status == DownloadStatus.downloaded) {
       return Icon(
         Icons.check,
         color: iconColor,
@@ -110,9 +107,9 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
         icon: Icon(Icons.download, color: iconColor),
         onPressed: () {
           try {
-            download(widget.episode.enclosureUrl.toString(),
-                podcastController.externalDir.path ?? "");
+            download(widget.episode.enclosureUrl.toString(), podcastController.externalDir?.path ?? "");
           } catch (e) {
+            print("Error - ${e.toString()}");
             setState(() {
               status = DownloadStatus.download;
             });
@@ -127,14 +124,11 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
       status = DownloadStatus.downloading;
     });
     FlutterDownloader.enqueue(
-        url: url,
-        savedDir: savePath,
-        fileName: podcastController.decodeAudioName(
-            widget.episode.enclosureUrl!,
-            episodeId: widget.episode.id.toString()),
-        showNotification: true,
-        openFileFromNotification: true);
+      url: url,
+      savedDir: savePath,
+      fileName: podcastController.decodeAudioName(widget.episode.enclosureUrl!, episodeId: widget.episode.id.toString()),
+      showNotification: true,
+      openFileFromNotification: true,
+    );
   }
-
- 
 }
