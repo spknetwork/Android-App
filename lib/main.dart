@@ -142,7 +142,6 @@ class _MyAppState extends State<MyApp> {
     const storage = FlutterSecureStorage();
     String? username = await storage.read(key: 'username');
     String? postingKey = await storage.read(key: 'postingKey');
-    String? cookie = await storage.read(key: 'cookie');
     String? accessToken = await storage.read(key: 'accessToken');
     String? hasId = await storage.read(key: 'hasId');
     String? hasExpiry = await storage.read(key: 'hasExpiry');
