@@ -9,6 +9,7 @@ import 'package:acela/src/screens/upload/video/controller/video_upload_controlle
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
@@ -20,9 +21,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:upgrader/upgrader.dart';
-
 import 'src/screens/podcast/widgets/audio_player/audio_player_core_controls.dart';
 
 Future<void> main() async {
@@ -45,19 +44,17 @@ Future<void> main() async {
       androidNotificationOngoing: true,
     ),
   );
-  WidgetsFlutterBinding.ensureInitialized();
   // await Upgrader.clearSavedSettings(); // for debugging
   await Upgrader.sharedInstance.initialize();
   if (kDebugMode) {
     runApp(const MyApp());
   } else {
-    String dsn = dotenv.get('SENTRY_KEY');
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = dsn;
-      },
-      appRunner: () => runApp(MyApp()),
-    );
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+    runApp(MyApp());
   }
 }
 
