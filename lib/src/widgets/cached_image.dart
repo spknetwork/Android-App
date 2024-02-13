@@ -7,13 +7,15 @@ class CachedImage extends StatelessWidget {
       required this.imageUrl,
       this.imageHeight,
       this.imageWidth,
-      this.loadingIndicatorSize})
+      this.loadingIndicatorSize,
+      this.fit})
       : super(key: key);
 
   final String? imageUrl;
   final double? imageHeight;
   final double? imageWidth;
   final double? loadingIndicatorSize;
+  final BoxFit? fit;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,7 @@ class CachedImage extends StatelessWidget {
         imageUrl: imageUrl ?? '',
         height: imageHeight,
         width: imageWidth,
-        fit: imageHeight != null ? BoxFit.cover : null,
+        fit: fit ?? (imageHeight != null ? BoxFit.cover : null),
         // progressIndicatorBuilder: (context, url, downloadProgress) =>
         //     imageHeight != null
         //         ? Center(

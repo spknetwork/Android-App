@@ -224,14 +224,11 @@ class _HomeScreenFeedListState extends State<HomeScreenFeedList>
       } else {
         return LayoutBuilder(
           builder: (context, constraints) {
-            ;
             if (isGridView) {
-              var gridCount = screenWidth.toInt() / 340;
               return FeedItemGridView(
                   scrollController: _scrollController,
                   nextPageLoader: _loadNextPageWidget(),
                   screenWidth: screenWidth,
-                  gridCount: gridCount,
                   items: items,
                   appData: widget.appData);
             } else {
