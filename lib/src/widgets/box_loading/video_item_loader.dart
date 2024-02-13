@@ -3,8 +3,9 @@ import 'package:acela/src/widgets/box_loading/box_trail.dart';
 import 'package:flutter/material.dart';
 
 class VideoItemLoader extends StatefulWidget {
-  const VideoItemLoader({Key? key});
+  const VideoItemLoader({Key? key, required this.isGridView});
 
+  final bool isGridView;
   @override
   State<VideoItemLoader> createState() => _VideoItemLoaderState();
 }
@@ -20,6 +21,10 @@ class _VideoItemLoaderState extends State<VideoItemLoader> {
     return BoxLoadingIndicator(
         child: Column(
       children: [
+        widget.isGridView ? Expanded(child: BoxTrail(
+          shape: BoxShape.rectangle,
+          height: 230,
+        ),) :
         BoxTrail(
           shape: BoxShape.rectangle,
           height: 230,

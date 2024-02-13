@@ -2,17 +2,28 @@ import 'package:acela/src/widgets/box_loading/video_item_loader.dart';
 import 'package:flutter/material.dart';
 
 class VideoFeedLoader extends StatelessWidget {
-  const VideoFeedLoader({Key? key, this.isGridView = false}) : super(key: key);
+  const VideoFeedLoader(
+      {Key? key, this.isGridView = false, this.isSliver = false})
+      : super(key: key);
 
   final bool isGridView;
+  final bool isSliver;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     int crossAxisCount = getCrossAxisCount(screenWidth);
     return isGridView
-        ? _gridViewLoader(crossAxisCount, context)
-        : _listViewLoader();
+        ? isSliver
+            ? SliverFillRemaining(
+                child: _gridViewLoader(crossAxisCount, context),
+              )
+            : _gridViewLoader(crossAxisCount, context)
+        : isSliver
+            ? SliverToBoxAdapter(
+                child: _listViewLoader(),
+              )
+            : _listViewLoader();
   }
 
   Padding _listViewLoader() {
@@ -25,7 +36,9 @@ class VideoFeedLoader extends StatelessWidget {
           6,
           (index) => Padding(
             padding: const EdgeInsets.only(bottom: 10.0),
-            child: VideoItemLoader(),
+            child: VideoItemLoader(
+              isGridView: false,
+            ),
           ),
         ),
       ),
@@ -35,24 +48,22 @@ class VideoFeedLoader extends StatelessWidget {
   Padding _gridViewLoader(int crossAxisCount, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-      child: CustomScrollView(
-        slivers: [
-          SliverGrid.builder(
-            itemCount: 25,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio:
-                  MediaQuery.of(context).orientation == Orientation.landscape
-                      ? 1.25
-                      : 1.4,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            itemBuilder: (context, index) {
-              return VideoItemLoader();
-            },
-          ),
-        ],
+      child: GridView.builder(
+        itemCount: 25,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio:
+              MediaQuery.of(context).orientation == Orientation.landscape
+                  ? 1.25
+                  : 1.4,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemBuilder: (context, index) {
+          return VideoItemLoader(
+            isGridView: isGridView,
+          );
+        },
       ),
     );
   }

@@ -44,7 +44,8 @@ class NewFeedListItem extends StatefulWidget {
       this.item,
       this.appData,
       this.showVideo = false,
-      this.onFavouriteRemoved})
+      this.onFavouriteRemoved,
+      this.isGridView = false})
       : super(key: key);
 
   final DateTime? createdAt;
@@ -63,6 +64,7 @@ class NewFeedListItem extends StatefulWidget {
   final HiveUserData? appData;
   final bool showVideo;
   final VoidCallback? onFavouriteRemoved;
+  final bool isGridView;
 
   @override
   State<NewFeedListItem> createState() => _NewFeedListItemState();
@@ -203,7 +205,8 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         builder: (context, value, child) {
           return CachedImage(
             imageUrl: Utilities.getProxyImage(value, widget.thumbUrl),
-            imageHeight: 230,
+            fit: widget.isGridView ? BoxFit.cover : null,
+            imageHeight: !widget.isGridView ? 230 : null,
             imageWidth: double.infinity,
           );
         });
@@ -234,159 +237,171 @@ class _NewFeedListItemState extends State<NewFeedListItem>
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
           children: [
-            Stack(
-              children: [
-                widget.showVideo && _betterPlayerController != null
-                    ? Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          _videoPlayer(),
-                          _thumbNailAndLoader(thumbnail),
-                          _nextScreenGestureDetector(),
-                          _videoSlider(),
-                          _interactionTools()
-                        ],
-                      )
-                    : thumbnail,
-                _timer(),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                  top: 10.0, bottom: 5, left: 13, right: 13),
-              child: Row(
-                crossAxisAlignment: isTitleOneLine(titleStyle)
-                    ? CrossAxisAlignment.center
-                    : CrossAxisAlignment.start,
-                children: [
-                  InkWell(
-                    child: ClipOval(
-                      child: CachedImage(
-                        imageHeight: 40,
-                        imageWidth: 40,
-                        loadingIndicatorSize: 25,
-                        imageUrl: server.userOwnerThumb(widget.author),
-                      ),
-                    ),
-                    onTap: () {
-                      widget.onUserTap();
-                      _pushToUserScreen();
-                    },
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Expanded(
-                      child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 2.0),
-                        child: Text(
-                          widget.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: titleStyle,
+            widget.isGridView
+                ? Expanded(
+                    child: _videoStack(thumbnail),
+                  )
+                : _videoStack(thumbnail),
+            SizedBox(
+              height:widget.isGridView ? 75 : null,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    top: 10.0, bottom: 5, left: 13, right: 13),
+                child: Row(
+                  crossAxisAlignment:!widget.isGridView && isTitleOneLine(titleStyle)
+                      ? CrossAxisAlignment.center
+                      : CrossAxisAlignment.start,
+                  children: [
+                    InkWell(
+                      child: ClipOval(
+                        child: CachedImage(
+                          imageHeight: 40,
+                          imageWidth: 40,
+                          loadingIndicatorSize: 25,
+                          imageUrl: server.userOwnerThumb(widget.author),
                         ),
                       ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          InkWell(
-                            child: Row(
-                              children: [
-                                Text(
-                                  '${widget.author}',
-                                  style: TextStyle(
-                                      color: Theme.of(context)
-                                          .primaryColorLight
-                                          .withOpacity(0.7),
-                                      fontSize: 12),
-                                ),
-                              ],
-                            ),
-                            onTap: () {
-                              widget.onUserTap();
-                              _pushToUserScreen();
-                            },
-                          ),
-                          Expanded(
-                              child: Text(
-                            '  •  $timeInString',
+                      onTap: () {
+                        widget.onUserTap();
+                        _pushToUserScreen();
+                      },
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                        child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 2.0),
+                          child: Text(
+                            widget.title,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: TextStyle(
-                                color: Theme.of(context)
-                                    .primaryColorLight
-                                    .withOpacity(0.7),
-                                fontSize: 12),
-                          )),
-                          const SizedBox(
-                            width: 15,
+                            style: titleStyle,
                           ),
-                          UpvoteButton(
-                            appData: widget.appData!,
-                            item: widget.item!,
-                            votes: widget.votes,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2.5, left: 15),
-                            child: Icon(
-                              Icons.comment,
-                              size: 14,
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            InkWell(
+                              child: Row(
+                                children: [
+                                  Text(
+                                    '${widget.author}',
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .primaryColorLight
+                                            .withOpacity(0.7),
+                                        fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                widget.onUserTap();
+                                _pushToUserScreen();
+                              },
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              top: 1.0,
-                            ),
-                            child: Text(
-                              '  ${widget.comments}',
+                            Expanded(
+                                child: Text(
+                              '  •  $timeInString',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                               style: TextStyle(
                                   color: Theme.of(context)
                                       .primaryColorLight
                                       .withOpacity(0.7),
                                   fontSize: 12),
+                            )),
+                            const SizedBox(
+                              width: 15,
                             ),
-                          ),
-                          // Padding(
-                          //   padding:
-                          //       const EdgeInsets.only(left: 10, top: 2.0, right: 5),
-                          //   child: SizedBox(
-                          //     height: 15,
-                          //     width: 25,
-                          //     child: FavouriteWidget(
-                          //         alignment: Alignment.topCenter,
-                          //         disablePadding: true,
-                          //         iconSize: 15,
-                          //         isLiked: favoriteProvider
-                          //             .isLikedVideoPresentLocally(widget.item!),
-                          //         onAdd: () {
-                          //           favoriteProvider
-                          //               .storeLikedVideoLocally(widget.item!);
-                          //         },
-                          //         onRemove: () {
-                          //           favoriteProvider.storeLikedVideoLocally(
-                          //               widget.item!,
-                          //               forceRemove: true);
-                          //           if (widget.onFavouriteRemoved != null)
-                          //             widget.onFavouriteRemoved!();
-                          //         },
-                          //         toastType: 'Video'),
-                          //   ),
-                          // )
-                        ],
-                      ),
-                    ],
-                  ))
-                ],
+                            UpvoteButton(
+                              appData: widget.appData!,
+                              item: widget.item!,
+                              votes: widget.votes,
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 2.5, left: 15),
+                              child: Icon(
+                                Icons.comment,
+                                size: 14,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: 1.0,
+                              ),
+                              child: Text(
+                                '  ${widget.comments}',
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .primaryColorLight
+                                        .withOpacity(0.7),
+                                    fontSize: 12),
+                              ),
+                            ),
+                            // Padding(
+                            //   padding:
+                            //       const EdgeInsets.only(left: 10, top: 2.0, right: 5),
+                            //   child: SizedBox(
+                            //     height: 15,
+                            //     width: 25,
+                            //     child: FavouriteWidget(
+                            //         alignment: Alignment.topCenter,
+                            //         disablePadding: true,
+                            //         iconSize: 15,
+                            //         isLiked: favoriteProvider
+                            //             .isLikedVideoPresentLocally(widget.item!),
+                            //         onAdd: () {
+                            //           favoriteProvider
+                            //               .storeLikedVideoLocally(widget.item!);
+                            //         },
+                            //         onRemove: () {
+                            //           favoriteProvider.storeLikedVideoLocally(
+                            //               widget.item!,
+                            //               forceRemove: true);
+                            //           if (widget.onFavouriteRemoved != null)
+                            //             widget.onFavouriteRemoved!();
+                            //         },
+                            //         toastType: 'Video'),
+                            //   ),
+                            // )
+                          ],
+                        ),
+                      ],
+                    ))
+                  ],
+                ),
               ),
             ),
           ],
         ),
       ),
     );
-}
+  }
+
+  Stack _videoStack(Widget thumbnail) {
+    return Stack(
+      children: [
+        widget.showVideo && _betterPlayerController != null
+            ? Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _videoPlayer(),
+                  _thumbNailAndLoader(thumbnail),
+                  _nextScreenGestureDetector(),
+                  _videoSlider(),
+                  _interactionTools()
+                ],
+              )
+            : widget.isGridView ? Positioned.fill(child: thumbnail) : thumbnail,
+        _timer(),
+      ],
+    );
+  }
 
   bool isTitleOneLine(
     TextStyle titleStyle,
@@ -512,7 +527,7 @@ class _NewFeedListItemState extends State<NewFeedListItem>
     return Hero(
       tag: '${widget.item?.author}/${widget.item?.permlink}',
       child: SizedBox(
-        height: 230,
+        height: !widget.isGridView ? 230 : null,
         child: BetterPlayer(
           controller: _betterPlayerController!,
         ),
