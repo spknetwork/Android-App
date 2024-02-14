@@ -30,6 +30,7 @@ class HiveUserData {
   String union;
   bool loaded;
   String? accessToken;
+  bool authority;
 
   HiveUserData({
     required this.username,

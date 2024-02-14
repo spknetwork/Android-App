@@ -241,7 +241,7 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
     var voteValue = sliderValue * 10000;
     var user = data.username;
     if (user == null) return;
-    if (widget.accessToken != null) {
+    if (widget.accessToken != null && widget.postingAuth) {
       // TO-DO: Call Acela-Core upvote API using access token.
     } else {
       try {
