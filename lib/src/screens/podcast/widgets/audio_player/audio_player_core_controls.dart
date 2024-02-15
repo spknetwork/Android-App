@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:dart_rss/domain/media/media.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:video_player/video_player.dart';
@@ -52,7 +52,9 @@ abstract class AudioPlayerHandler implements AudioHandler {
 
   VideoPlayerController? videoPlayerController;
 
-  void setUpVideoController(String url,);
+  void setUpVideoController(
+    String url,
+  );
 
   void disposeVideoController();
 
@@ -89,7 +91,9 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
     return isVideo && videoPlayerController != null;
   }
 
-  void setUpVideoController(String url,) {
+  void setUpVideoController(
+    String url,
+  ) {
     disposeVideoController();
     if (url.startsWith("http")) {
       this.videoPlayerController = VideoPlayerController.networkUrl(
@@ -97,7 +101,7 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
           videoPlayerOptions: VideoPlayerOptions(allowBackgroundPlayback: true))
         ..initialize();
     } else {
-      this.videoPlayerController = VideoPlayerController.asset(url,
+      this.videoPlayerController = VideoPlayerController.file(File(url),
           videoPlayerOptions: VideoPlayerOptions(allowBackgroundPlayback: true))
         ..initialize();
     }
@@ -237,7 +241,7 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
       _mediaItemExpando[audioSource] = mediaItem;
       return audioSource;
     } else {
-      final audioSource = AudioSource.asset(mediaItem.id);
+      final audioSource = AudioSource.file(mediaItem.id);
       _mediaItemExpando[audioSource] = mediaItem;
       return audioSource;
     }

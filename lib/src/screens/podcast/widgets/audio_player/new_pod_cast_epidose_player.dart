@@ -61,6 +61,7 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
   void initState() {
     super.initState();
     currentPodcastEpisode = widget.podcastEpisodes[currentPodcastIndex];
+    log(currentPodcastEpisode.enclosureUrl!);
     _setUpVideo();
     podcastController = context.read<PodcastController>();
     originalImage = currentPodcastEpisode.image;
@@ -79,12 +80,10 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
   }
 
   void _setUpVideo() {
-      _audioHandler.disposeVideoController();
-    log(currentPodcastEpisode.enclosureUrl!);
     if (!currentPodcastEpisode.isAudio) {
       _audioHandler.isVideo = true;
       _audioHandler.setUpVideoController(currentPodcastEpisode.enclosureUrl!);
-      log('video');
+    } else {
       _audioHandler.isVideo = false;
     }
   }
@@ -131,9 +130,9 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
                 children: [
                   _audioHandler.shouldPlayVideo()
                       ? SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.45,
-                          width: double.infinity,
-                          child: VideoPlayer(_audioHandler.videoPlayerController!))
+                        height: MediaQuery.of(context).size.height * 0.45,
+                        child: VideoPlayer(_audioHandler.videoPlayerController!),
+                      )
                       : Container(
                           constraints: BoxConstraints(
                               maxHeight:
