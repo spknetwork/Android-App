@@ -90,7 +90,7 @@ class PodcastEpisode {
 
   factory PodcastEpisode.fromJson(Map<String, dynamic> json) => PodcastEpisode(
       id: json["id"].toString(),
-      isAudio: json['enclosureType']?.contains('audio') ?? true,
+      isAudio:json['isAudio'] ?? json['enclosureType']?.contains('audio') ?? true,
       title: json["title"],
       link: json["link"],
       description: json["description"],
@@ -129,6 +129,7 @@ class PodcastEpisode {
         "duration": duration,
         "episode": episode,
         "image": image,
-        'chaptersUrl': chaptersUrl
+        'chaptersUrl': chaptersUrl,
+        'isAudio': isAudio
       };
 }
