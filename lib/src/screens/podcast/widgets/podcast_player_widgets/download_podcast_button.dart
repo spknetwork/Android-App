@@ -25,6 +25,7 @@ class DownloadPodcastButton extends StatefulWidget {
 
 class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
   late PodcastController podcastController;
+  final ValueNotifier<double> downloadProgress = ValueNotifier<double>(0);
   DownloadStatus status = DownloadStatus.download;
 
   ReceivePort _port = ReceivePort();
@@ -33,12 +34,14 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
   void initState() {
     super.initState();
     podcastController = context.read<PodcastController>();
-    IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
+    IsolateNameServer.registerPortWithName(
+        _port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) {
       // String id = data[0];
       // DownloadTaskStatus status = (data[1]);
       int progress = data[2];
-      print(progress);
+      downloadProgress.value = progress.toDouble();
+      print('progess is $progress');
       if (data[1] == 0 || data[1] == 4 || data[1] == 5) {
         setState(() {
           status = DownloadStatus.download;
@@ -64,7 +67,8 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
         });
       }
     }
-    print(podcastController.isOffline(widget.episode.enclosureUrl ?? "", widget.episode.id.toString()));
+    print(podcastController.isOffline(
+        widget.episode.enclosureUrl ?? "", widget.episode.id.toString()));
     super.didUpdateWidget(oldWidget);
   }
 
@@ -77,7 +81,8 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
 
   @pragma('vm:entry-point')
   static void downloadCallback(String id, int status, int progress) {
-    final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
+    final SendPort? send =
+        IsolateNameServer.lookupPortByName('downloader_send_port');
     send!.send([id, status, progress]);
   }
 
@@ -87,17 +92,26 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
   }
 
   Widget _build(BuildContext context) {
+    final theme = Theme.of(context);
     final iconColor = widget.color;
     if (status == DownloadStatus.downloading) {
       return SizedBox(
-        height: 17,
-        width: 17,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: iconColor,
-        ),
+        height: 20,
+        width: 20,
+        child: ValueListenableBuilder<double>(
+            valueListenable: downloadProgress,
+            builder: (context, progress, child) {
+              return CircularProgressIndicator(
+                strokeWidth: 2,
+                value: progress / 100,
+                valueColor: AlwaysStoppedAnimation<Color?>(iconColor),
+                backgroundColor: theme.primaryColorLight.withOpacity(0.4),
+              );
+            }),
       );
-    } else if (podcastController.isOffline(widget.episode.enclosureUrl ?? "", widget.episode.id.toString()) || status == DownloadStatus.downloaded) {
+    } else if (podcastController.isOffline(
+            widget.episode.enclosureUrl ?? "", widget.episode.id.toString()) ||
+        status == DownloadStatus.downloaded) {
       return Icon(
         Icons.check,
         color: iconColor,
@@ -107,7 +121,8 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
         icon: Icon(Icons.download, color: iconColor),
         onPressed: () {
           try {
-            download(widget.episode.enclosureUrl.toString(), podcastController.externalDir?.path ?? "");
+            download(widget.episode.enclosureUrl.toString(),
+                podcastController.externalDir?.path ?? "");
           } catch (e) {
             print("Error - ${e.toString()}");
             setState(() {
@@ -126,7 +141,8 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
     FlutterDownloader.enqueue(
       url: url,
       savedDir: savePath,
-      fileName: podcastController.decodeAudioName(widget.episode.enclosureUrl!, episodeId: widget.episode.id.toString()),
+      fileName: podcastController.decodeAudioName(widget.episode.enclosureUrl!,
+          episodeId: widget.episode.id.toString(),isAudio: widget.episode.isAudio),
       showNotification: true,
       openFileFromNotification: true,
     );

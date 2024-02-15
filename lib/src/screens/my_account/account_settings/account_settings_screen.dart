@@ -36,6 +36,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       postingKey: null,
       keychainData: null,
       accessToken: null,
+      postingAuthority: null,
       resolution: resolution,
       rpc: rpc,
       union: union,

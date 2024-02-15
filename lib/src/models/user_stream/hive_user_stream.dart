@@ -30,17 +30,23 @@ class HiveUserData {
   String union;
   bool loaded;
   String? accessToken;
-  bool authority;
+  late bool postingAuthority;
 
-  HiveUserData({
-    required this.username,
-    required this.postingKey,
-    required this.keychainData,
-    required this.accessToken,
-    required this.resolution,
-    required this.rpc,
-    required this.union,
-    required this.loaded,
-    required this.language,
-  });
+  HiveUserData(
+      {required this.username,
+      required this.postingKey,
+      required this.keychainData,
+      required this.accessToken,
+      required this.resolution,
+      required this.rpc,
+      required this.union,
+      required this.loaded,
+      required this.language,
+      required String? postingAuthority,}) {
+    if (postingAuthority != null) {
+      this.postingAuthority = postingAuthority == 'true';
+    } else {
+      this.postingAuthority = false;
+    }
+  }
 }

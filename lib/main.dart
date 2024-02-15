@@ -126,6 +126,7 @@ class _MyAppState extends State<MyApp> {
               accessToken: null,
               postingKey: null,
               username: null,
+              postingAuthority: null,
               rpc: 'api.hive.blog',
               union: GQLCommunicator.defaultGQLServer,
               loaded: false,
@@ -159,6 +160,7 @@ class _MyAppState extends State<MyApp> {
     String? hasAuthKey = await storage.read(key: 'hasAuthKey');
     String resolution = await storage.read(key: 'resolution') ?? '480p';
     String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+    String? postingAuth = await storage.read(key: 'postingAuth') ;
     String union =
         await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
     if (union == 'threespeak-union-graph-ql.sagarkothari88.one') {
@@ -184,6 +186,7 @@ class _MyAppState extends State<MyApp> {
               )
             : null,
         accessToken: accessToken,
+        postingAuthority: postingAuth,
         resolution: resolution,
         rpc: rpc,
         union: union,

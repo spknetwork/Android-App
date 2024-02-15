@@ -363,11 +363,11 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
         );
         var doWeHaveResponse = LoginBridgeResponse.fromJsonString(doWeHave);
         if (doWeHaveResponse.valid) {
-          var authority = doWeHaveResponse.data != null && doWeHaveResponse.data != "true";
-          if (authority) {
+          var authority = doWeHaveResponse.data != null && doWeHaveResponse.data == "true";
+          if (!authority) {
             showError("3Speak does not have posting authority to your account. You can not publish videos");
           }
-          await storage.write(key: 'postingAuth', value: "${authority ? 'true' : 'false'}");
+          await storage.write(key: 'postingAuth', value: authority.toString());
           String proofPayload = json.encode({'account': usernameController.text, 'ts': DateTime.now().toIso8601String()});
           const platform = MethodChannel('com.example.acela/auth');
           final String result = await platform.invokeMethod('getProofOfPayload', {
@@ -396,6 +396,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
                 postingKey: postingKey,
                 keychainData: null,
                 accessToken: loginApiResponse.data,
+                postingAuthority: authority.toString(),
                 resolution: resolution,
                 rpc: rpc,
                 union: union,
@@ -456,6 +457,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
           postingKey: null,
           keychainData: null,
           accessToken: null,
+          postingAuthority: null,
           resolution: '480p',
           rpc: 'api.hive.blog',
           union: GQLCommunicator.defaultGQLServer,
@@ -524,12 +526,13 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
     await storage.write(key: 'username', value: usernameController.text);
     await storage.delete(key: 'postingKey');
     await storage.write(key: 'accessToken', value: loginApiResponse.data);
-    await storage.write(key: 'postingAuth', value: "${authority ? 'true' : 'false'}");
+    await storage.write(key: 'postingAuth', value:authority.toString());
     var data = HiveUserData(
       username: usernameController.text,
       postingKey: null,
       keychainData: null,
       accessToken: loginApiResponse.data,
+      postingAuthority: authority.toString(),
       resolution: resolution,
       rpc: rpc,
       union: union,
@@ -578,6 +581,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
             hasId: tokenData[0],
           ),
           accessToken: null,
+          postingAuthority: null,
           resolution: data.resolution,
           rpc: data.rpc,
           union: data.union,

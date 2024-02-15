@@ -91,6 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         String? hasExpiry = await storage.read(key: 'hasExpiry');
         String? hasAuthKey = await storage.read(key: 'hasAuthKey');
         String? accessToken = await storage.read(key: 'accessToken');
+        String? postingAuth = await storage.read(key: 'postingAuth') ;
         String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
         String union = await storage.read(key: 'union') ??
             GQLCommunicator.defaultGQLServer;
@@ -100,6 +101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             username: username,
             postingKey: postingKey,
             accessToken: accessToken,
+            postingAuthority: postingAuth,
             resolution: optionName,
             rpc: rpc,
             union: union,
@@ -174,6 +176,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             accessToken: appData.accessToken,
             resolution: appData.resolution,
             rpc: appData.rpc,
+            postingAuthority: appData.postingAuthority.toString() ,
             union: appData.union,
             loaded: true,
             language: language.code == 'all' ? null : language.code,
@@ -243,6 +246,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     const storage = FlutterSecureStorage();
     await storage.delete(key: 'username');
     await storage.delete(key: 'postingKey');
+    await storage.delete(key: 'accessToken');
+    await storage.delete(key: 'postingAuth');
     await storage.delete(key: 'cookie');
     await storage.delete(key: 'hasId');
     await storage.delete(key: 'hasExpiry');
@@ -257,6 +262,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       postingKey: null,
       keychainData: null,
       accessToken: null,
+      postingAuthority: null,
       resolution: resolution,
       rpc: rpc,
       union: union,
@@ -444,6 +450,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             postingKey: user.postingKey,
             keychainData: user.keychainData,
             accessToken: user.accessToken,
+            postingAuthority: user.postingAuthority.toString(),
             resolution: user.resolution,
             union: user.union,
             rpc: serverUrl,
@@ -517,6 +524,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         postingKey: user.postingKey,
         keychainData: user.keychainData,
         accessToken: user.accessToken,
+        postingAuthority: user.postingAuthority.toString(),
         resolution: user.resolution,
         union: serverUrl,
         rpc: user.rpc,

@@ -746,10 +746,12 @@ class Communicator {
     }
   }
 
-  Future<ActionResponse> vote(String userName, String permlink) async {
+  Future<ActionResponse> vote(
+      String accessToken, String userName, String permlink) async {
     var headers = {
       'Accept': 'application/json, text/plain, */*',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      "authorization": "Bearer $accessToken"
     };
     try {
       var body = json.encode({
@@ -765,6 +767,7 @@ class Communicator {
         return ActionResponse(
             data: json.decode(response.body)['id'], valid: true, error: '');
       } else {
+        log(json.decode(response.body).toString());
         return ActionResponse(data: '', valid: false, error: 'Server Error');
       }
     } catch (e) {
