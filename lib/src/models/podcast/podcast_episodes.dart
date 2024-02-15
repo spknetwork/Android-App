@@ -66,21 +66,22 @@ class PodcastEpisode {
   String? image;
   String? guid;
   String? chaptersUrl;
+  bool isAudio;
 
-  PodcastEpisode({
-    this.id,
-    this.title,
-    this.link,
-    this.description,
-    this.datePublished,
-    this.datePublishedPretty,
-    this.enclosureUrl,
-    this.duration,
-    this.episode,
-    this.image,
-    this.guid,
-    this.chaptersUrl
-  });
+  PodcastEpisode(
+      {this.id,
+      this.title,
+      this.link,
+      this.description,
+      this.datePublished,
+      this.datePublishedPretty,
+      this.enclosureUrl,
+      this.duration,
+      this.episode,
+      this.image,
+      this.guid,
+      this.chaptersUrl,
+      required this.isAudio});
 
   factory PodcastEpisode.fromRawJson(String str) =>
       PodcastEpisode.fromJson(json.decode(str));
@@ -88,22 +89,23 @@ class PodcastEpisode {
   String toRawJson() => json.encode(toJson());
 
   factory PodcastEpisode.fromJson(Map<String, dynamic> json) => PodcastEpisode(
-        id: json["id"].toString(),
-        title: json["title"],
-        link: json["link"],
-        description: json["description"],
-        datePublished: json["datePublished"],
-        datePublishedPretty: json["datePublishedPretty"],
-        enclosureUrl: json["enclosureUrl"],
-        duration: json["duration"],
-        episode: json["episode"],
-        image: json["image"],
-        guid: json["guid"],
-        chaptersUrl: json['chaptersUrl']
-      );
+      id: json["id"].toString(),
+      isAudio: json['enclosureType']?.contains('audio') ?? true,
+      title: json["title"],
+      link: json["link"],
+      description: json["description"],
+      datePublished: json["datePublished"],
+      datePublishedPretty: json["datePublishedPretty"],
+      enclosureUrl: json["enclosureUrl"],
+      duration: json["duration"],
+      episode: json["episode"],
+      image: json["image"],
+      guid: json["guid"],
+      chaptersUrl: json['chaptersUrl']);
 
   factory PodcastEpisode.fromRss(RssItem rssItem) => PodcastEpisode(
         id: rssItem.guid,
+        isAudio: rssItem.enclosure?.type?.contains('audio') ?? true,
         title: rssItem.title,
         link: rssItem.link,
         description: rssItem.description,
@@ -127,6 +129,6 @@ class PodcastEpisode {
         "duration": duration,
         "episode": episode,
         "image": image,
-        'chaptersUrl':chaptersUrl
+        'chaptersUrl': chaptersUrl
       };
 }

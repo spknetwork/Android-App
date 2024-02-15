@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -30,7 +32,7 @@ class _PodcastFeedScreenState extends State<PodcastFeedScreen> {
   @override
   void initState() {
     super.initState();
-    future =loadPodCastEpisode();
+    future = loadPodCastEpisode();
   }
 
   Widget _fullPost(List<PodcastEpisode> items) {

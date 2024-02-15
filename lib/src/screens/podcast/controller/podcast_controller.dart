@@ -54,9 +54,9 @@ class PodcastController extends ChangeNotifier {
     return "";
   }
 
-  String decodeAudioName(String name, {String? episodeId}) {
+  String decodeAudioName(String name, {String? episodeId,bool isAudio = true}) {
     String decodedName = name.split('/').last;
-    String target = ".mp3";
+    String target = isAudio ? ".mp3" : ".mp4";
     int index = decodedName.indexOf(target);
     if (index != -1) {
       decodedName = decodedName.substring(0, index + target.length);

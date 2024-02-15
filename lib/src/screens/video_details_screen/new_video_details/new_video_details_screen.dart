@@ -482,6 +482,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           permlink: widget.item.permlink ?? 'ctbtwcxbbd',
           username: widget.appData.username ?? "",
           accessToken: widget.appData.accessToken,
+          postingAuthority: widget.appData.postingAuthority,
           hasKey: widget.appData.keychainData?.hasId ?? "",
           hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
           activeVotes: postInfo!.activeVotes,

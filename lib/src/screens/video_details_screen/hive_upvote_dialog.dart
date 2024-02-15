@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:acela/src/models/action_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -24,6 +25,7 @@ class HiveUpvoteDialog extends StatefulWidget {
     required this.hasKey,
     required this.hasAuthKey,
     required this.accessToken,
+    required this.postingAuthority,
     required this.activeVotes,
     required this.onClose,
     required this.onDone,
@@ -34,6 +36,7 @@ class HiveUpvoteDialog extends StatefulWidget {
   final String hasKey;
   final String hasAuthKey;
   final String? accessToken;
+  final bool postingAuthority;
   final Function onDone;
   final Function onClose;
   final List<ActiveVotesItem> activeVotes;
@@ -241,9 +244,29 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
     var voteValue = sliderValue * 10000;
     var user = data.username;
     if (user == null) return;
-    if (widget.accessToken != null && widget.postingAuth) {
-      // TO-DO: Call Acela-Core upvote API using access token.
-    } else {
+    if (widget.accessToken != null && widget.postingAuthority) {
+      ActionResponse response = await Communicator()
+          .vote(widget.accessToken!, widget.author, widget.permlink);
+      if (response.valid && response.error.isEmpty) {
+        // Future.delayed(const Duration(seconds: 6), () {
+        if (mounted) {
+          setState(() {
+            isUpVoting = false;
+            widget.onDone();
+            Navigator.of(context).pop();
+          });
+        }
+        // });
+      } else {
+        showError(response.error);
+        if (isUpVoting && mounted) {
+          setState(() {
+            isUpVoting = false;
+          });
+        }
+      }
+    }
+    else {
       try {
         const platform = MethodChannel('com.example.acela/auth');
         final String result = await platform.invokeMethod('voteContent', {

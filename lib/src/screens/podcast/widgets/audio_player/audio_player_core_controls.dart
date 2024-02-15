@@ -1,20 +1,21 @@
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:dart_rss/domain/media/media.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:video_player/video_player.dart';
 
 class GetAudioPlayer {
   GetAudioPlayer._();
 
   late AudioPlayerHandler audioHandler;
-  
+
   static final GetAudioPlayer _instance = GetAudioPlayer._();
 
   factory GetAudioPlayer() {
     return _instance;
   }
-
 }
 
 class QueueState {
@@ -48,6 +49,16 @@ abstract class AudioPlayerHandler implements AudioHandler {
   ValueStream<double> get volume;
   Future<void> setVolume(double volume);
   ValueStream<double> get speed;
+
+  VideoPlayerController? videoPlayerController;
+
+  void setUpVideoController(String url,);
+
+  void disposeVideoController();
+
+  bool isVideo = false;
+
+  bool shouldPlayVideo();
 }
 
 /// The implementation of [AudioPlayerHandler].
@@ -69,6 +80,41 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
   @override
   final BehaviorSubject<double> speed = BehaviorSubject.seeded(1.0);
   final _mediaItemExpando = Expando<MediaItem>();
+  bool isVideo = false;
+
+  VideoPlayerController? videoPlayerController;
+
+  @override
+  bool shouldPlayVideo() {
+    return isVideo && videoPlayerController != null;
+  }
+
+  void setUpVideoController(String url,) {
+    disposeVideoController();
+    if (url.startsWith("http")) {
+      this.videoPlayerController = VideoPlayerController.networkUrl(
+          Uri.parse(url),
+          videoPlayerOptions: VideoPlayerOptions(allowBackgroundPlayback: true))
+        ..initialize();
+    } else {
+      this.videoPlayerController = VideoPlayerController.asset(url,
+          videoPlayerOptions: VideoPlayerOptions(allowBackgroundPlayback: true))
+        ..initialize();
+    }
+    videoPlayerController!.addListener(() {
+      _broadcastState(_player.playbackEvent);
+    });
+  }
+
+  void disposeVideoController() {
+    if (videoPlayerController != null) {
+      videoPlayerController!.seekTo(Duration.zero);
+      videoPlayerController!.removeListener(() {
+        _broadcastState(_player.playbackEvent);
+      });
+      videoPlayerController!.dispose();
+    }
+  }
 
   /// A stream of the current effective sequence from just_audio.
   Stream<List<IndexedAudioSource>> get _effectiveSequence => Rx.combineLatest3<
@@ -214,7 +260,6 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
     }
   }
 
-
   @override
   Future<void> addQueueItem(MediaItem mediaItem) async {
     await _playlist.add(_itemToSource(mediaItem));
@@ -254,14 +299,21 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
   }
 
   @override
-  Future<void> skipToNext() => _player.seekToNext();
+  Future<void> skipToNext() async {
+    disposeVideoController();
+    _player.seekToNext();
+  }
 
   @override
-  Future<void> skipToPrevious() => _player.seekToPrevious();
+  Future<void> skipToPrevious() async {
+    disposeVideoController();
+    _player.seekToPrevious();
+  }
 
   @override
   Future<void> skipToQueueItem(int index) async {
     if (index < 0 || index >= _playlist.children.length) return;
+    disposeVideoController();
     // This jumps to the beginning of the queue item at [index].
     _player.seek(Duration.zero,
         index: _player.shuffleModeEnabled
@@ -270,13 +322,17 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
   }
 
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() =>
+      shouldPlayVideo() ? videoPlayerController!.play() : _player.play();
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() =>
+      shouldPlayVideo() ? videoPlayerController!.pause() : _player.pause();
 
   @override
-  Future<void> seek(Duration position) => _player.seek(position);
+  Future<void> seek(Duration position) => shouldPlayVideo()
+      ? videoPlayerController!.seekTo(position)
+      : _player.seek(position);
 
   @override
   Future<void> stop() async {
@@ -285,17 +341,66 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
         (state) => state.processingState == AudioProcessingState.idle);
   }
 
+  bool _isPlaying() => videoPlayerController?.value.isPlaying ?? false;
+
+  AudioProcessingState _processingState() {
+    if (videoPlayerController == null)
+      return AudioProcessingState.loading;
+    else if (videoPlayerController!.value.isPlaying)
+      return AudioProcessingState.ready;
+    else if (videoPlayerController!.value.isBuffering)
+      return AudioProcessingState.loading;
+    else if (videoPlayerController!.value.isInitialized)
+      return AudioProcessingState.idle;
+    return AudioProcessingState.loading;
+  }
+
+  Duration _bufferedPosition() {
+    if (videoPlayerController != null) {
+      DurationRange? currentBufferedRange =
+          (videoPlayerController!.value.buffered.isEmpty)
+              ? null
+              : (videoPlayerController?.value.buffered.firstWhere(
+                  (durationRange) {
+                    Duration position = videoPlayerController!.value.position;
+                    bool isCurrentBufferedRange =
+                        durationRange.start < position &&
+                            durationRange.end > position;
+                    return isCurrentBufferedRange;
+                  },
+                  orElse: () => DurationRange(
+                      videoPlayerController!.value.position,
+                      videoPlayerController!.value.position),
+                ));
+      if (currentBufferedRange == null) return Duration.zero;
+      return currentBufferedRange.end;
+    } else {
+      return Duration.zero;
+    }
+  }
+
   /// Broadcasts the current state to all clients.
   void _broadcastState(PlaybackEvent event) {
     final playing = _player.playing;
+
+    List<MediaControl> controls = [];
+    controls.add(
+      MediaControl.skipToPrevious,
+    );
+    if (shouldPlayVideo()) {
+      controls.add((_isPlaying()) ? MediaControl.pause : MediaControl.play);
+    } else {
+      controls.add(
+        (playing) ? MediaControl.pause : MediaControl.play,
+      );
+    }
+    controls.add(
+      MediaControl.skipToNext,
+    );
     final queueIndex = getQueueIndex(
         event.currentIndex, _player.shuffleModeEnabled, _player.shuffleIndices);
     playbackState.add(playbackState.value.copyWith(
-      controls: [
-        MediaControl.skipToPrevious,
-        if (playing) MediaControl.pause else MediaControl.play,
-        MediaControl.skipToNext,
-      ],
+      controls: controls,
       systemActions: const {
         MediaAction.seek,
         MediaAction.seekForward,
@@ -306,21 +411,30 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
         MediaAction.skipToPrevious
       },
       androidCompactActionIndices: const [0, 1, 3],
-      processingState: const {
-        ProcessingState.idle: AudioProcessingState.idle,
-        ProcessingState.loading: AudioProcessingState.loading,
-        ProcessingState.buffering: AudioProcessingState.buffering,
-        ProcessingState.ready: AudioProcessingState.ready,
-        ProcessingState.completed: AudioProcessingState.completed,
-      }[_player.processingState]!,
-      playing: playing,
-      updatePosition: _player.position,
-      bufferedPosition: _player.bufferedPosition,
-      speed: _player.speed,
+      processingState: shouldPlayVideo()
+          ? _processingState()
+          : const {
+              ProcessingState.idle: AudioProcessingState.idle,
+              ProcessingState.loading: AudioProcessingState.loading,
+              ProcessingState.buffering: AudioProcessingState.buffering,
+              ProcessingState.ready: AudioProcessingState.ready,
+              ProcessingState.completed: AudioProcessingState.completed,
+            }[_player.processingState]!,
+      playing: shouldPlayVideo() ? _isPlaying() : playing,
+      updatePosition: shouldPlayVideo()
+          ? videoPlayerController?.value.position ?? Duration.zero
+          : _player.position,
+      bufferedPosition:
+          shouldPlayVideo() ? _bufferedPosition() : _player.bufferedPosition,
+      speed: shouldPlayVideo()
+          ? videoPlayerController?.value.playbackSpeed ?? 1.0
+          : _player.speed,
       queueIndex: queueIndex,
     ));
   }
 }
+
+// disposeStream
 
 /// Provides access to a library of media items. In your app, this could come
 /// from a database or web service.
@@ -335,7 +449,6 @@ class MediaLibrary {
         playable: false,
       ),
     ],
-    albumsRootId: [
-    ],
+    albumsRootId: [],
   };
 }

@@ -24,6 +24,7 @@ class ControlButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isPaused = false;
     Color iconColor = Colors.white;
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -70,7 +71,7 @@ class ControlButtons extends StatelessWidget {
             final playbackState = snapshot.data;
             final processingState = playbackState?.processingState;
             final playing = playbackState?.playing;
-            if (processingState == AudioProcessingState.idle)
+            if (processingState == AudioProcessingState.idle && !isPaused)
               audioHandler.play();
             if (processingState == AudioProcessingState.loading ||
                 processingState == AudioProcessingState.buffering) {
@@ -99,7 +100,10 @@ class ControlButtons extends StatelessWidget {
               );
             } else {
               return GestureDetector(
-                onTap: audioHandler.pause,
+                onTap: () {
+                  isPaused = !isPaused;
+                  audioHandler.pause();
+                },
                 child: CircleAvatar(
                   backgroundColor: Colors.white,
                   child: Icon(

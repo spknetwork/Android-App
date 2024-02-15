@@ -101,6 +101,7 @@ class VideoUploadSheet {
         postingKey: null,
         keychainData: null,
         accessToken: null,
+        postingAuthority: null,
         resolution: resolution,
         rpc: rpc,
         union: union,

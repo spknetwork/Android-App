@@ -255,6 +255,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
             hasKey: widget.data.keychainData?.hasId ?? "",
             hasAuthKey: widget.data.keychainData?.hasAuthKey ?? "",
             accessToken: widget.data.accessToken,
+            postingAuthority: widget.data.postingAuthority,
             activeVotes: postInfo!.activeVotes,
             onClose: () {},
             onDone: () {
