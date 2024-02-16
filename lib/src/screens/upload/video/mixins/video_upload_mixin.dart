@@ -3,9 +3,13 @@ import 'dart:io';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_upload/upload_response.dart';
 import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/enum.dart';
+import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter/media_information_session.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tus_client/tus_client.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 mixin Upload {
@@ -31,19 +35,19 @@ mixin Upload {
     log('upload started');
     int fileSize = _checkFileSize(size);
     var path = pickedVideoFile.path;
-    // var videoUploadReponse = await _uploadToServer(path, videoUploadProgress);
-    // var name = videoUploadReponse.name;
+    var videoUploadReponse = await _uploadToServer(path, videoUploadProgress);
+    var name = videoUploadReponse.name;
     _initiateNextUpload();
     var thumbPath = await _getThumbnail(path);
     _initiateNextUpload();
-    // var thumbReponse = await uploadThumbnail(thumbPath);
+    var thumbReponse = await uploadThumbnail(thumbPath);
     _initiateNextUpload();
 
-    // log('Uploaded file name is $name');
-    // log('Uploaded thumbnail file name is ${thumbReponse.name}');
-    // uploadedVideoItem= await _encodeAndUploadInfo(path,
-    //     hiveUserData, thumbReponse.name, originalFileName, fileSize, name);
-    // uploadStatus.value = UploadStatus.ended;
+    log('Uploaded file name is $name');
+    log('Uploaded thumbnail file name is ${thumbReponse.name}');
+    uploadedVideoItem= await _encodeAndUploadInfo(path,
+        hiveUserData, thumbReponse.name, originalFileName, fileSize, name);
+    uploadStatus.value = UploadStatus.ended;
     _initiateNextUpload();
   }
 
@@ -95,11 +99,9 @@ mixin Upload {
     }
     return fileSize;
   }
-/* TO-DO: This with acela Core
   Future<UploadResponse> uploadThumbnail(String path) async {
     thumbnailUploadStatus.value = UploadStatus.started;
-    var thumbReponse = await _uploadToServer(path, thumbnailUploadProgress);
-    thumbnailUploadStatus.value = UploadStatus.ended;
+    var thumbReponse = await _uploadToServer(path, thumbnailUploadProgress);thumbnailUploadStatus.value = UploadStatus.ended;
     thumbnailUploadResponse.value = (thumbReponse);
     return thumbReponse;
   }
@@ -153,5 +155,4 @@ mixin Upload {
     );
     return UploadResponse(name: name, url: url);
   }
- */
 }

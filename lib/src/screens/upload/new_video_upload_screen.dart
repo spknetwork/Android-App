@@ -255,7 +255,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
         setState(() {
           didStartMoveToQueue = true;
         });
-        /* TO-DO: new video upload
         var videoUploadInfo = await Communicator().uploadInfo(
           user: user!,
           thumbnail: thumbName,
@@ -278,7 +277,6 @@ class _NewVideoUploadScreenState extends State<NewVideoUploadScreen> {
           showMessage('Video is uploaded & moved to encoding queue');
           showMyDialog(item);
         });
-         */
         // Step 6. Move Video to Queue
       } else {
         throw 'User cancelled the video picker';

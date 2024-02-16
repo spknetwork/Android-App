@@ -155,8 +155,7 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
       thumbnailUploadProgress: controller.thumbnailUploadProgress,
       thumbnailUploadRespone: controller.thumbnailUploadResponse,
       onUploadFile: (file) {
-        // TO-DO: upload thumbnail
-        // controller.uploadThumbnail(file.path);
+        controller.uploadThumbnail(file.path);
       },
     );
   }

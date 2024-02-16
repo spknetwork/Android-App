@@ -67,7 +67,6 @@ class _UpdateThumbScreenState extends State<UpdateThumbScreen> {
   }
 
   void completeVideo(HiveUserData user) async {
-    /* TO-DO: New Acela Core APIs
     setState(() {
       isCompleting = true;
       processText = 'Updating video info';
@@ -87,7 +86,6 @@ class _UpdateThumbScreenState extends State<UpdateThumbScreen> {
         processText = '';
       });
     }
-     */
   }
 
   Widget _thumbnailPicker(HiveUserData user) {

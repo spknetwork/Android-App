@@ -100,6 +100,7 @@ class VideoUploadSheet {
         username: null,
         postingKey: null,
         keychainData: null,
+        cookie: null,
         accessToken: null,
         postingAuthority: null,
         resolution: resolution,

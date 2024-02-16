@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/ipfs_node_provider.dart';
+import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/my_account/update_video/add_bene_sheet.dart';
@@ -166,7 +167,6 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
       });
       try {
         final String ipfsUrl = IpfsNodeProvider().nodeUrl;
-        /* TO-DO: Acela Core Integration
         var podcastResponse = await Communicator().uploadPodcast(
           user: user,
           size: widget.size,
@@ -265,7 +265,6 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
         } else {
           throw bridgeResponse.error;
         }
-         */
       } catch (e) {
         showError(e.toString());
         setState(() {
@@ -361,7 +360,6 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
             });
             showMessage(
                 'Please wait. Podcast is posted on Hive but needs to be marked as published.');
-            /* TO-DO: Acela Core Integration
             Future.delayed(const Duration(seconds: 6), () async {
               if (mounted) {
                 try {
@@ -386,7 +384,6 @@ class _AudioDetailsInfoScreenState extends State<AudioDetailsInfoScreen> {
                 }
               }
             });
-             */
             break;
           case "sign_nack":
             setState(() {
