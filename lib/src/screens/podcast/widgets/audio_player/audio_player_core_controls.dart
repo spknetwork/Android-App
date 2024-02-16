@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:video_player/video_player.dart';
@@ -51,6 +52,7 @@ abstract class AudioPlayerHandler implements AudioHandler {
   ValueStream<double> get speed;
 
   VideoPlayerController? videoPlayerController;
+  ValueNotifier<double?> aspectRatioNotifier = ValueNotifier(null);
 
   void setUpVideoController(
     String url,
@@ -85,6 +87,7 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
   bool isVideo = false;
 
   VideoPlayerController? videoPlayerController;
+  ValueNotifier<double?> aspectRatioNotifier = ValueNotifier(null);
 
   @override
   bool shouldPlayVideo() {
@@ -106,12 +109,14 @@ class AudioPlayerHandlerImpl extends BaseAudioHandler
         ..initialize();
     }
     videoPlayerController!.addListener(() {
+      aspectRatioNotifier.value = videoPlayerController!.value.aspectRatio;
       _broadcastState(_player.playbackEvent);
     });
   }
 
   void disposeVideoController() {
     if (videoPlayerController != null) {
+      aspectRatioNotifier.value = null;
       videoPlayerController!.seekTo(Duration.zero);
       videoPlayerController!.removeListener(() {
         _broadcastState(_player.playbackEvent);
