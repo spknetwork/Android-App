@@ -20,7 +20,27 @@
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
     <script src="https://unpkg.com/@hiveio/content-renderer"></script>
+    <script src="https://unpkg.com/@hiveio/dhive@latest/dist/dhive.js"></script>
+
     <script>
+      var dhiveClient = new dhive.Client([
+        "https://api.hive.blog",
+        "https://api.hive.blog",
+        "https://api.deathwing.me",
+        "https://hive-api.arcange.eu",
+        "https://hived.emre.sh",
+        "https://api.openhive.network",
+        "https://rpc.ausbit.dev",
+        "https://anyx.io",
+        "https://techcoderx.com",
+        "https://api.hive.blue",
+        "https://api.pharesim.me",
+        "https://hived.privex.io",
+        "https://hive.roelandp.nl",
+        "https://hive-api.web3telekom.xyz",
+        "https://hive-api.3speak.tv",
+      ]);
+
       function getHTMLStringForContent(string) {
         const renderer = new HiveContentRenderer.DefaultRenderer({
           baseUrl: "https://hive.blog/",
@@ -49,35 +69,34 @@
         });
       }
 
-      function validateHiveKey(accountName, postingKey) {
-        console.log("In here before async");
-        hive.api
-          .getAccountsAsync([accountName])
-          .then(function (accounts) {
-            console.log("In here after async");
-            console.log("Accounts: ", accounts);
-            const pubWif = accounts[0].posting.key_auths[0][0];
-            console.log("PubWif: ", pubWif);
-            const Valid = hive.auth.wifIsValid(postingKey, pubWif);
-            console.log(`is valid ${Valid}`);
-            replyToNative({
-              type: "validateHiveKey",
-              valid: Valid,
-              accountName: accountName,
-              error: "",
-              data: "",
-            });
-          })
-          .catch(function (err) {
-            console.log("Error: ", err);
-            replyToNative({
-              type: "validateHiveKey",
-              valid: false,
-              accountName: accountName,
-              error: err.message,
-              data: "",
-            });
+      async function validateHiveKey(accountName, postingKey) {
+        try {
+          const accounts = await dhiveClient.database.getAccounts([accountName]);
+          const pubWif = accounts[0].posting.key_auths[0][0];
+          console.log("PubWif: ", pubWif);
+          const pKey = dhive.PrivateKey.fromString(postingKey)
+            .createPublic()
+            .toString();
+          console.log("PubWif from pKey = ", pubWif);
+          const Valid = pKey === pubWif;
+          console.log(`is valid ${Valid}`);
+          replyToNative({
+            type: "validateHiveKey",
+            valid: Valid,
+            accountName: accountName,
+            error: "",
+            data: "",
           });
+        } catch (error) {
+          console.log("Error: ", error);
+          replyToNative({
+            type: "validateHiveKey",
+            valid: false,
+            accountName: accountName,
+            error: error.message,
+            data: "",
+          });
+        }
       }
 
       function getProofOfPayload(accountName, postingKey, proof) {
