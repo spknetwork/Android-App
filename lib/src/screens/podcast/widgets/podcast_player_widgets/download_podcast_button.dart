@@ -27,7 +27,7 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
   late PodcastController podcastController;
   final ValueNotifier<double> downloadProgress = ValueNotifier<double>(0);
   DownloadStatus status = DownloadStatus.download;
-
+  String? taskId;
   ReceivePort _port = ReceivePort();
 
   @override
@@ -95,19 +95,30 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
     final theme = Theme.of(context);
     final iconColor = widget.color;
     if (status == DownloadStatus.downloading) {
-      return SizedBox(
-        height: 20,
-        width: 20,
-        child: ValueListenableBuilder<double>(
-            valueListenable: downloadProgress,
-            builder: (context, progress, child) {
-              return CircularProgressIndicator(
-                strokeWidth: 2,
-                value: progress / 100,
-                valueColor: AlwaysStoppedAnimation<Color?>(iconColor),
-                backgroundColor: theme.primaryColorLight.withOpacity(0.4),
-              );
-            }),
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            height: 25,
+            width: 25,
+            child: ValueListenableBuilder<double>(
+                valueListenable: downloadProgress,
+                builder: (context, progress, child) {
+                  return CircularProgressIndicator(
+                    strokeWidth: 2,
+                    value: progress / 100,
+                    valueColor: AlwaysStoppedAnimation<Color?>(iconColor),
+                    backgroundColor: theme.primaryColorLight.withOpacity(0.4),
+                  );
+                }),
+          ),
+          IconButton(
+              onPressed: _cancelDownload,
+              icon: Icon(
+                Icons.stop,
+                size: 17.5,
+              ))
+        ],
       );
     } else if (podcastController.isOffline(
             widget.episode.enclosureUrl ?? "", widget.episode.id.toString()) ||
@@ -134,15 +145,27 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
     }
   }
 
+  void _cancelDownload() {
+    if (taskId != null) {
+      FlutterDownloader.cancel(taskId: taskId!);
+      FlutterDownloader.remove(taskId: taskId!, shouldDeleteContent: true);
+      setState(() {
+        taskId = null;
+        status = DownloadStatus.download;
+      });
+    }
+  }
+
   void download(String url, String savePath) async {
     setState(() {
       status = DownloadStatus.downloading;
     });
-    FlutterDownloader.enqueue(
+    taskId = await FlutterDownloader.enqueue(
       url: url,
       savedDir: savePath,
       fileName: podcastController.decodeAudioName(widget.episode.enclosureUrl!,
-          episodeId: widget.episode.id.toString(),isAudio: widget.episode.isAudio),
+          episodeId: widget.episode.id.toString(),
+          isAudio: widget.episode.isAudio),
       showNotification: true,
       openFileFromNotification: true,
     );

@@ -130,9 +130,19 @@ class _NewPodcastEpidosePlayerState extends State<NewPodcastEpidosePlayer> {
                 children: [
                   _audioHandler.shouldPlayVideo()
                       ? SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.45,
-                        child: VideoPlayer(_audioHandler.videoPlayerController!),
-                      )
+                          height: MediaQuery.of(context).size.height * 0.45,
+                          child: Center(
+                              child: ValueListenableBuilder<double?>(
+                            valueListenable: _audioHandler.aspectRatioNotifier,
+                            builder: (context, aspectRatio, child) {
+                              return AspectRatio(
+                                  aspectRatio: aspectRatio ?? 1.5,
+                                  child: child);
+                            },
+                            child: VideoPlayer(
+                                _audioHandler.videoPlayerController!),
+                          )),
+                        )
                       : Container(
                           constraints: BoxConstraints(
                               maxHeight:
