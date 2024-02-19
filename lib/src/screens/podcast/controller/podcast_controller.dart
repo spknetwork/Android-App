@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:flutter/material.dart';
@@ -32,8 +31,9 @@ class PodcastController extends ChangeNotifier {
   bool isOffline(String name, String episodeId) {
     if (externalDir != null) {
       for (var item in externalDir.listSync()) {
-        if (decodeAudioName(item.path, episodeId: episodeId) ==
-            decodeAudioName(name, episodeId: episodeId)) {
+        if (decodeAudioName(item.path) ==
+            decodeAudioName(name,
+                episodeId: name.startsWith('http') ? episodeId : null)) {
           // print('offline');
           return true;
         }
@@ -190,10 +190,7 @@ class PodcastController extends ChangeNotifier {
     if (externalDir != null) {
       for (int i = 0; i < externalDir.listSync().length; i++) {
         var item = externalDir.listSync()[i];
-        if (decodeAudioName(
-              item.path,
-              episodeId: episode.id
-            ) ==
+        if (decodeAudioName(item.path, episodeId: episode.id) ==
             decodeAudioName(episode.enclosureUrl ?? "",
                 episodeId: episode.id)) {
           externalDir.listSync()[i].delete();

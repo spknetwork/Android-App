@@ -9,6 +9,7 @@ import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class UserChannelScreen extends StatefulWidget {
   const UserChannelScreen({Key? key, required this.owner}) : super(key: key);
@@ -94,20 +95,39 @@ class _UserChannelScreenState extends State<UserChannelScreen>
     var appData = Provider.of<HiveUserData>(context);
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 30,
         title: Row(
           children: [
             CustomCircleAvatar(
-              height: 40,
-              width: 40,
+              height: 36,
+              width: 36,
               url: server.userOwnerThumb(widget.owner),
             ),
             const SizedBox(
               width: 10,
             ),
-            Text(widget.owner)
+            Text(
+              widget.owner,
+              style: TextStyle(fontSize: 16),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            )
           ],
         ),
-        actions: [], //currentIndex == 0 ? [_sortButton()] : [],
+        actions: [
+          IconButton(
+            onPressed: () async {
+              Share.share("https://3speak.tv/rss/${widget.owner}.xml");
+            },
+            icon: Icon(Icons.rss_feed),
+          ),
+          IconButton(
+            onPressed: () async {
+              Share.share("https://3speak.tv/user/${widget.owner}");
+            },
+            icon: Icon(Icons.share),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: tabs,

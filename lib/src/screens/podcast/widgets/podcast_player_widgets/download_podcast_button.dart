@@ -1,13 +1,12 @@
 import 'dart:isolate';
 import 'dart:ui';
-
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:provider/provider.dart';
 
-enum DownloadStatus { downloading, downloaded, download }
+enum DownloadStatus { downloading, downloaded, download, cancelDownload }
 
 class DownloadPodcastButton extends StatefulWidget {
   const DownloadPodcastButton({
@@ -26,7 +25,7 @@ class DownloadPodcastButton extends StatefulWidget {
 class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
   late PodcastController podcastController;
   final ValueNotifier<double> downloadProgress = ValueNotifier<double>(0);
-  DownloadStatus status = DownloadStatus.download;
+  late DownloadStatus status;
   String? taskId;
   ReceivePort _port = ReceivePort();
 
@@ -34,20 +33,19 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
   void initState() {
     super.initState();
     podcastController = context.read<PodcastController>();
+    _setStatusOnEpisodeChange();
+
     IsolateNameServer.registerPortWithName(
         _port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) {
       // String id = data[0];
-      // DownloadTaskStatus status = (data[1]);
+      // DownloadTaskStatus statuss = (data[1]);
       int progress = data[2];
       downloadProgress.value = progress.toDouble();
       print('progess is $progress');
-      if (data[1] == 0 || data[1] == 4 || data[1] == 5) {
-        setState(() {
-          status = DownloadStatus.download;
-        });
-      }
-      if (progress == 100 && status != DownloadStatus.downloaded) {
+      if (progress == 100 &&
+          status == DownloadStatus.downloading &&
+          taskId != null) {
         podcastController.storeOfflinePodcastLocally(widget.episode);
         setState(() {
           status = DownloadStatus.downloaded;
@@ -58,17 +56,30 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
     FlutterDownloader.registerCallback(downloadCallback);
   }
 
+  void _setStatusOnEpisodeChange() {
+    if (podcastController.isOffline(
+        widget.episode.enclosureUrl ?? "", widget.episode.id.toString())) {
+      status = DownloadStatus.downloaded;
+    } else {
+      status = DownloadStatus.download;
+    }
+  }
+
   @override
   void didUpdateWidget(covariant DownloadPodcastButton oldWidget) {
     if (oldWidget.episode.id != widget.episode.id) {
-      if (status != DownloadStatus.download) {
+      if (status == DownloadStatus.downloading) {
         setState(() {
+          _cancelAndRemove(taskId);
           status = DownloadStatus.download;
+          taskId = null;
         });
-      }
+      }else {
+      setState(() {
+        _setStatusOnEpisodeChange();
+      });
     }
-    print(podcastController.isOffline(
-        widget.episode.enclosureUrl ?? "", widget.episode.id.toString()));
+    } 
     super.didUpdateWidget(oldWidget);
   }
 
@@ -94,7 +105,8 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
   Widget _build(BuildContext context) {
     final theme = Theme.of(context);
     final iconColor = widget.color;
-    if (status == DownloadStatus.downloading) {
+    if (status == DownloadStatus.downloading ||
+        status == DownloadStatus.cancelDownload) {
       return Stack(
         alignment: Alignment.center,
         children: [
@@ -106,28 +118,30 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
                 builder: (context, progress, child) {
                   return CircularProgressIndicator(
                     strokeWidth: 2,
-                    value: progress / 100,
+                    value: status == DownloadStatus.cancelDownload
+                        ? null
+                        : progress / 100,
                     valueColor: AlwaysStoppedAnimation<Color?>(iconColor),
                     backgroundColor: theme.primaryColorLight.withOpacity(0.4),
                   );
                 }),
           ),
-          IconButton(
-              onPressed: _cancelDownload,
-              icon: Icon(
-                Icons.stop,
-                size: 17.5,
-              ))
+          Visibility(
+            visible: true,
+            maintainAnimation: true,
+            maintainSemantics: true,
+            maintainSize: true,
+            maintainState: true,
+            child: IconButton(
+                onPressed: _cancelDownload,
+                icon: Icon(
+                  Icons.stop,
+                  size: 17.5,
+                )),
+          )
         ],
       );
-    } else if (podcastController.isOffline(
-            widget.episode.enclosureUrl ?? "", widget.episode.id.toString()) ||
-        status == DownloadStatus.downloaded) {
-      return Icon(
-        Icons.check,
-        color: iconColor,
-      );
-    } else {
+    } else if (status == DownloadStatus.download) {
       return IconButton(
         icon: Icon(Icons.download, color: iconColor),
         onPressed: () {
@@ -142,13 +156,20 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
           }
         },
       );
+    } else {
+      return Icon(
+        Icons.check,
+        color: iconColor,
+      );
     }
   }
 
-  void _cancelDownload() {
+  void _cancelDownload() async {
     if (taskId != null) {
-      FlutterDownloader.cancel(taskId: taskId!);
-      FlutterDownloader.remove(taskId: taskId!, shouldDeleteContent: true);
+      setState(() {
+        status = DownloadStatus.cancelDownload;
+      });
+      await _cancelAndRemove(taskId);
       setState(() {
         taskId = null;
         status = DownloadStatus.download;
@@ -156,7 +177,15 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
     }
   }
 
+  Future<void> _cancelAndRemove(String? taskId) async {
+    if (taskId != null) {
+      await FlutterDownloader.cancel(taskId: taskId);
+      await FlutterDownloader.remove(taskId: taskId, shouldDeleteContent: true);
+    }
+  }
+
   void download(String url, String savePath) async {
+    downloadProgress.value = 0;
     setState(() {
       status = DownloadStatus.downloading;
     });

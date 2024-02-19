@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/image_resolution_provider.dart';
@@ -231,12 +232,12 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     });
   }
 
-  Widget _videoPlayerStack(double screenHeight,bool isGridView) {
+  Widget _videoPlayerStack(double screenHeight, bool isGridView) {
     return SliverToBoxAdapter(
       child: Hero(
         tag: '${widget.item.author}/${widget.item.permlink}',
         child: SizedBox(
-          height:isGridView ? screenHeight * 0.4 : 230,
+          height: isGridView ? screenHeight * 0.4 : 230,
           child: Stack(
             children: [
               BetterPlayer(
@@ -358,7 +359,6 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   void showVoters() {
-    _betterPlayerController.pause();
     List<String> voters = [];
     bool currentUserPresentInVoters = false;
     if (postInfo != null) {
@@ -504,6 +504,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             item: widget.item,
           ),
         ));
+     _playVideoAfterPush();
   }
 
   void seeCommentsPressed() {
@@ -520,6 +521,12 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         },
       ),
     );
+    _playVideoAfterPush();
+  }
+
+  void _playVideoAfterPush() {
+    Future.delayed(Duration(milliseconds: 800))
+        .then((value) => _betterPlayerController.play());
   }
 
   Widget _actionBar(double width) {
@@ -686,17 +693,16 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         body: SafeArea(
             child: CustomScrollView(
           slivers: [
-            _videoPlayerStack(height,isGridView),
+            _videoPlayerStack(height, isGridView),
             _userInfo(),
             _actionBar(width),
             _chipList(),
             isSuggestionsLoading
                 ? VideoFeedLoader(
-                  isSliver: true,
-                  isGridView: isGridView,
-                )
-                :
-                 isGridView
+                    isSliver: true,
+                    isGridView: isGridView,
+                  )
+                : isGridView
                     ? _sliverGridView()
                     : _sliverListView(),
           ],
