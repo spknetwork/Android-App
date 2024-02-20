@@ -343,8 +343,8 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     }
     fabItems.add(
       FabOverItemData(
-        displayName: 'Favourites',
-        icon: Icons.favorite,
+        displayName: 'Bookmarks',
+        icon: Icons.bookmarks,
         onTap: () {
           setState(() {
             isMenuOpen = false;

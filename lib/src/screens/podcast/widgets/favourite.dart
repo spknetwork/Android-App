@@ -47,7 +47,7 @@ class _FavouriteWidgetState extends State<FavouriteWidget> {
       constraints: widget.disablePadding ? BoxConstraints() : null,
       padding: widget.disablePadding ? EdgeInsets.zero : null,
       icon: Icon(
-        isLiked ? Icons.favorite : Icons.favorite_border,
+        isLiked ? Icons.bookmark : Icons.bookmark_border,
         size: widget.iconSize,
         color: widget.iconColor,
       ),

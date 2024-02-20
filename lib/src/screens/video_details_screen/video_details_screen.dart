@@ -9,10 +9,10 @@ import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_recommendation_models/video_recommendation.dart';
-import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/comment/hive_comment_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/utils/routes/routes.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/list_tile_video.dart';
@@ -22,6 +22,7 @@ import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -60,8 +61,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
 
   void onUserTap() {
     _betterPlayerController.pause();
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (c) => UserChannelScreen(owner: widget.vm.author)));
+    context.pushNamed(Routes.userView,
+        pathParameters: {'author': widget.vm.author});
   }
 
   // used when there is an error state in loading video info
@@ -143,8 +144,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
           var data = snapshot.data as HivePostInfoPostResultBody;
           var upVotes = data.activeVotes.where((e) => e.rshares > 0).length;
           var downVotes = data.activeVotes.where((e) => e.rshares < 0).length;
-          String priceAndVotes =
-              "👍 $upVotes · 👎 $downVotes";
+          String priceAndVotes = "👍 $upVotes · 👎 $downVotes";
           return Container(
             margin: const EdgeInsets.all(10),
             child: Column(
@@ -157,12 +157,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                           width: 40,
                           url: server.userOwnerThumb(details.owner)),
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (c) =>
-                                UserChannelScreen(owner: details.owner),
-                          ),
-                        );
+                        context.pushNamed(Routes.userView,
+                            pathParameters: {'author': details.owner});
                       },
                     ),
                     SizedBox(width: 10),
@@ -170,12 +166,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         child: Text(details.owner,
                             style: Theme.of(context).textTheme.bodyLarge),
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (c) =>
-                                  UserChannelScreen(owner: details.owner),
-                            ),
-                          );
+                          context.pushNamed(Routes.userView,
+                              pathParameters: {'author': details.owner});
                         }),
                     SizedBox(width: 10),
                     Spacer(),
@@ -325,8 +317,7 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
                         ? IconButton(
                             onPressed: () {
                               var ipfsHash = details.playUrl
-                                  .replaceAll(
-                                      IpfsNodeProvider().nodeUrl, "")
+                                  .replaceAll(IpfsNodeProvider().nodeUrl, "")
                                   .replaceAll("/manifest.m3u8", "");
                               Share.share(
                                   "Copy this IPFS Hash & Pin it on your system - $ipfsHash");
@@ -558,8 +549,8 @@ class _VideoDetailsScreenState extends State<VideoDetailsScreen> {
       subtitle: "",
       onUserTap: () {
         _betterPlayerController.pause();
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (c) => UserChannelScreen(owner: item.owner)));
+        context
+            .pushNamed(Routes.userView, pathParameters: {'author': item.owner});
       },
       user: item.owner,
       permlink: item.mediaid,

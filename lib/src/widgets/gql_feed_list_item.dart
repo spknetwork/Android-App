@@ -3,11 +3,12 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
-import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
+import 'package:acela/src/utils/routes/routes.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -53,9 +54,7 @@ class _GQLFeedListItemWidgetState extends State<GQLFeedListItemWidget> {
                 url: server.userOwnerThumb(author),
               ),
               onTap: () {
-                var screen = UserChannelScreen(owner: author);
-                var route = MaterialPageRoute(builder: (c) => screen);
-                Navigator.of(context).push(route);
+                context.pushNamed(Routes.userView, pathParameters: {'author': author});
               },
             ),
             title: Padding(
@@ -67,9 +66,7 @@ class _GQLFeedListItemWidgetState extends State<GQLFeedListItemWidget> {
                 InkWell(
                   child: Text('👤 $author'),
                   onTap: () {
-                    var screen = UserChannelScreen(owner: author);
-                    var route = MaterialPageRoute(builder: (c) => screen);
-                    Navigator.of(context).push(route);
+                    context.pushNamed(Routes.userView, pathParameters: {'author':  author});
                   },
                 ),
                 SizedBox(width: 10),

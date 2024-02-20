@@ -44,7 +44,7 @@ class _UserFavouritesState extends State<UserFavourites>
     return Scaffold(
       appBar: AppBar(
         title: ListTile(
-          title: Text('Favourites'),
+          title: Text('Bookmarks'),
           subtitle: Text(appBarSubtitle()),
         ),
         bottom: TabBar(

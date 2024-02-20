@@ -133,8 +133,10 @@ class GQLFeedItem {
   String toRawJson() => json.encode(toJson());
 
   factory GQLFeedItem.fromJson(Map<String, dynamic> json) => GQLFeedItem(
-        playUrl: json['json_metadata']?['raw']?['video']?['info']?['video_v2'] ,
-        isVideo: json['json_metadata']?['raw']?['video']?['info']?['video_v2']?.endsWith('.m3u8') ?? true,
+        playUrl: json['json_metadata']?['raw']?['video']?['info']?['video_v2'],
+        isVideo: json['json_metadata']?['raw']?['video']?['info']?['video_v2']
+                ?.endsWith('.m3u8') ??
+            true,
         stats: json["stats"] == null
             ? null
             : GQLFeedItemStats.fromJson(json["stats"]),
@@ -162,7 +164,6 @@ class GQLFeedItem {
             : List<GQLFeedItemChild>.from(
                 json["children"]!.map((x) => GQLFeedItemChild.fromJson(x))),
       );
-
 
   Map<String, dynamic> toJson() => {
         "stats": stats?.toJson(),
@@ -464,4 +465,22 @@ class GQLFeedItemStats {
         "num_votes": numVotes,
         "num_comments": numComments,
       };
+}
+
+class VideoDetailsFeed {
+  final GQLFeedItem item;
+
+  VideoDetailsFeed({required this.item});
+
+  factory VideoDetailsFeed.fromRawJson(String str) =>
+      VideoDetailsFeed.fromJson(json.decode(str));
+
+  String toRawJson() => json.encode(toJson());
+
+  factory VideoDetailsFeed.fromJson(Map<String, dynamic> json) =>
+      VideoDetailsFeed(
+        item: GQLFeedItem.fromJson(json['data']['socialPost']),
+      );
+
+  Map<String, dynamic> toJson() => {"item": item.toJson()};
 }
