@@ -3,10 +3,10 @@ import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/image_resolution_provider.dart';
 import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
-import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
 import 'package:acela/src/screens/upload/video/controller/video_upload_controller.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
+import 'package:acela/src/utils/routes/app_router.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -206,19 +206,9 @@ class AcelaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var isDarkMode = Provider.of<bool>(context);
-    var userData = Provider.of<HiveUserData>(context);
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Acela - 3Speak App',
-      home: userData.loaded
-          ? userData.username != null
-              ? GQLFeedScreen(appData: userData, username: userData.username!)
-              : GQLFeedScreen(appData: userData, username: null)
-          : Scaffold(
-              appBar: AppBar(title: const Text('3Speak')),
-              body: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
+      routerConfig: AppRouter.router,
       theme: isDarkMode
           ? ThemeData.dark().copyWith(
               primaryColor: Colors.deepPurple,

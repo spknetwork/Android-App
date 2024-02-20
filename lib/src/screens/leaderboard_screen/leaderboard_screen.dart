@@ -1,12 +1,13 @@
 import 'dart:core';
-
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/leaderboard_models/leaderboard_model.dart';
 import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
+import 'package:acela/src/utils/routes/routes.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:acela/src/widgets/retry.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' show get;
 
 class LeaderboardScreen extends StatefulWidget {
@@ -46,8 +47,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   void onUserTap(String author) {
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (c) => UserChannelScreen(owner: author)));
+    context.pushNamed(Routes.userView, pathParameters: {'author': author});
   }
 
   Widget _medalTile(LeaderboardResponseItem item, String medal, double max) {

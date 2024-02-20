@@ -10,10 +10,12 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/utils/routes/routes.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({
@@ -64,9 +66,7 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         splashColor: Colors.transparent,
         contentPadding: EdgeInsets.zero,
         onTap: () {
-          var screen = UserChannelScreen(owner: username);
-          var route = MaterialPageRoute(builder: (c) => screen);
-          Navigator.of(context).push(route);
+          context.pushNamed(Routes.userView, pathParameters: {'author': username});
         },
         leading: CustomCircleAvatar(
           height: 36,

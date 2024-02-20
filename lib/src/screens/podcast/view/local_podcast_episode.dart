@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/podcast/controller/podcast_controller.dart';
@@ -9,7 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class LocalPodcastEpisode extends StatelessWidget {
-  const LocalPodcastEpisode({Key? key, required this.appData}) : super(key: key);
+  const LocalPodcastEpisode({Key? key, required this.appData})
+      : super(key: key);
   final HiveUserData appData;
 
   @override
@@ -22,7 +26,7 @@ class LocalPodcastEpisode extends StatelessWidget {
           bottom: TabBar(
             tabs: [
               Tab(text: 'Offline Episode'),
-              Tab(text: 'Liked Episode'),
+              Tab(text: 'Bookmarked Episode'),
             ],
           ),
         ),
@@ -38,20 +42,25 @@ class LocalPodcastEpisode extends StatelessWidget {
 }
 
 class LocalEpisodeListView extends StatelessWidget {
-  const LocalEpisodeListView({Key? key, required this.isOffline}) : super(key: key);
+  const LocalEpisodeListView({Key? key, required this.isOffline})
+      : super(key: key);
 
   final bool isOffline;
 
   @override
   Widget build(BuildContext context) {
     final controller = context.read<PodcastController>();
-    List<PodcastEpisode> items = controller.likedOrOfflinepodcastEpisodes(isOffline: isOffline);
+    List<PodcastEpisode> items =
+        controller.likedOrOfflinepodcastEpisodes(isOffline: isOffline);
     if (items.isEmpty)
-      return Center(child: Text("${isOffline ? "Offline" : "Liked"} Podcast Episode is Empty"));
+      return Center(
+          child: Text(
+              "${isOffline ? "Offline" : "Liked"} Podcast Episode is Empty"));
     else
       return ListView.separated(
         itemBuilder: (c, index) {
           PodcastEpisode item = items[index];
+          log(item.image!);
           return Dismissible(
               key: Key(item.id.toString()),
               background: Center(child: Text("Delete")),
@@ -59,7 +68,8 @@ class LocalEpisodeListView extends StatelessWidget {
                 if (isOffline) {
                   controller.deleteOfflinePodcastEpisode(item);
                 } else {
-                  controller.storeLikedPodcastEpisodeLocally(item, forceRemove: true);
+                  controller.storeLikedPodcastEpisodeLocally(item,
+                      forceRemove: true);
                 }
               },
               child: podcastEpisodeListItem(item, context, controller));
@@ -69,10 +79,13 @@ class LocalEpisodeListView extends StatelessWidget {
       );
   }
 
-  ListTile podcastEpisodeListItem(PodcastEpisode item, BuildContext context, PodcastController controller) {
+  ListTile podcastEpisodeListItem(
+      PodcastEpisode item, BuildContext context, PodcastController controller) {
     String url = item.enclosureUrl ?? "";
     if (isOffline) {
-      url = Uri.parse(controller.getOfflineUrl(item.enclosureUrl ?? "", item.id!)).path;
+      url =
+          Uri.parse(controller.getOfflineUrl(item.enclosureUrl ?? "", item.id!))
+              .path;
       item.enclosureUrl = '$url';
     }
     return ListTile(
@@ -112,11 +125,14 @@ class LocalEpisodeListView extends StatelessWidget {
         width: 30,
         decoration: BoxDecoration(
             color: Colors.grey,
-            image: DecorationImage(
-                image: NetworkImage(
-                  item.image ?? "",
-                ),
-                fit: BoxFit.cover)),
+            image: (isOffline && !item.image!.startsWith('http'))
+                ? DecorationImage(
+                    image: FileImage(File(item.image!)), fit: BoxFit.cover)
+                : DecorationImage(
+                    image: NetworkImage(
+                      item.image ?? "",
+                    ),
+                  )),
       ),
       title: Text(
         item.title ?? '',

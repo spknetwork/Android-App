@@ -90,7 +90,8 @@ class PodcastEpisode {
 
   factory PodcastEpisode.fromJson(Map<String, dynamic> json) => PodcastEpisode(
       id: json["id"].toString(),
-      isAudio:json['isAudio'] ?? json['enclosureType']?.contains('audio') ?? true,
+      isAudio:
+          json['isAudio'] ?? json['enclosureType']?.contains('audio') ?? true,
       title: json["title"],
       link: json["link"],
       description: json["description"],
@@ -132,4 +133,36 @@ class PodcastEpisode {
         'chaptersUrl': chaptersUrl,
         'isAudio': isAudio
       };
+
+  PodcastEpisode copyWith({
+    String? id,
+    String? title,
+    String? link,
+    String? description,
+    int? datePublished,
+    String? datePublishedPretty,
+    String? enclosureUrl,
+    int? duration,
+    int? episode,
+    String? image,
+    String? guid,
+    String? chaptersUrl,
+    bool? isAudio,
+  }) {
+    return PodcastEpisode(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      link: link ?? this.link,
+      description: description ?? this.description,
+      datePublished: datePublished ?? this.datePublished,
+      datePublishedPretty: datePublishedPretty ?? this.datePublishedPretty,
+      enclosureUrl: enclosureUrl ?? this.enclosureUrl,
+      duration: duration ?? this.duration,
+      episode: episode ?? this.episode,
+      image: image ?? this.image,
+      guid: guid ?? this.guid,
+      chaptersUrl: chaptersUrl ?? this.chaptersUrl,
+      isAudio: isAudio ?? this.isAudio,
+    );
+  }
 }

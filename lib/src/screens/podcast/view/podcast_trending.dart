@@ -238,8 +238,8 @@ class _PodCastTrendingScreenState extends State<PodCastTrendingScreen>
       },
     );
     var favourites = FabOverItemData(
-      displayName: 'Favourites',
-      icon: Icons.favorite,
+      displayName: 'Bookmarks',
+      icon: Icons.bookmarks,
       onTap: () {
         setState(() {
           isMenuOpen = false;

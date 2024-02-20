@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/image_resolution_provider.dart';
@@ -17,7 +16,9 @@ import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/comment/video_details_comments.dart';
+import 'package:acela/src/utils/routes/routes.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
+import 'package:acela/src/widgets/box_loading/video_detail_feed_loader.dart';
 import 'package:acela/src/widgets/box_loading/video_feed_loader.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/new_feed_list_item.dart';
@@ -26,6 +27,7 @@ import 'package:better_player/better_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -35,12 +37,16 @@ import 'package:http/http.dart' as http;
 class NewVideoDetailsScreen extends StatefulWidget {
   const NewVideoDetailsScreen(
       {Key? key,
-      required this.item,
-      required this.appData,
-      this.betterPlayerController});
+      this.item,
+      this.betterPlayerController,
+      required this.author,
+      required this.permlink,
+      this.onPop});
 
-  final GQLFeedItem item;
-  final HiveUserData appData;
+  final GQLFeedItem? item;
+  final String author;
+  final String permlink;
+  final VoidCallback? onPop;
   final BetterPlayerController? betterPlayerController;
 
   @override
@@ -49,19 +55,22 @@ class NewVideoDetailsScreen extends StatefulWidget {
 
 class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   late BetterPlayerController _betterPlayerController;
+  late GQLFeedItem item;
+  bool isLoadingVideo = true;
   HivePostInfoPostResultBody? postInfo;
   var selectedChip = 0;
   late final VideoSettingProvider videoSettingProvider;
-
+  late HiveUserData appData;
   List<GQLFeedItem> suggestions = [];
   bool isSuggestionsLoading = true;
 
   @override
   void initState() {
+    appData = context.read<HiveUserData>();
     videoSettingProvider = context.read<VideoSettingProvider>();
     super.initState();
     Wakelock.enable();
-    loadRatio();
+    loadDataAndVideo();
     loadHiveInfo();
     loadSuggestions();
   }
@@ -76,11 +85,18 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     Wakelock.disable();
   }
 
+  @override
+  void deactivate() {
+    changeControlsVisibility(false);
+    if (widget.onPop != null) widget.onPop!();
+    super.deactivate();
+  }
+
   void loadSuggestions() async {
     var items = await GQLCommunicator().getRelated(
-      widget.item.author?.username ?? 'sagarkothari88',
-      widget.item.permlink ?? 'ctbtwcxbbd',
-      widget.appData.language,
+      widget.author,
+      widget.permlink,
+      appData.language,
     );
     setState(() {
       suggestions = items;
@@ -92,7 +108,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     setState(() {
       postInfo = null;
     });
-    var data = await fetchHiveInfoForThisVideo(widget.appData.rpc);
+    var data = await fetchHiveInfoForThisVideo(appData.rpc);
     setState(() {
       postInfo = data;
     });
@@ -106,8 +122,8 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       "jsonrpc": "2.0",
       "method": "bridge.get_discussion",
       "params": {
-        "author": widget.item.author?.username ?? 'sagarkothari88',
-        "permlink": widget.item.permlink ?? 'ctbtwcxbbd',
+        "author": widget.author,
+        "permlink": widget.permlink,
         "observer": ""
       }
     });
@@ -117,8 +133,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       var result = HivePostInfo.fromJsonString(string)
           .result
           .resultData
-          .where((element) =>
-              element.permlink == (widget.item.permlink ?? 'ctbtwcxbbd'))
+          .where((element) => element.permlink == (widget.permlink))
           .first;
       return result;
     } else {
@@ -133,7 +148,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         builder: (context, value, child) {
           return CachedImage(
             imageUrl: Utilities.getProxyImage(
-                value, (widget.item.spkvideo?.thumbnailUrl ?? '')),
+                value, (item.spkvideo?.thumbnailUrl ?? '')),
             imageHeight: 230,
             imageWidth: double.infinity,
           );
@@ -170,12 +185,12 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
-      (widget.item.isVideo)
+      (item.isVideo)
           ? Platform.isAndroid
               ? url.replaceAll("/manifest.m3u8", "/480p/index.m3u8")
               : url
-          : widget.item.playUrl!,
-      videoFormat: widget.item.isVideo
+          : item.playUrl!,
+      videoFormat: item.isVideo
           ? BetterPlayerVideoFormat.hls
           : BetterPlayerVideoFormat.other,
     );
@@ -197,17 +212,28 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     }
   }
 
-  void loadRatio() async {
+  void loadDataAndVideo() async {
+    if (widget.item != null) {
+      item = widget.item!;
+      isLoadingVideo = false;
+    } else {
+      var data = await GQLCommunicator()
+          .getVideoDetails(widget.author, widget.permlink);
+      setState(() {
+        item = data;
+        isLoadingVideo = false;
+      });
+    }
     if (widget.betterPlayerController != null) {
       _betterPlayerController = widget.betterPlayerController!;
       changeControlsVisibility(true);
     } else {
-      if (widget.item.isVideo) {
+      if (item.isVideo) {
         setupVideo(
-          widget.item.videoV2M3U8(widget.appData),
+          item.videoV2M3U8(appData),
         );
       } else {
-        setupVideo(widget.item.playUrl!);
+        setupVideo(item.playUrl!);
       }
 
       if (videoSettingProvider.isMuted) {
@@ -227,7 +253,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     debugPrint('position is $position');
     const platform = MethodChannel('com.example.acela/auth');
     await platform.invokeMethod('playFullscreen', {
-      'url': widget.item.videoV2M3U8(widget.appData),
+      'url': item.videoV2M3U8(appData),
       'seconds': seconds,
     });
   }
@@ -235,7 +261,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   Widget _videoPlayerStack(double screenHeight, bool isGridView) {
     return SliverToBoxAdapter(
       child: Hero(
-        tag: '${widget.item.author}/${widget.item.permlink}',
+        tag: '${item.author}/${item.permlink}',
         child: SizedBox(
           height: isGridView ? screenHeight * 0.4 : 230,
           child: Stack(
@@ -296,9 +322,8 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   Widget _userInfo() {
-    String timeInString = widget.item.createdAt != null
-        ? "${timeago.format(widget.item.createdAt!)}"
-        : "";
+    String timeInString =
+        item.createdAt != null ? "${timeago.format(item.createdAt!)}" : "";
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.only(top: 10.0, bottom: 5),
@@ -307,21 +332,20 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
           dense: true,
           splashColor: Colors.transparent,
           onTap: () {
-            var screen = UserChannelScreen(
-                owner: widget.item.author?.username ?? "sagarkothari88");
-            var route = MaterialPageRoute(builder: (_) => screen);
-            Navigator.of(context).push(route);
+            context.pushNamed(Routes.userView, pathParameters: {
+              'author': item.author?.username ?? "sagarkothari88"
+            });
           },
           leading: ClipOval(
             child: CachedImage(
               imageUrl:
-                  'https://images.hive.blog/u/${widget.item.author?.username ?? 'sagarkothari88'}/avatar',
+                  'https://images.hive.blog/u/${item.author?.username ?? 'sagarkothari88'}/avatar',
               imageHeight: 40,
               imageWidth: 40,
             ),
           ),
           title: Text(
-            widget.item.title ?? 'No title',
+            item.title ?? 'No title',
             style: TextStyle(
                 color: Theme.of(context).primaryColorLight,
                 fontWeight: FontWeight.bold,
@@ -331,7 +355,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             children: [
               Expanded(
                 child: Text(
-                  widget.item.author?.username ?? "sagarkothari88",
+                  item.author?.username ?? "sagarkothari88",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: Theme.of(context).primaryColorLight),
@@ -362,12 +386,12 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     List<String> voters = [];
     bool currentUserPresentInVoters = false;
     if (postInfo != null) {
-      if (widget.appData.username != null) {
+      if (appData.username != null) {
         int userNameInVotesIndex = postInfo!.activeVotes
-            .indexWhere((element) => element.voter == widget.appData.username);
+            .indexWhere((element) => element.voter == appData.username);
         if (userNameInVotesIndex != -1) {
           currentUserPresentInVoters = true;
-          voters.add(widget.appData.username!);
+          voters.add(appData.username!);
           for (int i = 0; i < postInfo!.activeVotes.length; i++) {
             if (i != userNameInVotesIndex) {
               voters.add(postInfo!.activeVotes[i].voter);
@@ -447,7 +471,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
 
   void upvotePressed() {
     if (postInfo == null) return;
-    if (widget.appData.username == null) {
+    if (appData.username == null) {
       showAdaptiveActionSheet(
         context: context,
         title: const Text('You are not logged in. Please log in to upvote.'),
@@ -458,7 +482,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
               leading: Icon(Icons.login),
               onPressed: (c) {
                 Navigator.of(c).pop();
-                var screen = HiveAuthLoginScreen(appData: widget.appData);
+                var screen = HiveAuthLoginScreen(appData: appData);
                 var route = MaterialPageRoute(builder: (c) => screen);
                 Navigator.of(c).push(route);
               }),
@@ -469,7 +493,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     }
     if (postInfo!.activeVotes
             .map((e) => e.voter)
-            .contains(widget.appData.username ?? 'sagarkothari88') ==
+            .contains(appData.username ?? 'sagarkothari88') ==
         true) {
       showError('You have already voted for this video');
     }
@@ -478,13 +502,13 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       isScrollControlled: true,
       builder: (context) {
         return HiveUpvoteDialog(
-          author: widget.item.author?.username ?? 'sagarkothari88',
-          permlink: widget.item.permlink ?? 'ctbtwcxbbd',
-          username: widget.appData.username ?? "",
-          accessToken: widget.appData.accessToken,
-          postingAuthority: widget.appData.postingAuthority,
-          hasKey: widget.appData.keychainData?.hasId ?? "",
-          hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
+          author: item.author?.username ?? 'sagarkothari88',
+          permlink: item.permlink ?? 'ctbtwcxbbd',
+          username: appData.username ?? "",
+          accessToken: appData.accessToken,
+          postingAuthority: appData.postingAuthority,
+          hasKey: appData.keychainData?.hasId ?? "",
+          hasAuthKey: appData.keychainData?.hasAuthKey ?? "",
           activeVotes: postInfo!.activeVotes,
           onClose: () {},
           onDone: () {
@@ -500,11 +524,11 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => NewVideoDetailsInfo(
-            appData: widget.appData,
-            item: widget.item,
+            appData: appData,
+            item: item,
           ),
         ));
-     _playVideoAfterPush();
+    _playVideoAfterPush();
   }
 
   void seeCommentsPressed() {
@@ -512,11 +536,11 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
       MaterialPageRoute(
         builder: (context) {
           return VideoDetailsComments(
-            author: widget.item.author?.username ?? 'sagarkothari88',
-            permlink: widget.item.permlink ?? 'ctbtwcxbbd',
-            rpc: widget.appData.rpc,
-            appData: widget.appData,
-            item: widget.item,
+            author: item.author?.username ?? 'sagarkothari88',
+            permlink: item.permlink ?? 'ctbtwcxbbd',
+            rpc: appData.rpc,
+            appData: appData,
+            item: item,
           );
         },
       ),
@@ -532,8 +556,8 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   Widget _actionBar(double width) {
     final VideoFavoriteProvider provider = VideoFavoriteProvider();
     Color color = Theme.of(context).primaryColorLight;
-    String votes = "${widget.item.stats?.numVotes ?? 0}";
-    String comments = "${widget.item.stats?.numComments ?? 0}";
+    String votes = "${item.stats?.numVotes ?? 0}";
+    String comments = "${item.stats?.numComments ?? 0}";
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
@@ -586,19 +610,19 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             IconButton(
               onPressed: () {
                 Share.share(
-                    'https://3speak.tv/watch?v=${widget.item.author?.username ?? 'sagarkothari88'}/${widget.item.permlink}');
+                    'https://3speak.tv/watch?v=${item.author?.username ?? 'sagarkothari88'}/${item.permlink}');
               },
               icon: Icon(Icons.share, color: color),
             ),
             FavouriteWidget(
                 toastType: "Video",
                 iconColor: color,
-                isLiked: provider.isLikedVideoPresentLocally(widget.item),
+                isLiked: provider.isLikedVideoPresentLocally(item),
                 onAdd: () {
-                  provider.storeLikedVideoLocally(widget.item);
+                  provider.storeLikedVideoLocally(item);
                 },
                 onRemove: () {
-                  provider.storeLikedVideoLocally(widget.item);
+                  provider.storeLikedVideoLocally(item);
                 })
           ],
         ),
@@ -607,10 +631,10 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   bool isUserVoted() {
-    if (widget.appData.username != null) {
+    if (appData.username != null) {
       if (postInfo != null && postInfo!.activeVotes.isNotEmpty) {
         int index = postInfo!.activeVotes
-            .indexWhere((element) => element.voter == widget.appData.username);
+            .indexWhere((element) => element.voter == appData.username);
         if (index != -1) {
           return true;
         }
@@ -620,8 +644,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
   }
 
   Widget _chipList() {
-    List<String> tags =
-        widget.item.tags ?? ['threespeak', 'video', 'threeshorts'];
+    List<String> tags = item.tags ?? ['threespeak', 'video', 'threeshorts'];
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.only(bottom: 15.0, top: 5),
@@ -688,15 +711,24 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     return PopScope(
       onPopInvoked: (value) {
         changeControlsVisibility(false);
+        if (widget.onPop != null) widget.onPop!();
       },
       child: Scaffold(
         body: SafeArea(
             child: CustomScrollView(
           slivers: [
-            _videoPlayerStack(height, isGridView),
-            _userInfo(),
-            _actionBar(width),
-            _chipList(),
+            !isLoadingVideo
+                ? _videoPlayerStack(height, isGridView)
+                : sliverSizedBox(),
+            !isLoadingVideo ? _userInfo() : sliverSizedBox(),
+            !isLoadingVideo ? _actionBar(width) : sliverSizedBox(),
+            !isLoadingVideo ? _chipList() : sliverSizedBox(),
+            SliverVisibility(
+              visible: isLoadingVideo,
+              sliver: SliverToBoxAdapter(
+                child: VideoDetailFeedLoader(isGridView: isGridView),
+              ),
+            ),
             isSuggestionsLoading
                 ? VideoFeedLoader(
                     isSliver: true,
@@ -711,8 +743,14 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
     );
   }
 
+  Widget sliverSizedBox() {
+    return const SliverToBoxAdapter(
+      child: SizedBox.shrink(),
+    );
+  }
+
   Widget _sliverGridView() {
-    return FeedItemGridWidget(items: suggestions, appData: widget.appData);
+    return FeedItemGridWidget(items: suggestions, appData: appData);
   }
 
   SliverList _sliverListView() {
@@ -734,7 +772,7 @@ class _NewVideoDetailsScreenState extends State<NewVideoDetailsScreen> {
             onTap: () {},
             onUserTap: () {},
             item: item,
-            appData: widget.appData,
+            appData: appData,
           );
         },
         childCount: suggestions.length,

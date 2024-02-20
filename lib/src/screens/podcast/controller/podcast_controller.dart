@@ -1,8 +1,10 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:acela/src/models/podcast/podcast_episodes.dart';
 import 'package:acela/src/models/podcast/trending_podcast_response.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 
 class PodcastController extends ChangeNotifier {
@@ -159,14 +161,20 @@ class PodcastController extends ChangeNotifier {
   }
 
   //after downloaing a podcast episode store it locally
-  void storeOfflinePodcastLocally(PodcastEpisode episode) {
+  Future<void> storeOfflinePodcastLocally(PodcastEpisode episode) async {
+    log('saving');
+    PodcastEpisode localEpisode = episode;
+    try {
+      localEpisode =
+          episode.copyWith(image: await _saveImage(episode.image!, episode.id!));
+    } catch (e) {}
     final String key = _offlinePodcastLocalKey;
     if (box.read(key) != null) {
       List json = box.read(key);
-      json.add(episode.toJson());
+      json.add(localEpisode.toJson());
       box.write(key, json);
     } else {
-      box.write(key, [episode.toJson()]);
+      box.write(key, [localEpisode.toJson()]);
     }
   }
 
@@ -188,6 +196,8 @@ class PodcastController extends ChangeNotifier {
 
   void deleteOfflinePodcastEpisode(PodcastEpisode episode) {
     if (externalDir != null) {
+      String decodedId = removeUnwantedCharacters(episode.id!);
+      _deleteImage(externalDir.path + '/images/$decodedId.jpg');
       for (int i = 0; i < externalDir.listSync().length; i++) {
         var item = externalDir.listSync()[i];
         if (decodeAudioName(item.path, episodeId: episode.id) ==
@@ -203,5 +213,25 @@ class PodcastController extends ChangeNotifier {
         }
       }
     }
+  }
+
+  _saveImage(String imageUrl, String identifier) async {
+    String id = removeUnwantedCharacters(identifier);
+    var response = await get(Uri.parse(imageUrl));
+    var firstPath = externalDir.path + "/images";
+    var filePathAndName = externalDir.path + '/images/$id.jpg';
+    await Directory(firstPath).create(recursive: true);
+    File file2 = new File(filePathAndName);
+    file2.writeAsBytesSync(response.bodyBytes);
+    return filePathAndName;
+  }
+
+  void _deleteImage(String filePath) async {
+    try {
+      if (await File(filePath).exists()) {
+        await File(filePath).delete();
+        print('File removed successfully: $filePath');
+      }
+    } catch (e) {}
   }
 }

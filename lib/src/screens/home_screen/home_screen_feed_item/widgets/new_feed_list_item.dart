@@ -1,8 +1,8 @@
 import 'dart:io';
-
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/image_resolution_provider.dart';
 import 'package:acela/src/global_provider/video_setting_provider.dart';
+import 'package:acela/src/models/navigation_models/new_video_detail_screen_navigation_model.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/controller/home_feed_video_controller.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/home_feed_video_full_screen_button.dart';
@@ -10,12 +10,11 @@ import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/home
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/home_feed_video_timer.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/mute_unmute_button.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/play_pause_button.dart';
-import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
-import 'package:acela/src/screens/video_details_screen/new_video_details/new_video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details/video_detail_favourite_provider.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
+import 'package:acela/src/utils/routes/routes.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
 import 'package:acela/src/widgets/cached_image.dart';
 import 'package:acela/src/widgets/upvote_button.dart';
@@ -23,6 +22,7 @@ import 'package:better_player/better_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -243,14 +243,15 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                   )
                 : _videoStack(thumbnail),
             SizedBox(
-              height:widget.isGridView ? 75 : null,
+              height: widget.isGridView ? 75 : null,
               child: Padding(
                 padding: const EdgeInsets.only(
                     top: 10.0, bottom: 5, left: 13, right: 13),
                 child: Row(
-                  crossAxisAlignment:!widget.isGridView && isTitleOneLine(titleStyle)
-                      ? CrossAxisAlignment.center
-                      : CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      !widget.isGridView && isTitleOneLine(titleStyle)
+                          ? CrossAxisAlignment.center
+                          : CrossAxisAlignment.start,
                   children: [
                     InkWell(
                       child: ClipOval(
@@ -397,7 +398,9 @@ class _NewFeedListItemState extends State<NewFeedListItem>
                   _interactionTools()
                 ],
               )
-            : widget.isGridView ? Positioned.fill(child: thumbnail) : thumbnail,
+            : widget.isGridView
+                ? Positioned.fill(child: thumbnail)
+                : thumbnail,
         _timer(),
       ],
     );
@@ -425,28 +428,22 @@ class _NewFeedListItemState extends State<NewFeedListItem>
   }
 
   void _pushToVideoDetailScreen() async {
-    var screen = NewVideoDetailsScreen(
-        betterPlayerController: _betterPlayerController,
-        item: widget.item!,
-        appData: widget.appData!);
-    var route = MaterialPageRoute(builder: (context) => screen);
     homeFeedVideoController.isUserOnAnotherScreen = true;
-    await Navigator.of(context).push(route);
-    homeFeedVideoController.isUserOnAnotherScreen = false;
-    if (widget.showVideo &&
-        _betterPlayerController == null &&
-        !homeFeedVideoController.isUserOnAnotherScreen) {
-      setState(() {
-        _initVideo();
-      });
-    }
+    context.pushNamed(Routes.videoDetailsView,
+        extra: NewVideoDetailScreenNavigationParameter(
+            betterPlayerController: _betterPlayerController,
+            item: widget.item,
+            onPop: onPopFromUserViewOrVideoDetailsView),
+        pathParameters: {'author': widget.author, 'permlink': widget.permlink});
   }
 
   void _pushToUserScreen() async {
-    var screen = UserChannelScreen(owner: widget.author);
-    var route = MaterialPageRoute(builder: (c) => screen);
-    homeFeedVideoController.isUserOnAnotherScreen = true;
-    await Navigator.of(context).push(route);
+    context.pushNamed(Routes.userView,
+        pathParameters: {'author': widget.author},
+        extra: onPopFromUserViewOrVideoDetailsView);
+  }
+
+  void onPopFromUserViewOrVideoDetailsView() {
     homeFeedVideoController.isUserOnAnotherScreen = false;
     if (widget.showVideo &&
         _betterPlayerController == null &&

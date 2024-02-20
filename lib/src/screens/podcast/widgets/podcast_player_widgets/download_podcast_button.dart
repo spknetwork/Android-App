@@ -37,7 +37,7 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
 
     IsolateNameServer.registerPortWithName(
         _port.sendPort, 'downloader_send_port');
-    _port.listen((dynamic data) {
+    _port.listen((dynamic data) async {
       // String id = data[0];
       // DownloadTaskStatus statuss = (data[1]);
       int progress = data[2];
@@ -46,7 +46,7 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
       if (progress == 100 &&
           status == DownloadStatus.downloading &&
           taskId != null) {
-        podcastController.storeOfflinePodcastLocally(widget.episode);
+         podcastController.storeOfflinePodcastLocally(widget.episode);
         setState(() {
           status = DownloadStatus.downloaded;
         });
@@ -74,12 +74,12 @@ class _DownloadPodcastButtonState extends State<DownloadPodcastButton> {
           status = DownloadStatus.download;
           taskId = null;
         });
-      }else {
-      setState(() {
-        _setStatusOnEpisodeChange();
-      });
+      } else {
+        setState(() {
+          _setStatusOnEpisodeChange();
+        });
+      }
     }
-    } 
     super.didUpdateWidget(oldWidget);
   }
 

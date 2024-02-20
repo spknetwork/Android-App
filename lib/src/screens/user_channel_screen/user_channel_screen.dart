@@ -12,8 +12,10 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class UserChannelScreen extends StatefulWidget {
-  const UserChannelScreen({Key? key, required this.owner}) : super(key: key);
+  const UserChannelScreen( {Key? key, required this.owner, this.onPop})
+      : super(key: key);
   final String owner;
+  final VoidCallback? onPop;
 
   @override
   _UserChannelScreenState createState() => _UserChannelScreenState();
@@ -50,6 +52,12 @@ class _UserChannelScreenState extends State<UserChannelScreen>
         currentIndex = _tabController.index;
       });
     });
+  }
+
+  @override
+  void deactivate() {
+    if (widget.onPop != null) widget.onPop!();
+    super.deactivate();
   }
 
   @override

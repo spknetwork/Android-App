@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/global_provider/video_setting_provider.dart';
 import 'package:acela/src/screens/podcast/widgets/favourite.dart';
@@ -10,16 +9,17 @@ import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:acela/src/models/hive_post_info/hive_post_info.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
-import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/hive_upvote_dialog.dart';
 import 'package:acela/src/screens/video_details_screen/new_video_details_info.dart';
 import 'package:acela/src/screens/video_details_screen/comment/video_details_comments.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/utils/routes/routes.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:better_player/better_player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:http/http.dart' as http;
@@ -398,7 +398,7 @@ class _StoryPlayerState extends State<StoryPlayer> {
           Visibility(
             visible: !controlsVisible,
             child: Padding(
-              padding: const EdgeInsets.only(left : 5.0),
+              padding: const EdgeInsets.only(left: 5.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -448,11 +448,10 @@ class _StoryPlayerState extends State<StoryPlayer> {
                         ],
                       ),
                       onPressed: () {
-                        var screen = UserChannelScreen(
-                            owner:
-                                widget.item.author?.username ?? 'sagarkothari88');
-                        var route = MaterialPageRoute(builder: (c) => screen);
-                        Navigator.of(context).push(route);
+                        context.pushNamed(Routes.userView, pathParameters: {
+                          'author':
+                              widget.item.author?.username ?? 'sagarkothari88'
+                        });
                       },
                     ),
                   ),
