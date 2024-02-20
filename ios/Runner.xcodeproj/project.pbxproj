@@ -463,7 +463,7 @@
 				CURRENT_PROJECT_VERSION = "${FLUTTER_BUILD_NUMBER}";
 				DEVELOPMENT_TEAM = 58LRY57FMK;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NUMBER = 89;
+				FLUTTER_BUILD_NUMBER = 90;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 3Speak.tv;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
@@ -609,7 +609,7 @@
 				CURRENT_PROJECT_VERSION = "${FLUTTER_BUILD_NUMBER}";
 				DEVELOPMENT_TEAM = 58LRY57FMK;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NUMBER = 89;
+				FLUTTER_BUILD_NUMBER = 90;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 3Speak.tv;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
@@ -641,7 +641,7 @@
 				CURRENT_PROJECT_VERSION = "${FLUTTER_BUILD_NUMBER}";
 				DEVELOPMENT_TEAM = 58LRY57FMK;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NUMBER = 89;
+				FLUTTER_BUILD_NUMBER = 90;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 3Speak.tv;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";

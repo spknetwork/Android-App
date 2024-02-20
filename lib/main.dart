@@ -126,6 +126,7 @@ class _MyAppState extends State<MyApp> {
               accessToken: null,
               postingKey: null,
               username: null,
+              cookie: null,
               postingAuthority: null,
               rpc: 'api.hive.blog',
               union: GQLCommunicator.defaultGQLServer,
@@ -154,6 +155,7 @@ class _MyAppState extends State<MyApp> {
     const storage = FlutterSecureStorage();
     String? username = await storage.read(key: 'username');
     String? postingKey = await storage.read(key: 'postingKey');
+     String? cookie = await storage.read(key: 'cookie');
     String? accessToken = await storage.read(key: 'accessToken');
     String? hasId = await storage.read(key: 'hasId');
     String? hasExpiry = await storage.read(key: 'hasExpiry');
@@ -185,6 +187,7 @@ class _MyAppState extends State<MyApp> {
                 hasId: hasId,
               )
             : null,
+        cookie: cookie,
         accessToken: accessToken,
         postingAuthority: postingAuth,
         resolution: resolution,

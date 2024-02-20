@@ -22,7 +22,7 @@ class HiveSocketData {
 class HiveUserData {
   String? username;
   String? postingKey;
-  // String? cookie;
+  String? cookie;
   String? language;
   HiveKeychainData? keychainData;
   String resolution;
@@ -37,6 +37,7 @@ class HiveUserData {
       required this.postingKey,
       required this.keychainData,
       required this.accessToken,
+      required this.cookie,
       required this.resolution,
       required this.rpc,
       required this.union,

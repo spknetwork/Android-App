@@ -5,6 +5,7 @@ import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
 import 'package:acela/src/screens/my_account/account_settings/widgets/delete_dialog.dart';
 import 'package:acela/src/screens/settings/add_cutom_union_indexer.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/foundation.dart';
@@ -90,6 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         String? hasId = await storage.read(key: 'hasId');
         String? hasExpiry = await storage.read(key: 'hasExpiry');
         String? hasAuthKey = await storage.read(key: 'hasAuthKey');
+        String? cookie = await storage.read(key: 'cookie');
         String? accessToken = await storage.read(key: 'accessToken');
         String? postingAuth = await storage.read(key: 'postingAuth') ;
         String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
@@ -100,6 +102,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           HiveUserData(
             username: username,
             postingKey: postingKey,
+            cookie: cookie,
             accessToken: accessToken,
             postingAuthority: postingAuth,
             resolution: optionName,
@@ -173,6 +176,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           HiveUserData(
             username: appData.username,
             postingKey: appData.postingKey,
+            cookie: appData.cookie,
             accessToken: appData.accessToken,
             resolution: appData.resolution,
             rpc: appData.rpc,
@@ -261,6 +265,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       username: null,
       postingKey: null,
       keychainData: null,
+      cookie: null,
       accessToken: null,
       postingAuthority: null,
       resolution: resolution,
@@ -310,7 +315,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) {
         return DeleteDialog(
           onDelete: () async {
-            /* TO-DO: Acela Core integration
             Navigator.pop(context);
             try {
               setState(() {
@@ -332,7 +336,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               });
               showError("Sorry, Something went wrong.");
             }
-             */
           },
         );
       },
@@ -449,6 +452,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             username: user.username,
             postingKey: user.postingKey,
             keychainData: user.keychainData,
+            cookie: user.cookie,
             accessToken: user.accessToken,
             postingAuthority: user.postingAuthority.toString(),
             resolution: user.resolution,
@@ -522,6 +526,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       HiveUserData(
         username: user.username,
         postingKey: user.postingKey,
+        cookie: user.cookie,
         keychainData: user.keychainData,
         accessToken: user.accessToken,
         postingAuthority: user.postingAuthority.toString(),

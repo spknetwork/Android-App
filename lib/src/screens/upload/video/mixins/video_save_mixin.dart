@@ -2,6 +2,7 @@ import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
+import 'package:acela/src/utils/communicator.dart';
 import 'package:flutter/cupertino.dart';
 
 class VideoSaveMixin {
@@ -25,16 +26,15 @@ class VideoSaveMixin {
   }) async {
     try {
       isSaving.value = true;
-      // TO-DO: Update here
-      // await Communicator().updateInfo(
-      //     user: user,
-      //     videoId: item.id,
-      //     title: title,
-      //     description: description,
-      //     isNsfwContent: isNsfwContent,
-      //     tags: tags,
-      //     thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
-      //     communityID: communityId);
+      await Communicator().updateInfo(
+          user: user,
+          videoId: item.id,
+          title: title,
+          description: description,
+          isNsfwContent: isNsfwContent,
+          tags: tags,
+          thumbnail: thumbIpfs.isEmpty ? null : thumbIpfs,
+          communityID: communityId);
       isSaving.value = false;
       successDialog();
     } catch (e) {

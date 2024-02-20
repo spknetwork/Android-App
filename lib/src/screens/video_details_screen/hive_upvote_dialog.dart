@@ -244,29 +244,29 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
     var voteValue = sliderValue * 10000;
     var user = data.username;
     if (user == null) return;
-    if (widget.accessToken != null && widget.postingAuthority) {
-      ActionResponse response = await Communicator()
-          .vote(widget.accessToken!, widget.author, widget.permlink);
-      if (response.valid && response.error.isEmpty) {
-        // Future.delayed(const Duration(seconds: 6), () {
-        if (mounted) {
-          setState(() {
-            isUpVoting = false;
-            widget.onDone();
-            Navigator.of(context).pop();
-          });
-        }
-        // });
-      } else {
-        showError(response.error);
-        if (isUpVoting && mounted) {
-          setState(() {
-            isUpVoting = false;
-          });
-        }
-      }
-    }
-    else {
+    // if (widget.accessToken != null && widget.postingAuthority) {
+    //   ActionResponse response = await Communicator()
+    //       .vote(widget.accessToken!, widget.author, widget.permlink);
+    //   if (response.valid && response.error.isEmpty) {
+    //     // Future.delayed(const Duration(seconds: 6), () {
+    //     if (mounted) {
+    //       setState(() {
+    //         isUpVoting = false;
+    //         widget.onDone();
+    //         Navigator.of(context).pop();
+    //       });
+    //     }
+    //     // });
+    //   } else {
+    //     showError(response.error);
+    //     if (isUpVoting && mounted) {
+    //       setState(() {
+    //         isUpVoting = false;
+    //       });
+    //     }
+    //   }
+    // }
+    // else {
       try {
         const platform = MethodChannel('com.example.acela/auth');
         final String result = await platform.invokeMethod('voteContent', {
@@ -320,7 +320,7 @@ class _HiveUpvoteDialogState extends State<HiveUpvoteDialog> {
         }
         showError('Something went wrong.\n${e.toString()}');
       }
-    }
+    // }
   }
 
   Widget _showQRCodeAndKeychainButton(String qr) {

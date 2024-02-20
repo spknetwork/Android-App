@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:acela/src/bloc/server.dart';
-import 'package:acela/src/models/action_response.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/home_screen/new_home_screen.dart';
@@ -30,14 +29,12 @@ class HiveAuthLoginScreen extends StatefulWidget {
   State<HiveAuthLoginScreen> createState() => _HiveAuthLoginScreenState();
 }
 
-class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerProviderStateMixin {
+class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
+    with TickerProviderStateMixin {
   static const platform = MethodChannel('blog.hive.auth/bridge');
   var usernameController = TextEditingController();
   late WebSocketChannel socket;
   String authKey = '';
-  String hasIdToken = '';
-  String proofOfPayload = '';
-  String signedHash = '';
   String? qrCode;
   var loadingQR = false;
   var timer = 0;
@@ -67,7 +64,12 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
             break;
           case "auth_wait":
             var uuid = asString(map, 'uuid');
-            var jsonData = {"account": usernameController.text, "uuid": uuid, "key": authKey, "host": Communicator.hiveAuthServer};
+            var jsonData = {
+              "account": usernameController.text,
+              "uuid": uuid,
+              "key": authKey,
+              "host": Communicator.hiveAuthServer
+            };
             var jsonString = json.encode(jsonData);
             var utf8Data = utf8.encode(jsonString);
             var qr = base64.encode(utf8Data);
@@ -106,29 +108,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
               qrCode = null;
               timer = 0;
               loadingQR = false;
-              hasIdToken = '';
             });
-            break;
-          case "challenge_ack":
-            var messageData = asString(map, 'data');
-            decryptChallenge(widget.appData, messageData);
-            break;
-          case "challenge_nack":
-            showError("You denied signing the auth for authentication");
-            setState(() {
-              proofOfPayload = '';
-              signedHash = '';
-              qrCode = null;
-              timer = 0;
-              loadingQR = false;
-            });
-            break;
-          case "sign_ack":
-            performSignInWithHAS(true);
-            break;
-          case "sign_nack":
-            showError("3Speak does not have posting authority to your account. You can not publish videos");
-            performSignInWithHAS(false);
             break;
           default:
             log('Default case here');
@@ -271,15 +251,18 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
               ? Column(
                   children: [
                     const SizedBox(height: 10),
-                    const Text('Authorize this request with "Keychain for Hive" app.'),
+                    const Text(
+                        'Authorize this request with "Keychain for Hive" app.'),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
                         var url = Uri.parse(qr);
                         launchUrl(url);
                       },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                      child: Image.asset('assets/hive-keychain-image.png', width: 220),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
+                      child: Image.asset('assets/hive-keychain-image.png',
+                          width: 220),
                     ),
                     const SizedBox(height: 20),
                     SizedBox(height: 10),
@@ -318,7 +301,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
                       onPressed: () {
                         onLoginTapped(appData);
                       },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
                       child: const Text('Login with Posting Key'),
                     ),
                     const SizedBox(height: 10),
@@ -331,7 +315,8 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
                         Navigator.of(context).push(route);
                       },
                       child: Text('Sign up'),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black),
                     ),
                   ],
                 ),
@@ -355,84 +340,46 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
       });
       var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
       if (bridgeResponse.valid) {
-        final String doWeHave = await MethodChannel("blog.hive.auth/bridge").invokeMethod(
-          'doWeHavePostingAuth',
-          {
-            'username': usernameController.text,
-          },
+        debugPrint("Successful login");
+        String resolution = await storage.read(key: 'resolution') ?? '480p';
+        String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+        String union = await storage.read(key: 'union') ??
+            GQLCommunicator.defaultGQLServer;
+        String? lang = await storage.read(key: 'lang');
+        await storage.write(key: 'username', value: usernameController.text);
+        await storage.write(key: 'postingKey', value: postingKey);
+        await storage.delete(key: 'hasId');
+        await storage.delete(key: 'hasExpiry');
+        await storage.delete(key: 'hasAuthKey');
+        await storage.delete(key: 'cookie');
+        var data = HiveUserData(
+          accessToken: null,
+          postingAuthority: null,
+          username: usernameController.text,
+          postingKey: postingKey,
+          keychainData: null,
+          cookie: null,
+          resolution: resolution,
+          rpc: rpc,
+          union: union,
+          loaded: true,
+          language: lang,
         );
-        var doWeHaveResponse = LoginBridgeResponse.fromJsonString(doWeHave);
-        if (doWeHaveResponse.valid) {
-          var authority = doWeHaveResponse.data != null && doWeHaveResponse.data == "true";
-          if (!authority) {
-            showError("3Speak does not have posting authority to your account. You can not publish videos");
-          }
-          await storage.write(key: 'postingAuth', value: authority.toString());
-          String proofPayload = json.encode({'account': usernameController.text, 'ts': DateTime.now().toIso8601String()});
-          const platform = MethodChannel('com.example.acela/auth');
-          final String result = await platform.invokeMethod('getProofOfPayload', {
-            'username': usernameController.text,
-            'postingKey': postingKey,
-            'proof': proofPayload,
-          });
-          LoginBridgeResponse actionResponse = LoginBridgeResponse.fromJsonString(result);
-          if (actionResponse.valid && actionResponse.error == '' && actionResponse.data != null && actionResponse.data!.isNotEmpty) {
-            var loginApiResponse = await Communicator().login(usernameController.text, proofPayload, actionResponse.data!);
-            if (loginApiResponse.valid) {
-              debugPrint("Successful login");
-              String resolution = await storage.read(key: 'resolution') ?? '480p';
-              String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-              String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
-              String? lang = await storage.read(key: 'lang');
-              await storage.write(key: 'username', value: usernameController.text);
-              await storage.write(key: 'postingKey', value: postingKey);
-              await storage.write(key: 'accessToken', value: loginApiResponse.data);
-              await storage.delete(key: 'hasId');
-              await storage.delete(key: 'hasExpiry');
-              await storage.delete(key: 'hasAuthKey');
-              await storage.delete(key: 'cookie');
-              var data = HiveUserData(
-                username: usernameController.text,
-                postingKey: postingKey,
-                keychainData: null,
-                accessToken: loginApiResponse.data,
-                postingAuthority: authority.toString(),
-                resolution: resolution,
-                rpc: rpc,
-                union: union,
-                loaded: true,
-                language: lang,
-              );
-              server.updateHiveUserData(data);
-              Navigator.of(context).pop();
-              var screen = GQLFeedScreen(
-                appData: data,
-                username: usernameController.text,
-              );
-              var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).pushReplacement(route);
-              showMessage('You have successfully logged in as - ${usernameController.text}');
-              setState(() {
-                isLoading = false;
-              });
-            } else {
-              showError(loginApiResponse.error);
-              setState(() {
-                isLoading = false;
-              });
-            }
-          } else {
-            showError(actionResponse.error);
-            setState(() {
-              isLoading = false;
-            });
-          }
-        } else {
-          showError(doWeHaveResponse.error);
-          setState(() {
-            isLoading = false;
-          });
-        }
+        server.updateHiveUserData(data);
+        var cookie = await Communicator().getValidCookie(data);
+        log(cookie);
+        Navigator.of(context).pop();
+        var screen = GQLFeedScreen(
+          appData: data,
+          username: usernameController.text,
+        );
+        var route = MaterialPageRoute(builder: (c) => screen);
+        Navigator.of(context).pushReplacement(route);
+        showMessage(
+            'You have successfully logged in as - ${usernameController.text}');
+        setState(() {
+          isLoading = false;
+        });
       } else {
         // it is NO valid key
         showError('Not valid key.');
@@ -445,7 +392,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
         isLoading = false;
       });
       log(e.toString());
-      if (e == 'No 3Speak Account found with name - ${usernameController.text}') {
+      if(e == 'No 3Speak Account found with name - ${usernameController.text}'){
         await storage.delete(key: 'username');
         await storage.delete(key: 'postingKey');
         await storage.delete(key: 'hasId');
@@ -456,6 +403,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
           username: null,
           postingKey: null,
           keychainData: null,
+          cookie: null,     
           accessToken: null,
           postingAuthority: null,
           resolution: '480p',
@@ -476,94 +424,21 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
     socket.sink.close();
   }
 
-  void decryptChallenge(HiveUserData data, String encryptedData) async {
-    final String response = await platform.invokeMethod('getDecryptedChallenge', {
-      'username': usernameController.text,
-      'authKey': authKey,
-      'data': encryptedData,
-    });
-    var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
-    if (bridgeResponse.valid && bridgeResponse.data != null && bridgeResponse.data!.isNotEmpty) {
-      setState(() {
-        signedHash = bridgeResponse.data!;
-      });
-      final String postingAuthResponse = await platform.invokeMethod('getPostingAuthOps', {
-        'username': usernameController.text,
-        'authKey': authKey,
-      });
-      var postingAuthBridgeResponse = LoginBridgeResponse.fromJsonString(postingAuthResponse);
-      if (postingAuthBridgeResponse.valid) {
-        if (postingAuthBridgeResponse.data != null && postingAuthBridgeResponse.data!.isNotEmpty) {
-          // get posting authority here.
-          var socketData = {
-            "cmd": "sign_req",
-            "account": usernameController.text,
-            "token": hasIdToken,
-            "data": bridgeResponse.data!,
-          };
-          var jsonEncodedData = json.encode(socketData);
-          socket.sink.add(jsonEncodedData);
-        } else {
-          performSignInWithHAS(true);
-        }
-      } else {
-        showMessage('Error getting posting authority details. Please try again.');
-      }
-    } else {
-      showMessage('Something went wrong - ${bridgeResponse.error}. Please go back & try again.');
-    }
-  }
-
-  void performSignInWithHAS(bool authority) async {
-    debugPrint("Signed proof is $signedHash");
-    debugPrint("Proof of Payload is $proofOfPayload");
-    debugPrint("Username is ${usernameController.text}");
-    var loginApiResponse = await Communicator().login(usernameController.text, proofOfPayload, signedHash);
-    String resolution = await storage.read(key: 'resolution') ?? '480p';
-    String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
-    String union = await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
-    String? lang = await storage.read(key: 'lang');
-    await storage.write(key: 'username', value: usernameController.text);
-    await storage.delete(key: 'postingKey');
-    await storage.write(key: 'accessToken', value: loginApiResponse.data);
-    await storage.write(key: 'postingAuth', value:authority.toString());
-    var data = HiveUserData(
-      username: usernameController.text,
-      postingKey: null,
-      keychainData: null,
-      accessToken: loginApiResponse.data,
-      postingAuthority: authority.toString(),
-      resolution: resolution,
-      rpc: rpc,
-      union: union,
-      loaded: true,
-      language: lang,
-    );
-    server.updateHiveUserData(data);
-    Navigator.of(context).pop();
-    var screen = GQLFeedScreen(
-      appData: data,
-      username: usernameController.text,
-    );
-    var route = MaterialPageRoute(builder: (c) => screen);
-    Navigator.of(context).pushReplacement(route);
-    showMessage('You have successfully logged in as - ${usernameController.text}');
-    setState(() {
-      isLoading = false;
-    });
-  }
-
   void decryptData(HiveUserData data, String encryptedData) async {
-    final String response = await platform.invokeMethod('getDecryptedHASToken', {
+    final String response =
+        await platform.invokeMethod('getDecryptedHASToken', {
       'username': usernameController.text,
       'authKey': authKey,
       'data': encryptedData,
     });
     var bridgeResponse = LoginBridgeResponse.fromJsonString(response);
-    if (bridgeResponse.valid && bridgeResponse.data != null && bridgeResponse.data!.isNotEmpty) {
+    if (bridgeResponse.valid &&
+        bridgeResponse.data != null &&
+        bridgeResponse.data!.isNotEmpty) {
       var tokenData = bridgeResponse.data!.split(",");
       if (tokenData.isEmpty || tokenData.length != 2) {
-        showMessage('Did not find token & expiry details from HiveAuth. Please go back & try again.');
+        showMessage(
+            'Did not find token & expiry details from HiveAuth. Please go back & try again.');
       } else {
         const storage = FlutterSecureStorage();
         await storage.write(key: 'username', value: usernameController.text);
@@ -580,6 +455,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
             hasExpiry: tokenData[1],
             hasId: tokenData[0],
           ),
+          cookie: null,
           accessToken: null,
           postingAuthority: null,
           resolution: data.resolution,
@@ -589,35 +465,19 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen> with TickerPr
           language: data.language,
         );
         server.updateHiveUserData(newData);
-        showMessage('You have successfully logged in with Hive Auth with user - ${usernameController.text}');
-        final String eChallengeResponse = await platform.invokeMethod('getEncryptedChallenge', {
-          'username': usernameController.text,
-          'authKey': authKey,
-        });
-        var eChallengeResponseData = json.decode(eChallengeResponse)['data'] as String;
-        var eData = eChallengeResponseData.split("|")[0];
-        setState(() {
-          hasIdToken = tokenData[0];
-          proofOfPayload = eChallengeResponseData.split("|")[1];
-        });
-        var socketData = {
-          "cmd": "challenge_req",
-          "account": usernameController.text,
-          "token": tokenData[0],
-          "data": eData,
-        };
-        var jsonEncodedData = json.encode(socketData);
-        socket.sink.add(jsonEncodedData);
-        // Navigator.of(context).pop();
-        // var screen = GQLFeedScreen(
-        //   appData: newData,
-        //   username: usernameController.text,
-        // );
-        // var route = MaterialPageRoute(builder: (c) => screen);
-        // Navigator.of(context).pushReplacement(route);
+        showMessage(
+            'You have successfully logged in with Hive Auth with user - ${usernameController.text}');
+        Navigator.of(context).pop();
+        var screen = GQLFeedScreen(
+          appData: newData,
+          username: usernameController.text,
+        );
+        var route = MaterialPageRoute(builder: (c) => screen);
+        Navigator.of(context).pushReplacement(route);
       }
     } else {
-      showMessage('Something went wrong - ${bridgeResponse.error}. Please go back & try again.');
+      showMessage(
+          'Something went wrong - ${bridgeResponse.error}. Please go back & try again.');
     }
   }
 

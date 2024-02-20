@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/action_response.dart';
 import 'package:acela/src/models/communities_models/request/communities_request_model.dart';
 import 'package:acela/src/models/communities_models/response/communities_response_models.dart';
@@ -9,11 +10,17 @@ import 'package:acela/src/models/hive_post_info/hive_user_posting_key.dart';
 import 'package:acela/src/models/home_screen_feed_models/home_feed.dart';
 import 'package:acela/src/models/login/memo_response.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
+import 'package:acela/src/models/podcast/upload/podcast_episode_upload_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/models/video_upload/does_post_exists.dart';
+import 'package:acela/src/models/video_upload/video_upload_complete_request.dart';
+import 'package:acela/src/models/video_upload/video_upload_login_response.dart';
+import 'package:acela/src/models/video_upload/video_upload_prepare_response.dart';
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
@@ -213,7 +220,6 @@ class Communicator {
     return memo.decrypted.replaceFirst("#", '');
   }
 
-/* OLD APIs
   Future<String> getValidCookie(HiveUserData user) async {
     var uri = '${Communicator.tsServer}/mobile/login?username=${user.username}';
     if (user.keychainData != null && user.postingKey == null) {
@@ -260,6 +266,8 @@ class Communicator {
               keychainData: user.keychainData,
               union: union,
               cookie: cookie,
+              postingAuthority: null,
+              accessToken: null,
               resolution: resolution,
               rpc: rpc,
               loaded: true,
@@ -293,6 +301,8 @@ class Communicator {
           String union = await storage.read(key: 'union') ??
               GQLCommunicator.defaultGQLServer;
           var newData = HiveUserData(
+            postingAuthority: null,
+            accessToken: null,
             username: user.username,
             postingKey: user.postingKey,
             keychainData: user.keychainData,
@@ -444,7 +454,6 @@ class Communicator {
     }
   }
 
-  */
   Future<List<VideoDetails>> loadAnyFeed(Uri uri) async {
     var request = http.Request('GET', uri);
     http.StreamedResponse response = await request.send();
@@ -521,7 +530,6 @@ class Communicator {
     }
   }
 
-/* OLD APIS. Use Acela-core now.
   Future<List<VideoDetails>> loadVideos(HiveUserData user) async {
     log("Starting fetch videos ${DateTime.now().toIso8601String()}");
     var cookie = await getValidCookie(user);
@@ -705,7 +713,6 @@ class Communicator {
       rethrow;
     }
   }
-*/
   Future<ActionResponse> login(
     String userName,
     String proofOfPayload,
