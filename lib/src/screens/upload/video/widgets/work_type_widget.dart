@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class WorkTypeWidget extends StatefulWidget {
   const WorkTypeWidget(
@@ -24,20 +25,23 @@ class _WorkTypeWidgetState extends State<WorkTypeWidget> {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Text(isNsfwContent
-            ? 'Video is NOT SAFE for work.'
-            : 'Video is Safe for work.'),
-        const Spacer(),
-        Switch(
-          value: isNsfwContent,
-          onChanged: (newValue) {
+        Checkbox(
+          visualDensity: VisualDensity.compact,
+          value: isNsfwContent, onChanged: (newValue) {
             setState(() {
-              isNsfwContent = newValue;
+              isNsfwContent = newValue!;
             });
-            widget.onChanged(newValue);
-          },
-        )
+            widget.onChanged(newValue!);
+          },),
+        Expanded(
+          child: Text(
+            "You should check this option if your content is NSFW",
+            style: TextStyle(color: Colors.red),
+              ),
+        ),
+
       ],
     );
   }

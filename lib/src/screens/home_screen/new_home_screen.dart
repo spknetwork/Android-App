@@ -1,24 +1,13 @@
-
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/about/about_home_screen.dart';
 import 'package:acela/src/screens/communities_screen/communities_screen.dart';
-import 'package:acela/src/screens/favourites/user_favourites.dart';
+import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/bottom_nav_bar.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/tab_title_toast.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
-import 'package:acela/src/screens/home_screen/video_upload_sheet.dart';
-import 'package:acela/src/screens/login/ha_login_screen.dart';
-import 'package:acela/src/screens/my_account/my_account_screen.dart';
 import 'package:acela/src/screens/podcast/view/podcast_trending.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
-import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
 import 'package:acela/src/screens/trending_tags/trending_tags.dart';
-import 'package:acela/src/screens/upload/podcast/podcast_upload_screen.dart';
-import 'package:acela/src/screens/upload/video/controller/video_upload_controller.dart';
-import 'package:acela/src/screens/upload/video/video_upload_screen.dart';
-import 'package:acela/src/widgets/fab_custom.dart';
-import 'package:acela/src/widgets/fab_overlay.dart';
-import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:upgrader/upgrader.dart';
@@ -38,7 +27,7 @@ class GQLFeedScreen extends StatefulWidget {
 }
 
 class _GQLFeedScreenState extends State<GQLFeedScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   var isMenuOpen = false;
 
   List<Tab> myTabs() {
@@ -70,11 +59,16 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     super.initState();
     _tabController =
         TabController(vsync: this, length: widget.username != null ? 6 : 5);
-    _tabController.addListener(() {
-      setState(() {
-        currentIndex = _tabController.index;
-      });
-    });
+  }
+
+  @override
+  void didUpdateWidget(covariant GQLFeedScreen oldWidget) {
+    if (widget.username != oldWidget.username) {
+      _tabController.dispose();
+      _tabController =
+          TabController(vsync: this, length: widget.username != null ? 6 : 5);
+    }
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -160,21 +154,6 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     );
   }
 
-  Widget addPostButton(HiveUserData? userData) {
-    return Visibility(
-      visible: widget.username != null,
-      child: SizedBox(
-          width: 40,
-          child: IconButton(
-            color: Theme.of(context).primaryColorLight,
-            onPressed: () {
-              uploadBottomSheet(userData!);
-            },
-            icon: Icon(Icons.add_circle),
-          )),
-    );
-  }
-
   SizedBox podcastsActionButton() {
     return SizedBox(
       width: 35,
@@ -218,66 +197,83 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
         showReleaseNotes: true,
       ),
       child: Scaffold(
+        bottomNavigationBar: BottomNavBar(
+          appData: widget.appData,
+          username: widget.username,
+        ),
         appBar: AppBar(
           title: appBarHeader(),
           bottom: TabBar(
             controller: _tabController,
+            onTap: (value) {
+              setState(() {
+                currentIndex = value;
+              });
+            },
             tabs: myTabs(),
           ),
-          actions: [
-            searchIconButton(),
-            threeShortsActionButton(),
-            podcastsActionButton(),
-            addPostButton(widget.appData)
-          ],
         ),
         body: SafeArea(
           child: Stack(
             children: [
               TabBarView(
+                  key: ValueKey('${widget.username}'),
                   controller: _tabController,
                   children: widget.username != null
                       ? [
                           HomeScreenFeedList(
+                              key: ValueKey("${widget.username} 0"),
                               showVideo: currentIndex == 0,
                               feedType: HomeScreenFeedType.userFeed,
                               appData: appData),
                           HomeScreenFeedList(
+                              key: ValueKey("${widget.username} 1"),
                               showVideo: currentIndex == 1,
                               feedType: HomeScreenFeedType.trendingFeed,
                               appData: appData),
                           HomeScreenFeedList(
+                              key: ValueKey("${widget.username} 2"),
                               showVideo: currentIndex == 2,
                               feedType: HomeScreenFeedType.newUploads,
                               appData: appData),
                           HomeScreenFeedList(
+                              key: ValueKey("${widget.username} 3"),
                               showVideo: currentIndex == 3,
                               feedType: HomeScreenFeedType.firstUploads,
                               appData: appData),
                           CommunitiesScreen(
+                            key: ValueKey("${widget.username} 4"),
                             didSelectCommunity: null,
                             withoutScaffold: true,
                           ),
-                          TrendingTagsWidget(),
+                          TrendingTagsWidget(
+                            key: ValueKey("${widget.username} 5"),
+                          ),
                         ]
                       : [
                           HomeScreenFeedList(
+                              key: ValueKey("${widget.username} 0"),
                               showVideo: currentIndex == 0,
                               feedType: HomeScreenFeedType.trendingFeed,
                               appData: appData),
                           HomeScreenFeedList(
+                              key: ValueKey("${widget.username} 1"),
                               showVideo: currentIndex == 1,
                               feedType: HomeScreenFeedType.newUploads,
                               appData: appData),
                           HomeScreenFeedList(
+                              key: ValueKey("${widget.username} 2"),
                               showVideo: currentIndex == 2,
                               feedType: HomeScreenFeedType.firstUploads,
                               appData: appData),
                           CommunitiesScreen(
+                            key: ValueKey("${widget.username} 3"),
                             didSelectCommunity: null,
                             withoutScaffold: true,
                           ),
-                          TrendingTagsWidget(),
+                          TrendingTagsWidget(
+                            key: ValueKey("${widget.username} 4"),
+                          ),
                         ]),
               Padding(
                 padding: const EdgeInsets.only(top: 15.0),
@@ -289,132 +285,10 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
                   ),
                 ),
               ),
-              _fabContainer()
             ],
           ),
         ),
       ),
-    );
-  }
-
-  List<FabOverItemData> _fabItems() {
-    List<FabOverItemData> fabItems = [];
-    if (widget.username != null) {
-      fabItems.add(FabOverItemData(
-        displayName: 'Upload',
-        icon: Icons.upload,
-        onTap: () {
-          setState(() {
-            isMenuOpen = false;
-            uploadBottomSheet(widget.appData);
-          });
-        },
-      ));
-      fabItems.add(
-        FabOverItemData(
-          displayName: 'My Account',
-          icon: Icons.person,
-          url: 'https://images.hive.blog/u/${widget.username ?? ''}/avatar',
-          onTap: () {
-            setState(() {
-              isMenuOpen = false;
-              var screen = MyAccountScreen(data: widget.appData);
-              var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).push(route);
-            });
-          },
-        ),
-      );
-    } else {
-      fabItems.add(
-        FabOverItemData(
-          displayName: 'Log in',
-          icon: Icons.person,
-          onTap: () {
-            setState(() {
-              isMenuOpen = false;
-              var screen = HiveAuthLoginScreen(appData: widget.appData);
-              var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).push(route);
-            });
-          },
-        ),
-      );
-    }
-    fabItems.add(
-      FabOverItemData(
-        displayName: 'Bookmarks',
-        icon: Icons.bookmarks,
-        onTap: () {
-          setState(() {
-            isMenuOpen = false;
-            var screen = const UserFavourites();
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
-          });
-        },
-      ),
-    );
-    fabItems.add(
-      FabOverItemData(
-        displayName: 'Settings',
-        icon: Icons.settings,
-        onTap: () {
-          setState(() {
-            isMenuOpen = false;
-            var screen = const SettingsScreen();
-            var route = MaterialPageRoute(builder: (c) => screen);
-            Navigator.of(context).push(route);
-          });
-        },
-      ),
-    );
-    fabItems.add(
-      FabOverItemData(
-        displayName: 'Important 3Speak Links',
-        icon: Icons.link,
-        onTap: () {
-          setState(() {
-            isMenuOpen = false;
-            var screen = const AboutHomeScreen();
-            var route = MaterialPageRoute(builder: (_) => screen);
-            Navigator.of(context).push(route);
-          });
-        },
-      ),
-    );
-    fabItems.add(
-      FabOverItemData(
-        displayName: 'Close',
-        icon: Icons.close,
-        onTap: () {
-          setState(() {
-            isMenuOpen = false;
-          });
-        },
-      ),
-    );
-    return fabItems;
-  }
-
-  Widget _fabContainer() {
-    if (!isMenuOpen) {
-      return FabCustom(
-        icon: Icons.bolt,
-        onTap: () {
-          setState(() {
-            isMenuOpen = true;
-          });
-        },
-      );
-    }
-    return FabOverlay(
-      items: _fabItems(),
-      onBackgroundTap: () {
-        setState(() {
-          isMenuOpen = false;
-        });
-      },
     );
   }
 
@@ -423,54 +297,4 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  void uploadBottomSheet(HiveUserData data) {
-    showAdaptiveActionSheet(
-      context: context,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.upload),
-          const SizedBox(
-            width: 5,
-          ),
-          const Text(
-            'Upload',
-            style: TextStyle(fontSize: 20),
-          ),
-        ],
-      ),
-      androidBorderRadius: 30,
-      actions: <BottomSheetAction>[
-        BottomSheetAction(
-          title: const Text('Video'),
-          leading: const Icon(Icons.video_call),
-          onPressed: (c) {
-            Navigator.pop(context);
-            if (!context.read<VideoUploadController>().isFreshUpload()) {
-              var screen = VideoUploadScreen(
-                isCamera: true,
-                appData: data,
-              );
-              var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).push(route);
-            } else {
-              VideoUploadSheet.show(data, context);
-            }
-          },
-        ),
-        BottomSheetAction(
-            title: const Text('Podcast'),
-            leading: const Icon(Icons.podcasts),
-            onPressed: (c) {
-              var route = MaterialPageRoute(
-                  builder: (c) => PodcastUploadScreen(data: widget.appData));
-              Navigator.of(context).pop();
-              Navigator.of(context).push(route);
-            }),
-      ],
-      cancelAction: CancelAction(
-        title: const Text('Cancel'),
-      ),
-    );
-  }
 }

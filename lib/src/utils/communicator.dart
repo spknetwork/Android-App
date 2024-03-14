@@ -382,6 +382,7 @@ class Communicator {
   }) async {
     var request = http.Request(
         'POST', Uri.parse('${Communicator.tsServer}/mobile/api/update_info'));
+    var cookie = await getValidCookie(user);
     request.body = VideoUploadCompleteRequest(
       videoId: videoId,
       title: title,
@@ -392,7 +393,7 @@ class Communicator {
       communityID: communityID,
     ).toJsonString();
     Map<String, String> map = {
-      "cookie": user.cookie ?? "",
+      "cookie": cookie,
       "Content-Type": "application/json"
     };
     request.headers.addAll(map);
@@ -713,6 +714,7 @@ class Communicator {
       rethrow;
     }
   }
+
   Future<ActionResponse> login(
     String userName,
     String proofOfPayload,
