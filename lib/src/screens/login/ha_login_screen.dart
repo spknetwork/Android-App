@@ -221,7 +221,7 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
                     const SizedBox(height: 10),
                     Image.asset('assets/hive_auth_button.png'),
                     const SizedBox(height: 10),
-                    Text('Scan QR Code'),
+                    Text('Scan QR Code\n- OR - \nTap on QR Code'),
                     SizedBox(height: 10),
                     InkWell(
                       child: Container(

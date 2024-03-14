@@ -158,7 +158,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   void _loginBottomSheet() {
     showAdaptiveActionSheet(
       context: context,
-      title: const Text('You are not logged in. Please log in to upvote.'),
+      title: const Text('You are not logged in. Please log in.'),
       androidBorderRadius: 30,
       actions: [
         BottomSheetAction(
