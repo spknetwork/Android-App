@@ -4,15 +4,10 @@ import 'package:acela/src/screens/communities_screen/communities_screen.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/bottom_nav_bar.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/tab_title_toast.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
-import 'package:acela/src/screens/home_screen/video_upload_sheet.dart';
 import 'package:acela/src/screens/podcast/view/podcast_trending.dart';
 import 'package:acela/src/screens/search/search_screen.dart';
 import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
 import 'package:acela/src/screens/trending_tags/trending_tags.dart';
-import 'package:acela/src/screens/upload/podcast/podcast_upload_screen.dart';
-import 'package:acela/src/screens/upload/video/controller/video_upload_controller.dart';
-import 'package:acela/src/screens/upload/video/video_upload_screen.dart';
-import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:upgrader/upgrader.dart';
@@ -159,21 +154,6 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     );
   }
 
-  Widget addPostButton(HiveUserData? userData) {
-    return Visibility(
-      visible: widget.username != null,
-      child: SizedBox(
-          width: 40,
-          child: IconButton(
-            color: Theme.of(context).primaryColorLight,
-            onPressed: () {
-              uploadBottomSheet(userData!);
-            },
-            icon: Icon(Icons.add_circle),
-          )),
-    );
-  }
-
   SizedBox podcastsActionButton() {
     return SizedBox(
       width: 35,
@@ -317,54 +297,4 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  void uploadBottomSheet(HiveUserData data) {
-    showAdaptiveActionSheet(
-      context: context,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.upload),
-          const SizedBox(
-            width: 5,
-          ),
-          const Text(
-            'Upload',
-            style: TextStyle(fontSize: 20),
-          ),
-        ],
-      ),
-      androidBorderRadius: 30,
-      actions: <BottomSheetAction>[
-        BottomSheetAction(
-          title: const Text('Video'),
-          leading: const Icon(Icons.video_call),
-          onPressed: (c) {
-            Navigator.pop(context);
-            if (!context.read<VideoUploadController>().isFreshUpload()) {
-              var screen = VideoUploadScreen(
-                isCamera: true,
-                appData: data,
-              );
-              var route = MaterialPageRoute(builder: (c) => screen);
-              Navigator.of(context).push(route);
-            } else {
-              VideoUploadSheet.show(data, context);
-            }
-          },
-        ),
-        BottomSheetAction(
-            title: const Text('Podcast'),
-            leading: const Icon(Icons.podcasts),
-            onPressed: (c) {
-              var route = MaterialPageRoute(
-                  builder: (c) => PodcastUploadScreen(data: widget.appData));
-              Navigator.of(context).pop();
-              Navigator.of(context).push(route);
-            }),
-      ],
-      cancelAction: CancelAction(
-        title: const Text('Cancel'),
-      ),
-    );
-  }
 }
