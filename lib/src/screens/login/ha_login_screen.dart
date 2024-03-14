@@ -369,12 +369,6 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         var cookie = await Communicator().getValidCookie(data);
         log(cookie);
         Navigator.of(context).pop();
-        var screen = GQLFeedScreen(
-          appData: data,
-          username: usernameController.text,
-        );
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).pushReplacement(route);
         showMessage(
             'You have successfully logged in as - ${usernameController.text}');
         setState(() {
@@ -468,12 +462,6 @@ class _HiveAuthLoginScreenState extends State<HiveAuthLoginScreen>
         showMessage(
             'You have successfully logged in with Hive Auth with user - ${usernameController.text}');
         Navigator.of(context).pop();
-        var screen = GQLFeedScreen(
-          appData: newData,
-          username: usernameController.text,
-        );
-        var route = MaterialPageRoute(builder: (c) => screen);
-        Navigator.of(context).pushReplacement(route);
       }
     } else {
       showMessage(

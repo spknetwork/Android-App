@@ -279,12 +279,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Navigator.of(context).pop();
     }
     Navigator.of(context).pop();
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) =>
-            GQLFeedScreen(appData: newUserData, username: null),
-      ),
-    );
   }
 
   Widget _deleteAccount() {

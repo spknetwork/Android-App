@@ -2,11 +2,11 @@ import 'dart:developer';
 
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
+import 'package:acela/src/screens/favourites/user_favourites.dart';
 import 'package:acela/src/screens/my_account/update_thumb/update_thumb_screen.dart';
 import 'package:acela/src/screens/my_account/update_video/video_primary_info.dart';
 import 'package:acela/src/screens/my_account/video_preview.dart';
 import 'package:acela/src/screens/settings/settings_screen.dart';
-import 'package:acela/src/screens/user_channel_screen/user_channel_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
@@ -66,7 +66,8 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         splashColor: Colors.transparent,
         contentPadding: EdgeInsets.zero,
         onTap: () {
-          context.pushNamed(Routes.userView, pathParameters: {'author': username});
+          context
+              .pushNamed(Routes.userView, pathParameters: {'author': username});
         },
         leading: CustomCircleAvatar(
           height: 36,
@@ -97,8 +98,18 @@ class _MyAccountScreenState extends State<MyAccountScreen>
           icon: Icon(Icons.refresh),
         ),
         IconButton(
+          icon: Icon(Icons.bookmarks),
           onPressed: () {
-            var screen = const SettingsScreen(isUserFromUserSettings: true,);
+            var screen = const UserFavourites();
+            var route = MaterialPageRoute(builder: (c) => screen);
+            Navigator.of(context).push(route);
+          },
+        ),
+        IconButton(
+          onPressed: () {
+            var screen = const SettingsScreen(
+              isUserFromUserSettings: true,
+            );
             var route = MaterialPageRoute(builder: (c) => screen);
             Navigator.of(context).push(route);
           },

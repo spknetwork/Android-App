@@ -48,12 +48,6 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     server.updateHiveUserData(newUserData);
     Navigator.of(context).pop();
     Navigator.of(context).pop();
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) =>
-            GQLFeedScreen(appData: newUserData, username: null),
-      ),
-    );
   }
 
   @override
