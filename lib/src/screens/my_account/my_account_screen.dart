@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/models/video_details_model/video_details.dart';
 import 'package:acela/src/screens/favourites/user_favourites.dart';
@@ -10,11 +11,13 @@ import 'package:acela/src/screens/settings/settings_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_screen.dart';
 import 'package:acela/src/screens/video_details_screen/video_details_view_model.dart';
 import 'package:acela/src/utils/communicator.dart';
+import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/routes/routes.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
 class MyAccountScreen extends StatefulWidget {
@@ -90,14 +93,6 @@ class _MyAccountScreenState extends State<MyAccountScreen>
       ),
       actions: [
         IconButton(
-          onPressed: () {
-            setState(() {
-              loadVideos = Communicator().loadVideos(widget.data);
-            });
-          },
-          icon: Icon(Icons.refresh),
-        ),
-        IconButton(
           icon: Icon(Icons.bookmarks),
           onPressed: () {
             var screen = const UserFavourites();
@@ -114,6 +109,35 @@ class _MyAccountScreenState extends State<MyAccountScreen>
             Navigator.of(context).push(route);
           },
           icon: const Icon(Icons.settings),
+        ),
+        IconButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Log Out'),
+                  content: Text('Are you sure you want to log out?'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('No'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        logout(widget.data);
+                      },
+                      child: Text('Yes'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+          icon: const Icon(Icons.logout_outlined),
         )
       ],
     );
@@ -306,31 +330,38 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         child: Text('No Items found.'),
       );
     }
-    return ListView.separated(
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          var text = currentIndex == 0
-              ? 'Your videos are ready to post\nTap on a video to edit details & publish'
-              : currentIndex == 1
-                  ? 'Following videos are already posted\nTap on a video to change thumbnail'
-                  : "Here you'll see list of videos which are either in video encoding process or deleted.";
-          return Padding(
-            padding: const EdgeInsets.only(
-                top: 15.0, left: 15, right: 15, bottom: 20),
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).primaryColorLight),
-            ),
-          );
-        }
-        return _videoListItem(items[index - 1], user);
+    return RefreshIndicator(
+      onRefresh: () async {
+        setState(() {
+          loadVideos = Communicator().loadVideos(widget.data);
+        });
       },
-      separatorBuilder: (context, index) => const Divider(
-        height: 0,
-        color: Colors.transparent,
+      child: ListView.separated(
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            var text = currentIndex == 0
+                ? 'Your videos are ready to post\nTap on a video to edit details & publish'
+                : currentIndex == 1
+                    ? 'Following videos are already posted\nTap on a video to change thumbnail'
+                    : "Here you'll see list of videos which are either in video encoding process or deleted.";
+            return Padding(
+              padding: const EdgeInsets.only(
+                  top: 15.0, left: 15, right: 15, bottom: 20),
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Theme.of(context).primaryColorLight),
+              ),
+            );
+          }
+          return _videoListItem(items[index - 1], user);
+        },
+        separatorBuilder: (context, index) => const Divider(
+          height: 0,
+          color: Colors.transparent,
+        ),
+        itemCount: items.length + 1,
       ),
-      itemCount: items.length + 1,
     );
   }
 
@@ -392,6 +423,39 @@ class _MyAccountScreenState extends State<MyAccountScreen>
         }
       },
     );
+  }
+
+  Future<void> logout(HiveUserData data) async {
+    // Create storage
+    const storage = FlutterSecureStorage();
+    await storage.delete(key: 'username');
+    await storage.delete(key: 'postingKey');
+    await storage.delete(key: 'accessToken');
+    await storage.delete(key: 'postingAuth');
+    await storage.delete(key: 'cookie');
+    await storage.delete(key: 'hasId');
+    await storage.delete(key: 'hasExpiry');
+    await storage.delete(key: 'hasAuthKey');
+    String resolution = await storage.read(key: 'resolution') ?? '480p';
+    String rpc = await storage.read(key: 'rpc') ?? 'api.hive.blog';
+    String union =
+        await storage.read(key: 'union') ?? GQLCommunicator.defaultGQLServer;
+    String? lang = await storage.read(key: 'lang');
+    var newUserData = HiveUserData(
+      username: null,
+      postingKey: null,
+      keychainData: null,
+      cookie: null,
+      accessToken: null,
+      postingAuthority: null,
+      resolution: resolution,
+      rpc: rpc,
+      union: union,
+      loaded: true,
+      language: lang,
+    );
+    server.updateHiveUserData(newUserData);
+    Navigator.of(context).pop();
   }
 
   @override
