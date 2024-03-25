@@ -1,5 +1,4 @@
-
-import 'package:acela/src/models/hive_comments/new_hive_comment/new_hive_comment.dart';
+import 'package:acela/src/models/hive_comments/new_hive_comment/newest_comment_model.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
 import 'package:acela/src/screens/video_details_screen/comment/controller/comment_controller.dart';
@@ -37,8 +36,8 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
   }
 
   Widget commentsListView(CommentController controller) {
-    return Selector<CommentController, List<VideoCommentModel>>(
-      shouldRebuild: (previous,next)=>true,
+    return Selector<CommentController, List<CommentItemModel>>(
+      shouldRebuild: (previous, next) => true,
       selector: (_, myType) => myType.items,
       builder: (context, items, child) {
         return Column(
@@ -49,13 +48,23 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
                 margin: const EdgeInsets.only(top: 10, bottom: 10),
                 child: ListView.separated(
                   itemBuilder: (context, index) {
-                    final VideoCommentModel item = items[index];
-                    return HiveCommentWidget(comment: item);
+                    final CommentItemModel item = items[index];
+                    return HiveCommentWidget(
+                      key: ValueKey('${item.author}/${item.permlink}'),
+                      comment: item,index: index,);
                   },
-                  separatorBuilder: (context, index) => const Divider(
-                    height: 10,
-                    color: Colors.blueGrey,
-                  ),
+                  separatorBuilder: (context, index) {
+                    bool commentDividerVisibility = true;
+                    commentDividerVisibility = _commentDividerVisibility(
+                        index, items, commentDividerVisibility);
+                    return Visibility(
+                      visible: commentDividerVisibility,
+                      child: const Divider(
+                        height: 10,
+                        color: Colors.blueGrey,
+                      ),
+                    );
+                  },
                   itemCount: items.length,
                 ),
               ),
@@ -65,6 +74,18 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
         );
       },
     );
+  }
+
+  bool _commentDividerVisibility(
+      int index, List<CommentItemModel> items, bool drawLine) {
+    if (index + 1 < items.length) {
+      if ((items[index + 1].depth == 1)) {
+        drawLine = true;
+      } else {
+        drawLine = false;
+      }
+    }
+    return drawLine;
   }
 
   Widget _addCommentButton(CommentController controller) {
@@ -125,8 +146,8 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
       hasAuthKey: widget.appData.keychainData?.hasAuthKey ?? "",
       onClose: () {},
       onDone: (newComment) async {
-        if(newComment!=null){
-          controller.addComment(newComment);
+        if (newComment != null) {
+          controller.addTopLevelComment(newComment);
         }
       },
     );

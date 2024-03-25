@@ -1,4 +1,4 @@
-import 'package:acela/src/models/hive_comments/new_hive_comment/new_hive_comment.dart';
+import 'package:acela/src/models/hive_comments/new_hive_comment/newest_comment_model.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/comment/comment_action_menu.dart';
 import 'package:acela/src/screens/video_details_screen/comment/controller/comment_controller.dart';
@@ -11,8 +11,11 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
 class HiveCommentWidget extends StatefulWidget {
-  const HiveCommentWidget({Key? key, required this.comment}) : super(key: key);
-  final VideoCommentModel comment;
+  const HiveCommentWidget(
+      {Key? key, required this.comment, required this.index})
+      : super(key: key);
+  final CommentItemModel comment;
+  final int index;
 
   @override
   State<HiveCommentWidget> createState() => _HiveCommentWidgetState();
@@ -21,35 +24,21 @@ class HiveCommentWidget extends StatefulWidget {
 class _HiveCommentWidgetState extends State<HiveCommentWidget> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        CommentTile(
-          comment: widget.comment,
-          isPadded: false,
-        ),
-        Visibility(
-          visible: widget.comment.children!.isNotEmpty,
-          child: Column(
-            children: List.generate(
-              widget.comment.children!.length,
-              (index) => CommentTile(
-                comment: widget.comment.children![index],
-                isPadded: true,
-              ),
-            ),
-          ),
-        ),
-      ],
+    return CommentTile(
+      comment: widget.comment,
+      isPadded: widget.comment.depth != 1,
+      index: widget.index,
     );
   }
 }
 
 class CommentTile extends StatefulWidget {
-  const CommentTile({Key? key, required this.comment, required this.isPadded})
+  const CommentTile({Key? key, required this.comment, required this.isPadded, required this.index})
       : super(key: key);
 
-  final VideoCommentModel comment;
+  final CommentItemModel comment;
   final bool isPadded;
+  final int index;
 
   @override
   State<CommentTile> createState() => _CommentTileState();
@@ -61,7 +50,7 @@ class _CommentTileState extends State<CommentTile>
 
   @override
   void initState() {
-    votes = widget.comment.stats!.numVotes!;
+    votes = widget.comment.stats?.totalVotes ?? 0;
     super.initState();
   }
 
@@ -69,13 +58,12 @@ class _CommentTileState extends State<CommentTile>
   Widget build(BuildContext context) {
     super.build(context);
     var item = widget.comment;
-    var author = item.author.username;
+    var author = item.author;
     var body = item.body;
-    var timeInString =
-        item.createdAt != null ? "${timeago.format(item.createdAt!)}" : "";
+    var timeInString = "${timeago.format(item.created)}";
     var depth = (widget.isPadded ? 50.0 : 0.2 * 25.0);
     var style = TextStyle(color: Colors.white, fontWeight: FontWeight.w600);
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         _showBottomSheet(item, () {
           setState(() {
@@ -95,7 +83,7 @@ class _CommentTileState extends State<CommentTile>
           children: [
             Row(
               children: [
-                UserProfileImage(userName: item.author.username),
+                UserProfileImage(userName: item.author),
                 const SizedBox(
                   width: 8,
                 ),
@@ -139,7 +127,7 @@ class _CommentTileState extends State<CommentTile>
             const SizedBox(
               height: 8,
             ),
-            _comment(body ?? ""),
+            _comment(body),
           ],
         ),
       ),
@@ -156,7 +144,7 @@ class _CommentTileState extends State<CommentTile>
     );
   }
 
-  void _showBottomSheet(VideoCommentModel item, VoidCallback onUpvote) {
+  void _showBottomSheet(CommentItemModel item, VoidCallback onUpvote) {
     final controller = context.read<CommentController>();
     showModalBottomSheet(
       backgroundColor: const Color(0xFF1B1A1A),
@@ -165,10 +153,13 @@ class _CommentTileState extends State<CommentTile>
           borderRadius: BorderRadius.all(Radius.circular(12))),
       context: context,
       builder: (context) => CommentActionMenu(
-        onSubCommentAdded: controller.refreshSilently,
+        depth: item.depth,
+        onSubCommentAdded: (newComment) {
+          controller.addSubLevelComment(newComment, widget.index);
+        },
         onUpVote: onUpvote,
         appData: context.read<HiveUserData>(),
-        author: item.author.username,
+        author: item.author,
         permlink: item.permlink,
       ),
     );
