@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-
-import 'package:acela/src/models/hive_comments/new_hive_comment/new_hive_comment.dart';
 import 'package:acela/src/models/hive_comments/new_hive_comment/newest_comment_model.dart';
 import 'package:acela/src/models/login/login_bridge_response.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
@@ -134,6 +132,7 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
                   CommentItemModel addedComment = CommentItemModel(
                     created: DateTime.now(),
                     author: currentUserName,
+                    isLocallyAdded: true,
                     permlink:
                         "re-$currentUserName-${DateTime.now().toIso8601String()}",
                      parentAuthor: widget.author,
@@ -245,6 +244,7 @@ class _HiveCommentDialogState extends State<HiveCommentDialog> {
                 String currentUserName = widget.username;
                 CommentItemModel addedComment = CommentItemModel(
                   created: DateTime.now(),
+                  isLocallyAdded: true,
                   author: currentUserName,
                   permlink:
                       "re-$currentUserName-${DateTime.now().toIso8601String()}",

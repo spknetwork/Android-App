@@ -7,38 +7,27 @@ import 'package:acela/src/widgets/user_profile_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
-class HiveCommentWidget extends StatefulWidget {
-  const HiveCommentWidget(
-      {Key? key, required this.comment, required this.index})
-      : super(key: key);
-  final CommentItemModel comment;
-  final int index;
-
-  @override
-  State<HiveCommentWidget> createState() => _HiveCommentWidgetState();
-}
-
-class _HiveCommentWidgetState extends State<HiveCommentWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return CommentTile(
-      comment: widget.comment,
-      isPadded: widget.comment.depth != 1,
-      index: widget.index,
-    );
-  }
-}
-
 class CommentTile extends StatefulWidget {
-  const CommentTile({Key? key, required this.comment, required this.isPadded, required this.index})
+  const CommentTile(
+      {Key? key,
+      required this.comment,
+      required this.isPadded,
+      required this.index,
+      required this.currentUser,
+      required this.searchKey,
+      required this.itemScrollController})
       : super(key: key);
 
   final CommentItemModel comment;
   final bool isPadded;
   final int index;
+  final String currentUser;
+  final String searchKey;
+  final ItemScrollController itemScrollController;
 
   @override
   State<CommentTile> createState() => _CommentTileState();
@@ -47,11 +36,69 @@ class CommentTile extends StatefulWidget {
 class _CommentTileState extends State<CommentTile>
     with AutomaticKeepAliveClientMixin {
   late int votes;
+  late bool isUpvoted;
+  bool animate = false;
+  bool animated = false;
+  Duration duration = Duration(seconds: 5);
+  late Color color;
 
   @override
   void initState() {
-    votes = widget.comment.stats?.totalVotes ?? 0;
+    _initVoteStatus();
+    _initAnimation();
     super.initState();
+  }
+
+  void _initAnimation() {
+    if (!animated) {
+      Duration difference = DateTime.now().difference(widget.comment.created);
+      animate = difference.inSeconds < 5;
+      if (animate) {
+        color = Colors.grey.shade500;
+        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+          if (mounted)
+            setState(() {
+              color = Colors.transparent;
+              animated = true;
+              animate = false;
+            });
+        });
+      } else {
+        color = Colors.transparent;
+      }
+    } else {
+      color = Colors.transparent;
+    }
+  }
+
+  void _callbackToAnimate() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      if (mounted)
+        setState(() {
+          duration = Duration.zero;
+          color = Colors.grey.shade500;
+        });
+      await Future.delayed(Duration(milliseconds: 50));
+      if (mounted)
+        setState(() {
+          duration = Duration(seconds: 5);
+          color = Colors.transparent;
+          animated = true;
+          animate = false;
+        });
+    });
+  }
+
+  void _initVoteStatus() {
+    votes = widget.comment.stats?.totalVotes ?? 0;
+    isUpvoted = widget.comment.activeVotes
+        .contains(CommentActiveVote(voter: widget.currentUser));
+  }
+
+  @override
+  void didUpdateWidget(covariant CommentTile oldWidget) {
+    _initVoteStatus();
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -63,72 +110,90 @@ class _CommentTileState extends State<CommentTile>
     var timeInString = "${timeago.format(item.created)}";
     var depth = (widget.isPadded ? 50.0 : 0.2 * 25.0);
     var style = TextStyle(color: Colors.white, fontWeight: FontWeight.w600);
-    return InkWell(
-      onTap: () {
-        _showBottomSheet(item, () {
-          setState(() {
-            votes++;
-          });
-        });
+    return Selector<CommentController, bool>(
+      selector: (_, provider) => provider.commentHighlighterTrigger,
+      builder: (context, value, child) {
+        final controller = context.read<CommentController>();
+        if (widget.index == controller.animateToCommentIndex && value) {
+          _callbackToAnimate();
+          controller.animateToCommentIndex = null;
+          controller.commentHighlighterTrigger = false;
+        }
+        return child!;
       },
-      child: Container(
-        color: Colors.transparent,
-        padding: EdgeInsets.only(
-            left: depth + 15,
-            right: 15,
-            bottom: 15,
-            top: widget.isPadded ? 0 : 15),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                UserProfileImage(userName: item.author),
-                const SizedBox(
-                  width: 8,
-                ),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Text(author, style: style),
-                      const SizedBox(
-                        width: 12,
-                      ),
-                      Icon(
-                        Icons.thumb_up,
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      Text(votes.toString(), style: style),
-                      const SizedBox(
-                        width: 12,
-                      ),
-                      Icon(
-                        Icons.schedule,
-                        size: 15,
-                      ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      Expanded(
-                          child: Text(
-                        timeInString,
-                        style: style,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      )),
-                    ],
+      child: InkWell(
+        onTap: () {
+          if (!widget.comment.isLocallyAdded) {
+            _showBottomSheet(item, onUpvote: () {
+              context.read<CommentController>().onUpvote(
+                  item, widget.index, widget.currentUser, widget.searchKey);
+              setState(() {
+                votes++;
+                isUpvoted = true;
+              });
+            });
+          }
+        },
+        child: AnimatedContainer(
+          duration: duration,
+          color: color,
+          padding: EdgeInsets.only(
+              left: depth + 15,
+              right: 15,
+              bottom: 15,
+              top: widget.isPadded ? 0 : 15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  UserProfileImage(userName: item.author),
+                  const SizedBox(
+                    width: 8,
                   ),
-                )
-              ],
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            _comment(body),
-          ],
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Text(author, style: style),
+                        const SizedBox(
+                          width: 12,
+                        ),
+                        Icon(
+                          isUpvoted ? Icons.thumb_up : Icons.thumb_up_outlined,
+                          size: 15,
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Text(votes.toString(), style: style),
+                        const SizedBox(
+                          width: 12,
+                        ),
+                        Icon(
+                          Icons.schedule,
+                          size: 15,
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Expanded(
+                            child: Text(
+                          timeInString,
+                          style: style,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        )),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              _comment(body),
+            ],
+          ),
         ),
       ),
     );
@@ -144,7 +209,9 @@ class _CommentTileState extends State<CommentTile>
     );
   }
 
-  void _showBottomSheet(CommentItemModel item, VoidCallback onUpvote) {
+  void _showBottomSheet(CommentItemModel item,
+      {required VoidCallback onUpvote}) {
+    FocusScope.of(context).unfocus();
     final controller = context.read<CommentController>();
     showModalBottomSheet(
       backgroundColor: const Color(0xFF1B1A1A),
@@ -155,7 +222,13 @@ class _CommentTileState extends State<CommentTile>
       builder: (context) => CommentActionMenu(
         depth: item.depth,
         onSubCommentAdded: (newComment) {
-          controller.addSubLevelComment(newComment, widget.index);
+          controller.addSubLevelComment(
+              newComment, widget.index, widget.searchKey);
+
+          if (widget.searchKey.isNotEmpty &&
+              controller.disPlayedItems.contains(newComment)) {
+            _animteToAddedComment(0);
+          }
         },
         onUpVote: onUpvote,
         appData: context.read<HiveUserData>(),
@@ -163,6 +236,13 @@ class _CommentTileState extends State<CommentTile>
         permlink: item.permlink,
       ),
     );
+  }
+
+  void _animteToAddedComment(int index) {
+    widget.itemScrollController.scrollTo(
+        index: index,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeInOutCubic);
   }
 
   @override

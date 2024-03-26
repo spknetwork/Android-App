@@ -1,6 +1,8 @@
 import 'package:acela/src/models/hive_comments/new_hive_comment/newest_comment_model.dart';
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
+import 'package:acela/src/screens/video_details_screen/comment/comment_search_bar.dart';
+import 'package:acela/src/screens/video_details_screen/comment/comment_view_appbar.dart';
 import 'package:acela/src/screens/video_details_screen/comment/controller/comment_controller.dart';
 import 'package:acela/src/screens/video_details_screen/comment/hive_comment.dart';
 import 'package:acela/src/screens/video_details_screen/comment/hive_comment_dialog.dart';
@@ -9,6 +11,7 @@ import 'package:acela/src/utils/graphql/models/trending_feed_response.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class VideoDetailsComments extends StatefulWidget {
   const VideoDetailsComments({
@@ -30,46 +33,105 @@ class VideoDetailsComments extends StatefulWidget {
 }
 
 class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
+  final ValueNotifier<bool> showSearchBar = ValueNotifier(false);
+  final TextEditingController searchController = TextEditingController();
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ScrollOffsetController scrollOffsetController =
+      ScrollOffsetController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
+  final ScrollOffsetListener scrollOffsetListener =
+      ScrollOffsetListener.create();
+  late final CommentController controller;
+
   @override
   void initState() {
+    controller =
+        CommentController(author: widget.author, permlink: widget.permlink);
+    _addListener();
     super.initState();
   }
 
-  Widget commentsListView(CommentController controller) {
+  void _addListener() {
+    showSearchBar.addListener(_searchBarListener);
+  }
+
+  void _searchBarListener() async {
+    if (!showSearchBar.value) {
+      if (controller.animateToCommentIndex != null) {
+        await Future.delayed(Duration(milliseconds: 300));
+        _animteToAddedComment(controller.animateToCommentIndex!);
+        controller.commentHighlighterTrigger = true;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    showSearchBar.removeListener(_searchBarListener);
+    super.dispose();
+  }
+
+  Widget commentsListView() {
     return Selector<CommentController, List<CommentItemModel>>(
-      shouldRebuild: (previous, next) => true,
-      selector: (_, myType) => myType.items,
+      shouldRebuild: (previous, next) =>
+          previous != next || previous.length != next.length,
+      selector: (_, myType) => myType.disPlayedItems,
       builder: (context, items, child) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(top: 10, bottom: 10),
-                child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    final CommentItemModel item = items[index];
-                    return HiveCommentWidget(
-                      key: ValueKey('${item.author}/${item.permlink}'),
-                      comment: item,index: index,);
-                  },
-                  separatorBuilder: (context, index) {
-                    bool commentDividerVisibility = true;
-                    commentDividerVisibility = _commentDividerVisibility(
-                        index, items, commentDividerVisibility);
-                    return Visibility(
-                      visible: commentDividerVisibility,
-                      child: const Divider(
-                        height: 10,
-                        color: Colors.blueGrey,
+            CommentSearchBar(
+                showSearchBar: showSearchBar,
+                onChanged: (value) {
+                  controller.onSearch(value.trim());
+                },
+                textEditingController: searchController),
+            items.isNotEmpty
+                ? Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 10, bottom: 10),
+                      child: ScrollablePositionedList.separated(
+                        itemScrollController: itemScrollController,
+                        scrollOffsetController: scrollOffsetController,
+                        itemPositionsListener: itemPositionsListener,
+                        scrollOffsetListener: scrollOffsetListener,
+                        itemBuilder: (context, index) {
+                          final CommentItemModel item = items[index];
+                          return CommentTile(
+                            key: ValueKey(
+                                '${item.author}/${item.permlink}/${item.created.toIso8601String()}'),
+                            itemScrollController: itemScrollController,
+                            isPadded: item.depth != 1 &&
+                                searchController.text.isEmpty,
+                            currentUser: widget.appData.username!,
+                            comment: item,
+                            index: index,
+                            searchKey: searchController.text.trim(),
+                          );
+                        },
+                        separatorBuilder: (context, index) {
+                          bool commentDividerVisibility = true;
+                          commentDividerVisibility = _commentDividerVisibility(
+                              index, items, commentDividerVisibility);
+                          return Visibility(
+                            visible: commentDividerVisibility,
+                            child: const Divider(
+                              height: 10,
+                              color: Colors.blueGrey,
+                            ),
+                          );
+                        },
+                        itemCount: items.length,
                       ),
-                    );
-                  },
-                  itemCount: items.length,
-                ),
-              ),
-            ),
-            _addCommentButton(controller),
+                    ),
+                  )
+                : Expanded(
+                    child: Center(
+                      child: Text("No Results Found"),
+                    ),
+                  ),
           ],
         );
       },
@@ -88,32 +150,41 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
     return drawLine;
   }
 
-  Widget _addCommentButton(CommentController controller) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10.0, right: 10, bottom: 10),
-      child: SizedBox(
-        height: 35,
-        child: TextButton.icon(
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            backgroundColor: Colors.blue,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(4),
+  Widget _addCommentButton() {
+    return Selector<CommentController, ViewState>(
+      selector: (context, provider) => provider.viewState,
+      builder: (context, viewState, child) {
+        if (viewState == ViewState.data || viewState == ViewState.empty) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 10.0, right: 10, bottom: 10),
+            child: SizedBox(
+              height: 35,
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(4),
+                    ),
+                  ),
+                ),
+                onPressed: () => commentPressed(controller),
+                icon: Icon(
+                  Icons.add,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  "Add a Comment",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
-          ),
-          onPressed: () => commentPressed(controller),
-          icon: Icon(
-            Icons.add,
-            color: Colors.white,
-          ),
-          label: Text(
-            "Add a Comment",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ),
+          );
+        } else {
+          return SizedBox.shrink();
+        }
+      },
     );
   }
 
@@ -147,42 +218,54 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
       onClose: () {},
       onDone: (newComment) async {
         if (newComment != null) {
-          controller.addTopLevelComment(newComment);
+          controller.addTopLevelComment(
+              newComment, searchController.text.trim());
+          if (searchController.text.isEmpty) {
+            _animteToAddedComment(0);
+          } else if (controller.disPlayedItems.contains(newComment)) {
+            _animteToAddedComment(0);
+          }
         }
       },
     );
     Navigator.of(context).push(MaterialPageRoute(builder: (c) => screen));
   }
 
+  void _animteToAddedComment(int index) {
+    itemScrollController.scrollTo(
+        index: index,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeInOutCubic);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-        create: (context) =>
-            CommentController(author: widget.author, permlink: widget.permlink),
+    return ChangeNotifierProvider.value(
+        value: controller,
         builder: (context, child) {
-          final controller = context.read<CommentController>();
           return Selector<CommentController, ViewState>(
             selector: (_, myType) => myType.viewState,
             builder: (context, state, child) {
               return Scaffold(
-                appBar: AppBar(
-                    title: Selector<CommentController, int>(
-                  selector: (_, myType) => myType.items.length,
-                  builder: (context, numberOfComments, child) {
-                    return Text(
-                        'Comments${state != ViewState.loading ? ' ($numberOfComments)' : ''}');
-                  },
-                )),
-                body: _body(state, controller),
+                bottomNavigationBar: _addCommentButton(),
+                appBar: CommentViewAppbar(
+                  state: state,
+                  showSearchBar: showSearchBar,
+                ),
+                body: _body(
+                  state,
+                ),
               );
             },
           );
         });
   }
 
-  Widget _body(ViewState state, CommentController controller) {
+  Widget _body(
+    ViewState state,
+  ) {
     if (state == ViewState.data) {
-      return commentsListView(controller);
+      return commentsListView();
     } else if (state == ViewState.empty) {
       return Center(
         child: Text("No comments found"),

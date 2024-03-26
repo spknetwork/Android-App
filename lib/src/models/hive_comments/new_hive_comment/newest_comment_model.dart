@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
+
 class CommentResponseModel {
   final String? jsonrpc;
   final List<CommentItemModel> comments;
@@ -37,7 +39,8 @@ class CommentResponseModel {
   }
 }
 
-class CommentItemModel {
+// ignore: must_be_immutable
+class CommentItemModel extends Equatable {
   final int? postId;
   final String author;
   final String permlink;
@@ -74,121 +77,121 @@ class CommentItemModel {
   final String? authorRole;
   final String? authorTitle;
   var visited = false;
+  final bool isLocallyAdded;
 
-  CommentItemModel({
-     this.postId,
-    required this.author,
-    required this.permlink,
-    this.category,
-     this.title,
-    required this.body,
-    this.jsonMetadata,
-    required this.created,
-    this.updated,
-    required this.depth,
-    required this.children,
-    this.netRshares,
-    this.isPaidout,
-    this.payoutAt,
-    this.payout,
-    this.pendingPayoutValue,
-    this.authorPayoutValue,
-    this.curatorPayoutValue,
-    this.promoted,
-     this.replies = const [],
-    this.reblogs,
-    this.authorReputation,
-    this.stats,
-    this.url,
-    this.beneficiaries,
-    this.maxAcceptedPayout,
-    this.percentHbd,
-    this.parentAuthor,
-    this.parentPermlink,
-    this.activeVotes = const [],
-    this.blacklists = const [],
-    this.community,
-    this.communityTitle,
-    this.authorRole,
-    this.authorTitle,
-  });
+  CommentItemModel(
+      {this.postId,
+      required this.author,
+      required this.permlink,
+      this.category,
+      this.title,
+      required this.body,
+      this.jsonMetadata,
+      required this.created,
+      this.updated,
+      required this.depth,
+      required this.children,
+      this.netRshares,
+      this.isPaidout,
+      this.payoutAt,
+      this.payout,
+      this.pendingPayoutValue,
+      this.authorPayoutValue,
+      this.curatorPayoutValue,
+      this.promoted,
+      this.replies = const [],
+      this.reblogs,
+      this.authorReputation,
+      this.stats,
+      this.url,
+      this.beneficiaries,
+      this.maxAcceptedPayout,
+      this.percentHbd,
+      this.parentAuthor,
+      this.parentPermlink,
+      this.activeVotes = const [],
+      this.blacklists = const [],
+      this.community,
+      this.communityTitle,
+      this.authorRole,
+      this.authorTitle,
+      this.isLocallyAdded = false});
 
   CommentItemModel copyWith({
-  int? postId,
-  String? author,
-  String? permlink,
-  String? category,
-  String? title,
-  String? body,
-  CommentMetaDataModel? jsonMetadata,
-  DateTime? created,
-  DateTime? updated,
-  int? depth,
-  int? children,
-  int? netRshares,
-  bool? isPaidout,
-  DateTime? payoutAt,
-  double? payout,
-  String? pendingPayoutValue,
-  String? authorPayoutValue,
-  String? curatorPayoutValue,
-  String? promoted,
-  List<String>? replies,
-  int? reblogs,
-  double? authorReputation,
-  Stats? stats,
-  String? url,
-  List<dynamic>? beneficiaries,
-  String? maxAcceptedPayout,
-  int? percentHbd,
-  String? parentAuthor,
-  String? parentPermlink,
-  List<CommentActiveVote>? activeVotes,
-  List<dynamic>? blacklists,
-  String? community,
-  String? communityTitle,
-  String? authorRole,
-  String? authorTitle,
-}) {
-  return CommentItemModel(
-    postId: postId ?? this.postId,
-    author: author ?? this.author,
-    permlink: permlink ?? this.permlink,
-    category: category ?? this.category,
-    title: title ?? this.title,
-    body: body ?? this.body,
-    jsonMetadata: jsonMetadata ?? this.jsonMetadata,
-    created: created ?? this.created,
-    updated: updated ?? this.updated,
-    depth: depth ?? this.depth,
-    children: children ?? this.children,
-    netRshares: netRshares ?? this.netRshares,
-    isPaidout: isPaidout ?? this.isPaidout,
-    payoutAt: payoutAt ?? this.payoutAt,
-    payout: payout ?? this.payout,
-    pendingPayoutValue: pendingPayoutValue ?? this.pendingPayoutValue,
-    authorPayoutValue: authorPayoutValue ?? this.authorPayoutValue,
-    curatorPayoutValue: curatorPayoutValue ?? this.curatorPayoutValue,
-    promoted: promoted ?? this.promoted,
-    replies: replies ?? this.replies,
-    reblogs: reblogs ?? this.reblogs,
-    authorReputation: authorReputation ?? this.authorReputation,
-    stats: stats ?? this.stats,
-    url: url ?? this.url,
-    beneficiaries: beneficiaries ?? this.beneficiaries,
-    maxAcceptedPayout: maxAcceptedPayout ?? this.maxAcceptedPayout,
-    percentHbd: percentHbd ?? this.percentHbd,
-    parentAuthor: parentAuthor ?? this.parentAuthor,
-    parentPermlink: parentPermlink ?? this.parentPermlink,
-    activeVotes: activeVotes ?? this.activeVotes,
-    blacklists: blacklists ?? this.blacklists,
-    community: community ?? this.community,
-    communityTitle: communityTitle ?? this.communityTitle,
-    authorRole: authorRole ?? this.authorRole,
-    authorTitle: authorTitle ?? this.authorTitle,
-  );
-}
-
+    int? postId,
+    String? author,
+    String? permlink,
+    String? category,
+    String? title,
+    String? body,
+    CommentMetaDataModel? jsonMetadata,
+    DateTime? created,
+    DateTime? updated,
+    int? depth,
+    int? children,
+    int? netRshares,
+    bool? isPaidout,
+    DateTime? payoutAt,
+    double? payout,
+    String? pendingPayoutValue,
+    String? authorPayoutValue,
+    String? curatorPayoutValue,
+    String? promoted,
+    List<String>? replies,
+    int? reblogs,
+    double? authorReputation,
+    Stats? stats,
+    String? url,
+    List<dynamic>? beneficiaries,
+    String? maxAcceptedPayout,
+    int? percentHbd,
+    String? parentAuthor,
+    String? parentPermlink,
+    List<CommentActiveVote>? activeVotes,
+    List<dynamic>? blacklists,
+    String? community,
+    String? communityTitle,
+    String? authorRole,
+    String? authorTitle,
+  }) {
+    return CommentItemModel(
+      postId: postId ?? this.postId,
+      author: author ?? this.author,
+      permlink: permlink ?? this.permlink,
+      category: category ?? this.category,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      jsonMetadata: jsonMetadata ?? this.jsonMetadata,
+      created: created ?? this.created,
+      updated: updated ?? this.updated,
+      depth: depth ?? this.depth,
+      children: children ?? this.children,
+      netRshares: netRshares ?? this.netRshares,
+      isPaidout: isPaidout ?? this.isPaidout,
+      payoutAt: payoutAt ?? this.payoutAt,
+      payout: payout ?? this.payout,
+      pendingPayoutValue: pendingPayoutValue ?? this.pendingPayoutValue,
+      authorPayoutValue: authorPayoutValue ?? this.authorPayoutValue,
+      curatorPayoutValue: curatorPayoutValue ?? this.curatorPayoutValue,
+      promoted: promoted ?? this.promoted,
+      replies: replies ?? this.replies,
+      reblogs: reblogs ?? this.reblogs,
+      authorReputation: authorReputation ?? this.authorReputation,
+      stats: stats ?? this.stats,
+      url: url ?? this.url,
+      beneficiaries: beneficiaries ?? this.beneficiaries,
+      maxAcceptedPayout: maxAcceptedPayout ?? this.maxAcceptedPayout,
+      percentHbd: percentHbd ?? this.percentHbd,
+      parentAuthor: parentAuthor ?? this.parentAuthor,
+      parentPermlink: parentPermlink ?? this.parentPermlink,
+      activeVotes: activeVotes ?? this.activeVotes,
+      blacklists: blacklists ?? this.blacklists,
+      community: community ?? this.community,
+      communityTitle: communityTitle ?? this.communityTitle,
+      authorRole: authorRole ?? this.authorRole,
+      authorTitle: authorTitle ?? this.authorTitle,
+    );
+  }
 
   factory CommentItemModel.fromRawJson(String str) =>
       CommentItemModel.fromJson(json.decode(str));
@@ -280,16 +283,20 @@ class CommentItemModel {
         "percent_hbd": percentHbd,
         "parent_author": parentAuthor,
         "parent_permlink": parentPermlink,
-        "active_votes":  List<dynamic>.from(activeVotes!.map((x) => x.toJson())),
+        "active_votes": List<dynamic>.from(activeVotes!.map((x) => x.toJson())),
         "blacklists": List<dynamic>.from(blacklists!.map((x) => x)),
         "community": community,
         "community_title": communityTitle,
         "author_role": authorRole,
         "author_title": authorTitle,
       };
+
+  @override
+  List<Object?> get props =>
+      [postId, permlink, author, parentPermlink, parentAuthor, created];
 }
 
-class CommentActiveVote {
+class CommentActiveVote extends Equatable {
   final int? rshares;
   final String? voter;
 
@@ -313,6 +320,9 @@ class CommentActiveVote {
         "rshares": rshares,
         "voter": voter,
       };
+
+  @override
+  List<Object?> get props => [voter];
 }
 
 class CommentMetaDataModel {
@@ -355,6 +365,20 @@ class Stats {
     this.totalVotes,
     this.flagWeight,
   });
+
+  Stats copyWith({
+    bool? hide,
+    bool? gray,
+    int? totalVotes,
+    double? flagWeight,
+  }) {
+    return Stats(
+      hide: hide ?? this.hide,
+      gray: gray ?? this.gray,
+      totalVotes: totalVotes ?? this.totalVotes,
+      flagWeight: flagWeight ?? this.flagWeight,
+    );
+  }
 
   factory Stats.fromRawJson(String str) => Stats.fromJson(json.decode(str));
 
