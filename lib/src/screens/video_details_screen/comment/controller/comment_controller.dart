@@ -10,6 +10,7 @@ class CommentController extends ChangeNotifier {
   ViewState viewState = ViewState.loading;
   List<CommentItemModel> disPlayedItems = [];
   List<CommentItemModel> items = [];
+  Sort sort = Sort.newest;
   bool _commentHighlighterTrigger = false;
 
   bool get commentHighlighterTrigger => _commentHighlighterTrigger;
@@ -59,10 +60,17 @@ class CommentController extends ChangeNotifier {
     if (searchKey.isEmpty) {
       disPlayedItems = items;
     } else {
-      animateToCommentIndex = 0;
       if (_isSearchedKeyPresent(comment, searchKey)) {
-        disPlayedItems = [comment, ...disPlayedItems];
+        if (sort == Sort.newest) {
+          disPlayedItems = [comment, ...disPlayedItems];
+        } else {
+          disPlayedItems = [
+            ...disPlayedItems,
+            comment,
+          ];
+        }
       }
+      animateToCommentIndex = sort == Sort.newest ? 0 : items.length - 1;
     }
     notifyListeners();
   }
@@ -79,7 +87,14 @@ class CommentController extends ChangeNotifier {
         items = refactorComments(items, permlink);
         animateToCommentIndex = newIndex + 1;
         if (_isSearchedKeyPresent(comment, searchKey)) {
-          disPlayedItems = [comment, ...disPlayedItems];
+          if (sort == Sort.newest) {
+            disPlayedItems = [comment, ...disPlayedItems];
+          } else {
+            disPlayedItems = [
+              ...disPlayedItems,
+              comment,
+            ];
+          }
         }
       }
     } else {
@@ -119,30 +134,38 @@ class CommentController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void refreshSilently() async {
+  void refresh() async {
     viewState = ViewState.loading;
     notifyListeners();
     _init();
   }
 
-  static List<CommentItemModel> refactorComments(
+  void onSort(Sort sort, String searchKey) {
+    if (this.sort != sort) {
+      this.sort = sort;
+      if (searchKey.isEmpty) {
+        disPlayedItems = [...refactorComments(disPlayedItems, permlink)];
+        items = [...disPlayedItems];
+      } else {
+        if (animateToCommentIndex != null) {
+          animateToCommentIndex = null;
+        }
+        items = [...refactorComments(items, permlink)];
+        _sortList(disPlayedItems);
+        disPlayedItems = [...disPlayedItems];
+      }
+      notifyListeners();
+    }
+  }
+
+  List<CommentItemModel> refactorComments(
       List<CommentItemModel> content, String parentPermlink) {
     List<CommentItemModel> refactoredComments = [];
     var newContent = List<CommentItemModel>.from(content);
     for (var e in newContent) {
       e.visited = false;
     }
-    newContent.sort((a, b) {
-      var bTime = b.created;
-      var aTime = a.created;
-      if (aTime.isAfter(bTime)) {
-        return -1;
-      } else if (bTime.isAfter(aTime)) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
+    _sortList(newContent);
     refactoredComments.addAll(
         newContent.where((e) => e.parentPermlink == parentPermlink).toList());
     while (refactoredComments.where((e) => e.visited == false).isNotEmpty) {
@@ -180,12 +203,29 @@ class CommentController extends ChangeNotifier {
           data.add(item);
         }
       }
+
       disPlayedItems = data.toList();
+      _sortList(disPlayedItems);
       notifyListeners();
     } else {
       disPlayedItems = items;
+      disPlayedItems = refactorComments(disPlayedItems, permlink);
       notifyListeners();
     }
+  }
+
+  void _sortList(List<CommentItemModel> list) {
+    list.sort((a, b) {
+      var bTime = sort == Sort.newest ? b.created : a.created;
+      var aTime = sort == Sort.newest ? a.created : b.created;
+      if (aTime.isAfter(bTime)) {
+        return -1;
+      } else if (bTime.isAfter(aTime)) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
   }
 
   bool _isSearchedKeyPresent(CommentItemModel item, String keyword) {

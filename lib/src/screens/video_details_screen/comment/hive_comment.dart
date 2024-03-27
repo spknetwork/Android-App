@@ -2,7 +2,9 @@ import 'package:acela/src/models/hive_comments/new_hive_comment/newest_comment_m
 import 'package:acela/src/models/user_stream/hive_user_stream.dart';
 import 'package:acela/src/screens/video_details_screen/comment/comment_action_menu.dart';
 import 'package:acela/src/screens/video_details_screen/comment/controller/comment_controller.dart';
+import 'package:acela/src/utils/enum.dart';
 import 'package:acela/src/utils/seconds_to_duration.dart';
+import 'package:acela/src/widgets/confirmation_dialog.dart';
 import 'package:acela/src/widgets/user_profile_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -39,13 +41,16 @@ class _CommentTileState extends State<CommentTile>
   late bool isUpvoted;
   bool animate = false;
   bool animated = false;
-  Duration duration = Duration(seconds: 5);
+  Duration duration = Duration.zero;
+  late bool isHidden;
   late Color color;
 
   @override
   void initState() {
     _initVoteStatus();
     _initAnimation();
+    isHidden = (widget.comment.authorReputation ?? 0) < 0 ||
+        (widget.comment.netRshares ?? 0) < 0;
     super.initState();
   }
 
@@ -58,6 +63,7 @@ class _CommentTileState extends State<CommentTile>
         WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
           if (mounted)
             setState(() {
+              duration = Duration(seconds: 5);
               color = Colors.transparent;
               animated = true;
               animate = false;
@@ -123,20 +129,27 @@ class _CommentTileState extends State<CommentTile>
       },
       child: InkWell(
         onTap: () {
-          if (!widget.comment.isLocallyAdded) {
-            _showBottomSheet(item, onUpvote: () {
-              context.read<CommentController>().onUpvote(
-                  item, widget.index, widget.currentUser, widget.searchKey);
-              setState(() {
-                votes++;
-                isUpvoted = true;
+          if (isHidden) {
+            _showCommentUnMuteDialog();
+          } else {
+            if (!widget.comment.isLocallyAdded) {
+              _showBottomSheet(item, onUpvote: () {
+                context.read<CommentController>().onUpvote(
+                    item, widget.index, widget.currentUser, widget.searchKey);
+                setState(() {
+                  votes++;
+                  isUpvoted = true;
+                });
               });
-            });
+            }
           }
         },
         child: AnimatedContainer(
           duration: duration,
           color: color,
+          onEnd: () => setState(() {
+            duration = Duration.zero;
+          }),
           padding: EdgeInsets.only(
               left: depth + 15,
               right: 15,
@@ -182,7 +195,12 @@ class _CommentTileState extends State<CommentTile>
                           style: style,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
-                        )),
+                        ),),
+                        if (isHidden)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Icon(Icons.visibility_off),
+                          )
                       ],
                     ),
                   )
@@ -191,7 +209,7 @@ class _CommentTileState extends State<CommentTile>
               const SizedBox(
                 height: 8,
               ),
-              _comment(body),
+              if (!isHidden) _comment(body)
             ],
           ),
         ),
@@ -227,7 +245,9 @@ class _CommentTileState extends State<CommentTile>
 
           if (widget.searchKey.isNotEmpty &&
               controller.disPlayedItems.contains(newComment)) {
-            _animteToAddedComment(0);
+            _animteToAddedComment(controller.sort == Sort.newest
+                ? 0
+                : controller.disPlayedItems.length - 1);
           }
         },
         onUpVote: onUpvote,
@@ -235,6 +255,25 @@ class _CommentTileState extends State<CommentTile>
         author: item.author,
         permlink: item.permlink,
       ),
+    );
+  }
+
+  void _showCommentUnMuteDialog() {
+    showDialog(
+      barrierDismissible: true,
+      useRootNavigator: true,
+      context: context,
+      builder: (context) {
+        return ConfirmationDialog(
+            title: "Muted comment",
+            content: "Are you sure you want to see muted comment ?",
+            onConfirm: () {
+              if (mounted)
+                setState(() {
+                  isHidden = false;
+                });
+            });
+      },
     );
   }
 

@@ -343,7 +343,7 @@ class CommentMetaDataModel {
       CommentMetaDataModel(
         tags: json["tags"] == null
             ? []
-            : List<String>.from(json["tags"]!.map((x) => x)),
+            : json['tags'] is String ? [json['tags']] : List<String>.from(json["tags"]!.map((x) => x)),
         app: json["app"],
       );
 

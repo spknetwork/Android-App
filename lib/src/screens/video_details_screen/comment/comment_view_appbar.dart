@@ -1,25 +1,17 @@
 import 'package:acela/src/screens/video_details_screen/comment/controller/comment_controller.dart';
+import 'package:acela/src/screens/video_details_screen/comment/menu.dart';
 import 'package:acela/src/utils/enum.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class CommentViewAppbar extends StatefulWidget implements PreferredSizeWidget {
+class CommentViewAppbar extends StatelessWidget implements PreferredSizeWidget {
   const CommentViewAppbar(
-      {Key? key, required this.state, required this.showSearchBar})
+      {Key? key, required this.state, required this.showSearchBar, required this.searchKey})
       : super(key: key);
 
   final ViewState state;
   final ValueNotifier<bool> showSearchBar;
-
-  @override
-  State<CommentViewAppbar> createState() => _CommentViewAppbarState();
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
-
-class _CommentViewAppbarState extends State<CommentViewAppbar> {
-  bool showSearch = false;
+  final TextEditingController searchKey;
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +19,10 @@ class _CommentViewAppbarState extends State<CommentViewAppbar> {
         .select<CommentController, int>((value) => value.disPlayedItems.length);
     return AppBar(
       title: Text(
-          'Comments${widget.state != ViewState.loading ? ' ($numberOfComments)' : ''}'),
+          'Comments${state != ViewState.loading ? ' ($numberOfComments)' : ''}'),
       actions: [
         ValueListenableBuilder<bool>(
-          valueListenable: widget.showSearchBar,
+          valueListenable: showSearchBar,
           builder: (context, showSearchButton, child) {
             return Visibility(
                 visible: numberOfComments != 0 && !showSearchButton,
@@ -38,12 +30,18 @@ class _CommentViewAppbarState extends State<CommentViewAppbar> {
           },
           child: IconButton(
             onPressed: () {
-              widget.showSearchBar.value = true;
+              showSearchBar.value = true;
             },
             icon: Icon(Icons.search),
           ),
-        )
+        ),
+        Menu(
+          searchKey: searchKey,
+        ),
       ],
     );
   }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

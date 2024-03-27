@@ -92,39 +92,16 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
                 ? Expanded(
                     child: Container(
                       margin: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: ScrollablePositionedList.separated(
-                        itemScrollController: itemScrollController,
-                        scrollOffsetController: scrollOffsetController,
-                        itemPositionsListener: itemPositionsListener,
-                        scrollOffsetListener: scrollOffsetListener,
-                        itemBuilder: (context, index) {
-                          final CommentItemModel item = items[index];
-                          return CommentTile(
-                            key: ValueKey(
-                                '${item.author}/${item.permlink}/${item.created.toIso8601String()}'),
-                            itemScrollController: itemScrollController,
-                            isPadded: item.depth != 1 &&
-                                searchController.text.isEmpty,
-                            currentUser: widget.appData.username!,
-                            comment: item,
-                            index: index,
-                            searchKey: searchController.text.trim(),
-                          );
-                        },
-                        separatorBuilder: (context, index) {
-                          bool commentDividerVisibility = true;
-                          commentDividerVisibility = _commentDividerVisibility(
-                              index, items, commentDividerVisibility);
-                          return Visibility(
-                            visible: commentDividerVisibility,
-                            child: const Divider(
-                              height: 10,
-                              color: Colors.blueGrey,
-                            ),
-                          );
-                        },
-                        itemCount: items.length,
-                      ),
+                      child: searchController.text.trim().isEmpty
+                          ? RefreshIndicator(
+                              onRefresh: () async {
+                                if (searchController.text.trim().isEmpty) {
+                                  controller.refresh();
+                                }
+                              },
+                              child: _commentListViewBuilder(items),
+                            )
+                          : _commentListViewBuilder(items),
                     ),
                   )
                 : Expanded(
@@ -135,6 +112,42 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
           ],
         );
       },
+    );
+  }
+
+  ScrollablePositionedList _commentListViewBuilder(
+      List<CommentItemModel> items) {
+    return ScrollablePositionedList.separated(
+      itemScrollController: itemScrollController,
+      scrollOffsetController: scrollOffsetController,
+      itemPositionsListener: itemPositionsListener,
+      scrollOffsetListener: scrollOffsetListener,
+      itemBuilder: (context, index) {
+        final CommentItemModel item = items[index];
+        return CommentTile(
+          key: ValueKey(
+              '${item.author}/${item.permlink}/${item.created.toIso8601String()}'),
+          itemScrollController: itemScrollController,
+          isPadded: item.depth != 1 && searchController.text.isEmpty,
+          currentUser: widget.appData.username!,
+          comment: item,
+          index: index,
+          searchKey: searchController.text.trim(),
+        );
+      },
+      separatorBuilder: (context, index) {
+        bool commentDividerVisibility = true;
+        commentDividerVisibility =
+            _commentDividerVisibility(index, items, commentDividerVisibility);
+        return Visibility(
+          visible: commentDividerVisibility,
+          child: const Divider(
+            height: 10,
+            color: Colors.blueGrey,
+          ),
+        );
+      },
+      itemCount: items.length,
     );
   }
 
@@ -151,40 +164,42 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
   }
 
   Widget _addCommentButton() {
-    return Selector<CommentController, ViewState>(
-      selector: (context, provider) => provider.viewState,
-      builder: (context, viewState, child) {
-        if (viewState == ViewState.data || viewState == ViewState.empty) {
-          return Padding(
-            padding: const EdgeInsets.only(left: 10.0, right: 10, bottom: 10),
-            child: SizedBox(
-              height: 35,
-              child: TextButton.icon(
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(4),
+    return SafeArea(
+      child: Selector<CommentController, ViewState>(
+        selector: (context, provider) => provider.viewState,
+        builder: (context, viewState, child) {
+          if (viewState == ViewState.data || viewState == ViewState.empty) {
+            return Padding(
+              padding: const EdgeInsets.only(left: 10.0, right: 10, bottom: 10),
+              child: SizedBox(
+                height: 35,
+                child: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(4),
+                      ),
                     ),
                   ),
-                ),
-                onPressed: () => commentPressed(controller),
-                icon: Icon(
-                  Icons.add,
-                  color: Colors.white,
-                ),
-                label: Text(
-                  "Add a Comment",
-                  style: TextStyle(color: Colors.white),
+                  onPressed: () => commentPressed(controller),
+                  icon: Icon(
+                    Icons.add,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    "Add a Comment",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
-            ),
-          );
-        } else {
-          return SizedBox.shrink();
-        }
-      },
+            );
+          } else {
+            return SizedBox.shrink();
+          }
+        },
+      ),
     );
   }
 
@@ -220,10 +235,13 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
         if (newComment != null) {
           controller.addTopLevelComment(
               newComment, searchController.text.trim());
+          int animateToindex = controller.sort == Sort.newest
+              ? 0
+              : controller.disPlayedItems.length - 1;
           if (searchController.text.isEmpty) {
-            _animteToAddedComment(0);
+            _animteToAddedComment(animateToindex);
           } else if (controller.disPlayedItems.contains(newComment)) {
-            _animteToAddedComment(0);
+            _animteToAddedComment(animateToindex);
           }
         }
       },
@@ -250,10 +268,13 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
                 bottomNavigationBar: _addCommentButton(),
                 appBar: CommentViewAppbar(
                   state: state,
+                  searchKey: searchController,
                   showSearchBar: showSearchBar,
                 ),
-                body: _body(
-                  state,
+                body: SafeArea(
+                  child: _body(
+                    state,
+                  ),
                 ),
               );
             },
@@ -272,8 +293,18 @@ class _VideoDetailsCommentsState extends State<VideoDetailsComments> {
       );
     } else if (state == ViewState.error) {
       return Container(
-          margin: const EdgeInsets.all(10),
-          child: Text("Sorry, something went wrong"));
+        margin: const EdgeInsets.all(10),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Sorry, something went wrong"),
+              TextButton(
+                  onPressed: () => controller.refresh(), child: Text("Retry"))
+            ],
+          ),
+        ),
+      );
     } else {
       return Center(
         child: Column(

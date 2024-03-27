@@ -13,6 +13,7 @@ import 'package:acela/src/screens/video_details_screen/video_details_view_model.
 import 'package:acela/src/utils/communicator.dart';
 import 'package:acela/src/utils/graphql/gql_communicator.dart';
 import 'package:acela/src/utils/routes/routes.dart';
+import 'package:acela/src/widgets/confirmation_dialog.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/loading_screen.dart';
 import 'package:adaptive_action_sheet/adaptive_action_sheet.dart';
@@ -115,24 +116,10 @@ class _MyAccountScreenState extends State<MyAccountScreen>
             showDialog(
               context: context,
               builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text('Log Out'),
-                  content: Text('Are you sure you want to log out?'),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text('No'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        logout(widget.data);
-                      },
-                      child: Text('Yes'),
-                    ),
-                  ],
+                return ConfirmationDialog(
+                  title: 'Log Out',
+                  content: 'Are you sure you want to log out?',
+                  onConfirm: () => logout(widget.data),
                 );
               },
             );
