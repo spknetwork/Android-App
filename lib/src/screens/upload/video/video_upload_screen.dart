@@ -108,7 +108,7 @@ class _VideoUploadScreenState extends State<VideoUploadScreen> {
                     ),
                     UploadTextField(
                         textEditingController: tagsController,
-                        hintText: 'Comma separated tags',
+                        hintText: 'threespeak,mobile',
                         labelText: 'Tags',
                         maxLines: 1,
                         minLines: 1,
