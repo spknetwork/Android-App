@@ -5,9 +5,6 @@ import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/bott
 import 'package:acela/src/screens/home_screen/home_screen_feed_item/widgets/tab_title_toast.dart';
 import 'package:acela/src/screens/home_screen/home_screen_feed_list.dart';
 import 'package:acela/src/screens/login/ha_login_screen.dart';
-import 'package:acela/src/screens/podcast/view/podcast_trending.dart';
-import 'package:acela/src/screens/search/search_screen.dart';
-import 'package:acela/src/screens/stories/new_tab_based_stories.dart';
 import 'package:acela/src/screens/trending_tags/trending_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -60,20 +57,30 @@ class _GQLFeedScreenState extends State<GQLFeedScreen>
     super.initState();
     _tabController =
         TabController(vsync: this, length: widget.username != null ? 6 : 5);
+    _tabController.addListener(tabBarListener);
   }
 
   @override
   void didUpdateWidget(covariant GQLFeedScreen oldWidget) {
     if (widget.username != oldWidget.username) {
+      _tabController.removeListener(tabBarListener);
       _tabController.dispose();
       _tabController =
           TabController(vsync: this, length: widget.username != null ? 6 : 5);
+      _tabController.addListener(tabBarListener);
     }
     super.didUpdateWidget(oldWidget);
   }
 
+  void tabBarListener() {
+    setState(() {
+      currentIndex = _tabController.index;
+    });
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(tabBarListener);
     _tabController.dispose();
     super.dispose();
   }

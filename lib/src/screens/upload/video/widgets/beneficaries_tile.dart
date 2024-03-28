@@ -1,6 +1,7 @@
 import 'package:acela/src/bloc/server.dart';
 import 'package:acela/src/models/my_account/video_ops.dart';
 import 'package:acela/src/screens/my_account/update_video/add_bene_sheet.dart';
+import 'package:acela/src/utils/constants.dart';
 import 'package:acela/src/widgets/custom_circle_avatar.dart';
 import 'package:acela/src/widgets/user_profile_image.dart';
 import 'package:flutter/material.dart';
@@ -37,30 +38,33 @@ class _BeneficiariesTileState extends State<BeneficiariesTile> {
       onTap: () {
         beneficiariesBottomSheet(context);
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Text('Video Participants:'),
-              Spacer(),
-              Icon(Icons.arrow_drop_down),
-            ],
-          ),
-          Visibility(
-            visible: beneficiaries.isNotEmpty,
-            child: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: List.generate(
-                    beneficiaries.length,
-                    (index) => _beneficarieNameTile(theme, index, context),
-                  ),
-                )),
-          )
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(kScreenHorizontalPaddingDigit),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Text('Video Participants:'),
+                Spacer(),
+                Icon(Icons.arrow_drop_down),
+              ],
+            ),
+            Visibility(
+              visible: beneficiaries.isNotEmpty,
+              child: Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: List.generate(
+                      beneficiaries.length,
+                      (index) => _beneficarieNameTile(theme, index, context),
+                    ),
+                  )),
+            )
+          ],
+        ),
       ),
     );
   }

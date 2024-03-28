@@ -25,7 +25,6 @@ class GQLCommunicator {
       'content-type': 'application/json',
     };
     var request = http.Request('POST', Uri.parse(gqlServer));
-    log('Query is - $query');
     request.body = json
         .encode({"query": query, "operationName": operation, "extensions": {}});
     request.headers.addAll(headers);
