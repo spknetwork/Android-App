@@ -34,7 +34,7 @@ dependencies:
   adaptive_action_sheet: ^2.0.1
   better_player:
     git:
-      url: https://github.com/RAMb002/betterplayer.git
+      url: https://github.com/dwango-nfc/betterplayer.git
 
   crypto: ^3.0.3
   device_info_plus: ^10.1.2
